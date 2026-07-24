@@ -1,0 +1,12 @@
+{
+  "data_mode": "real_arrays",
+  "healpix_raw_mib": 4.0,
+  "healpix_medium_mib": 1.6127372469220842,
+  "healpix_medium_ratio": 2.487555021971616,
+  "healpix_medium_reduction_percent": 59.681568826947895,
+  "healpix_medium_rmse": 0.0003851773209860022,
+  "utm_raw_mib": 1.5478858947753906,
+  "utm_medium_mib": 0.6105759484427316,
+  "utm_medium_ratio": 2.5452478091483153,
+  "utm_medium_rmse": 0.000711195545065402
+}

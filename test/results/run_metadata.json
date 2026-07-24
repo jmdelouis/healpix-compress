@@ -1,0 +1,7 @@
+{
+  "data_mode": "real_arrays",
+  "random_seed": 20260602,
+  "healpix_level": 20,
+  "healpix_tile_size": 1024,
+  "native_tile_size": 637
+}
