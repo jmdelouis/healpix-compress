@@ -6,6 +6,7 @@ dependencies = [
   "numpy>=2",
   "scipy",
   "zarr>=3",
+  "PyWavelets",
 ]
 dynamic = ["version"]
 
