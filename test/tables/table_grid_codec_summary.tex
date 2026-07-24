@@ -1,0 +1,22 @@
+\begin{table*}[t]
+\centering
+\caption{Mean compression performance over seven benchmark scenes. The HEALPix carrier uses a $1024\times1024$ level-20 patch, while the UTM native grid uses a $637\times637$ patch with comparable native information content.}
+\label{tab:grid_codec_summary}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Grid & Codec & Size (MiB) & Ratio & RMSE & PSNR (dB) \\
+\midrule
+UTM native & Raw float32 & 1.548 & 1.000 & 0.000 & -- \\
+ & Blosc2 lossless & 0.930 & 1.764 & 0.000 & -- \\
+ & HRes low & 0.437 & 3.546 & 0.003 & 58.594 \\
+ & HRes medium & 0.611 & 2.545 & 7.11e-04 & 72.001 \\
+ & HRes high & 0.979 & 1.587 & 3.57e-04 & 79.258 \\
+\midrule
+HEALPix carrier & Raw float32 & 4.000 & 1.000 & 0.000 & -- \\
+ & Blosc2 lossless & 2.873 & 1.406 & 0.000 & -- \\
+ & HRes low & 1.120 & 3.577 & 0.002 & 58.845 \\
+ & HRes medium & 1.613 & 2.488 & 3.85e-04 & 74.544 \\
+ & HRes high & 2.545 & 1.576 & 1.67e-04 & 82.049 \\
+\bottomrule
+\end{tabular}
+\end{table*}

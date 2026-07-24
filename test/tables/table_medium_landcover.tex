@@ -1,0 +1,20 @@
+\begin{table*}[t]
+\centering
+\caption{Scene-level results for the medium hierarchical residual preset. Values compare the native UTM grid and the finer HEALPix carrier grid.}
+\label{tab:medium_landcover}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+& \multicolumn{3}{c}{UTM native} & \multicolumn{3}{c}{HEALPix carrier} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Scene & Size (MiB) & Ratio & RMSE & Size (MiB) & Ratio & RMSE \\
+\midrule
+Urban & 0.664 & 2.331 & 0.003 & 1.698 & 2.355 & 0.001 \\
+Lake water & 0.604 & 2.564 & 3.55e-05 & 1.698 & 2.355 & 3.94e-05 \\
+Forest & 0.639 & 2.422 & 4.47e-04 & 1.652 & 2.421 & 2.87e-04 \\
+Agriculture & 0.649 & 2.386 & 5.22e-04 & 1.650 & 2.424 & 4.92e-04 \\
+Snow/ice & 0.576 & 2.688 & 1.96e-04 & 1.536 & 2.605 & 1.84e-04 \\
+Clouds & 0.551 & 2.810 & 4.32e-04 & 1.447 & 2.764 & 1.69e-04 \\
+Ocean & 0.592 & 2.615 & 2.71e-05 & 1.607 & 2.489 & 3.15e-05 \\
+\bottomrule
+\end{tabular}
+\end{table*}
