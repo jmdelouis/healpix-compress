@@ -463,7 +463,15 @@ def decompress_residuals(
     --------
     compress_residuals : Inverse of this function.
     """
-    coeffs_float = compressed.astype(np.float32) * float(q_scale)
+    # q_scale round-trips through the Zarr codec's scalar sidecar as a
+    # shape-(1,) array (see hcc.codecs.scalars.encode_scalar/decode_scalar),
+    # not a true 0-d array, even though it started as one in
+    # compress_residuals(). Newer NumPy (>=2.0) raises
+    # "only 0-dimensional arrays can be converted to Python scalars" for
+    # float(x) when x.ndim > 0, even for a length-1 array -- np.ravel(...)[0]
+    # handles both the 0-d and (1,) cases (and a plain Python float, via
+    # np.asarray) uniformly.
+    coeffs_float = compressed.astype(np.float32) * float(np.ravel(np.asarray(q_scale))[0])
     slices = _coeff_slices(compressed.shape, wavelet, levels)
     return dwt_inverse(coeffs_float, slices, wavelet, levels)
 

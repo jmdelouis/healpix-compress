@@ -444,7 +444,13 @@ def decompress_residuals(
     idct_blocks : 2-D block IDCT primitive.
     """
     # Dequantise: scale integer levels back to float coefficients.
-    coeffs = compressed.astype(np.float32) * float(q_scale)
+    # q_scale round-trips through the Zarr codec's scalar sidecar as a
+    # shape-(1,) array (see hcc.codecs.scalars.encode_scalar/decode_scalar),
+    # not a true 0-d array. Newer NumPy (>=2.0) raises "only 0-dimensional
+    # arrays can be converted to Python scalars" for float(x) when
+    # x.ndim > 0, even for a length-1 array -- np.ravel(...)[0] handles both
+    # the 0-d and (1,) cases uniformly (same fix as grad_dwt.py).
+    coeffs = compressed.astype(np.float32) * float(np.ravel(np.asarray(q_scale))[0])
 
     # Apply inverse DCT block by block and cast back to float32.
     return idct_blocks(coeffs, block_size=window).astype(np.float32)
