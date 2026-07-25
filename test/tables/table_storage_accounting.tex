@@ -2,17 +2,17 @@
 \centering
 \caption{Storage accounting per scene: valid native \SI{10}{m} UTM samples in the evaluated crop, estimated operational UTM sample count after the 30\% tiling overhead, stored HEALPix level-20 cells on the compressed dominant carrier tile, the analytic HEALPix/native area factor ($10^2/\Delta_{20}^2 \approx 2.58$), a proportional estimate of the same factor measured for each scene's actual footprint, and the uncompressed HEALPix$\to$UTM reprojection RMSE floor that no codec can beat on that grid.}
 \label{tab:storage_accounting}
-\begin{tabular}{@{}lrrrrrr@{}}
+\begin{tabular}{@{}lrrrrrrr@{}}
 \toprule
-Scene & Native valid & UTM operational & HPX20 cells & UTM overhead (\%) & HPX/native ($\alpha$, analytic) & Reprojection RMSE \\
+Scene & Native valid & UTM operational & HPX20 cells & UTM overhead (\%) & HPX/native ($\alpha$, analytic) & HPX/native ($\alpha$, measured) & Reprojection RMSE \\
 \midrule
-urban & 405769 & 527500 & 1048576 & 3e+01 & 2.58 & 8.624e-05 \\
-water & 405769 & 527500 & 1048576 & 3e+01 & 2.58 & 2.27e-06 \\
-forest & 405769 & 527500 & 1048576 & 3e+01 & 2.58 & 2.185e-05 \\
-agriculture & 405769 & 527500 & 1048576 & 3e+01 & 2.58 & 2.479e-05 \\
-snow_ice & 405769 & 527500 & 1048576 & 3e+01 & 2.58 & 1.685e-05 \\
-clouds & 405769 & 527500 & 1048576 & 3e+01 & 2.58 & 1.612e-05 \\
-ocean & 405769 & 527500 & 1048576 & 3e+01 & 2.58 & 2.418e-06 \\
+urban & 405769 & 527500 & 1048576 & 30.0 & 2.58 & 2.59 & 8.624e-05 \\
+water & 405769 & 527500 & 1048576 & 30.0 & 2.58 & 2.59 & 2.27e-06 \\
+forest & 405769 & 527500 & 1048576 & 30.0 & 2.58 & 2.59 & 2.185e-05 \\
+agriculture & 405769 & 527500 & 1048576 & 30.0 & 2.58 & 2.59 & 2.479e-05 \\
+snow_ice & 405769 & 527500 & 1048576 & 30.0 & 2.58 & 2.59 & 1.685e-05 \\
+clouds & 405769 & 527500 & 1048576 & 30.0 & 2.58 & 2.58 & 1.612e-05 \\
+ocean & 405769 & 527500 & 1048576 & 30.0 & 2.58 & 2.59 & 2.418e-06 \\
 \bottomrule
 \end{tabular}
 \end{table*}

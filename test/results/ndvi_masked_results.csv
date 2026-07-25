@@ -1,5 +1,4 @@
 scene,codec,config_json,n_valid_ndvi_pixels,frac_pixels_valid,ndvi_rmse,ndvi_mae,red_bytes,nir_bytes,is_water_scene
-urban,healpix-compress,"{""downsample_factor"": 4, ""wavelet"": ""db2"", ""levels"": 3, ""quantize_bits"": 6}",1048557,0.9999818801879883,0.09520188632030097,0.049293147427115526,416611,529873,False
 urban,healpix-compress,"{""downsample_factor"": 2, ""wavelet"": ""db4"", ""levels"": 4, ""quantize_bits"": 8}",1048569,0.9999933242797852,0.01466010804684047,0.009196284228205513,1389363,1529304,False
 urban,healpix-compress,"{""downsample_factor"": 1, ""wavelet"": ""db6"", ""levels"": 6, ""quantize_bits"": 16}",1048570,0.9999942779541016,0.0,0.0,3753946,3700093,False
 urban,zfp,"{""tolerance"": 0.01}",1048570,0.9999942779541016,0.0054189119036158855,0.003213395514177607,845208,967712,False
@@ -11,7 +10,6 @@ urban,sz3,"{""abs_error"": 0.0001}",1048570,0.9999942779541016,0.000485268050635
 urban,jpeg2000_lossy,"{""quality"": 4}",1048570,0.9999942779541016,0.013107651536781726,0.007745211402347388,524087,523933,False
 urban,jpeg2000_lossy,"{""quality"": 15}",1048556,0.9999809265136719,0.06505753591565912,0.04308671421519248,139670,139663,False
 urban,jpeg2000_lossy,"{""quality"": 50}",1048456,0.9998855590820312,0.11151505559482343,0.07536536986647582,41856,41955,False
-water,healpix-compress,"{""downsample_factor"": 4, ""wavelet"": ""db2"", ""levels"": 3, ""quantize_bits"": 6}",1037711,0.9896383285522461,0.17266590603723794,0.12599872857966066,233417,225118,True
 water,healpix-compress,"{""downsample_factor"": 2, ""wavelet"": ""db4"", ""levels"": 4, ""quantize_bits"": 8}",1037953,0.9898691177368164,0.11735904838403112,0.08827417375913746,943781,945347,True
 water,healpix-compress,"{""downsample_factor"": 1, ""wavelet"": ""db6"", ""levels"": 6, ""quantize_bits"": 16}",1038524,0.9904136657714844,0.0,0.0,3679717,3548763,True
 water,zfp,"{""tolerance"": 0.01}",1037587,0.9895200729370117,0.16544251505787352,0.122539913940137,208392,239336,True
@@ -23,7 +21,6 @@ water,sz3,"{""abs_error"": 0.0001}",1038439,0.9903326034545898,0.017393803330932
 water,jpeg2000_lossy,"{""quality"": 4}",1038473,0.9903650283813477,0.012678736731083771,0.009702912536660002,524089,524181,True
 water,jpeg2000_lossy,"{""quality"": 15}",1038120,0.9900283813476562,0.08212610596315773,0.061055442259448936,139777,139504,True
 water,jpeg2000_lossy,"{""quality"": 50}",1037863,0.9897832870483398,0.13768078395466812,0.10333964678440025,41874,41916,True
-forest,healpix-compress,"{""downsample_factor"": 4, ""wavelet"": ""db2"", ""levels"": 3, ""quantize_bits"": 6}",1048576,1.0,0.016832752759758703,0.012152149366803599,340586,661042,False
 forest,healpix-compress,"{""downsample_factor"": 2, ""wavelet"": ""db4"", ""levels"": 4, ""quantize_bits"": 8}",1048576,1.0,0.004283712732937249,0.0032713758842426734,1249435,1619505,False
 forest,healpix-compress,"{""downsample_factor"": 1, ""wavelet"": ""db6"", ""levels"": 6, ""quantize_bits"": 16}",1048576,1.0,0.0,0.0,3698577,3638320,False
 forest,zfp,"{""tolerance"": 0.01}",1048576,1.0,0.0035895873126683656,0.0027093720924066533,543048,967488,False
@@ -35,7 +32,6 @@ forest,sz3,"{""abs_error"": 0.0001}",1048576,1.0,0.0003161863131414344,0.0002599
 forest,jpeg2000_lossy,"{""quality"": 4}",1048576,1.0,0.0020128420196226177,0.001468915865780429,524015,524115,False
 forest,jpeg2000_lossy,"{""quality"": 15}",1048576,1.0,0.012812753262920149,0.00902229985995746,139820,139801,False
 forest,jpeg2000_lossy,"{""quality"": 50}",1048576,1.0,0.02513919632337276,0.01680682073539875,41952,41827,False
-agriculture,healpix-compress,"{""downsample_factor"": 4, ""wavelet"": ""db2"", ""levels"": 3, ""quantize_bits"": 6}",1048576,1.0,0.01439802765003208,0.010682665978629168,430828,519712,False
 agriculture,healpix-compress,"{""downsample_factor"": 2, ""wavelet"": ""db4"", ""levels"": 4, ""quantize_bits"": 8}",1048576,1.0,0.0020029733866359692,0.0015540783404843213,1460296,1480423,False
 agriculture,healpix-compress,"{""downsample_factor"": 1, ""wavelet"": ""db6"", ""levels"": 6, ""quantize_bits"": 16}",1048576,1.0,0.0,0.0,3729564,3590882,False
 agriculture,zfp,"{""tolerance"": 0.01}",1048576,1.0,0.0030416487107414675,0.002299432796019815,641064,787928,False
@@ -47,7 +43,6 @@ agriculture,sz3,"{""abs_error"": 0.0001}",1048576,1.0,0.00025992191353145034,0.0
 agriculture,jpeg2000_lossy,"{""quality"": 4}",1048576,1.0,0.0020756661075649694,0.0015922669555128142,524244,524109,False
 agriculture,jpeg2000_lossy,"{""quality"": 15}",1048576,1.0,0.0144912241236728,0.010613873950310304,139712,139823,False
 agriculture,jpeg2000_lossy,"{""quality"": 50}",1048576,1.0,0.03151045187376107,0.022154224554287765,41941,41901,False
-snow_ice,healpix-compress,"{""downsample_factor"": 4, ""wavelet"": ""db2"", ""levels"": 3, ""quantize_bits"": 6}",1048576,1.0,0.0003847372523103873,0.00030893333172165346,811642,794672,False
 snow_ice,healpix-compress,"{""downsample_factor"": 2, ""wavelet"": ""db4"", ""levels"": 4, ""quantize_bits"": 8}",1048576,1.0,5.3686646215855316e-05,4.298886449071158e-05,1607339,1616985,False
 snow_ice,healpix-compress,"{""downsample_factor"": 1, ""wavelet"": ""db6"", ""levels"": 6, ""quantize_bits"": 16}",1048576,1.0,0.0,0.0,3308177,3312335,False
 snow_ice,zfp,"{""tolerance"": 0.01}",1048576,1.0,0.00043905256662331315,0.0003509981774664516,676656,686720,False
@@ -59,7 +54,6 @@ snow_ice,sz3,"{""abs_error"": 0.0001}",1048576,1.0,4.428669895550563e-05,3.61586
 snow_ice,jpeg2000_lossy,"{""quality"": 4}",1048576,1.0,0.00027020688185645195,0.00021487972860517553,524222,524219,False
 snow_ice,jpeg2000_lossy,"{""quality"": 15}",1048576,1.0,0.0015892131792906096,0.0012420364018012001,139704,139792,False
 snow_ice,jpeg2000_lossy,"{""quality"": 50}",1048576,1.0,0.002421813471458179,0.0019113894820393879,41937,41915,False
-clouds,healpix-compress,"{""downsample_factor"": 4, ""wavelet"": ""db2"", ""levels"": 3, ""quantize_bits"": 6}",1048576,1.0,0.008548753934930943,0.0037099663761293593,514908,520388,False
 clouds,healpix-compress,"{""downsample_factor"": 2, ""wavelet"": ""db4"", ""levels"": 4, ""quantize_bits"": 8}",1048576,1.0,0.003989635581568171,0.0015807730136118577,1205739,1189640,False
 clouds,healpix-compress,"{""downsample_factor"": 1, ""wavelet"": ""db6"", ""levels"": 6, ""quantize_bits"": 16}",1048576,1.0,0.0,0.0,3115565,3060836,False
 clouds,zfp,"{""tolerance"": 0.01}",1048576,1.0,0.004250441559370963,0.001606077098077223,655464,654208,False
@@ -71,7 +65,6 @@ clouds,sz3,"{""abs_error"": 0.0001}",1048576,1.0,0.00042135081006655693,0.000166
 clouds,jpeg2000_lossy,"{""quality"": 4}",1048576,1.0,0.0021118875960948777,0.0007831160083500462,524029,524221,False
 clouds,jpeg2000_lossy,"{""quality"": 15}",1048576,1.0,0.010399825356961118,0.004824060904978002,139694,139525,False
 clouds,jpeg2000_lossy,"{""quality"": 50}",1048576,1.0,0.01616955433560794,0.007907205955685516,41804,41687,False
-ocean,healpix-compress,"{""downsample_factor"": 4, ""wavelet"": ""db2"", ""levels"": 3, ""quantize_bits"": 6}",1048576,1.0,0.01833240808686213,0.014670014345102326,827599,522615,True
 ocean,healpix-compress,"{""downsample_factor"": 2, ""wavelet"": ""db4"", ""levels"": 4, ""quantize_bits"": 8}",1048576,1.0,0.002793260294355664,0.0022315372397898325,1638204,1461347,True
 ocean,healpix-compress,"{""downsample_factor"": 1, ""wavelet"": ""db6"", ""levels"": 6, ""quantize_bits"": 16}",1048576,1.0,0.0,0.0,3506042,3528112,True
 ocean,zfp,"{""tolerance"": 0.01}",1048576,1.0,0.05674622331582496,0.04439164758329375,259896,235296,True
