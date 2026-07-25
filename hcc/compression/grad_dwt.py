@@ -382,27 +382,42 @@ def compress_residuals(
     levels: int,
     quantize_bits: int,
     clip_percentile: float,
-) -> tuple[npt.NDArray[np.integer], npt.NDArray[np.float32]]:
+) -> tuple[npt.NDArray[np.integer], npt.NDArray[np.float32], npt.NDArray[np.float32]]:
     """Compress a residual array using DWT and per-subband quantisation.
 
     Applies a multi-level 2-D DWT to *residuals*, then uniformly quantises
-    each subband (the LL approximation and every level's detail
-    orientations) to int8 or int16 using its *own* independent scale
-    factor, rather than one scale shared across the whole coefficient
-    array. Subbands in a wavelet decomposition have very different
-    magnitude/statistical distributions (the coarse approximation band and
-    the finest detail band are not comparable), so calibrating a single
-    scale from the array-wide maximum (or array-wide percentile) either
-    wastes precision on most subbands to accommodate the few with large
-    coefficients, or clips a heavy-tailed subband's genuine structure to
-    protect others -- see the module-level history/discussion in
-    ``hcc.codecs.grad_dwt.HccGradDwtCodec`` and this project's paper
+    every *detail* subband (all levels' LH/HL/HH orientations) to int8 or
+    int16 using its *own* independent scale factor, rather than one scale
+    shared across the whole coefficient array. Subbands in a wavelet
+    decomposition have very different magnitude/statistical distributions
+    (different detail orientations/levels are not comparable), so
+    calibrating a single scale from the array-wide maximum (or array-wide
+    percentile) either wastes precision on most subbands to accommodate the
+    few with large coefficients, or clips a heavy-tailed subband's genuine
+    structure to protect others -- see the module-level history/discussion
+    in ``hcc.codecs.grad_dwt.HccGradDwtCodec`` and this project's paper
     Discussion/Limitations for the empirical motivation.
+
+    The **LL approximation subband is stored losslessly** (raw float32),
+    exactly as in the standalone :func:`compress`/:func:`decompress` pair
+    (see this module's "Why two-tier storage?" docstring section) rather
+    than being quantised like the detail subbands. A controlled comparison
+    (see the project's paper Discussion) found that quantising LL like any
+    other subband is a false economy: LL is small (``1/4**levels`` of the
+    coefficient count, negligible bytes either way) but concentrates most
+    of the signal's energy, so quantising it inflates RMSE far more than
+    storing it as float32 costs in bytes -- true across both the
+    prediction-residual and full-tile-DWT input regimes, and *especially*
+    costly for the latter (an un-decimated tile's LL carries substantially
+    more energy than a residual's).
 
     Parameters
     ----------
     residuals : numpy.ndarray of shape (n, n), dtype float32
-        Residual array ``original − bilinear_prediction``.
+        Residual array ``original − bilinear_prediction``. Also safe to
+        call directly on a full (non-residual) tile -- see
+        :func:`decompress_residuals` and the module Discussion notes on
+        full-tile vs. residual-based DWT.
     prediction : numpy.ndarray of shape (n, n), dtype float32
         Bilinear prediction used to produce *residuals*.  Accepted for API
         symmetry with :func:`decompress_residuals` but not used here.
@@ -411,10 +426,11 @@ def compress_residuals(
     levels : int
         Number of DWT decomposition levels.
     quantize_bits : {8, 16}
-        Quantisation depth.  ``8`` → int8 (±127 levels);
-        ``16`` → int16 (±32 767 levels).
+        Quantisation depth for detail subbands.  ``8`` → int8 (±127
+        levels); ``16`` → int16 (±32 767 levels). Does not affect the LL
+        subband, which is always stored losslessly.
     clip_percentile : float
-        Tail percentile for each subband's scale derivation, applied
+        Tail percentile for each detail subband's scale derivation, applied
         *within* that subband only (not across the whole coefficient
         array).  The ``(100 − clip_percentile)``-th percentile of
         ``|subband coefficients|`` is mapped to the maximum quantised
@@ -424,14 +440,20 @@ def compress_residuals(
     Returns
     -------
     coeffs_q : numpy.ndarray of shape (n, n), dtype int8 or int16
-        Quantised DWT coefficients in the standard quad-tree layout.
-    q_scale : numpy.ndarray of shape (1 + 3*levels,), dtype float32
-        One quantisation step size per subband, in the fixed order defined
-        by :func:`_subband_slices` (LL first, then each level's three
-        detail orientations, coarsest level first). Must be stored as
+        Quantised DWT *detail* coefficients in the standard quad-tree
+        layout; the LL region is always zero here (LL is returned
+        separately in *ll_values*, not duplicated in this array).
+    q_scale : numpy.ndarray of shape (3 * levels,), dtype float32
+        One quantisation step size per *detail* subband, in the fixed
+        order defined by :func:`_subband_slices` with the LL entry
+        dropped (each level's three detail orientations, coarsest level
+        first). Must be stored as sidecar metadata and passed unchanged to
+        :func:`decompress_residuals`.
+    ll_values : numpy.ndarray of shape (n // 2**levels, n // 2**levels),
+        dtype float32
+        The LL approximation subband, losslessly. Must also be stored as
         sidecar metadata and passed unchanged to
-        :func:`decompress_residuals`. NOTE: this is an array, not a scalar
-        -- callers that used to do ``float(q_scale)`` must be updated.
+        :func:`decompress_residuals`.
 
     See Also
     --------
@@ -455,10 +477,15 @@ def compress_residuals(
     dtype_q = np.int8 if quantize_bits == 8 else np.int16
 
     subbands = _subband_slices(slices)
-    coeffs_q = np.zeros_like(coeffs_arr, dtype=dtype_q)
-    q_scale = np.empty(len(subbands), dtype=np.float32)
+    ll_slice = subbands[0]
+    detail_subbands = subbands[1:]
 
-    for i, sl in enumerate(subbands):
+    ll_values = np.ascontiguousarray(coeffs_arr[ll_slice], dtype=np.float32)
+
+    coeffs_q = np.zeros_like(coeffs_arr, dtype=dtype_q)
+    q_scale = np.empty(len(detail_subbands), dtype=np.float32)
+
+    for i, sl in enumerate(detail_subbands):
         block = coeffs_arr[sl]
         abs_block = np.abs(block)
         # Per-subband clipping (see docstring): a single outlier in ONE
@@ -476,13 +503,14 @@ def compress_residuals(
         coeffs_q[sl] = np.round(np.clip(block, -max_abs, max_abs) / scale).astype(dtype_q)
         q_scale[i] = scale
 
-    return coeffs_q, q_scale
+    return coeffs_q, q_scale, ll_values
 
 
 def decompress_residuals(
     compressed: npt.NDArray[np.integer],
     prediction: npt.NDArray[np.float32],
     q_scale: npt.NDArray[np.float32],
+    ll_values: npt.NDArray[np.float32],
     *,
     wavelet: str,
     levels: int,
@@ -495,13 +523,20 @@ def decompress_residuals(
     Parameters
     ----------
     compressed : numpy.ndarray of shape (n, n), dtype int8 or int16
-        Quantised DWT coefficients as returned by :func:`compress_residuals`.
+        Quantised DWT *detail* coefficients as returned by
+        :func:`compress_residuals` (LL region ignored -- *ll_values* is
+        used instead).
     prediction : numpy.ndarray of shape (n, n), dtype float32
         Bilinear prediction.  Accepted for API symmetry; not used here.
-    q_scale : numpy.ndarray of shape (1 + 3*levels,), dtype float32
-        Per-subband quantisation step sizes from :func:`compress_residuals`,
-        in the fixed order produced by :func:`_subband_slices` (LL first,
-        then each level's three detail orientations, coarsest first).
+    q_scale : numpy.ndarray of shape (3*levels,), dtype float32
+        Per-detail-subband quantisation step sizes from
+        :func:`compress_residuals`, in the fixed order produced by
+        :func:`_subband_slices` with the LL entry dropped (each level's
+        three detail orientations, coarsest first).
+    ll_values : numpy.ndarray of shape (n // 2**levels, n // 2**levels),
+        dtype float32
+        Losslessly-stored LL approximation subband from
+        :func:`compress_residuals`.
     wavelet : str
         PyWavelets wavelet name — must match compress time.
     levels : int
@@ -518,24 +553,32 @@ def decompress_residuals(
     --------
     compress_residuals : Inverse of this function.
     """
-    # q_scale round-trips through the Zarr codec's scalar sidecar (see
-    # hcc.codecs.scalars.encode_scalar/decode_scalar) as a flat 1-D array of
-    # raw bytes reinterpreted as float32 -- np.ravel/np.asarray normalizes
-    # away any incidental extra dimension from that round trip, same
-    # defensive pattern as the previous scalar-q_scale code.
+    # q_scale/ll_values round-trip through the Zarr codec's scalar sidecar
+    # (see hcc.codecs.scalars.encode_scalar/decode_scalar) as flat 1-D
+    # arrays of raw bytes reinterpreted as float32 -- np.ravel/np.asarray
+    # normalizes away any incidental extra dimension from that round trip,
+    # same defensive pattern as the previous scalar-q_scale code.
     slices = _coeff_slices(compressed.shape, wavelet, levels)
     subbands = _subband_slices(slices)
+    ll_slice = subbands[0]
+    detail_subbands = subbands[1:]
+
     q_scale = np.ravel(np.asarray(q_scale, dtype=np.float32))
-    if q_scale.size != len(subbands):
+    if q_scale.size != len(detail_subbands):
         raise ValueError(
-            f"q_scale has {q_scale.size} element(s) but {len(subbands)} "
-            f"subbands are expected for wavelet={wavelet!r}, levels={levels} "
-            f"on a {compressed.shape} array. q_scale must come from the "
-            "matching compress_residuals() call (same wavelet/levels/shape)."
+            f"q_scale has {q_scale.size} element(s) but {len(detail_subbands)} "
+            f"detail subbands are expected for wavelet={wavelet!r}, "
+            f"levels={levels} on a {compressed.shape} array. q_scale must "
+            "come from the matching compress_residuals() call (same "
+            "wavelet/levels/shape)."
         )
 
+    ll_shape = tuple(s.stop - (s.start or 0) for s in ll_slice)
+    ll_values = np.ravel(np.asarray(ll_values, dtype=np.float32)).reshape(ll_shape)
+
     coeffs_float = np.empty(compressed.shape, dtype=np.float32)
-    for sl, scale in zip(subbands, q_scale):
+    coeffs_float[ll_slice] = ll_values
+    for sl, scale in zip(detail_subbands, q_scale):
         coeffs_float[sl] = compressed[sl].astype(np.float32) * float(scale)
 
     return dwt_inverse(coeffs_float, slices, wavelet, levels)
