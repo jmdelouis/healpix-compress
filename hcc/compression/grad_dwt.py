@@ -423,11 +423,29 @@ def compress_residuals(
 
     # In the residual path the surrounding HccDecomposeCodec has already
     # removed the low-frequency layer (prediction), so the DWT coefficients
-    # do not have a dominant LL subband.  A global max-based q_scale is
+    # do not have a dominant LL subband.  A single global q_scale is
     # therefore appropriate here (unlike the standalone compress() function
     # which stores LL losslessly and quantises detail subbands separately).
     max_level = (2 ** (quantize_bits - 1)) - 1  # 127 or 32 767
-    max_abs = float(np.max(np.abs(coeffs_arr)))
+
+    # BUG FIX: clip_percentile used to be accepted here (part of this
+    # function's public signature) and silently ignored -- max_abs was
+    # always the raw maximum, regardless of the value passed in. This
+    # contradicted hcc.codecs.grad_dwt.HccGradDwtCodec's own docstring,
+    # which documents q_scale as derived "from the (100-clip_percentile)-th
+    # percentile of the absolute coefficients". Wiring it up here: a single
+    # outlier coefficient (e.g. a sharp urban edge, or an unusually large
+    # value in the residual's own coarse subband) can no longer
+    # single-handedly coarsen the quantization step for the entire tile --
+    # it gets clipped/saturated instead, at the cost of exact reconstruction
+    # for that one coefficient, in exchange for finer resolution everywhere
+    # else. clip_percentile=0 exactly reproduces the previous behavior
+    # (100th percentile of |coefficients| == the maximum).
+    abs_coeffs = np.abs(coeffs_arr)
+    if clip_percentile > 0:
+        max_abs = float(np.percentile(abs_coeffs, 100.0 - clip_percentile))
+    else:
+        max_abs = float(np.max(abs_coeffs))
     if max_abs == 0.0:
         max_abs = 1.0
 
