@@ -407,6 +407,18 @@ def compress_residuals(
     decompress_residuals : Inverse of this function.
     dwt_forward : Underlying DWT primitive.
     """
+    if quantize_bits not in (8, 16):
+        # BUG FIX: this used to accept any integer silently, use it (correctly)
+        # to size max_level/q_scale below, but then pick the OUTPUT DTYPE with
+        # `np.int8 if quantize_bits == 8 else np.int16` -- so e.g.
+        # quantize_bits=4 got the *coarser* quantization of a 4-bit step size
+        # while still paying the full int16 (2 bytes/coefficient) storage cost
+        # of quantize_bits=16, i.e. every value other than 8 or 16 was a
+        # silently dominated, wasted configuration (worse RMSE, no smaller
+        # than the 16-bit encoding). Matches the validation the standalone
+        # compress() already performs; see Section "Current Limitations".
+        raise ValueError(f"quantize_bits must be 8 or 16, got {quantize_bits!r}")
+
     coeffs_arr, _ = dwt_forward(residuals.astype(np.float32), wavelet, levels)
 
     # In the residual path the surrounding HccDecomposeCodec has already
