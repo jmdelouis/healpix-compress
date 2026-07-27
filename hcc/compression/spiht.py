@@ -232,12 +232,27 @@ def encode_spiht(
         raise ValueError(f"quantize_bits must be >= 1, got {quantize_bits}.")
 
     n_levels = len(details)
-    all_abs = np.concatenate([np.abs(sb).ravel() for triple in details for sb in triple])
     max_level = (1 << quantize_bits) - 1
-    if clip_percentile > 0 and all_abs.size > 1:
-        max_abs = float(np.percentile(all_abs, 100.0 - clip_percentile))
-    else:
-        max_abs = float(np.max(all_abs)) if all_abs.size else 0.0
+    # IMPORTANT: take the max of each subband's *own* percentile-clipped
+    # cap, not one percentile pooled across all subbands combined. Coarser
+    # levels have far fewer coefficients than finer ones (4x fewer per
+    # level, by construction) but typically much larger magnitudes; a
+    # single pooled percentile is dominated by the numerous small
+    # fine-level values and ends up clipping away the coarse levels
+    # entirely -- silently capping the representable range far below the
+    # true largest coefficients. That clipping is a hard error floor no
+    # number of extra bit-planes can fix (unlike ordinary quantisation
+    # step size), and was previously validated by RMSE staying flat as
+    # quantize_bits increased -- the bug this per-subband max fixes.
+    per_subband_caps = []
+    for triple in details:
+        for sb in triple:
+            abs_sb = np.abs(sb)
+            if clip_percentile > 0 and abs_sb.size > 1:
+                per_subband_caps.append(float(np.percentile(abs_sb, 100.0 - clip_percentile)))
+            elif abs_sb.size:
+                per_subband_caps.append(float(np.max(abs_sb)))
+    max_abs = max(per_subband_caps) if per_subband_caps else 0.0
     if max_abs == 0.0:
         max_abs = 1.0
     scale = np.float32(max_abs / max_level)
