@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Reconstruction RMSE at a constant, shared storage budget (percentage of the fixed HEALPix raw tile size, applied identically to both grids). \emph{UTM}: the byte budget available for the footprint-exact crop's own compression is the shared budget divided by $\gamma_{\mathrm{UTM}}=1.30$. Best codec at each budget, median across scenes.}
+\label{tab:error_at_size}
+\begin{tabular}{lrrll}
+\toprule
+Budget (\% shared) & HPX RMSE & UTM RMSE & Best HPX codec & Best UTM codec \\
+\midrule
+40\% & $1.99\times10^{-6}$ & -- & ZFP & nan \\
+20\% & $3.31\times10^{-5}$ & $4.26\times10^{-6}$ & JPEG~2000 & ZFP \\
+10\% & $3.12\times10^{-4}$ & $7.49\times10^{-5}$ & JPEG~2000 & JPEG~2000 \\
+5\% & $4.53\times10^{-4}$ & $6.26\times10^{-4}$ & ZFP & SZ3 \\
+2\% & $1.89\times10^{-3}$ & $2.42\times10^{-3}$ & JPEG~XL & JPEG~2000 \\
+\bottomrule
+\end{tabular}
+\end{table}

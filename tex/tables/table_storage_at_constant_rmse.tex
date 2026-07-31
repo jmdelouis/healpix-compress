@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Storage at constant reconstruction RMSE, best codec at each target, median across the seven scenes. Both columns are expressed as a percentage of the same shared reference, the fixed $1024\times1024$ level-20 HEALPix raw tile size, so the two columns are directly comparable in bytes. \emph{UTM}: compressed bytes on the footprint-exact crop, scaled by the operational tiling factor $\gamma_{\mathrm{UTM}}=1.30$ (Section~\ref{sec:overhead}). $^\dagger$: fewer than 6 of the 7 scenes have an evaluable point for any codec at this target.}
+\label{tab:storage_at_rmse}
+\begin{tabular}{lrrll}
+\toprule
+Target RMSE & HPX (\% shared) & UTM op.\ (\% shared) & Best HPX codec & Best UTM codec \\
+\midrule
+$10^{-4}$ & 14.82 & 9.36 & JPEG~2000 & JPEG~2000 \\
+$3\times10^{-4}$ & 1.45 & 6.78 & JPEG~XL & JPEG~2000 \\
+$10^{-3}$ & 4.35 & 4.28 & JPEG~XL & JPEG~2000 \\
+$3\times10^{-3}$ & 1.46 & 1.80 & JPEG~XL & JPEG~2000 \\
+$10^{-2}$$^\dagger$ & 0.46 & 0.34 & DWT+zstd & JPEG~2000 \\
+\bottomrule
+\end{tabular}
+\end{table}
