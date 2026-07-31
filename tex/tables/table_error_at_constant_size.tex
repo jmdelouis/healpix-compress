@@ -1,15 +1,15 @@
 \begin{table}[t]
 \centering
-\caption{Per-scene HPX/UTM reconstruction-RMSE ratio at a constant, shared storage budget (oracle-best codec per scene per side; UTM budget deflated by $\gamma_{\mathrm{UTM}}=1.30$ before interpolation). Ratio $<1$ favors HEALPix. Median and [min, max] across the $n$ evaluable scenes (of 7).}
+\caption{Per-scene HPX/UTM reconstruction-RMSE ratio at a constant, shared storage budget (oracle-best codec per scene per side; UTM budget deflated by the assumed $\gamma_{\mathrm{tile}}=1.30$ Sentinel-2/MGRS granule-overhead scenario before interpolation). Ratio $<1$ favors HEALPix. Median and [min, max] across the $n$ evaluable scenes (of 7). $p_{\mathrm{raw}}$: exact two-sided Wilcoxon signed-rank test on this target alone. $p_{\mathrm{Holm}}$: Holm-adjusted across the full family of 9 targets tested in Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size}; treat all targets here as exploratory, not confirmatory.}
 \label{tab:error_at_size}
-\begin{tabular}{lrrrl}
+\begin{tabular}{lrrlrr}
 \toprule
-Budget (\% shared) & $n$ & Median ratio & Range & Favors \\
+Budget (\% shared) & $n$ & Median ratio & Range & $p_{\mathrm{raw}}$ & $p_{\mathrm{Holm}}$ \\
 \midrule
-20\% & 6 & 13.44 & [8.65, 33.51] & UTM \\
-10\% & 7 & 4.17 & [2.88, 4.43] & UTM \\
-5\% & 7 & 1.32 & [1.26, 1.44] & UTM \\
-2\% & 7 & 0.86 & [0.73, 0.96] & HPX \\
+20\% & 6 & 13.44 & [8.65, 33.51] & 0.031 & 0.156 \\
+10\% & 7 & 4.17 & [2.88, 4.43] & 0.016 & 0.141 \\
+5\% & 7 & 1.32 & [1.26, 1.44] & 0.016 & 0.141 \\
+2\% & 7 & 0.86 & [0.73, 0.96] & 0.016 & 0.141 \\
 \bottomrule
 \end{tabular}
 \end{table}
