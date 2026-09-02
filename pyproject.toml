@@ -10,6 +10,26 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+# Everything the paper benchmark needs on top of the library itself. Kept out
+# of the core dependencies: `hcc` is a zarr codec package and must stay
+# installable without the evaluation stack.
+[project.optional-dependencies]
+paper = [
+  "healpix-resample",   # tile resampling + the common-reference operator
+  "healpix-geo",
+  "xarray",
+  "pandas",
+  "matplotlib",
+  "pystac-client",
+  "rasterio",
+  "pyproj",
+  "imagecodecs",
+  "zfpy",
+  "pysz",
+  "zstandard",
+  "pillow",
+]
+
 [project.entry-points."zarr.codecs"]
 hcc-dct = "hcc.codecs.dct:HccDctCodec"
 hcc-grad-dct = "hcc.codecs.grad_dct:HccGradDctCodec"

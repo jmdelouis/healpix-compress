@@ -1,0 +1,193 @@
+"""Run the rate-distortion sweep on both grids, over the 40 shared regions.
+
+Replaces the sweep cells of hpx_codec_bench.ipynb and utm_codec_bench.ipynb by
+one resumable command. Every (region, grid) pair is written to its own part
+file, so a run that dies at region 27 resumes without redoing the first 26.
+
+Outputs (schema-compatible with the previous notebooks, plus new columns):
+    results/bench_parts/<grid>__<scene>.csv
+    results/hpx_codec_bench.csv
+    results/utm_codec_bench.csv
+    results/common_reference_floor.csv        (with --common-reference)
+
+Usage
+-----
+    python run_codec_bench.py --limit 2                 # smoke test
+    python run_codec_bench.py --grid both               # the full sweep
+    python run_codec_bench.py --grid both --common-reference
+    python run_codec_bench.py --assemble                # rebuild the two CSVs
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+import build_tiles
+import codec_lib
+import paper_config as cfg
+import region_sites
+
+META_COLS = ["scene", "scene_class", "lat", "abs_lat", "hpx_regime"]
+
+
+def part_path(grid: str, scene: str) -> Path:
+    return cfg.PARTS_DIR / f"{grid}__{scene}.csv"
+
+
+def _tile_arrays(scene: str):
+    from hcc.compression.zorder import expand_tile
+    cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene)
+    hpx_tile = expand_tile(np.asarray(cell_data, dtype=np.float32)).astype(np.float32)
+    return cell_ids, cell_data, hpx_tile, np.asarray(utm_crop, dtype=np.float32), meta, npz
+
+
+def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
+               cr_mode="knn", force=False):
+    """Return (rows, floor_row). Rows are also cached per (grid, scene)."""
+    from hcc.compression.zorder import flatten_tile
+
+    todo = [g for g in grids if force or not part_path(g, scene).exists()]
+    if not todo and not common_ref:
+        return [], None
+
+    cell_ids, cell_data, hpx_tile, utm_tile, meta, npz = _tile_arrays(scene)
+    base = {k: site.get(k, "") for k in META_COLS}
+    base["scene"] = scene
+
+    cr, floor_row = None, None
+    if common_ref:
+        import common_reference
+        cr = common_reference.build_for_tile(npz, mode=cr_mode)
+        floor = codec_lib.rmse(cr.predict(cell_data), utm_tile)
+        floor_row = dict(base, mode=cr_mode, npt=cr.npt, scale_m=cr.scale_m,
+                         kept_fraction=cr.kept_fraction,
+                         representation_floor_rmse=floor,
+                         utm_std=float(utm_tile.std()))
+        print(f"    common reference: {cr.describe()}  floor RMSE {floor:.3e} "
+              f"({100*floor/float(utm_tile.std()):.1f}% of the crop's own std)")
+
+    all_rows = []
+    for grid in todo:
+        tile = hpx_tile if grid == "hpx" else utm_tile
+        raw_bytes = int(tile.size * 4)
+        rows = []
+        for run in codec_lib.iter_runs(tile, codecs):
+            r = dict(base, grid=grid, codec=run.codec,
+                     config_json=json.dumps(run.config),
+                     total_bytes=int(run.total_bytes),
+                     rmse=codec_lib.rmse(tile, run.reconstruction),
+                     encode_seconds=run.encode_seconds,
+                     decode_seconds=run.decode_seconds,
+                     raw_bytes=raw_bytes)
+            if grid == "utm":
+                r["rmse_common"] = r["rmse"]      # UTM is already the reference
+            elif cr is not None:
+                flat = flatten_tile(np.asarray(run.reconstruction, dtype=np.float32))
+                r["rmse_common"] = codec_lib.rmse(cr.predict(flat), utm_tile)
+            else:
+                r["rmse_common"] = np.nan
+            rows.append(r)
+        df = pd.DataFrame(rows)
+        df.to_csv(part_path(grid, scene), index=False)
+        print(f"    {grid}: {len(df)} sweep points -> {part_path(grid, scene).name}")
+        all_rows.extend(rows)
+    return all_rows, floor_row
+
+
+def assemble():
+    """Concatenate the part files into the two CSVs the analysis reads."""
+    out = {}
+    for grid, name in (("hpx", "hpx_codec_bench.csv"), ("utm", "utm_codec_bench.csv")):
+        parts = sorted(cfg.PARTS_DIR.glob(f"{grid}__*.csv"))
+        if not parts:
+            print(f"no {grid} parts found in {cfg.PARTS_DIR}")
+            continue
+        df = pd.concat([pd.read_csv(p) for p in parts], ignore_index=True)
+        path = cfg.RESULTS_DIR / name
+        df.to_csv(path, index=False)
+        n = df.scene.nunique()
+        print(f"{grid}: {len(df)} rows, {n} regions -> {path}")
+        out[grid] = df
+    return out
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--grid", choices=["hpx", "utm", "both"], default="both")
+    ap.add_argument("--regions", nargs="*", default=None)
+    ap.add_argument("--classes", nargs="*", default=None)
+    ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--codecs", nargs="*", default=None,
+                    help=f"default: {sorted(codec_lib.CODEC_RUNS)}")
+    ap.add_argument("--common-reference", action="store_true",
+                    help="also score the HEALPix side against the UTM observation")
+    ap.add_argument("--cr-mode", choices=["knn", "psf"], default="knn")
+    ap.add_argument("--force", action="store_true")
+    ap.add_argument("--assemble", action="store_true", help="only rebuild the CSVs")
+    ap.add_argument("--legacy", action="store_true",
+                    help="run on the seven original scenes instead of the 40 regions")
+    args = ap.parse_args(argv)
+
+    cfg.ensure_dirs()
+    if args.assemble:
+        assemble()
+        return 0
+
+    grids = ["hpx", "utm"] if args.grid == "both" else [args.grid]
+    if args.legacy:
+        sites = pd.DataFrame([dict(scene=s, scene_class=s, lat=np.nan,
+                                   abs_lat=np.nan, hpx_regime="")
+                              for s in cfg.LEGACY_SCENES])
+        if args.regions:
+            sites = sites[sites.scene.isin(set(args.regions))]
+    else:
+        sites = region_sites.select(region_sites.load_sites(),
+                                    args.regions, args.classes, args.limit)
+        print(region_sites.summary(sites))
+
+    floors, failures = [], []
+    for i, site in enumerate(sites.to_dict("records"), 1):
+        scene = site["scene"]
+        if not build_tiles.tile_path(scene).exists():
+            failures.append((scene, "no tile -- run build_tiles.py first"))
+            print(f"[{i:>2}/{len(sites)}] {scene}: NO TILE")
+            continue
+        print(f"[{i:>2}/{len(sites)}] {scene}")
+        try:
+            _, floor_row = run_region(scene, site, grids, args.codecs,
+                                      common_ref=args.common_reference,
+                                      cr_mode=args.cr_mode, force=args.force)
+            if floor_row:
+                floors.append(floor_row)
+        except Exception as exc:                          # noqa: BLE001
+            failures.append((scene, f"{type(exc).__name__}: {exc}"))
+            print(f"    FAILED {type(exc).__name__}: {exc}")
+
+    if floors:
+        path = cfg.RESULTS_DIR / "common_reference_floor.csv"
+        df = pd.DataFrame(floors)
+        if path.exists():
+            old = pd.read_csv(path)
+            df = pd.concat([old[~old.scene.isin(df.scene)], df], ignore_index=True)
+        df.to_csv(path, index=False)
+        print(f"\nrepresentation floors -> {path}")
+
+    assemble()
+    if failures:
+        print(f"\n{len(failures)} region(s) failed:")
+        for scene, err in failures:
+            print(f"  {scene}: {err}")
+        return 1
+    print("\nNext: python update_paper_numbers.py")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
