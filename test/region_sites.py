@@ -72,11 +72,37 @@ def load_sites(manifest: Path | None = None) -> pd.DataFrame:
         ))
 
     out = pd.DataFrame(rows).sort_values(["scene_class", "region_id"]).reset_index(drop=True)
+    out = _merge_resample_status(out, root)
     out["abs_lat"] = out["lat"].abs()
     out["hpx_regime"] = out["abs_lat"].apply(
         lambda a: "equatorial" if a < cfg.EQUATORIAL_LAT_DEG else "cap"
     )
     return out
+
+
+def _merge_resample_status(df: pd.DataFrame, root: Path) -> pd.DataFrame:
+    """Annotate each region with how healpix-resample's own acquisition went.
+
+    Four regions (black_forest, finland_boreal, lake_constance, lake_geneva)
+    are recorded there as `failed`: earth-search served their `red` asset from
+    the requester-pays JP2 archive, so the companion study fell back to the
+    EOPF Zarr Sample Service for them. Knowing this up front is what tells the
+    difference between "our acquisition is broken" and "this site is not
+    served as a public COG".
+    """
+    df["resample_status"] = ""
+    products = root / "notebooks" / "tables" / "real_groundtruth_multiregion_products.csv"
+    if not products.exists():
+        return df
+    try:
+        prod = pd.read_csv(products)[["scene", "status", "product_id"]]
+    except Exception:                                     # noqa: BLE001
+        return df
+    prod = prod.rename(columns={"status": "resample_status",
+                                "product_id": "resample_product_id"})
+    df = df.drop(columns=["resample_status"]).merge(prod, on="scene", how="left")
+    df["resample_status"] = df["resample_status"].fillna("")
+    return df
 
 
 def select(df: pd.DataFrame, scenes=None, classes=None, limit=None) -> pd.DataFrame:
@@ -93,9 +119,16 @@ def select(df: pd.DataFrame, scenes=None, classes=None, limit=None) -> pd.DataFr
 def summary(df: pd.DataFrame) -> str:
     per_class = df.scene_class.value_counts().to_dict()
     per_regime = df.hpx_regime.value_counts().to_dict()
-    return (f"{len(df)} regions | classes {per_class} | HEALPix regime {per_regime} | "
-            f"lat {df.lat.min():.1f}..{df.lat.max():.1f} deg | "
-            f"pinned products {int((df.product_id != '').sum())}/{len(df)}")
+    txt = (f"{len(df)} regions | classes {per_class} | HEALPix regime {per_regime} | "
+           f"lat {df.lat.min():.1f}..{df.lat.max():.1f} deg | "
+           f"pinned products {int((df.product_id != '').sum())}/{len(df)}")
+    if "resample_status" in df:
+        failed = df[df.resample_status == "failed"]
+        if len(failed):
+            txt += (f"\n  note: healpix-resample's own earth-search acquisition "
+                    f"failed for {len(failed)} of these and fell back to EOPF: "
+                    + ", ".join(failed.region_id))
+    return txt
 
 
 if __name__ == "__main__":

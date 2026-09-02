@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -64,44 +64,180 @@ def store_path(scene: str) -> Path:
     return cfg.REGION_DIR / f"{scene}_data.zarr"
 
 
-def _item_by_id(gt, product_id: str):
-    """Resolve one STAC item by its exact product id (no cloud/date filter)."""
+COG_ASSET_KEYS = ("red", "B04", "b04")
+# The requester-pays JP2 archive. earth-search sometimes hands out `red` hrefs
+# pointing there instead of the public COG bucket; those reads fail with
+# RasterioIOError even though the item itself is perfectly valid. This is what
+# defeated the same four regions in the companion healpix-resample run
+# (notebooks/tables/real_groundtruth_multiregion_products.csv: four `failed`
+# rows, 9 lattice positions each, same hrefs), so it is a property of the
+# catalogue for these sites, not a transient error worth retrying.
+REQUESTER_PAYS_TOKENS = ("sentinel-s2-l2a.s3", "//sentinel-s2-l2a/")
+DEFAULT_COLLECTIONS = ("sentinel-2-l2a", "sentinel-2-c1-l2a", "sentinel-2-pre-c1-l2a")
+_EOPF_ID = re.compile(r"S2(\w)_MSIL2A_(\d{8})T\d{6}_N\d+_R\d+_T(\w{5})")
+
+
+def _catalog(gt):
     import pystac_client
-    catalog = pystac_client.Client.open(gt.EARTH_SEARCH_URL)
-    items = list(catalog.search(collections=[gt.EARTH_SEARCH_COLLECTION],
-                                ids=[product_id], limit=1).items())
-    return items[0] if items else None
+    return pystac_client.Client.open(gt.EARTH_SEARCH_URL)
 
 
-def fetch_window(gt, site, window_px: int, band: str):
-    """Read one native window centred on the region anchor. Returns (ds, info)."""
+def _usable_asset(gt, item):
+    """Return (asset_key, href, reason_unusable) for one item."""
+    for key in COG_ASSET_KEYS:
+        asset = item.assets.get(key)
+        if asset is None:
+            continue
+        href = gt._public_https_href(asset.href)
+        low = href.lower()
+        if low.endswith(".jp2"):
+            return key, href, "JP2 asset, not a COG"
+        if any(tok in low for tok in REQUESTER_PAYS_TOKENS):
+            return key, href, "asset in the requester-pays sentinel-s2-l2a archive"
+        return key, href, ""
+    return None, None, f"no {'/'.join(COG_ASSET_KEYS)} asset"
+
+
+def _search_collections(gt, lon0, lat0, collections, cloud_max, date_window, limit=200):
+    """Cloud-sorted items over several collections, deterministic ordering."""
+    cat = _catalog(gt)
+    found = []
+    for coll in collections:
+        try:
+            res = cat.search(
+                collections=[coll],
+                intersects={"type": "Point", "coordinates": [float(lon0), float(lat0)]},
+                datetime=date_window,
+                query={"eo:cloud_cover": {"lt": float(cloud_max)}},
+                limit=limit)
+            found += [(coll, it) for it in res.items()]
+        except Exception as exc:                          # noqa: BLE001
+            print(f"    [{coll}] search failed: {type(exc).__name__}: {exc}")
+    found.sort(key=lambda t: (t[1].properties.get("eo:cloud_cover", 100.0),
+                              str(t[1].properties.get("datetime", "")), t[1].id))
+    return found
+
+
+def _item_by_id(gt, product_id, collections=DEFAULT_COLLECTIONS):
+    """Resolve one STAC item by its exact id (no cloud or date filter)."""
+    cat = _catalog(gt)
+    for coll in collections:
+        try:
+            items = list(cat.search(collections=[coll], ids=[product_id],
+                                    limit=1).items())
+        except Exception:                                 # noqa: BLE001
+            continue
+        if items:
+            return coll, items[0]
+    return None, None
+
+
+def resample_store_item_id(site) -> str:
+    """The product id recorded inside healpix-resample's own frozen patch.
+
+    Only available when the Zenodo bundle has been extracted in that checkout;
+    it is the one place the four EOPF-sourced regions carry a product id at all.
+    """
+    rel = str(getattr(site, "resample_relative_path", "") or "")
+    if not rel:
+        return ""
+    try:
+        import zarr
+        path = cfg.resample_root() / rel
+        if not path.exists():
+            return ""
+        return str(zarr.open_group(str(path), mode="r").attrs.asdict()
+                   .get("source_item_id", "") or "")
+    except Exception:                                     # noqa: BLE001
+        return ""
+
+
+def _same_acquisition(gt, item_id, lon0, lat0, collections):
+    """Candidates for the same acquisition as an EOPF product id.
+
+    EOPF ids (S2A_MSIL2A_<date>T<time>_N....._T31TGM_...) and earth-search ids
+    (S2A_31TGM_<date>_0_L2A) name the same granule differently, so the match is
+    made on (MGRS tile, acquisition day) rather than on the id itself.
+    """
+    m = _EOPF_ID.search(item_id or "")
+    if not m:
+        return []
+    _sat, date, tile = m.groups()
+    day = f"{date[:4]}-{date[4:6]}-{date[6:]}"
+    cands = _search_collections(gt, lon0, lat0, collections, 100.0, f"{day}/{day}")
+    tile_l = tile.lower()
+    same = [(c, it) for c, it in cands
+            if tile_l in it.id.lower()
+            or str(it.properties.get("grid:code", "")).lower().endswith(tile_l)]
+    return same or cands
+
+
+def fetch_window(gt, site, window_px: int, band: str, *,
+                 collections=DEFAULT_COLLECTIONS, max_candidates: int = 12):
+    """Read one native window centred on the region anchor. Returns (ds, info).
+
+    Candidates are tried in order -- the product pinned by healpix-resample, then
+    the same acquisition as its EOPF patch when that bundle is available, then
+    the cloud-sorted catalogue search -- and each is skipped if its asset is not
+    a readable public COG. Taking `items[0]` unconditionally is what made four
+    regions fail in the companion study.
+    """
     import pyproj
     import xarray as xr
 
     lon0, lat0 = float(site.lon), float(site.lat)
     pinned = str(site.product_id or "")
-    item, how = None, ""
+    candidates, seen = [], set()
+
+    def _add(coll, item, how):
+        if item is None or item.id in seen:
+            return
+        seen.add(item.id)
+        candidates.append((coll, item, how))
+
     if pinned:
-        item = _item_by_id(gt, pinned)
-        how = "pinned" if item is not None else ""
-    if item is None:
-        coords = {"wgs84": {"lat": lat0, "lon": lon0},
-                  "recommended_date": gt.REGION_DATE_WINDOW,
-                  "cloud": gt.REGION_CLOUD_RELAXED}
-        items = gt._search_earth_search(lon0, lat0, coords)
-        if not items:
-            raise RuntimeError(f"{site.scene}: no earth-search item at "
-                               f"({lat0:.4f}, {lon0:.4f})")
-        item = items[0]
-        how = "resolved" if not pinned else "pinned-missing->resolved"
+        _add(*_item_by_id(gt, pinned, collections), "pinned")
+    eopf_id = resample_store_item_id(site)
+    if eopf_id and not pinned:
+        for coll, item in _same_acquisition(gt, eopf_id, lon0, lat0, collections):
+            _add(coll, item, f"eopf-acquisition-match({eopf_id})")
+    for cloud_max in gt.REGION_CLOUD_LADDER:
+        for coll, item in _search_collections(gt, lon0, lat0, collections,
+                                              cloud_max, gt.REGION_DATE_WINDOW):
+            _add(coll, item, f"resolved(cloud<{cloud_max:g})")
+        if len(candidates) >= max_candidates:
+            break
+    if not candidates:
+        raise RuntimeError(f"{site.scene}: no catalogue item at "
+                           f"({lat0:.4f}, {lon0:.4f}) in {collections}")
 
+    attempts, chosen = [], None
+    for coll, item, how in candidates[:max_candidates]:
+        key, href, problem = _usable_asset(gt, item)
+        if problem:
+            attempts.append(f"{item.id}[{coll}]: {problem}")
+            continue
+        try:
+            refl, x, y, crs = gt._read_cog_patch(href, lon0, lat0, window_px,
+                                                item.properties)
+        except Exception as exc:                          # noqa: BLE001
+            attempts.append(f"{item.id}[{coll}]: {type(exc).__name__}: "
+                            f"{str(exc)[:90]}")
+            continue
+        chosen = (coll, item, how, key, refl, x, y, crs)
+        break
+
+    if chosen is None:
+        raise RuntimeError(
+            f"{site.scene}: none of the {len(candidates)} candidate products "
+            f"yielded a readable public COG.\n      "
+            + "\n      ".join(attempts[:6]))
+
+    coll, item, how, asset_key, refl, x, y, crs = chosen
     props = item.properties
-    if gt.EARTH_SEARCH_ASSET not in item.assets:
-        raise KeyError(f"{site.scene}: asset {gt.EARTH_SEARCH_ASSET!r} missing "
-                       f"from {item.id}")
-
-    refl, x, y, crs = gt._read_cog_patch(
-        item.assets[gt.EARTH_SEARCH_ASSET].href, lon0, lat0, window_px, props)
+    if attempts:
+        print(f"    skipped {len(attempts)} unusable candidate(s) before "
+              f"{item.id}: {attempts[0]}")
 
     to_wgs = pyproj.Transformer.from_crs(crs, pyproj.CRS.from_epsg(4326),
                                          always_xy=True)
@@ -127,7 +263,8 @@ def fetch_window(gt, site, window_px: int, band: str):
         "native_pixel_m": cfg.NATIVE_PIXEL_M,
         "band": band,
         "source_item_id": item.id,
-        "source_collection": gt.EARTH_SEARCH_COLLECTION,
+        "source_collection": coll,
+        "source_asset": asset_key,
         "source_stac_endpoint": gt.EARTH_SEARCH_URL,
         "source_datetime": str(props.get("datetime", "")),
         "source_cloud_cover": str(props.get("eo:cloud_cover", "")),
@@ -135,6 +272,7 @@ def fetch_window(gt, site, window_px: int, band: str):
         "boa_offset_dn_applied": str(gt._boa_offset_dn(props)),
         "product_pinned_from_resample": pinned,
         "product_resolution": how,
+        "rejected_candidates": " | ".join(attempts),
         "resample_archive_doi": str(site.archive_doi or ""),
         "resample_relative_path": str(site.resample_relative_path or ""),
         "acquired_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -143,7 +281,10 @@ def fetch_window(gt, site, window_px: int, band: str):
     })
     info = dict(
         scene=site.scene, scene_class=site.scene_class, lat=lat0, lon=lon0,
-        product_id=item.id, product_pinned=pinned, product_resolution=how,
+        product_id=item.id, collection=coll, asset=asset_key,
+        product_pinned=pinned, product_resolution=how,
+        n_rejected_candidates=len(attempts),
+        rejected_candidates=" | ".join(attempts),
         datetime=str(props.get("datetime", "")),
         cloud_cover=props.get("eo:cloud_cover", np.nan),
         window_px=int(window_px),
@@ -191,6 +332,10 @@ def main(argv=None) -> int:
     ap.add_argument("--window", type=int, default=cfg.WINDOW_PX)
     ap.add_argument("--band", default=cfg.BAND)
     ap.add_argument("--force", action="store_true", help="re-download existing stores")
+    ap.add_argument("--collections", nargs="*", default=list(DEFAULT_COLLECTIONS),
+                    help="STAC collections to try, in order")
+    ap.add_argument("--max-candidates", type=int, default=12,
+                    help="how many catalogue items to try before giving up")
     ap.add_argument("--check", action="store_true", help="offline inventory only")
     ap.add_argument("--list", action="store_true", help="print the site table and exit")
     args = ap.parse_args(argv)
@@ -214,8 +359,9 @@ def main(argv=None) -> int:
 
     gt = load_gt()
     gt.warn_about_aws_credentials()
-    print(f"[source] {gt.EARTH_SEARCH_COLLECTION} @ {gt.EARTH_SEARCH_URL}, "
-          f"asset {gt.EARTH_SEARCH_ASSET!r}, window {args.window} px")
+    print(f"[source] {gt.EARTH_SEARCH_URL} | collections {args.collections} | "
+          f"assets {COG_ASSET_KEYS} | window {args.window} px | "
+          f"up to {args.max_candidates} candidates per region")
 
     logs, failures = [], []
     for i, site in enumerate(sites.itertuples(), 1):
@@ -224,7 +370,9 @@ def main(argv=None) -> int:
             print(f"[{i:>2}/{len(sites)}] {site.scene}: cached")
             continue
         try:
-            ds, info = fetch_window(gt, site, args.window, args.band)
+            ds, info = fetch_window(gt, site, args.window, args.band,
+                                    collections=tuple(args.collections),
+                                    max_candidates=args.max_candidates)
             ds.to_zarr(path, mode="w", **gt._zarr_v2_kwargs())
             info["status"] = "ok"
             logs.append(info)
