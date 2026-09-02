@@ -173,7 +173,8 @@ def _same_acquisition(gt, item_id, lon0, lat0, collections):
 
 
 def fetch_window(gt, site, window_px: int, band: str, *,
-                 collections=DEFAULT_COLLECTIONS, max_candidates: int = 12):
+                 collections=DEFAULT_COLLECTIONS, max_candidates: int = 12,
+                 min_finite: float = 0.999, cloud_ladder=None):
     """Read one native window centred on the region anchor. Returns (ds, info).
 
     Candidates are tried in order -- the product pinned by healpix-resample, then
@@ -201,7 +202,7 @@ def fetch_window(gt, site, window_px: int, band: str, *,
     if eopf_id and not pinned:
         for coll, item in _same_acquisition(gt, eopf_id, lon0, lat0, collections):
             _add(coll, item, f"eopf-acquisition-match({eopf_id})")
-    for cloud_max in gt.REGION_CLOUD_LADDER:
+    for cloud_max in (cloud_ladder or gt.REGION_CLOUD_LADDER):
         for coll, item in _search_collections(gt, lon0, lat0, collections,
                                               cloud_max, gt.REGION_DATE_WINDOW):
             _add(coll, item, f"resolved(cloud<{cloud_max:g})")
@@ -223,6 +224,16 @@ def fetch_window(gt, site, window_px: int, band: str, *,
         except Exception as exc:                          # noqa: BLE001
             attempts.append(f"{item.id}[{coll}]: {type(exc).__name__}: "
                             f"{str(exc)[:90]}")
+            continue
+        # A window straddling a granule edge is mostly valid but carries a
+        # no-data wedge that would later force build_tiles.py to reject the
+        # region. Rejecting the *product* here instead, and moving to the next
+        # acquisition, is both cheaper and better: the criterion is data
+        # availability, evaluated before anything is measured.
+        finite_frac = float(np.isfinite(refl).mean())
+        if finite_frac < min_finite:
+            attempts.append(f"{item.id}[{coll}]: only {100*finite_frac:.2f}% "
+                            f"valid pixels (granule edge or cloud mask)")
             continue
         chosen = (coll, item, how, key, refl, x, y, crs)
         break
@@ -336,6 +347,11 @@ def main(argv=None) -> int:
                     help="STAC collections to try, in order")
     ap.add_argument("--max-candidates", type=int, default=12,
                     help="how many catalogue items to try before giving up")
+    ap.add_argument("--min-finite", type=float, default=0.999,
+                    help="reject a product whose window has fewer valid pixels "
+                         "than this fraction (default 0.999) and try the next")
+    ap.add_argument("--cloud-max", type=float, nargs="*", default=None,
+                    help="override the cloud-cover ladder, e.g. --cloud-max 5 10")
     ap.add_argument("--check", action="store_true", help="offline inventory only")
     ap.add_argument("--list", action="store_true", help="print the site table and exit")
     args = ap.parse_args(argv)
@@ -372,7 +388,9 @@ def main(argv=None) -> int:
         try:
             ds, info = fetch_window(gt, site, args.window, args.band,
                                     collections=tuple(args.collections),
-                                    max_candidates=args.max_candidates)
+                                    max_candidates=args.max_candidates,
+                                    min_finite=args.min_finite,
+                                    cloud_ladder=args.cloud_max)
             ds.to_zarr(path, mode="w", **gt._zarr_v2_kwargs())
             info["status"] = "ok"
             logs.append(info)

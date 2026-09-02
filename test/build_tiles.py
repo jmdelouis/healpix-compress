@@ -7,8 +7,9 @@ regions.
 Guarantees enforced here (any failure rejects the region, it is never patched):
   * the chosen level-10 parent tile's 1024x1024 level-20 cells all fall inside
     the acquired native window, with a halo -- no cell is ever filled;
-  * every native pixel in the tile's bounding box is finite -- no no-data is
-    silently interpolated into the carrier grid;
+  * the no-data fraction *inside the tile footprint* (not its bounding box)
+    stays under --max-nodata; above it the region is rejected rather than
+    interpolated over, which would let the HEALPix side compress for free;
   * the equal-area 637x637 UTM square centred on the tile centroid also fits
     inside the window and is fully finite;
   * the resampled cell ids are exactly the requested contiguous child block,
@@ -75,10 +76,52 @@ def _to_index(cx, cy, x, y):
     return (cx - float(x[0])) / dx, (cy - float(y[0])) / dy
 
 
-def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
-               n_candidates: int = 6, fill_nan_mean: bool = False,
-               verbose: bool = True) -> dict:
+def _tile_native_mask(col, row, H, W, dilate=1):
+    """Boolean mask of the native pixels actually under the tile footprint.
+
+    Native pixels are coarser than level-20 cells (10 m vs 6.22 m), so rounding
+    every cell centre to its nearest native pixel covers the footprint exactly.
+    `dilate` adds the interpolation stencil around it: a no-data pixel one step
+    outside the footprint still poisons the triangles that reach it.
+    """
+    mask = np.zeros((H, W), dtype=bool)
+    ci = np.clip(np.rint(col).astype(np.int64), 0, W - 1)
+    ri = np.clip(np.rint(row).astype(np.int64), 0, H - 1)
+    mask[ri, ci] = True
+    for _ in range(max(0, int(dilate))):
+        m = mask.copy()
+        m[1:, :] |= mask[:-1, :]
+        m[:-1, :] |= mask[1:, :]
+        m[:, 1:] |= mask[:, :-1]
+        m[:, :-1] |= mask[:, 1:]
+        mask = m
+    return mask
+
+
+def _evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px):
+    """Fit and no-data diagnostics for one candidate level-10 parent tile."""
     import healpix_geo
+    cell_ids = int(parent) * cfg.N_CHILDREN + np.arange(cfg.N_CHILDREN, dtype=np.int64)
+    clon, clat = healpix_geo.nested.healpix_to_lonlat(
+        cell_ids, cfg.LEVEL, ellipsoid="WGS84")
+    clon = np.asarray(clon, dtype=np.float64)
+    clat = np.asarray(clat, dtype=np.float64)
+    cx, cy = to_crs.transform(clon, clat)
+    col, row = _to_index(cx, cy, x, y)
+    inside = ((col >= halo_px) & (col <= W - 1 - halo_px)
+              & (row >= halo_px) & (row <= H - 1 - halo_px))
+    fit = float(inside.mean())
+    nodata = np.nan
+    if fit >= 1.0:
+        mask = _tile_native_mask(col, row, H, W)
+        nodata = float(((~np.isfinite(img)) & mask).sum() / max(1, int(mask.sum())))
+    return dict(parent=int(parent), cell_ids=cell_ids, clon=clon, clat=clat,
+                cx=cx, cy=cy, col=col, row=row, fit=fit, nodata=nodata)
+
+
+def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
+               max_nodata: float = 1e-3, fill_nan_mean: bool = False,
+               verbose: bool = True) -> dict:
     import pyproj
     from healpix_resample import CloughTocherResampler
 
@@ -87,67 +130,76 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
     if fill_nan_mean and not np.all(np.isfinite(img)):
         img = np.where(np.isfinite(img), img, np.nanmean(img))
 
-    crs = pyproj.CRS.from_wkt(crs_wkt) if crs_wkt else None
-    if crs is None:
+    if not crs_wkt:
         raise RuntimeError(f"{scene}: the window store carries no CRS; cannot "
                            "place the HEALPix tile in projected coordinates.")
+    crs = pyproj.CRS.from_wkt(crs_wkt)
     to_crs = pyproj.Transformer.from_crs(pyproj.CRS.from_epsg(4326), crs,
                                          always_xy=True)
 
-    # --- which level-10 parent tiles does this window cover? -----------------
+    # --- candidate parent tiles, ranked by how well centred they are ---------
+    # Ranking by sample count picks the tile that happens to hold the most
+    # pixels, which for a window spanning ~2.4 tiles per axis is often one that
+    # sticks out of the window. Ranking by the distance between the tile centre
+    # and the window centre picks the one most likely to fit outright.
+    import healpix_geo
     cover = healpix_geo.nested.lonlat_to_healpix(
         lon.ravel(), lat.ravel(), cfg.LEVEL, ellipsoid="WGS84").astype(np.int64)
-    parents, counts = np.unique(cover // cfg.N_CHILDREN, return_counts=True)
-    ranked = parents[np.argsort(-counts)][:n_candidates]
+    parents = np.unique(cover // cfg.N_CHILDREN)
+    plon, plat = healpix_geo.nested.healpix_to_lonlat(
+        parents.astype(np.int64), cfg.PARENT_LEVEL, ellipsoid="WGS84")
+    pcx, pcy = to_crs.transform(np.asarray(plon, dtype=np.float64),
+                                np.asarray(plat, dtype=np.float64))
+    xc, yc = 0.5 * (x[0] + x[-1]), 0.5 * (y[0] + y[-1])
+    ranked = parents[np.argsort(np.hypot(pcx - xc, pcy - yc))]
 
     chosen, diag = None, []
     for parent in ranked:
-        cell_ids = int(parent) * cfg.N_CHILDREN + np.arange(cfg.N_CHILDREN, dtype=np.int64)
-        clon, clat = healpix_geo.nested.healpix_to_lonlat(
-            cell_ids, cfg.LEVEL, ellipsoid="WGS84")
-        clon = np.asarray(clon, dtype=np.float64)
-        clat = np.asarray(clat, dtype=np.float64)
-        cx, cy = to_crs.transform(clon, clat)
-        col, row = _to_index(cx, cy, x, y)
-        inside = ((col >= halo_px) & (col <= W - 1 - halo_px)
-                  & (row >= halo_px) & (row <= H - 1 - halo_px))
-        coverage = float(inside.mean())
-        diag.append((int(parent), coverage))
-        if coverage >= 1.0:
-            chosen = dict(parent=int(parent), cell_ids=cell_ids, clon=clon, clat=clat,
-                          cx=cx, cy=cy, col=col, row=row, coverage=coverage)
+        cand = _evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px)
+        diag.append(cand)
+        if cand["fit"] >= 1.0 and cand["nodata"] <= max_nodata:
+            chosen = cand
             break
 
     if chosen is None:
-        best = max(diag, key=lambda t: t[1]) if diag else (None, 0.0)
-        raise RuntimeError(
-            f"{scene}: no level-{cfg.PARENT_LEVEL} tile is fully inside the "
-            f"{W}x{H} px window with a {halo_px} px halo "
-            f"(best candidate {best[0]} covers {100*best[1]:.2f}%). "
-            f"Acquire a larger window (need >= {cfg.MIN_WINDOW_PX} px + halo) "
-            "rather than filling the missing cells.")
+        fitted = [d for d in diag if d["fit"] >= 1.0]
+        lines = []
+        for d in sorted(diag, key=lambda d: (-d["fit"], d["nodata"]))[:4]:
+            nd = "n/a" if not np.isfinite(d["nodata"]) else f"{100*d['nodata']:.3f}%"
+            lines.append(f"parent {d['parent']}: fits {100*d['fit']:.2f}%, "
+                         f"no-data in tile {nd}")
+        if not fitted:
+            why = (f"none of the {len(diag)} candidate tiles fits inside the "
+                   f"{W}x{H} px window with a {halo_px} px halo. A larger "
+                   f"window (>= {cfg.MIN_WINDOW_PX} px + halo) or a smaller "
+                   f"halo would be needed")
+        else:
+            why = (f"{len(fitted)} candidate tile(s) fit, but all exceed the "
+                   f"{100*max_nodata:.3f}% no-data ceiling. Raising "
+                   f"--max-nodata would let interpolated no-data into the "
+                   f"carrier grid; rejecting the region is the safe choice")
+        raise RuntimeError(f"{scene}: {why}.\n      " + "\n      ".join(lines))
 
     # --- native sub-window that contains the tile, plus halo -----------------
-    c0 = int(np.floor(chosen["col"].min())) - halo_px
-    c1 = int(np.ceil(chosen["col"].max())) + halo_px + 1
-    r0 = int(np.floor(chosen["row"].min())) - halo_px
-    r1 = int(np.ceil(chosen["row"].max())) + halo_px + 1
-    c0, r0 = max(c0, 0), max(r0, 0)
-    c1, r1 = min(c1, W), min(r1, H)
+    c0 = max(int(np.floor(chosen["col"].min())) - halo_px, 0)
+    c1 = min(int(np.ceil(chosen["col"].max())) + halo_px + 1, W)
+    r0 = max(int(np.floor(chosen["row"].min())) - halo_px, 0)
+    r1 = min(int(np.ceil(chosen["row"].max())) + halo_px + 1, H)
     sub = img[r0:r1, c0:c1]
-    finite_sub = float(np.isfinite(sub).mean())
-    if finite_sub < 1.0:
-        raise RuntimeError(
-            f"{scene}: {100*(1-finite_sub):.3f}% of the native pixels under the "
-            "tile are no-data. Rejecting the region: filling them would make the "
-            "HEALPix side compress for free.")
+    sub_lon = lon[r0:r1, c0:c1].ravel()
+    sub_lat = lat[r0:r1, c0:c1].ravel()
+    sub_val = sub.ravel()
 
-    # --- resample onto the tile (Clough-Tocher, the paper's reference) -------
-    op = CloughTocherResampler(lon[r0:r1, c0:c1].ravel(),
-                               lat[r0:r1, c0:c1].ravel(),
-                               cfg.LEVEL, out_cell_ids=chosen["cell_ids"],
-                               verbose=verbose)
-    res = op.resample(sub.ravel().astype(np.float64))
+    # No-data samples are dropped from the triangulation rather than fed to it
+    # as NaN (which would poison every triangle touching them). The ceiling
+    # above is what keeps this honest: a few isolated pixels in the halo are
+    # interpolated over, a cloud edge is not -- that region was rejected.
+    good = np.isfinite(sub_val)
+    n_dropped = int((~good).sum())
+
+    op = CloughTocherResampler(sub_lon[good], sub_lat[good], cfg.LEVEL,
+                               out_cell_ids=chosen["cell_ids"], verbose=verbose)
+    res = op.resample(sub_val[good].astype(np.float64))
     out_ids = np.asarray(res.cell_ids, dtype=np.int64).ravel()
     out_val = np.asarray(res.cell_data, dtype=np.float64).ravel()
     if out_ids.size != cfg.N_CHILDREN:
@@ -177,8 +229,12 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
             f"{scene}: the {cfg.UTM_SIDE_PX}x{cfg.UTM_SIDE_PX} equal-area crop "
             f"[{y1}:{y2}, {x1}:{x2}] does not fit in the {W}x{H} window.")
     utm_crop = np.asarray(img[y1:y2, x1:x2], dtype=np.float32)
-    if not np.all(np.isfinite(utm_crop)):
-        raise RuntimeError(f"{scene}: the equal-area UTM crop contains no-data.")
+    n_bad_crop = int((~np.isfinite(utm_crop)).sum())
+    if n_bad_crop:
+        raise RuntimeError(
+            f"{scene}: the equal-area UTM crop contains {n_bad_crop} no-data "
+            f"pixels ({100*n_bad_crop/utm_crop.size:.3f}%). Both grids must see "
+            "the same clean ground.")
 
     # --- footprint outline for the diagnostic figure (decimated hull) -------
     step = max(1, cfg.N_CHILDREN // 4096)
@@ -191,11 +247,15 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
     meta = dict(
         scene=scene,
         parent_id=chosen["parent"],
+        parent_rank=int(list(ranked).index(chosen["parent"])),
+        n_candidate_parents=len(diag),
         level=cfg.LEVEL,
         delta=cfg.DELTA,
         tile_side=cfg.TILE_SIDE,
-        coverage=chosen["coverage"],
-        finite_native_fraction=finite_sub,
+        coverage=chosen["fit"],
+        nodata_in_tile_fraction=chosen["nodata"],
+        nodata_samples_dropped=n_dropped,
+        max_nodata_allowed=max_nodata,
         window_px=int(W),
         sub_window=[int(r0), int(r1), int(c0), int(c1)],
         utm_crop_box=[int(y1), int(y2), int(x1), int(x2)],
@@ -243,6 +303,10 @@ def main(argv=None) -> int:
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--band", default=cfg.BAND)
     ap.add_argument("--halo", type=int, default=32)
+    ap.add_argument("--max-nodata", type=float, default=1e-3,
+                    help="ceiling on the no-data fraction INSIDE the tile "
+                         "footprint (default 0.001 = 0.1%%); above it the "
+                         "region is rejected instead of interpolated over")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--legacy", action="store_true",
                     help="build tiles for the seven original scenes in data/ instead")
@@ -279,10 +343,12 @@ def main(argv=None) -> int:
             continue
         try:
             meta = build_tile(scene, store, band=args.band, halo_px=args.halo,
+                              max_nodata=args.max_nodata,
                               fill_nan_mean=args.fill_nan_mean, verbose=False)
             rows.append(meta)
-            print(f"[{i:>2}/{len(scenes)}] {scene}: parent {meta['parent_id']}, "
-                  f"coverage {100*meta['coverage']:.2f}%, "
+            print(f"[{i:>2}/{len(scenes)}] {scene}: parent {meta['parent_id']} "
+                  f"(rank {meta['parent_rank']}/{meta['n_candidate_parents']}), "
+                  f"no-data in tile {100*meta['nodata_in_tile_fraction']:.4f}%, "
                   f"hpx mean {meta['hpx_mean']:.4f}, utm mean {meta['utm_mean']:.4f}")
         except Exception as exc:                          # noqa: BLE001
             failures.append((scene, f"{type(exc).__name__}: {exc}"))
