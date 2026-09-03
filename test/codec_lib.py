@@ -253,17 +253,56 @@ HCC_SWEEP = [dict(name=n, delta=d, top_k=k)
              for k in (16, 32, 64, 128, 256)]
 
 
-def iter_runs(tile, codecs=None, on_error="warn"):
-    """Yield CodecRunResult for every (codec, config) in the sweep."""
+def match_shape(tile, run):
+    """Force a decoded array back to the input shape, or reject the point.
+
+    Transform codecs pad: a multi-level wavelet decomposition of an odd-sized
+    image (the 637x637 equal-area UTM crop) reconstructs one or more pixels
+    larger, which is why this never shows up on the 1024x1024 HEALPix side.
+    Cropping the reconstruction is the standard fix, and it is the honest one
+    here: the padding was really encoded, so its bytes stay charged to the
+    codec; only the comparison is trimmed.
+    """
+    want = np.shape(tile)
+    got = np.shape(run.reconstruction)
+    if got == want:
+        return run
+    if len(got) != len(want) or any(g < w for g, w in zip(got, want)):
+        raise ValueError(f"{run.codec} returned {got}, smaller than the input "
+                         f"{want}; cannot compare")
+    run.reconstruction = run.reconstruction[tuple(slice(0, w) for w in want)]
+    run.config = dict(run.config, decoded_shape=list(got), cropped_to=list(want))
+    return run
+
+
+def iter_runs(tile, codecs=None, on_error="warn", stats=None):
+    """Yield CodecRunResult for every (codec, config) in the sweep.
+
+    `stats`, if given, is filled with per-codec attempted/ok/skipped counts and
+    the reason of every skip -- a codec silently dropping out of the sweep is
+    how a comparison ends up decided by which codec was evaluable rather than
+    by which one was better.
+    """
     codecs = list(CODEC_RUNS) if codecs is None else list(codecs)
     for codec in codecs:
         if codec not in CODEC_RUNS:
             raise KeyError(f"unknown codec {codec!r} (have {sorted(CODEC_RUNS)})")
         fn, sweep = CODEC_RUNS[codec]
         for conf in sweep:
+            if stats is not None:
+                st = stats.setdefault(codec, {"attempted": 0, "ok": 0, "skipped": []})
+                st["attempted"] += 1
             try:
-                yield fn(tile, **conf)
+                run = match_shape(tile, fn(tile, **conf))
             except Exception as exc:                      # noqa: BLE001
                 if on_error == "raise":
                     raise
-                print(f"    [skip] {codec} {conf}: {type(exc).__name__}: {exc}")
+                msg = f"{type(exc).__name__}: {exc}"
+                print(f"    [skip] {codec} {conf}: {msg}")
+                if stats is not None:
+                    stats[codec]["skipped"].append({"config": dict(conf),
+                                                     "error": msg})
+                continue
+            if stats is not None:
+                stats[codec]["ok"] += 1
+            yield run

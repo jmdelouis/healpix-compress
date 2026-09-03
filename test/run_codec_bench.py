@@ -36,6 +36,30 @@ import region_sites
 META_COLS = ["scene", "scene_class", "lat", "abs_lat", "hpx_regime"]
 
 
+def environment() -> dict:
+    """Record exactly which codec libraries produced these numbers.
+
+    Codec behaviour is version-dependent in ways that change results silently:
+    PyWavelets, for one, reconstructs an odd-sized periodized decomposition to a
+    different shape depending on the release, which is why the 637x637 UTM crop
+    can round-trip in one environment and fail in another while the 1024x1024
+    HEALPix tile never does. The paper lists 'codec library and version not
+    reported' as an open item; this closes it.
+    """
+    import platform
+    import sys as _sys
+    env = {"python": _sys.version.split()[0], "platform": platform.platform()}
+    for mod in ("numpy", "scipy", "pandas", "zarr", "pywt", "zfpy", "pysz",
+                "imagecodecs", "PIL", "zstandard", "healpix_resample",
+                "healpix_geo", "torch", "hcc"):
+        try:
+            m = __import__(mod)
+            env[mod] = str(getattr(m, "__version__", "unknown"))
+        except Exception:                                 # noqa: BLE001
+            env[mod] = "absent"
+    return env
+
+
 def part_path(grid: str, scene: str) -> Path:
     return cfg.PARTS_DIR / f"{grid}__{scene}.csv"
 
@@ -76,8 +100,13 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
     for grid in todo:
         tile = hpx_tile if grid == "hpx" else utm_tile
         raw_bytes = int(tile.size * 4)
-        rows = []
-        for run in codec_lib.iter_runs(tile, codecs):
+        rows, stats = [], {}
+        for run in codec_lib.iter_runs(tile, codecs, stats=stats):
+            if np.shape(run.reconstruction) != np.shape(tile):
+                print(f"    [skip] {run.codec} {run.config}: decoded shape "
+                      f"{np.shape(run.reconstruction)} != tile "
+                      f"{np.shape(tile)}")
+                continue
             r = dict(base, grid=grid, codec=run.codec,
                      config_json=json.dumps(run.config),
                      total_bytes=int(run.total_bytes),
@@ -95,7 +124,18 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
             rows.append(r)
         df = pd.DataFrame(rows)
         df.to_csv(part_path(grid, scene), index=False)
-        print(f"    {grid}: {len(df)} sweep points -> {part_path(grid, scene).name}")
+        attempted = sum(v["attempted"] for v in stats.values())
+        (part_path(grid, scene).with_suffix(".skips.json")
+         ).write_text(json.dumps(stats, indent=2), encoding="utf-8")
+        print(f"    {grid}: {len(df)}/{attempted} sweep points -> "
+              f"{part_path(grid, scene).name}")
+        # A codec that produced nothing on one grid but works on the other is
+        # not a detail: the oracle-best comparison would then be decided by
+        # which codec was evaluable rather than by which one was better.
+        empty = [c for c, v in stats.items() if v["ok"] == 0]
+        if empty:
+            print(f"    WARNING [{grid}] no usable point for: {', '.join(empty)}"
+                  f" -- see {part_path(grid, scene).with_suffix('.skips.json').name}")
         all_rows.extend(rows)
     return all_rows, floor_row
 
@@ -139,6 +179,13 @@ def main(argv=None) -> int:
     if args.assemble:
         assemble()
         return 0
+
+    env = environment()
+    (cfg.RESULTS_DIR / "bench_environment.json").write_text(
+        json.dumps(env, indent=2), encoding="utf-8")
+    print("[env] " + ", ".join(f"{k} {env[k]}" for k in
+                                ("python", "numpy", "pywt", "zfpy", "pysz",
+                                 "imagecodecs", "zstandard") if k in env))
 
     grids = ["hpx", "utm"] if args.grid == "both" else [args.grid]
     if args.legacy:

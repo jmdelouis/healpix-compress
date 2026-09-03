@@ -231,6 +231,29 @@ qu'avant, plus `grid`, `scene_class`, `lat`, `abs_lat`, `hpx_regime`,
 Interrompu ? Relancer la même commande : les régions déjà écrites sont sautées.
 Pour ne réassembler que les CSV : `python run_codec_bench.py --assemble`.
 
+**Lire le compte de points.** Chaque grille affiche désormais `N/M sweep points`
+et écrit `results/bench_parts/<grille>__<région>.skips.json` détaillant chaque
+configuration écartée et pourquoi. Un `WARNING` s'affiche si un codec ne produit
+aucun point sur une grille : c'est ce qui transforme silencieusement la
+comparaison « codec oracle » en « quel codec était évaluable » plutôt que
+« lequel était meilleur ». À vérifier avant de faire tourner les 40.
+
+**Formes décodées.** Un codec à transformée peut reconstruire une image plus
+grande que l'entrée : PyWavelets, sur le crop UTM de 637×637 (impair), rend
+638×638, parce que les bandes de détail de niveau 1 font ceil(637/2) = 319. Cela
+n'apparaît jamais sur la tuile HEALPix, dont le côté est une puissance de deux.
+La reconstruction est maintenant recadrée à la taille d'entrée, et
+`decoded_shape` / `cropped_to` sont écrits dans le `config_json` : les octets
+encodés incluent toujours le remplissage, seule la comparaison est recadrée.
+
+**Versions des bibliothèques.** `results/bench_environment.json` enregistre les
+versions de numpy, PyWavelets, zfpy, pysz, imagecodecs, Pillow, zstandard, etc.
+Ce n'est pas cosmétique : le comportement d'un codec dépend de sa version, et le
+CSV publié en juillet contient 49 points `dwt_zstd` sur des crops 637×637 que la
+version actuelle de PyWavelets ne peut pas produire — l'environnement a donc
+changé sous les chiffres du papier. Cela ferme l'item « codec library and version
+not reported » des Limitations.
+
 Le balayage JPEG XL a été étendu : l'échelle `level` sature vers RMSE 1e-3 sur du
 B04, donc JPEG XL n'était **pas évaluable** aux cibles serrées et n'y gagnait ni
 n'y perdait par mérite. Des points `distance` (2.0 → 0.01) ont été ajoutés pour
