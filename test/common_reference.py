@@ -1,0 +1,85 @@
+"""Common reconstruction reference for both grids (paper Limitation 5).
+
+Today the paper measures HEALPix RMSE against its own already-resampled tile
+and UTM RMSE against the raw UTM crop: two different notions of distortion.
+This module closes that gap by pushing the decoded HEALPix field back onto the
+native UTM pixels with healpix-resample's forward observation operator
+(``KNeighborsResampler.invert``), so both grids are scored against the *same*
+Sentinel-2 observation.
+
+Two numbers come out of it, and the paper needs both:
+
+  * ``rmse_common``  -- decoded HEALPix -> UTM pixels vs. the observed crop;
+  * ``floor``        -- the same projection applied to the *uncompressed*
+                        tile. This is the HEALPix representation error: no
+                        compression setting can go below it, and quoting
+                        ``rmse_common`` without it would charge the carrier
+                        grid's resampling error to the codec.
+
+Note the deliberate model asymmetry, which the paper must state: tiles are
+populated with Clough-Tocher interpolation (the paper's reference operator)
+while the projection back uses the Gaussian observation operator. The tile is
+therefore not the inverse of the operator used to predict, and the floor is
+correspondingly higher than it would be with ``PSFResampler`` on both ends.
+``--mode psf`` runs the consistent variant as a sensitivity check.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+
+import paper_config as cfg
+
+DEFAULT_FWHM_M = 12.5     # healpix-resample's calibrated effective B04 response
+
+
+class CommonReference:
+    """Forward operator from the tile's cells to its 637x637 UTM pixels."""
+
+    def __init__(self, cell_ids, utm_lon, utm_lat, *, fwhm_m=DEFAULT_FWHM_M,
+                 npt=None, mode="knn", verbose=False):
+        from healpix_resample import KNeighborsResampler, PSFResampler
+        from healpix_resample.psf_geometry import fwhm_to_scale, recommend_npt
+
+        self.shape = utm_lon.shape
+        self.cell_ids = np.asarray(cell_ids, dtype=np.int64)
+        self.base_id = int(self.cell_ids[0])
+        scale_m = fwhm_to_scale(fwhm_m)
+        if npt is None:
+            npt = int(recommend_npt(scale_m, cfg.LEVEL)["npt"])
+        self.npt = npt
+        self.scale_m = scale_m
+        self.mode = mode
+
+        cls = PSFResampler if mode == "psf" else KNeighborsResampler
+        self.op = cls(np.asarray(utm_lon, dtype=np.float64).ravel(),
+                      np.asarray(utm_lat, dtype=np.float64).ravel(),
+                      npt, cfg.LEVEL, sigma_m=scale_m,
+                      out_cell_ids=self.cell_ids, verbose=verbose)
+
+        kept = np.asarray(self.op.get_cell_ids(), dtype=np.int64).ravel()
+        self.kept_index = kept - self.base_id
+        if self.kept_index.min() < 0 or self.kept_index.max() >= self.cell_ids.size:
+            raise RuntimeError("operator returned cells outside the requested block")
+        self.kept_fraction = kept.size / float(self.cell_ids.size)
+
+    def predict(self, cell_values):
+        """Project a full-block cell array onto the UTM crop grid."""
+        vals = np.asarray(cell_values, dtype=np.float64).ravel()
+        if vals.size != self.cell_ids.size:
+            raise ValueError(f"expected {self.cell_ids.size} cells, got {vals.size}")
+        out = self.op.invert(vals[self.kept_index])
+        return np.asarray(out, dtype=np.float64).reshape(self.shape)
+
+    def describe(self) -> str:
+        return (f"mode={self.mode} npt={self.npt} scale={self.scale_m:.2f} m "
+                f"(FWHM {self.scale_m*1.1774:.2f} m) cells kept "
+                f"{100*self.kept_fraction:.2f}%")
+
+
+def build_for_tile(npz, *, fwhm_m=DEFAULT_FWHM_M, mode="knn", verbose=False):
+    """Build a CommonReference from a tile .npz written by build_tiles.py."""
+    parent = int(npz["parent_id"])
+    cell_ids = parent * cfg.N_CHILDREN + np.arange(cfg.N_CHILDREN, dtype=np.int64)
+    return CommonReference(cell_ids, npz["utm_lon"], npz["utm_lat"],
+                           fwhm_m=fwhm_m, mode=mode, verbose=verbose)
