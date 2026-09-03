@@ -245,7 +245,8 @@ def _same_acquisition(gt, item_id, lon0, lat0, collections):
 
 def fetch_window(gt, site, window_px: int, band: str, *,
                  collections=DEFAULT_COLLECTIONS, max_candidates: int = 12,
-                 min_finite: float = 0.999, cloud_ladder=None):
+                 min_finite: float = 0.999, cloud_ladder=None, centre=None,
+                 plan=None):
     """Read one native window centred on the region anchor. Returns (ds, info).
 
     Candidates are tried in order -- the product pinned by healpix-resample, then
@@ -257,7 +258,8 @@ def fetch_window(gt, site, window_px: int, band: str, *,
     import pyproj
     import xarray as xr
 
-    lon0, lat0 = float(site.lon), float(site.lat)
+    anchor_lon, anchor_lat = float(site.lon), float(site.lat)
+    lon0, lat0 = (float(centre[0]), float(centre[1])) if centre else (anchor_lon, anchor_lat)
     pinned = str(site.product_id or "")
     candidates, seen = [], set()
 
@@ -351,8 +353,13 @@ def fetch_window(gt, site, window_px: int, band: str, *,
         "scene": site.scene,
         "scene_class": site.scene_class,
         "region_id": site.region_id,
-        "anchor_lat": lat0,
-        "anchor_lon": lon0,
+        "anchor_lat": anchor_lat,
+        "anchor_lon": anchor_lon,
+        "window_centre_lat": lat0,
+        "window_centre_lon": lon0,
+        "window_centred_on": "tile" if centre else "anchor",
+        "target_parent_id": str((plan or {}).get("parent", "")),
+        "anchor_offset_from_tile_centre_m": str((plan or {}).get("anchor_offset_m", "")),
         "window_px": int(window_px),
         "native_pixel_m": cfg.NATIVE_PIXEL_M,
         "band": band,
@@ -370,11 +377,17 @@ def fetch_window(gt, site, window_px: int, band: str, *,
         "resample_archive_doi": str(site.archive_doi or ""),
         "resample_relative_path": str(site.resample_relative_path or ""),
         "acquired_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "note": ("Window centred on the same anchor as the healpix-resample "
-                 "256x256 patch, so that patch is the central crop of this one."),
+        "note": ("Site and tile are selected by the healpix-resample region "
+                 "anchor; the window is centred on that tile so a single "
+                 "Sentinel-2 granule can cover it. The companion 256x256 patch "
+                 "sits inside this tile, around the anchor."),
     })
     info = dict(
-        scene=site.scene, scene_class=site.scene_class, lat=lat0, lon=lon0,
+        scene=site.scene, scene_class=site.scene_class,
+        lat=anchor_lat, lon=anchor_lon,
+        centre_lat=lat0, centre_lon=lon0,
+        centred_on="tile" if centre else "anchor",
+        target_parent_id=(plan or {}).get("parent", ""),
         product_id=item.id, collection=coll, asset=asset_key,
         product_pinned=pinned, product_resolution=how,
         n_rejected_candidates=len(attempts),
@@ -423,20 +436,21 @@ def main(argv=None) -> int:
                     help="region ids or full scene ids; default: all 40")
     ap.add_argument("--classes", nargs="*", default=None)
     ap.add_argument("--limit", type=int, default=None)
-    ap.add_argument("--window", type=int, default=cfg.WINDOW_PX)
+    ap.add_argument("--window", type=int, default=0,
+                    help="native window in pixels; 0 (default) computes the "
+                         "smallest sufficient window per region")
+    ap.add_argument("--centre", choices=["tile", "anchor"], default="tile",
+                    help="centre the window on the HEALPix tile containing the "
+                         "anchor (default, needs about half the width) or on "
+                         "the anchor itself")
+    ap.add_argument("--halo", type=int, default=32,
+                    help="resampling halo reserved around the tile")
     ap.add_argument("--band", default=cfg.BAND)
     ap.add_argument("--force", action="store_true", help="re-download existing stores")
     ap.add_argument("--collections", nargs="*", default=list(DEFAULT_COLLECTIONS),
                     help="STAC collections to try, in order")
     ap.add_argument("--max-candidates", type=int, default=12,
                     help="how many catalogue items to try before giving up")
-    ap.add_argument("--window-fallback", type=int, nargs="*", default=[],
-                    help="smaller windows to fall back to when no product "
-                         f"covers the requested one. Anything below "
-                         f"{cfg.SAFE_WINDOW_PX} px + halo is refused: a smaller "
-                         "window can only hold a tile when the anchor happens "
-                         "to sit near a tile centre, which is luck, not a "
-                         "protocol")
     ap.add_argument("--min-finite", type=float, default=0.999,
                     help="reject a product whose window has fewer valid pixels "
                          "than this fraction (default 0.999) and try the next")
@@ -463,27 +477,21 @@ def main(argv=None) -> int:
         check(sites)
         return 0
 
-    floor = cfg.MIN_WINDOW_PX + 64
-    windows = [args.window] + [w for w in sorted(args.window_fallback, reverse=True)
-                               if w < args.window]
-    bad = [w for w in windows if w < floor]
-    if bad:
+    import window_geometry
+    if args.window and args.centre == "anchor" and args.window < cfg.SAFE_WINDOW_PX:
         raise SystemExit(
-            f"window size(s) {bad} below the {floor} px floor. A window is only "
-            f"guaranteed to contain a whole level-{cfg.PARENT_LEVEL} tile from "
-            f"{cfg.SAFE_WINDOW_PX} px (+ halo): the anchor is an arbitrary point "
-            f"of the HEALPix grid and can land on a four-tile junction, where "
-            f"the nearest tile centre is a half-diagonal "
-            f"({cfg.TILE_HALF_DIAGONAL_M:.0f} m) away.")
+            f"--window {args.window} with --centre anchor is below the "
+            f"{cfg.SAFE_WINDOW_PX} px worst-case bound: an anchor can sit at a "
+            f"tile corner, so an anchor-centred window must be twice the tile's "
+            f"{cfg.TILE_BBOX_PX} px bounding box. Use --centre tile.")
 
     gt = load_gt()
     gt.warn_about_aws_credentials()
+    win = f"{args.window} px" if args.window else "computed per region"
     print(f"[source] {gt.EARTH_SEARCH_URL} | collections {args.collections} | "
-          f"assets {COG_ASSET_KEYS} | window {args.window} px | "
-          f"up to {args.max_candidates} candidates per region")
-    if len(windows) > 1:
-        print(f"[window] {windows[0]} px, falling back to {windows[1:]} px "
-              f"where no product covers it")
+          f"assets {COG_ASSET_KEYS} | window {win}, centred on the "
+          f"{args.centre} | up to {args.max_candidates} candidates per region")
+
 
     logs, failures = [], []
     for i, site in enumerate(sites.itertuples(), 1):
@@ -492,23 +500,20 @@ def main(argv=None) -> int:
             print(f"[{i:>2}/{len(sites)}] {site.scene}: cached")
             continue
         try:
-            ds = info = None
-            last = None
-            for w in windows:
-                try:
-                    ds, info = fetch_window(gt, site, w, args.band,
-                                            collections=tuple(args.collections),
-                                            max_candidates=args.max_candidates,
-                                            min_finite=args.min_finite,
-                                            cloud_ladder=args.cloud_max)
-                    break
-                except NoCoveringProduct as exc:
-                    last = exc
-                    if w != windows[-1]:
-                        print(f"    no product covers a {w} px window here; "
-                              f"falling back to {windows[windows.index(w)+1]} px")
-            if ds is None:
-                raise last
+            plan, centre = None, None
+            if args.centre == "tile":
+                plan = window_geometry.plan_acquisition(site.lon, site.lat,
+                                                        halo_px=args.halo)
+                centre = (plan["centre_lon"], plan["centre_lat"])
+                w = args.window or plan["window_px"]
+            else:
+                w = args.window or cfg.WINDOW_PX
+            ds, info = fetch_window(gt, site, w, args.band,
+                                    collections=tuple(args.collections),
+                                    max_candidates=args.max_candidates,
+                                    min_finite=args.min_finite,
+                                    cloud_ladder=args.cloud_max,
+                                    centre=centre, plan=plan)
             ds.to_zarr(path, mode="w", **gt._zarr_v2_kwargs())
             info["status"] = "ok"
             logs.append(info)
