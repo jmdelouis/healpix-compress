@@ -46,3 +46,8 @@
 - zfp: 33 wins / 269 evaluable, mean rank 4.42
 - sz3: 30 wins / 346 evaluable, mean rank 2.71
 - dwt_zstd: 12 wins / 333 evaluable, mean rank 3.51
+
+## HEALPix representation floor (common reference)
+
+- median 8.229e-02, range [1.996e-03, 2.127e-01] over 40 regions
+- every target RMSE below this floor is unreachable on the HEALPix side by construction and must be reported as such.
