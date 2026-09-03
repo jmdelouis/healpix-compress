@@ -1,14 +1,19 @@
-"""Acquire the 1512 x 1512 native windows for the 40 shared regions.
+"""Acquire the native windows for the 40 shared regions.
 
 Why this script exists
 ----------------------
 healpix-resample publishes 256 x 256 px (2.56 km) patches. A level-20 HEALPix
 carrier tile of 1024 x 1024 cells is 6.37 km on a side and is a *rotated*
 square in UTM, so it needs a native window of at least
-``paper_config.MIN_WINDOW_PX`` (901) pixels whatever the rotation. This script
-re-extracts a larger window at exactly the same region centres, from exactly
-the same Sentinel-2 products, so the two papers share sites, products and
-radiometry.
+about a thousand pixels. This script re-extracts a larger window for exactly
+the same regions, from exactly the same Sentinel-2 products where they are
+available, so the two papers share sites, products and radiometry.
+
+By default the window is centred on the HEALPix tile containing the region
+anchor, and sized by `window_geometry.plan_acquisition` -- the tile's bounding
+box plus the halo, about 1000-1200 px. Centring on the anchor instead would
+demand twice that (the anchor can sit at a tile corner), which is more than a
+single Sentinel-2 granule covers at several of these sites.
 
 The reading itself is delegated to healpix-resample's own acquisition helper
 (``tests/real_groundtruth_common_tools.py``): same COG access, same no-data
@@ -460,11 +465,6 @@ def main(argv=None) -> int:
     ap.add_argument("--list", action="store_true", help="print the site table and exit")
     args = ap.parse_args(argv)
 
-    if args.window < cfg.MIN_WINDOW_PX:
-        raise SystemExit(
-            f"--window {args.window} < {cfg.MIN_WINDOW_PX}: a {cfg.TILE_SIDE}-cell "
-            f"level-{cfg.LEVEL} tile cannot fit whatever its rotation. Refusing.")
-
     cfg.ensure_dirs()
     sites = region_sites.select(region_sites.load_sites(),
                                 args.regions, args.classes, args.limit)
@@ -478,12 +478,18 @@ def main(argv=None) -> int:
         return 0
 
     import window_geometry
-    if args.window and args.centre == "anchor" and args.window < cfg.SAFE_WINDOW_PX:
-        raise SystemExit(
-            f"--window {args.window} with --centre anchor is below the "
-            f"{cfg.SAFE_WINDOW_PX} px worst-case bound: an anchor can sit at a "
-            f"tile corner, so an anchor-centred window must be twice the tile's "
-            f"{cfg.TILE_BBOX_PX} px bounding box. Use --centre tile.")
+    if args.window:
+        floor = (cfg.SAFE_WINDOW_PX if args.centre == "anchor"
+                 else cfg.TILE_BBOX_PX + 2 * args.halo)
+        if args.window < floor:
+            raise SystemExit(
+                f"--window {args.window} with --centre {args.centre} is below "
+                f"the {floor} px floor. Centred on the anchor a window must be "
+                f"twice the tile's {cfg.TILE_BBOX_PX} px bounding box "
+                f"({cfg.SAFE_WINDOW_PX} px), because the anchor can sit at a "
+                f"tile corner; centred on the tile, the bounding box plus the "
+                f"halo is enough. Leave --window at 0 to let each region's own "
+                f"geometry decide.")
 
     gt = load_gt()
     gt.warn_about_aws_credentials()
