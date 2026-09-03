@@ -294,6 +294,19 @@ de bord où le noyau est tronqué. Attendez-vous à `mask_fraction` entre 0,80 e
 pour diagnostic. La fraction masquée est aussi, directement, l'intersection-sur-
 union que les Limitations réclamaient.
 
+**Opérateur de projection.** Le défaut (`--cr-mode nearest`) lit chaque pixel UTM
+dans la cellule niveau 20 qui le contient : un appel `healpix_geo`, exact, sans
+lissage propre — le plancher mesuré est donc l'erreur de représentation de la
+grille porteuse et rien d'autre. `--cr-mode knn` ou `psf` appliquent à la place
+l'opérateur d'observation gaussien de healpix-resample, qui répond à une autre
+question (ce que l'instrument aurait mesuré étant donné le champ stocké) et
+reste disponible en contrôle de sensibilité. Attention : sur l'environnement
+utilisé ici, cet opérateur renvoie une projection identiquement nulle, ce qui
+est invisible dans les résultats — chaque point de balayage rapporte alors la
+même « erreur », à savoir la RMS des observations elles-mêmes. Le constructeur
+vérifie donc systématiquement qu'un champ constant se projette sur 1 à 5 % près,
+et refuse la région sinon.
+
 Asymétrie de modèle à assumer par écrit : les tuiles sont peuplées en
 Clough–Tocher (opérateur de référence retenu) alors que la projection retour
 utilise l'opérateur d'observation gaussien. La tuile n'est donc pas l'inverse de

@@ -73,7 +73,7 @@ def _tile_arrays(scene: str):
 
 
 def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
-               cr_mode="knn", force=False):
+               cr_mode="nearest", force=False):
     """Return (rows, floor_row). Rows are also cached per (grid, scene)."""
     from hcc.compression.zorder import flatten_tile
 
@@ -94,7 +94,8 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
         floor = cr.rmse_on_mask(cr.predict(cell_data), utm_tile)
         std_on_mask = float(np.asarray(utm_tile, dtype=np.float64)[cr.mask].std())
         floor_row = dict(base, mode=cr_mode, npt=cr.npt, scale_m=cr.scale_m,
-                         kept_fraction=cr.kept_fraction,
+                         raw_inside_fraction=cr.raw_inside_fraction,
+                         support_median=cr.support_median,
                          mask_fraction=cr.mask_fraction,
                          representation_floor_rmse=floor,
                          utm_std=float(utm_tile.std()),
