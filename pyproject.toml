@@ -28,6 +28,8 @@ paper = [
   "pysz",
   "zstandard",
   "pillow",
+  "zfpy",
+  "pysz"
 ]
 
 [project.entry-points."zarr.codecs"]
