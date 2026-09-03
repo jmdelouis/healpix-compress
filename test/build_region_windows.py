@@ -290,55 +290,75 @@ def fetch_window(gt, site, window_px: int, band: str, *,
         raise RuntimeError(f"{site.scene}: no catalogue item at "
                            f"({lat0:.4f}, {lon0:.4f}) in {collections}")
 
+    # The STAC footprint is a *ranking* signal, never a veto. It is a coarse,
+    # sometimes conservative polygon; the pixels are the ground truth. Products
+    # whose footprint covers the window are tried first, because that avoids
+    # pointless downloads in the normal case -- but if none of them works, the
+    # ones the footprint rejected are read anyway and the actual valid-pixel
+    # fraction decides. Letting metadata alone drop a region is the same
+    # mistake as trusting items[0] blindly.
     ring = _window_ring_lonlat(lon0, lat0, window_px)
-    attempts, chosen, n_uncovered = [], None, 0
+    tier1, tier2 = [], []
     for coll, item, how in candidates:
-        if len(attempts) - n_uncovered >= max_candidates:
-            break
         covers = _footprint_covers(getattr(item, "geometry", None), ring)
-        if covers is False:
-            n_uncovered += 1
-            attempts.append(f"{item.id}[{coll}]: granule footprint does not "
-                            f"cover the {window_px} px window")
-            continue
+        (tier2 if covers is False else tier1).append((coll, item, how, covers))
+
+    def _try(coll, item, how, override):
         key, href, problem = _usable_asset(gt, item)
         if problem:
             attempts.append(f"{item.id}[{coll}]: {problem}")
-            continue
+            return None
         try:
             refl, x, y, crs = gt._read_cog_patch(href, lon0, lat0, window_px,
                                                 item.properties)
         except Exception as exc:                          # noqa: BLE001
             attempts.append(f"{item.id}[{coll}]: {type(exc).__name__}: "
                             f"{str(exc)[:90]}")
-            continue
-        # A window straddling a granule edge is mostly valid but carries a
-        # no-data wedge that would later force build_tiles.py to reject the
-        # region. Rejecting the *product* here instead, and moving to the next
-        # acquisition, is both cheaper and better: the criterion is data
-        # availability, evaluated before anything is measured.
+            return None
         finite_frac = float(np.isfinite(refl).mean())
         if finite_frac < min_finite:
             attempts.append(f"{item.id}[{coll}]: only {100*finite_frac:.2f}% "
-                            f"valid pixels (granule edge or cloud mask)")
-            continue
-        chosen = (coll, item, how, key, refl, x, y, crs)
-        break
+                            f"valid pixels (granule edge or cloud mask)"
+                            + (" [footprint said no too]" if override else ""))
+            return None
+        tag = how + ("+footprint-override" if override else "")
+        return (coll, item, tag, key, refl, x, y, crs)
+
+    attempts, chosen = [], None
+    for tier_no, tier in ((1, tier1), (2, tier2)):
+        if chosen is not None:
+            break
+        budget = max_candidates if tier_no == 1 else max(4, max_candidates // 2)
+        if tier_no == 2 and tier:
+            print(f"    no product whose footprint covers the window worked; "
+                  f"re-checking {min(budget, len(tier))} of the "
+                  f"{len(tier)} footprint-rejected product(s) against the "
+                  f"actual pixels")
+        for tried, (coll, item, how, _covers) in enumerate(tier):
+            if tried >= budget:
+                break
+            chosen = _try(coll, item, how, override=(tier_no == 2))
+            if chosen is not None:
+                break
 
     if chosen is None:
         summary = (f"{site.scene}: none of the {len(candidates)} candidate "
-                   f"products covers a clean {window_px} px window")
-        if n_uncovered:
-            summary += (f" ({n_uncovered} rejected on footprint alone -- the "
-                        f"anchor sits near a granule edge)")
+                   f"products yields a clean {window_px} px window "
+                   f"({len(tier1)} with a covering footprint, {len(tier2)} "
+                   f"without -- the latter were re-checked against the pixels "
+                   f"before giving up)")
         raise NoCoveringProduct(summary + ".\n      "
-                                + "\n      ".join(attempts[:6]))
+                                + "\n      ".join(attempts[:8]))
 
     coll, item, how, asset_key, refl, x, y, crs = chosen
     props = item.properties
     if attempts:
         print(f"    skipped {len(attempts)} unusable candidate(s) before "
               f"{item.id}: {attempts[0]}")
+    if how.endswith("+footprint-override"):
+        print(f"    NOTE: {item.id} was rejected by its STAC footprint but "
+              f"delivers {100*float(np.isfinite(refl).mean()):.2f}% valid "
+              f"pixels -- the footprint polygon is conservative here")
 
     to_wgs = pyproj.Transformer.from_crs(crs, pyproj.CRS.from_epsg(4326),
                                          always_xy=True)
