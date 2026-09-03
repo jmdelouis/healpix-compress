@@ -285,8 +285,12 @@ def table_latitude(rows, index):
     lat = index.set_index("scene")["abs_lat"].to_dict() if "abs_lat" in index else {}
     regime = index.set_index("scene")["hpx_regime"].to_dict() if "hpx_regime" in index else {}
     body, stats_out = [], {}
+    # Half the sample at least: the gamma=1 variant of the loosest budget is
+    # out of interpolation range for most regions, and a correlation on the
+    # seven that remain would be noise dressed as a finding.
+    min_n = max(cfg.MIN_SCENES, 20)
     for r in rows:
-        if r["test_gamma1"]["n"] < cfg.MIN_SCENES or not lat:
+        if r["test_gamma1"]["n"] < min_n or not lat:
             continue
         scenes = list(r["ratios_gamma1"])
         vals = [r["ratios_gamma1"][s] for s in scenes]
@@ -418,8 +422,23 @@ def main(argv=None) -> int:
                   f"Targets at or below it are not achievable by any codec on "
                   f"that grid.")
 
+    # Per-region latitude and class: the tile index carries them, but they are a
+    # property of the sites, so fall back to the site table when a checkout has
+    # the results without the intermediate tiles.
     index_path = cfg.TILE_DIR / "tiles_index.csv"
     index = pd.read_csv(index_path) if index_path.exists() else pd.DataFrame()
+    if "abs_lat" not in index.columns:
+        try:
+            import region_sites
+            sites = region_sites.load_sites()[
+                ["scene", "scene_class", "region_id", "lat", "lon", "abs_lat",
+                 "hpx_regime"]]
+            index = (sites if index.empty
+                     else index.merge(sites, on="scene", how="left"))
+            print(f"  latitudes taken from the site table "
+                  f"({len(index)} regions); tiles_index.csv not needed")
+        except Exception as exc:                          # noqa: BLE001
+            print(f"  no per-region latitude available: {type(exc).__name__}: {exc}")
 
     tex_iii, acc = table_storage_accounting(utm, scenes)
     rows, family = _ratio_rows(hpx, utm, scenes, rmse_col, codecs)
