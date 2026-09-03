@@ -312,6 +312,21 @@ Et surtout `results/paper_numbers_{self,common}.md` : le digest à garder ouvert
 pendant la rédaction (tous les ratios, p bruts, p de Holm, γ★, effet de latitude,
 classement des codecs audité).
 
+`update_paper_numbers.py` **refuse** de produire des chiffres si un codec a
+tourné sur une grille et pas sur l'autre : la comparaison « codec oracle »
+mesurerait alors en partie quel codec a pu s'exécuter, et non quelle grille
+compresse mieux. Il faut corriger la cause (voir le `.skips.json` de la grille
+fautive) et relancer cette grille en `--force`. `--allow-asymmetric-codecs`
+existe pour un diagnostic, jamais pour le papier.
+
+Le digest reporte aussi le **plancher de requantification 16 bits** : les codecs
+image reçoivent une version 16 bits de la tuile, donc leurs points « lossless »
+sont sans perte *après* cette étape, pas bit-à-bit contre l'original. Sur les
+premières régions ce plancher vaut environ 3,6 × 10⁻⁶ sur les deux grilles, soit
+un facteur 28 sous la cible la plus serrée (10⁻⁴) — les résultats tiennent, mais
+le mot « lossless » du papier doit être précisé, et aucune cible sous ce plancher
+n'est atteignable.
+
 **Lancer les deux métriques et comparer les deux digests avant de toucher au
 texte.** Si les verdicts diffèrent, c'est le résultat central du papier qui
 change, pas un détail de présentation.

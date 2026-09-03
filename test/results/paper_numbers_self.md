@@ -3,6 +3,7 @@
 - regions: **40**, codecs: zfp, sz3, jpeg2000_lossy, jpegxl_lossy, dwt_zstd
 - raw ratio HPX / (UTM x gamma=1.3): **1.988** (gamma=1: 2.584)
 - multiple-testing family: 9 targets
+- 16-bit requantization floor: HPX 6.29e-06, UTM 6.23e-06 (the image codecs are fed a 16-bit tile, so their `lossless` points are lossless after that step, not bit-exact)
 
 ## Ratios (oracle codec, per region)
 
@@ -28,15 +29,6 @@
 
 ## HEALPix regime (latitude)
 
-- rmse:0.0001: Spearman rho=-0.050 (p=0.758), belt 2.092 vs cap 2.062 (p=0.455)
-- rmse:0.0003: Spearman rho=-0.041 (p=0.802), belt 1.904 vs cap 1.960 (p=0.407)
-- rmse:0.001: Spearman rho=0.019 (p=0.906), belt 1.683 vs cap 1.596 (p=0.596)
-- rmse:0.003: Spearman rho=0.088 (p=0.609), belt 1.130 vs cap 1.273 (p=0.220)
-- rmse:0.01: Spearman rho=0.209 (p=0.234), belt 0.925 vs cap 1.191 (p=0.015)
-- budget:0.2: Spearman rho=0.893 (p=0.007), belt nan vs cap nan (p=nan)
-- budget:0.1: Spearman rho=0.186 (p=0.256), belt 12.341 vs cap 14.223 (p=0.088)
-- budget:0.05: Spearman rho=0.362 (p=0.022), belt 2.678 vs cap 2.836 (p=0.010)
-- budget:0.02: Spearman rho=0.497 (p=0.001), belt 0.947 vs cap 1.228 (p=0.001)
 
 ## Codec ranking (HEALPix side)
 

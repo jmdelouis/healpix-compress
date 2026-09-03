@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -79,6 +80,8 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
     todo = [g for g in grids if force or not part_path(g, scene).exists()]
     if not todo and not common_ref:
         return [], None
+    if common_ref and "utm" not in todo and "utm" in grids:
+        todo.append("utm")   # the UTM side must be re-scored on the same mask
 
     cell_ids, cell_data, hpx_tile, utm_tile, meta, npz = _tile_arrays(scene)
     base = {k: site.get(k, "") for k in META_COLS}
@@ -88,13 +91,16 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
     if common_ref:
         import common_reference
         cr = common_reference.build_for_tile(npz, mode=cr_mode)
-        floor = codec_lib.rmse(cr.predict(cell_data), utm_tile)
+        floor = cr.rmse_on_mask(cr.predict(cell_data), utm_tile)
+        std_on_mask = float(np.asarray(utm_tile, dtype=np.float64)[cr.mask].std())
         floor_row = dict(base, mode=cr_mode, npt=cr.npt, scale_m=cr.scale_m,
                          kept_fraction=cr.kept_fraction,
+                         mask_fraction=cr.mask_fraction,
                          representation_floor_rmse=floor,
-                         utm_std=float(utm_tile.std()))
+                         utm_std=float(utm_tile.std()),
+                         utm_std_on_mask=std_on_mask)
         print(f"    common reference: {cr.describe()}  floor RMSE {floor:.3e} "
-              f"({100*floor/float(utm_tile.std()):.1f}% of the crop's own std)")
+              f"({100*floor/std_on_mask:.1f}% of the comparable area's std)")
 
     all_rows = []
     for grid in todo:
@@ -114,13 +120,18 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
                      encode_seconds=run.encode_seconds,
                      decode_seconds=run.decode_seconds,
                      raw_bytes=raw_bytes)
-            if grid == "utm":
-                r["rmse_common"] = r["rmse"]      # UTM is already the reference
-            elif cr is not None:
-                flat = flatten_tile(np.asarray(run.reconstruction, dtype=np.float32))
-                r["rmse_common"] = codec_lib.rmse(cr.predict(flat), utm_tile)
+            # Both grids are scored on the same pixels -- the intersection of
+            # the two footprints -- so the comparison never depends on how the
+            # two pixel lattices are oriented with respect to each other.
+            if cr is None:
+                r["rmse_common"] = r["rmse"] if grid == "utm" else np.nan
+            elif grid == "utm":
+                r["rmse_common"] = cr.rmse_on_mask(run.reconstruction, utm_tile)
             else:
-                r["rmse_common"] = np.nan
+                flat = flatten_tile(np.asarray(run.reconstruction, dtype=np.float32))
+                r["rmse_common"] = cr.rmse_on_mask(cr.predict(flat), utm_tile)
+            r["common_mask_fraction"] = (cr.mask_fraction if cr is not None
+                                          else np.nan)
             rows.append(r)
         df = pd.DataFrame(rows)
         df.to_csv(part_path(grid, scene), index=False)
@@ -150,6 +161,21 @@ def assemble():
             continue
         df = pd.concat([pd.read_csv(p) for p in parts], ignore_index=True)
         path = cfg.RESULTS_DIR / name
+        # Never overwrite a previous sweep in place: these two CSVs are what
+        # every published table was computed from, and a re-run with a
+        # different region set would otherwise erase the only raw record of it.
+        if path.exists():
+            old = pd.read_csv(path)
+            if set(old.scene.unique()) != set(df.scene.unique()):
+                stamp = datetime.fromtimestamp(path.stat().st_mtime).strftime(
+                    "%Y%m%dT%H%M%S")
+                archive = cfg.RESULTS_DIR / "archive"
+                archive.mkdir(exist_ok=True)
+                dest = archive / f"{path.stem}.{stamp}.csv"
+                if not dest.exists():
+                    dest.write_bytes(path.read_bytes())
+                    print(f"  previous sweep ({old.scene.nunique()} regions) "
+                          f"archived to {dest.relative_to(cfg.RESULTS_DIR)}")
         df.to_csv(path, index=False)
         n = df.scene.nunique()
         print(f"{grid}: {len(df)} rows, {n} regions -> {path}")

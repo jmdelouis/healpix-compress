@@ -34,6 +34,17 @@ RMSE_LABEL = {1e-4: r"$10^{-4}$", 3e-4: r"$3\times10^{-4}$", 1e-3: r"$10^{-3}$",
               3e-3: r"$3\times10^{-3}$", 1e-2: r"$10^{-2}$"}
 
 
+def _p(v):
+    """p-values: never print 0.000, which reads as exactly zero."""
+    if not np.isfinite(v):
+        return "--"
+    if v < 1e-4:
+        return r"$<10^{-4}$"
+    if v < 1e-3:
+        return r"$<10^{-3}$"
+    return f"{v:.3f}"
+
+
 def _fmt(v, nd=2):
     return "--" if not np.isfinite(v) else f"{v:.{nd}f}"
 
@@ -46,6 +57,39 @@ def _table(caption, label, colspec, header, body_lines, note=None):
         out.append(f"\\\\[2pt]\\footnotesize {note}")
     out.append(r"\end{table}")
     return "\n".join(out) + "\n"
+
+
+def check_codec_symmetry(hpx, utm, scenes, codecs):
+    """Refuse to compare grids that were not offered the same codecs.
+
+    The oracle-best protocol picks the smallest result over the available
+    codecs on each side independently. If a codec produced points on one grid
+    and none on the other, the reported ratio partly measures which codec
+    happened to run, not which grid compresses better -- and it does so in a
+    direction nobody controls. This is cheap to check and expensive to miss.
+    """
+    problems = []
+    for scene in scenes:
+        h = set(hpx[(hpx.scene == scene)].codec.unique()) & set(codecs)
+        u = set(utm[(utm.scene == scene)].codec.unique()) & set(codecs)
+        if h != u:
+            problems.append((scene, sorted(u - h), sorted(h - u)))
+    return problems
+
+
+def quantization_floor(df, scenes):
+    """RMSE reached by the nominally lossless codecs, per grid.
+
+    The image codecs are fed a 16-bit requantization of the float32 tile, so
+    their `lossless` points are lossless *after* that step, not bit-exact
+    against the original. The residual is the floor every codec on that side
+    inherits, and it belongs in the paper next to the tightest RMSE target.
+    """
+    sub = df[df.codec.isin(cfg.LOSSLESS_CODECS) & df.scene.isin(scenes)]
+    if sub.empty:
+        return {}
+    return dict(median=float(sub.rmse.median()), min=float(sub.rmse.min()),
+                max=float(sub.rmse.max()), n=int(len(sub)))
 
 
 def load(metric="self"):
@@ -135,7 +179,7 @@ def table_iv_v(rows, family_size, n_regions):
             favors = "HPX" if t["median"] < 1 else "UTM"
             out.append(f"{fmt_target(r['target'])} & {t['n']:d} & {_fmt(t['median'])} & "
                        f"[{_fmt(t['lo'])}, {_fmt(t['hi'])}] & "
-                       f"{t['p']:.3f} & {r['p_holm']:.3f} & {favors} \\\\")
+                       f"{_p(t['p'])} & {_p(r['p_holm'])} & {favors} \\\\")
         return out
 
     note = (f"Exact/asymptotic two-sided Wilcoxon on $\\log$(ratio); "
@@ -330,11 +374,49 @@ def main(argv=None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--metric", choices=["self", "common"], default="self")
     ap.add_argument("--no-write-tex", action="store_true")
+    ap.add_argument("--pareto", action="store_true",
+                    help="reduce each sweep to its Pareto frontier before "
+                         "interpolating (closes the 'dominated point' open item)")
+    ap.add_argument("--allow-asymmetric-codecs", action="store_true",
+                    help="produce numbers even if a codec ran on one grid only "
+                         "(diagnostic use; never for the paper)")
     args = ap.parse_args(argv)
 
+    st.USE_PARETO = bool(args.pareto)
     hpx, utm, scenes, rmse_col = load(args.metric)
-    codecs = [c for c in cfg.COMPRESSOR_CODECS if c in set(hpx.codec)]
+    codecs = [c for c in cfg.COMPRESSOR_CODECS
+              if c in set(hpx.codec) or c in set(utm.codec)]
     print(f"{len(scenes)} regions | codecs {codecs} | HPX metric column {rmse_col!r}")
+
+    asym = check_codec_symmetry(hpx, utm, scenes, codecs)
+    if asym:
+        print("\nCODEC COVERAGE IS NOT SYMMETRIC -- the oracle comparison would "
+              "be decided partly by which codec ran, not by which grid is "
+              "better:")
+        for scene, only_utm, only_hpx in asym[:10]:
+            bits = []
+            if only_utm:
+                bits.append(f"missing on HPX: {', '.join(only_utm)}")
+            if only_hpx:
+                bits.append(f"missing on UTM: {', '.join(only_hpx)}")
+            print(f"  {scene}: " + "; ".join(bits))
+        if len(asym) > 10:
+            print(f"  ... and {len(asym)-10} more region(s)")
+        print("  Look at results/bench_parts/<grid>__<region>.skips.json for the "
+              "reason, fix it, and rerun that grid with --force.")
+        if not args.allow_asymmetric_codecs:
+            raise SystemExit("refusing to produce paper numbers from an "
+                             "asymmetric comparison (--allow-asymmetric-codecs "
+                             "to override, for a diagnostic run only)")
+
+    floors = {"hpx": quantization_floor(hpx, scenes),
+              "utm": quantization_floor(utm, scenes)}
+    for grid, fl in floors.items():
+        if fl:
+            print(f"16-bit requantization floor, {grid}: median "
+                  f"{fl['median']:.2e} (range {fl['min']:.2e}-{fl['max']:.2e}). "
+                  f"Targets at or below it are not achievable by any codec on "
+                  f"that grid.")
 
     index_path = cfg.TILE_DIR / "tiles_index.csv"
     index = pd.read_csv(index_path) if index_path.exists() else pd.DataFrame()
@@ -366,22 +448,33 @@ def main(argv=None) -> int:
         metric=args.metric, n_regions=len(scenes), regions=scenes, codecs=codecs,
         family_size=family, gamma_utm=cfg.GAMMA_UTM, shared_raw=cfg.SHARED_RAW,
         storage_accounting=acc, gamma_star=gammas, codec_ranking=ranking,
+        quantization_floor=floors, codec_asymmetry=[
+            dict(scene=a[0], missing_on_hpx=a[1], missing_on_utm=a[2])
+            for a in asym],
         latitude=lat_stats, fixed_codec=fixed,
         targets=[dict(kind=r["kind"], target=r["target"], test=r["test"],
                       test_gamma1=r["test_gamma1"], p_holm=r["p_holm"],
                       ratios={k: float(v) for k, v in r["ratios"].items()})
                  for r in rows],
     )
-    out_json = cfg.RESULTS_DIR / f"paper_numbers_{args.metric}.json"
+    payload["pareto"] = bool(args.pareto)
+    suffix = args.metric + ("_pareto" if args.pareto else "")
+    out_json = cfg.RESULTS_DIR / f"paper_numbers_{suffix}.json"
     out_json.write_text(json.dumps(payload, indent=2, default=float), encoding="utf-8")
 
     # --- digest ready to paste into the abstract / results text --------------
-    md = [f"# Paper numbers ({args.metric} RMSE reference)", "",
+    md = [f"# Paper numbers ({args.metric} RMSE reference"
+          + (", Pareto frontier" if args.pareto else "") + ")", "",
           f"- regions: **{len(scenes)}**, codecs: {', '.join(codecs)}",
           f"- raw ratio HPX / (UTM x gamma={cfg.GAMMA_UTM}): "
           f"**{acc['ratio_gamma']['median']:.3f}** "
           f"(gamma=1: {acc['ratio_gamma1']['median']:.3f})",
-          f"- multiple-testing family: {family} targets", "",
+          f"- multiple-testing family: {family} targets",
+          (f"- 16-bit requantization floor: HPX "
+           f"{floors['hpx'].get('median', float('nan')):.2e}, UTM "
+           f"{floors['utm'].get('median', float('nan')):.2e} "
+           f"(the image codecs are fed a 16-bit tile, so their `lossless` "
+           f"points are lossless after that step, not bit-exact)"), "",
           "## Ratios (oracle codec, per region)", "",
           "| protocol | target | n | median | range | p | p_Holm |",
           "|---|---|---|---|---|---|---|"]
@@ -418,7 +511,7 @@ def main(argv=None) -> int:
                f"{fl.representation_floor_rmse.max():.3e}] over {len(fl)} regions",
                "- every target RMSE below this floor is unreachable on the HEALPix "
                "side by construction and must be reported as such."]
-    out_md = cfg.RESULTS_DIR / f"paper_numbers_{args.metric}.md"
+    out_md = cfg.RESULTS_DIR / f"paper_numbers_{suffix}.md"
     out_md.write_text("\n".join(md) + "\n", encoding="utf-8")
     print(f"digest -> {out_md}\njson   -> {out_json}")
     print("\n".join(md[:14]))

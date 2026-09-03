@@ -12,14 +12,43 @@ from scipy import stats
 
 
 # --- rate-distortion interpolation ------------------------------------------
+# When True, each (region, codec) sweep is reduced to its Pareto frontier
+# before interpolation: sorted by increasing RMSE, only points that also
+# decrease in size are kept. A raw sweep can be non-monotonic (a coarser codec
+# setting occasionally costs *more* bytes for *more* error), and interpolating
+# through such a dominated point produces a target estimate no real
+# configuration achieves. The paper lists this as an open item; setting this
+# flag is how the reported numbers are checked against it.
+USE_PARETO = False
+
+
+def _pareto(x, y):
+    """Keep points that are not dominated: increasing x must decrease y."""
+    keep_x, keep_y, best = [], [], np.inf
+    for xi, yi in zip(x, y):
+        if yi < best:
+            keep_x.append(xi)
+            keep_y.append(yi)
+            best = yi
+    return np.asarray(keep_x), np.asarray(keep_y)
+
+
 def _xy(df, xcol, ycol):
-    """Sorted, duplicate-averaged (x, y) from a raw sweep. NOT a Pareto front."""
+    """Sorted, duplicate-averaged (x, y) from a sweep; Pareto if USE_PARETO."""
     d = df[[xcol, ycol]].replace([np.inf, -np.inf], np.nan).dropna()
     d = d[(d[xcol] > 0) & (d[ycol] > 0)]
     if len(d) < 2:
         return None
     d = d.groupby(xcol, as_index=False)[ycol].mean().sort_values(xcol)
-    return d[xcol].to_numpy(), d[ycol].to_numpy()
+    x, y = d[xcol].to_numpy(), d[ycol].to_numpy()
+    if USE_PARETO:
+        # The frontier is always defined on (rmse, bytes): more error must cost
+        # fewer bytes. Callers that interpolate the other way pass (bytes,
+        # rmse), so the same rule applies after swapping.
+        x, y = _pareto(x, y)
+        if len(x) < 2:
+            return None
+    return x, y
 
 
 def interp_size_at_rmse(df, target, rmse_col="rmse"):

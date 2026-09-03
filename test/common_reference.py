@@ -9,7 +9,12 @@ Sentinel-2 observation.
 
 Two numbers come out of it, and the paper needs both:
 
-  * ``rmse_common``  -- decoded HEALPix -> UTM pixels vs. the observed crop;
+  * ``rmse_common``  -- decoded HEALPix -> UTM pixels vs. the observed crop,
+                        **restricted to the intersection of the two
+                        footprints**: both grids are then scored on exactly the
+                        same pixels, in the native UTM frame, so the fact that
+                        HEALPix cells are rotated with respect to UTM ones
+                        stops being something the reader has to take on trust;
   * ``floor``        -- the same projection applied to the *uncompressed*
                         tile. This is the HEALPix representation error: no
                         compression setting can go below it, and quoting
@@ -37,7 +42,7 @@ class CommonReference:
     """Forward operator from the tile's cells to its 637x637 UTM pixels."""
 
     def __init__(self, cell_ids, utm_lon, utm_lat, *, fwhm_m=DEFAULT_FWHM_M,
-                 npt=None, mode="knn", verbose=False):
+                 npt=None, mode="knn", erode=3, verbose=False):
         from healpix_resample import KNeighborsResampler, PSFResampler
         from healpix_resample.psf_geometry import fwhm_to_scale, recommend_npt
 
@@ -63,6 +68,34 @@ class CommonReference:
             raise RuntimeError("operator returned cells outside the requested block")
         self.kept_fraction = kept.size / float(self.cell_ids.size)
 
+        # --- where can the two grids actually be compared? -------------------
+        # The HEALPix tile is a square rotated by roughly 45 degrees in UTM;
+        # the equal-area crop is axis-aligned. They enclose the same area but
+        # not the same ground: each one's corners stick out of the other. A UTM
+        # pixel in such a corner has no HEALPix cell behind it, and projecting
+        # the tile there returns 0 -- comparing that against real reflectance
+        # charges HEALPix for ground it never stored, and swamps the codec's
+        # own error completely (it is what made rmse_common come out constant
+        # across every sweep point).
+        #
+        # `support` is each sample's kernel mass that lands on a retained cell,
+        # so support > 0 is exactly the intersection of the two footprints. It
+        # is then eroded by a few pixels, because a sample on the boundary sees
+        # a truncated kernel and its prediction is biased even though it is
+        # nominally supported.
+        support = np.asarray(self.op.invert(np.ones(kept.size, dtype=np.float64)),
+                             dtype=np.float64).reshape(self.shape)
+        inside = np.isfinite(support) & (support > 0)
+        if erode:
+            from scipy.ndimage import binary_erosion
+            inside = binary_erosion(inside, iterations=int(erode), border_value=0)
+        self.mask = inside
+        self.mask_fraction = float(inside.mean())
+        if self.mask_fraction < 0.3:
+            raise RuntimeError(
+                f"only {100*self.mask_fraction:.1f}% of the UTM crop lies inside "
+                "the HEALPix tile footprint; the two are not comparable")
+
     def predict(self, cell_values):
         """Project a full-block cell array onto the UTM crop grid."""
         vals = np.asarray(cell_values, dtype=np.float64).ravel()
@@ -71,15 +104,24 @@ class CommonReference:
         out = self.op.invert(vals[self.kept_index])
         return np.asarray(out, dtype=np.float64).reshape(self.shape)
 
+    def rmse_on_mask(self, predicted, observed) -> float:
+        """RMSE over the two footprints' intersection only."""
+        p = np.asarray(predicted, dtype=np.float64)[self.mask]
+        o = np.asarray(observed, dtype=np.float64)[self.mask]
+        ok = np.isfinite(p) & np.isfinite(o)
+        return float(np.sqrt(np.mean((p[ok] - o[ok]) ** 2))) if ok.any() else np.nan
+
     def describe(self) -> str:
         return (f"mode={self.mode} npt={self.npt} scale={self.scale_m:.2f} m "
                 f"(FWHM {self.scale_m*1.1774:.2f} m) cells kept "
-                f"{100*self.kept_fraction:.2f}%")
+                f"{100*self.kept_fraction:.2f}%, comparable area "
+                f"{100*self.mask_fraction:.2f}% of the crop")
 
 
-def build_for_tile(npz, *, fwhm_m=DEFAULT_FWHM_M, mode="knn", verbose=False):
+def build_for_tile(npz, *, fwhm_m=DEFAULT_FWHM_M, mode="knn", erode=3,
+                   verbose=False):
     """Build a CommonReference from a tile .npz written by build_tiles.py."""
     parent = int(npz["parent_id"])
     cell_ids = parent * cfg.N_CHILDREN + np.arange(cfg.N_CHILDREN, dtype=np.int64)
     return CommonReference(cell_ids, npz["utm_lon"], npz["utm_lat"],
-                           fwhm_m=fwhm_m, mode=mode, verbose=verbose)
+                           fwhm_m=fwhm_m, mode=mode, erode=erode, verbose=verbose)
