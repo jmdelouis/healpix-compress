@@ -1,16 +1,16 @@
 \begin{table}[t]
 \centering
-\caption{Codec ranking on the HEALPix side over all 248 matched-quality and matched-size operating points (regions $\times$ targets) at which at least one codec is evaluable. Wins sum to the number of points by construction: each point has exactly one best codec. `Evaluable' counts the points where a codec produced a value at all.}
+\caption{Codec ranking on the HEALPix side. An operating point is one (region, target) pair over the 40 regions and the 5 RMSE plus 5 budget targets (400 in total), retained when at least one codec is evaluable there, which leaves 400. Wins sum to the number of points by construction: each point has exactly one best codec. `Evaluable' counts the points where a codec produced a value at all.}
 \label{tab:codec_ranking}
 \begin{tabular}{lrrr}
 \toprule
 Codec & Wins & Evaluable points & Mean rank \\
 \midrule
-\texttt{jpeg2000\_lossy} & 125 & 189 & 1.43 \\
-\texttt{jpegxl\_lossy} & 63 & 198 & 2.45 \\
-\texttt{zfp} & 33 & 146 & 3.85 \\
-\texttt{sz3} & 19 & 210 & 2.51 \\
-\texttt{dwt\_zstd} & 8 & 203 & 3.35 \\
+\texttt{jpeg2000\_lossy} & 165 & 400 & 1.86 \\
+\texttt{jpegxl\_lossy} & 150 & 400 & 2.23 \\
+\texttt{sz3} & 37 & 400 & 2.72 \\
+\texttt{zfp} & 35 & 333 & 4.49 \\
+\texttt{dwt\_zstd} & 13 & 396 & 3.60 \\
 \bottomrule
 \end{tabular}
 \end{table}

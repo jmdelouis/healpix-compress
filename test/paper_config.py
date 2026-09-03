@@ -63,6 +63,12 @@ UTM_RAW = UTM_SIDE_PX * UTM_SIDE_PX * 4
 TARGET_RMSE = [1e-4, 3e-4, 1e-3, 3e-3, 1e-2]
 BUDGETS = [0.40, 0.20, 0.10, 0.05, 0.02]
 MIN_SCENES = 3                # minimum evaluable regions for a reported target
+# A target is only reported when this fraction of regions has it bracketed by
+# two measured sweep points on both grids. Below it the row is a set of
+# conservative bounds rather than an estimate: the 40% and 20% budgets are
+# bracketed for 0% and 18% of regions respectively, which is what produced the
+# uninterpretable ratios of the first version.
+MIN_BRACKETED = 0.75
 
 COMPRESSOR_CODECS = ["zfp", "sz3", "jpeg2000_lossy", "jpegxl_lossy", "dwt_zstd"]
 LOSSLESS_CODECS = ["jpeg2000_lossless", "jpegxl_lossless"]

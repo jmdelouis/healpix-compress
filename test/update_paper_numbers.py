@@ -154,13 +154,31 @@ def _ratio_rows(hpx, utm, scenes, rmse_col, codecs):
             per_scene[s] = (h, u, u1)
         rows.append(dict(kind="budget", target=frac, per_scene=per_scene))
     for r in rows:
+        kind = r["kind"]
+        tgt = r["target"] if kind == "rmse" else r["target"] * cfg.SHARED_RAW
+        br = [st.any_bracketed(hpx, s, codecs, tgt, kind, rmse_col)
+              and st.any_bracketed(utm, s, codecs, tgt, kind)
+              for s in scenes]
+        r["bracketed_fraction"] = float(np.mean(br)) if br else np.nan
         r["ratios"] = {s: (h / u) for s, (h, u, _) in r["per_scene"].items()
                        if np.isfinite(h) and np.isfinite(u) and u > 0}
         r["ratios_gamma1"] = {s: (h / u1) for s, (h, _, u1) in r["per_scene"].items()
                               if np.isfinite(h) and np.isfinite(u1) and u1 > 0}
         r["test"] = st.paired_ratio_test(list(r["ratios"].values()))
         r["test_gamma1"] = st.paired_ratio_test(list(r["ratios_gamma1"].values()))
-    reported = [r for r in rows if r["test"]["n"] >= cfg.MIN_SCENES]
+    dropped = [r for r in rows
+               if r["test"]["n"] >= cfg.MIN_SCENES
+               and not (r["bracketed_fraction"] >= cfg.MIN_BRACKETED)]
+    for r in dropped:
+        print(f"  target {r['kind']} {r['target']:g} not reported: only "
+              f"{100*r['bracketed_fraction']:.0f}% of regions bracket it "
+              f"(threshold {100*cfg.MIN_BRACKETED:.0f}%); it would be a set of "
+              f"bounds, not an estimate")
+    reported = [r for r in rows
+                if r["test"]["n"] >= cfg.MIN_SCENES
+                and r["bracketed_fraction"] >= cfg.MIN_BRACKETED]
+    for r in rows:
+        r["reported"] = r in reported
     adj = st.holm([r["test"]["p"] for r in reported])
     for r, a in zip(reported, adj):
         r["p_holm"] = float(a) if np.isfinite(a) else np.nan
@@ -173,7 +191,7 @@ def table_iv_v(rows, family_size, n_regions):
     def lines(kind, fmt_target):
         out = []
         for r in rows:
-            if r["kind"] != kind or r["test"]["n"] < cfg.MIN_SCENES:
+            if r["kind"] != kind or not r.get("reported"):
                 continue
             t = r["test"]
             favors = "HPX" if t["median"] < 1 else "UTM"
@@ -210,7 +228,7 @@ def table_gamma_star(rows):
     body = []
     gammas = {}
     for r in rows:
-        if r["kind"] != "rmse" or r["test_gamma1"]["n"] < cfg.MIN_SCENES:
+        if r["kind"] != "rmse" or not r.get("reported"):
             continue
         g = r["test_gamma1"]["median"]
         gammas[r["target"]] = g
@@ -269,9 +287,12 @@ def table_codec_ranking(hpx, scenes, rmse_col, codecs):
                     f"{evaluable.get(c,0):d} & "
                     f"{np.mean(ranks.get(c, [np.nan])):.2f} \\\\")
     tex = _table(
-        f"Codec ranking on the HEALPix side over all {points} matched-quality and "
-        f"matched-size operating points (regions $\\times$ targets) at which at least "
-        f"one codec is evaluable. Wins sum to the number of points by construction: "
+        f"Codec ranking on the HEALPix side. An operating point is one (region, "
+        f"target) pair over the {len(scenes)} regions and the "
+        f"{len(cfg.TARGET_RMSE)} RMSE plus {len(cfg.BUDGETS)} budget targets "
+        f"({len(scenes)*(len(cfg.TARGET_RMSE)+len(cfg.BUDGETS))} in total), "
+        f"retained when at least one codec is evaluable there, which leaves "
+        f"{points}. Wins sum to the number of points by construction: "
         f"each point has exactly one best codec. `Evaluable' counts the points where a "
         f"codec produced a value at all.",
         "tab:codec_ranking", "lrrr",
@@ -284,13 +305,13 @@ def table_latitude(rows, index):
     """Does the HPX/UTM gap depend on where the tile sits on the sphere?"""
     lat = index.set_index("scene")["abs_lat"].to_dict() if "abs_lat" in index else {}
     regime = index.set_index("scene")["hpx_regime"].to_dict() if "hpx_regime" in index else {}
-    body, stats_out = [], {}
+    body, stats_out, order = [], {}, []
     # Half the sample at least: the gamma=1 variant of the loosest budget is
     # out of interpolation range for most regions, and a correlation on the
     # seven that remain would be noise dressed as a finding.
     min_n = max(cfg.MIN_SCENES, 20)
     for r in rows:
-        if r["test_gamma1"]["n"] < min_n or not lat:
+        if (not r.get("reported")) or r["test_gamma1"]["n"] < min_n or not lat:
             continue
         scenes = list(r["ratios_gamma1"])
         vals = [r["ratios_gamma1"][s] for s in scenes]
@@ -301,12 +322,24 @@ def table_latitude(rows, index):
         mw = st.mannwhitney(eq, cap)
         key = (f"{r['kind']}:{r['target']:g}")
         stats_out[key] = dict(spearman=sp, equatorial_vs_cap=mw)
+        order.append(key)
         label = (RMSE_LABEL.get(r["target"], f"${r['target']:g}$") if r["kind"] == "rmse"
                  else f"${100*r['target']:g}\\%$")
         body.append(f"{'RMSE ' if r['kind']=='rmse' else 'Budget '}{label} & "
-                    f"{sp['n']:d} & {_fmt(sp['rho'])} & {sp['p']:.3f} & "
-                    f"{_fmt(mw['median_a'])} & {_fmt(mw['median_b'])} & "
-                    f"{mw['p']:.3f} \\\\")
+                    f"{sp['n']:d} & {_fmt(sp['rho'])} & {_p(sp['p'])} & "
+                    f"PHOLM_RHO & {_fmt(mw['median_a'])} & "
+                    f"{_fmt(mw['median_b'])} & {_p(mw['p'])} & PHOLM_MW \\\\")
+    # This is a second family of tests, and it needs its own correction: the
+    # Holm adjustment applied to the storage targets says nothing about it.
+    adj_rho = st.holm([stats_out[k]["spearman"]["p"] for k in order])
+    adj_mw = st.holm([stats_out[k]["equatorial_vs_cap"]["p"] for k in order])
+    for k, a, b in zip(order, adj_rho, adj_mw):
+        stats_out[k]["spearman"]["p_holm"] = float(a) if np.isfinite(a) else np.nan
+        stats_out[k]["equatorial_vs_cap"]["p_holm"] = (float(b) if np.isfinite(b)
+                                                       else np.nan)
+    body = [ln.replace("PHOLM_RHO", _p(a)).replace("PHOLM_MW", _p(b))
+            for ln, a, b in zip(body, adj_rho, adj_mw)]
+
     tex = _table(
         r"Dependence of the \emph{intrinsic} (i.e.\ $\gamma_{\mathrm{tile}}=1$) "
         r"HPX/UTM ratio on the tile's position on the sphere. HEALPix cells are "
@@ -314,8 +347,9 @@ def table_latitude(rows, index):
         r"the equatorial belt ($|\mathrm{lat}| < 41.81^\circ$) and the polar caps. "
         r"Spearman $\rho$ is against $|\mathrm{latitude}|$; the last three columns "
         r"compare the two regimes (two-sided Mann--Whitney).",
-        "tab:latitude_effect", "lrrrrrr",
-        r"Target & $n$ & $\rho$ & $p_\rho$ & Median (belt) & Median (cap) & $p$ \\",
+        "tab:latitude_effect", "lrrrrrrr",
+        r"Target & $n$ & $\rho$ & $p_\rho$ & $p_\rho^{\mathrm{Holm}}$ & "
+        r"Median (belt) & Median (cap) & $p$ & $p^{\mathrm{Holm}}$ \\",
         body)
     if not body:
         print("  latitude table skipped: no per-region latitudes "
@@ -391,6 +425,24 @@ def main(argv=None) -> int:
     codecs = [c for c in cfg.COMPRESSOR_CODECS
               if c in set(hpx.codec) or c in set(utm.codec)]
     print(f"{len(scenes)} regions | codecs {codecs} | HPX metric column {rmse_col!r}")
+    envf = cfg.RESULTS_DIR / "bench_environment.json"
+    if envf.exists():
+        e = json.loads(envf.read_text())
+        print(f"  results written by code {e.get('code_sha', '?')} at "
+              f"{e.get('written_utc', '?')}")
+    floorf = cfg.RESULTS_DIR / "common_reference_floor.csv"
+    if args.metric == "common" and floorf.exists():
+        fl = pd.read_csv(floorf)
+        modes = sorted(set(fl.get("mode", pd.Series(dtype=str)).astype(str)))
+        print(f"  common-reference floors: {len(fl)} regions, mode(s) {modes}, "
+              f"median {fl.representation_floor_rmse.median():.3e}")
+        if "support_median" not in fl.columns:
+            raise SystemExit(
+                "common_reference_floor.csv predates the projection fix (no "
+                "support_median column): these floors were produced by the "
+                "all-zero projection and every rmse_common is the RMS of the "
+                "observations, not a codec error. Rerun:\n"
+                "    python run_codec_bench.py --grid both --common-reference --force")
 
     asym = check_codec_symmetry(hpx, utm, scenes, codecs)
     if asym:
@@ -443,6 +495,12 @@ def main(argv=None) -> int:
     tex_iii, acc = table_storage_accounting(utm, scenes)
     rows, family = _ratio_rows(hpx, utm, scenes, rmse_col, codecs)
     tex_iv, tex_v = table_iv_v(rows, family, len(scenes))
+    if args.metric != "self":
+        suffix_lbl = "_" + args.metric
+        for _i, _t in enumerate([tex_iv, tex_v]):
+            pass
+        tex_iv = tex_iv.replace("tab:storage_at_rmse", "tab:storage_at_rmse" + suffix_lbl)
+        tex_v = tex_v.replace("tab:error_at_size", "tab:error_at_size" + suffix_lbl)
     tex_gs, gammas = table_gamma_star(rows)
     tex_vi, ranking = table_codec_ranking(hpx, scenes, rmse_col, codecs)
     tex_lat, lat_stats = table_latitude(rows, index)
@@ -451,6 +509,9 @@ def main(argv=None) -> int:
 
     if not args.no_write_tex:
         cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
+        # The two metrics answer different questions and both are reported, so
+        # they must not overwrite each other's tables.
+        tag = "" if args.metric == "self" else f"_{args.metric}"
         for name, tex in [("table_storage_accounting", tex_iii),
                           ("table_storage_at_constant_rmse", tex_iv),
                           ("table_error_at_constant_size", tex_v),
@@ -460,7 +521,7 @@ def main(argv=None) -> int:
                           ("table_fixed_codec", tex_fix),
                           ("table_benchmark_regions", tex_reg)]:
             if tex:
-                (cfg.TEX_TABLES / f"{name}.tex").write_text(tex, encoding="utf-8")
+                (cfg.TEX_TABLES / f"{name}{tag}.tex").write_text(tex, encoding="utf-8")
         print(f"LaTeX tables -> {cfg.TEX_TABLES}")
 
     payload = dict(
@@ -473,6 +534,7 @@ def main(argv=None) -> int:
         latitude=lat_stats, fixed_codec=fixed,
         targets=[dict(kind=r["kind"], target=r["target"], test=r["test"],
                       test_gamma1=r["test_gamma1"], p_holm=r["p_holm"],
+                      bracketed_fraction=r["bracketed_fraction"],
                       ratios={k: float(v) for k, v in r["ratios"].items()})
                  for r in rows],
     )
@@ -499,23 +561,32 @@ def main(argv=None) -> int:
           "|---|---|---|---|---|---|---|"]
     for r in rows:
         t = r["test"]
-        if t["n"] < cfg.MIN_SCENES:
+        if not r.get("reported"):
             continue
         md.append(f"| {r['kind']} | {r['target']:g} | {t['n']} | {t['median']:.3f} | "
                   f"[{t['lo']:.3f}, {t['hi']:.3f}] | {t['p']:.4f} | {r['p_holm']:.4f} |")
+    md += ["", "## Censoring (fraction of regions where the target is bracketed",
+           "on both grids; the rest are conservative bounds, not estimates)", ""]
+    for r in rows:
+        if r["test"]["n"] < cfg.MIN_SCENES:
+            continue
+        md.append(f"- {r['kind']} {r['target']:g}: "
+                  f"{100*r['bracketed_fraction']:.0f}% bracketed")
     md += ["", "## Intrinsic gap (gamma=1) and critical overhead", ""]
     for r in rows:
-        if r["kind"] != "rmse" or r["test_gamma1"]["n"] < cfg.MIN_SCENES:
+        if r["kind"] != "rmse" or not r.get("reported"):
             continue
         g = r["test_gamma1"]["median"]
         md.append(f"- RMSE {r['target']:g}: gap {100*(g-1):+.0f}%, gamma* = {g:.2f}")
     md += ["", "## HEALPix regime (latitude)", ""]
     for k, v in lat_stats.items():
         md.append(f"- {k}: Spearman rho={v['spearman']['rho']:.3f} "
-                  f"(p={v['spearman']['p']:.3f}), belt "
+                  f"(p={v['spearman']['p']:.3f}, "
+                  f"Holm={v['spearman'].get('p_holm', float('nan')):.3f}), belt "
                   f"{v['equatorial_vs_cap']['median_a']:.3f} vs cap "
                   f"{v['equatorial_vs_cap']['median_b']:.3f} "
-                  f"(p={v['equatorial_vs_cap']['p']:.3f})")
+                  f"(p={v['equatorial_vs_cap']['p']:.3f}, "
+                  f"Holm={v['equatorial_vs_cap'].get('p_holm', float('nan')):.3f})")
     md += ["", "## Codec ranking (HEALPix side)", "",
            f"- {ranking['points']} operating points, wins sum to the same number"]
     for c, w in sorted(ranking["wins"].items(), key=lambda kv: -kv[1]):

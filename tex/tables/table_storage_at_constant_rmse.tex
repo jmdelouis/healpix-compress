@@ -6,10 +6,11 @@
 \toprule
 Target & $n$ & Median ratio & Range & $p$ & $p_{\mathrm{Holm}}$ & Favors \\
 \midrule
-$3\times10^{-4}$ & 3 & 2.08 & [1.63, 2.40] & -- & -- & UTM \\
-$10^{-3}$ & 8 & 1.79 & [0.83, 3.87] & 0.023 & 0.047 & UTM \\
-$3\times10^{-3}$ & 12 & 1.25 & [0.24, 4.31] & 0.339 & 0.339 & UTM \\
-$10^{-2}$ & 32 & 1.22 & [0.23, 3.84] & 0.004 & 0.013 & UTM \\
+$10^{-4}$ & 40 & 1.59 & [0.70, 1.86] & $<10^{-4}$ & $<10^{-4}$ & UTM \\
+$3\times10^{-4}$ & 40 & 1.49 & [0.54, 1.81] & $<10^{-4}$ & $<10^{-4}$ & UTM \\
+$10^{-3}$ & 40 & 1.25 & [0.35, 6.13] & 0.003 & 0.008 & UTM \\
+$3\times10^{-3}$ & 40 & 1.00 & [0.07, 5.03] & 0.735 & 0.735 & HPX \\
+$10^{-2}$ & 40 & 0.83 & [0.54, 2.58] & 0.003 & 0.008 & HPX \\
 \bottomrule
 \end{tabular}
 \\[2pt]\footnotesize Exact/asymptotic two-sided Wilcoxon on $\log$(ratio); $p_{\mathrm{Holm}}$ corrects across the whole family of 8 targets reported in Tables~\ref{tab:storage_at_rmse} and~\ref{tab:error_at_size}.
