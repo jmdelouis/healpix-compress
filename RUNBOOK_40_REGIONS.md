@@ -280,6 +280,20 @@ reprojetée. Aucune configuration de codec ne peut passer sous ce plancher ; tou
 cible RMSE inférieure devient inatteignable côté HEALPix, et le papier doit le
 dire au lieu de rapporter un `n` réduit sans explication.
 
+**Zone de comparaison.** La tuile HEALPix est un carré tourné d'environ 45° dans
+la trame UTM, le crop équivalent-aire est aligné sur les axes : même aire, mais
+pas le même sol. L'intersection des deux empreintes est un octogone valant
+2(√2−1) ≈ 0,829 de l'aire du crop dans le cas le plus défavorable (rotation à
+45°), et davantage lorsque la tuile est moins tournée. Les deux grilles sont
+notées **sur ces pixels-là uniquement**, dans la trame UTM native : l'orientation
+cesse d'être un point à accepter sur parole. Le masque est calculé par
+définition — un pixel du crop est dans la tuile si la cellule niveau 20 qui le
+contient appartient au bloc d'enfants — puis érodé de 3 px pour écarter la bande
+de bord où le noyau est tronqué. Attendez-vous à `mask_fraction` entre 0,80 et
+1,00 ; `raw_inside_fraction` et les statistiques de support sont journalisées
+pour diagnostic. La fraction masquée est aussi, directement, l'intersection-sur-
+union que les Limitations réclamaient.
+
 Asymétrie de modèle à assumer par écrit : les tuiles sont peuplées en
 Clough–Tocher (opérateur de référence retenu) alors que la projection retour
 utilise l'opérateur d'observation gaussien. La tuile n'est donc pas l'inverse de

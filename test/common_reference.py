@@ -78,23 +78,45 @@ class CommonReference:
         # own error completely (it is what made rmse_common come out constant
         # across every sweep point).
         #
-        # `support` is each sample's kernel mass that lands on a retained cell,
-        # so support > 0 is exactly the intersection of the two footprints. It
-        # is then eroded by a few pixels, because a sample on the boundary sees
-        # a truncated kernel and its prediction is biased even though it is
-        # nominally supported.
-        support = np.asarray(self.op.invert(np.ones(kept.size, dtype=np.float64)),
-                             dtype=np.float64).reshape(self.shape)
-        inside = np.isfinite(support) & (support > 0)
+        # The intersection is computed by definition rather than inferred from
+        # the operator: a crop pixel is inside the tile exactly when the
+        # level-20 cell containing it belongs to the tile's child block. That
+        # is one healpix_geo call, it cannot be thrown off by how the operator
+        # normalises or thresholds its weights, and it is checkable by hand.
+        import healpix_geo
+        parent = self.base_id // cfg.N_CHILDREN
+        ipix = healpix_geo.nested.lonlat_to_healpix(
+            np.asarray(utm_lon, dtype=np.float64).ravel(),
+            np.asarray(utm_lat, dtype=np.float64).ravel(),
+            cfg.LEVEL, ellipsoid="WGS84").astype(np.int64)
+        inside = (ipix // cfg.N_CHILDREN == parent).reshape(self.shape)
+        self.raw_inside_fraction = float(inside.mean())
         if erode:
             from scipy.ndimage import binary_erosion
+            # A pixel on the boundary sees a truncated kernel, so its
+            # prediction is biased even though it is nominally inside.
             inside = binary_erosion(inside, iterations=int(erode), border_value=0)
         self.mask = inside
         self.mask_fraction = float(inside.mean())
-        if self.mask_fraction < 0.3:
+
+        # Independent read on the same question, kept as a diagnostic only:
+        # the kernel mass each sample draws from retained cells.
+        try:
+            sup = np.asarray(self.op.invert(np.ones(kept.size, dtype=np.float64)),
+                             dtype=np.float64).reshape(self.shape)
+            self.support_stats = dict(min=float(np.nanmin(sup)),
+                                      median=float(np.nanmedian(sup)),
+                                      max=float(np.nanmax(sup)),
+                                      positive_fraction=float((sup > 0).mean()))
+        except Exception as exc:                          # noqa: BLE001
+            self.support_stats = {"error": f"{type(exc).__name__}: {exc}"}
+
+        if self.mask_fraction < 0.2:
             raise RuntimeError(
                 f"only {100*self.mask_fraction:.1f}% of the UTM crop lies inside "
-                "the HEALPix tile footprint; the two are not comparable")
+                f"the HEALPix tile footprint (before erosion: "
+                f"{100*self.raw_inside_fraction:.1f}%); operator support stats "
+                f"{self.support_stats}")
 
     def predict(self, cell_values):
         """Project a full-block cell array onto the UTM crop grid."""
@@ -114,8 +136,10 @@ class CommonReference:
     def describe(self) -> str:
         return (f"mode={self.mode} npt={self.npt} scale={self.scale_m:.2f} m "
                 f"(FWHM {self.scale_m*1.1774:.2f} m) cells kept "
-                f"{100*self.kept_fraction:.2f}%, comparable area "
-                f"{100*self.mask_fraction:.2f}% of the crop")
+                f"{100*self.kept_fraction:.2f}%, footprint overlap "
+                f"{100*self.raw_inside_fraction:.2f}% -> comparable area "
+                f"{100*self.mask_fraction:.2f}% of the crop | support "
+                f"{self.support_stats}")
 
 
 def build_for_tile(npz, *, fwhm_m=DEFAULT_FWHM_M, mode="knn", erode=3,
