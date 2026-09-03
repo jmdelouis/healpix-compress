@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Codec ranking on the HEALPix side over all 20 matched-quality and matched-size operating points (regions $\times$ targets) at which at least one codec is evaluable. Wins sum to the number of points by construction: each point has exactly one best codec. `Evaluable' counts the points where a codec produced a value at all.}
+\label{tab:codec_ranking}
+\begin{tabular}{lrrr}
+\toprule
+Codec & Wins & Evaluable points & Mean rank \\
+\midrule
+\texttt{jpeg2000\_lossy} & 11 & 16 & 1.31 \\
+\texttt{jpegxl\_lossy} & 5 & 17 & 2.18 \\
+\texttt{zfp} & 2 & 14 & 4.43 \\
+\texttt{sz3} & 1 & 18 & 2.67 \\
+\texttt{dwt\_zstd} & 1 & 18 & 3.50 \\
+\bottomrule
+\end{tabular}
+\end{table}
