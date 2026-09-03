@@ -11,7 +11,10 @@ Guarantees enforced here (any failure rejects the region, it is never patched):
     stays under --max-nodata; above it the region is rejected rather than
     interpolated over, which would let the HEALPix side compress for free;
   * the equal-area 637x637 UTM square centred on the tile centroid also fits
-    inside the window and is fully finite;
+    inside the window, and its no-data fraction stays under the same ceiling
+    (a handful of isolated pixels is interpolated from its neighbours, exactly
+    as the HEALPix side drops them from the triangulation, and the count is
+    recorded);
   * the resampled cell ids are exactly the requested contiguous child block,
     stored in ascending (NESTED = Morton) order, ready for `expand_tile`.
 
@@ -74,6 +77,40 @@ def _to_index(cx, cy, x, y):
     dx = float(x[1] - x[0])
     dy = float(y[1] - y[0])
     return (cx - float(x[0])) / dx, (cy - float(y[0])) / dy
+
+
+def _neighbour_mean(a):
+    """Mean of each pixel's finite 8-neighbours; NaN where it has none."""
+    p = np.pad(a, 1, mode="constant", constant_values=np.nan)
+    views = [p[:-2, :-2], p[:-2, 1:-1], p[:-2, 2:],
+             p[1:-1, :-2],              p[1:-1, 2:],
+             p[2:, :-2],  p[2:, 1:-1],  p[2:, 2:]]
+    total = np.zeros_like(a, dtype=np.float64)
+    count = np.zeros_like(a, dtype=np.float64)
+    for v in views:
+        ok = np.isfinite(v)
+        total += np.where(ok, v, 0.0)
+        count += ok
+    return np.divide(total, count, out=np.full_like(total, np.nan), where=count > 0)
+
+
+def _fill_small_holes(arr, max_iter=8):
+    """Interpolate isolated no-data pixels from their finite neighbours.
+
+    Used only under the --max-nodata ceiling, i.e. for a handful of pixels. It
+    is the UTM-side counterpart of dropping no-data samples from the HEALPix
+    triangulation: both grids then see the same clean ground, and neither gets
+    a block of synthetic constant value that would compress for free.
+    """
+    out = np.asarray(arr, dtype=np.float64).copy()
+    n_bad = int((~np.isfinite(out)).sum())
+    for _ in range(max_iter):
+        bad = ~np.isfinite(out)
+        if not bad.any():
+            break
+        cand = _neighbour_mean(out)
+        out = np.where(bad & np.isfinite(cand), cand, out)
+    return out, n_bad
 
 
 def _tile_native_mask(col, row, H, W, dilate=1):
@@ -170,9 +207,12 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
                          f"no-data in tile {nd}")
         if not fitted:
             why = (f"none of the {len(diag)} candidate tiles fits inside the "
-                   f"{W}x{H} px window with a {halo_px} px halo. A larger "
-                   f"window (>= {cfg.MIN_WINDOW_PX} px + halo) or a smaller "
-                   f"halo would be needed")
+                   f"{W}x{H} px window with a {halo_px} px halo. A window is "
+                   f"only guaranteed to hold a whole tile from "
+                   f"{cfg.SAFE_WINDOW_PX} px (+ halo): {cfg.TILE_BBOX_PX} px is "
+                   f"the tile's own bounding box and applies only when the "
+                   f"anchor happens to sit near a tile centre. Re-acquire this "
+                   f"region with --window {cfg.WINDOW_PX}")
         else:
             why = (f"{len(fitted)} candidate tile(s) fit, but all exceed the "
                    f"{100*max_nodata:.3f}% no-data ceiling. Raising "
@@ -230,11 +270,24 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
             f"[{y1}:{y2}, {x1}:{x2}] does not fit in the {W}x{H} window.")
     utm_crop = np.asarray(img[y1:y2, x1:x2], dtype=np.float32)
     n_bad_crop = int((~np.isfinite(utm_crop)).sum())
-    if n_bad_crop:
+    frac_bad_crop = n_bad_crop / float(utm_crop.size)
+    # The same ceiling as the tile side, for the same reason. Note that the
+    # reader flags DN == 0 as no-data, which over very dark water (deep lakes,
+    # shadow) can flag genuine zero-reflectance pixels rather than missing data;
+    # the per-region counts are recorded so this stays auditable.
+    if frac_bad_crop > max_nodata:
         raise RuntimeError(
             f"{scene}: the equal-area UTM crop contains {n_bad_crop} no-data "
-            f"pixels ({100*n_bad_crop/utm_crop.size:.3f}%). Both grids must see "
-            "the same clean ground.")
+            f"pixels ({100*frac_bad_crop:.3f}%), above the "
+            f"{100*max_nodata:.3f}% ceiling. Both grids must see the same "
+            "clean ground.")
+    if n_bad_crop:
+        filled, _ = _fill_small_holes(utm_crop)
+        utm_crop = np.asarray(filled, dtype=np.float32)
+        if not np.all(np.isfinite(utm_crop)):
+            raise RuntimeError(
+                f"{scene}: {int((~np.isfinite(utm_crop)).sum())} no-data pixels "
+                "in the UTM crop could not be interpolated (contiguous hole).")
 
     # --- footprint outline for the diagnostic figure (decimated hull) -------
     step = max(1, cfg.N_CHILDREN // 4096)
@@ -255,6 +308,8 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
         coverage=chosen["fit"],
         nodata_in_tile_fraction=chosen["nodata"],
         nodata_samples_dropped=n_dropped,
+        utm_nodata_fraction=frac_bad_crop,
+        utm_nodata_filled=n_bad_crop,
         max_nodata_allowed=max_nodata,
         window_px=int(W),
         sub_window=[int(r0), int(r1), int(c0), int(c1)],
@@ -348,7 +403,8 @@ def main(argv=None) -> int:
             rows.append(meta)
             print(f"[{i:>2}/{len(scenes)}] {scene}: parent {meta['parent_id']} "
                   f"(rank {meta['parent_rank']}/{meta['n_candidate_parents']}), "
-                  f"no-data in tile {100*meta['nodata_in_tile_fraction']:.4f}%, "
+                  f"no-data tile {100*meta['nodata_in_tile_fraction']:.4f}% / "
+                  f"crop {meta['utm_nodata_filled']}px, "
                   f"hpx mean {meta['hpx_mean']:.4f}, utm mean {meta['utm_mean']:.4f}")
         except Exception as exc:                          # noqa: BLE001
             failures.append((scene, f"{type(exc).__name__}: {exc}"))

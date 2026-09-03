@@ -31,14 +31,28 @@ BAND = "b04"
 # Equal-area native square compared against the HEALPix tile (Section III-B).
 UTM_SIDE_PX = int(round(TILE_SIDE * DELTA_EQ / NATIVE_PIXEL_M))        # 637
 
-# Smallest native window that can contain the tile whatever its rotation:
-# a square rotated by 45 deg has a bounding box sqrt(2) times its own side.
-MIN_WINDOW_PX = int(math.ceil(TILE_SIDE_M * math.sqrt(2) / NATIVE_PIXEL_M))  # 901
+# Two different bounds, and confusing them is what makes a window look big
+# enough when it is not.
+#
+# TILE_BBOX_PX -- the tile's own bounding box, i.e. the smallest window that can
+# hold it *if the window happens to be centred on the tile*. A square rotated by
+# 45 deg has a bounding box sqrt(2) times its own side.
+TILE_BBOX_PX = int(math.ceil(TILE_SIDE_M * math.sqrt(2) / NATIVE_PIXEL_M))   # 901
 
-# Window actually acquired per region. Kept at the legacy 1512 px so the new
-# 40-region bundle and the seven original scenes stay directly comparable, and
-# so a footprint-exact (rather than equal-area) crop stays possible later.
-WINDOW_PX = int(os.environ.get("HPXC_WINDOW_PX", 1512))
+# SAFE_WINDOW_PX -- the smallest window that is guaranteed to contain some whole
+# level-10 tile whatever the anchor. Windows are centred on the region anchor,
+# which is an arbitrary point of the HEALPix grid: in the worst case it lands on
+# a four-tile junction, so the nearest tile centre is a half-diagonal away
+# (4502 m) and that tile's far corner another half-diagonal beyond it. The
+# window half-side must therefore reach 2 half-diagonals, i.e. the window must
+# be twice the tile's bounding box.
+TILE_HALF_DIAGONAL_M = TILE_SIDE_M * math.sqrt(2) / 2.0                      # 4502 m
+SAFE_WINDOW_PX = int(math.ceil(4.0 * TILE_HALF_DIAGONAL_M / NATIVE_PIXEL_M))  # 1801
+MIN_WINDOW_PX = SAFE_WINDOW_PX
+
+# Window actually acquired per region: the safe bound plus room for the
+# resampling halo on both sides.
+WINDOW_PX = int(os.environ.get("HPXC_WINDOW_PX", 1920))
 
 # --- storage accounting ------------------------------------------------------
 GAMMA_UTM = 1.30              # assumed Sentinel-2/MGRS granule overhead
@@ -106,7 +120,9 @@ def describe() -> str:
         f"  equal-area UTM crop = {UTM_SIDE_PX} x {UTM_SIDE_PX} native px "
         f"({UTM_RAW/1e6:.3f} MB raw)",
         f"  shared raw ref      = {SHARED_RAW} B ({SHARED_RAW/1e6:.3f} MB)",
-        f"  min native window   = {MIN_WINDOW_PX} px (rotation-proof)",
+        f"  tile bounding box   = {TILE_BBOX_PX} px (window centred on the tile)",
+        f"  safe native window  = {SAFE_WINDOW_PX} px (any anchor, incl. a "
+        f"four-tile junction)",
         f"  acquired window     = {WINDOW_PX} px "
         f"({'OK' if WINDOW_PX >= MIN_WINDOW_PX else 'TOO SMALL'})",
         f"  gamma_UTM           = {GAMMA_UTM}",

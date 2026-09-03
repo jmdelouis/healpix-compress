@@ -430,11 +430,13 @@ def main(argv=None) -> int:
                     help="STAC collections to try, in order")
     ap.add_argument("--max-candidates", type=int, default=12,
                     help="how many catalogue items to try before giving up")
-    ap.add_argument("--window-fallback", type=int, nargs="*", default=[1280, 1024],
+    ap.add_argument("--window-fallback", type=int, nargs="*", default=[],
                     help="smaller windows to fall back to when no product "
-                         "covers the requested one (set empty to disable). The "
-                         "tile and the UTM crop are fixed-size, so a smaller "
-                         "acquisition window changes nothing that is measured")
+                         f"covers the requested one. Anything below "
+                         f"{cfg.SAFE_WINDOW_PX} px + halo is refused: a smaller "
+                         "window can only hold a tile when the anchor happens "
+                         "to sit near a tile centre, which is luck, not a "
+                         "protocol")
     ap.add_argument("--min-finite", type=float, default=0.999,
                     help="reject a product whose window has fewer valid pixels "
                          "than this fraction (default 0.999) and try the next")
@@ -466,8 +468,13 @@ def main(argv=None) -> int:
                                if w < args.window]
     bad = [w for w in windows if w < floor]
     if bad:
-        raise SystemExit(f"window size(s) {bad} below the {floor} px floor "
-                         f"({cfg.MIN_WINDOW_PX} px tile bound + halo).")
+        raise SystemExit(
+            f"window size(s) {bad} below the {floor} px floor. A window is only "
+            f"guaranteed to contain a whole level-{cfg.PARENT_LEVEL} tile from "
+            f"{cfg.SAFE_WINDOW_PX} px (+ halo): the anchor is an arbitrary point "
+            f"of the HEALPix grid and can land on a four-tile junction, where "
+            f"the nearest tile centre is a half-diagonal "
+            f"({cfg.TILE_HALF_DIAGONAL_M:.0f} m) away.")
 
     gt = load_gt()
     gt.warn_about_aws_credentials()
