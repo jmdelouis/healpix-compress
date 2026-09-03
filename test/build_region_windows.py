@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import math
 import re
 import sys
 from datetime import datetime, timezone
@@ -40,6 +41,10 @@ import paper_config as cfg
 import region_sites
 
 LOG_PATH = cfg.REGION_DIR / "acquisition_log.csv"
+
+
+class NoCoveringProduct(RuntimeError):
+    """No Sentinel-2 product covers the requested window at this anchor."""
 
 
 def load_gt():
@@ -96,6 +101,72 @@ def _usable_asset(gt, item):
             return key, href, "asset in the requester-pays sentinel-s2-l2a archive"
         return key, href, ""
     return None, None, f"no {'/'.join(COG_ASSET_KEYS)} asset"
+
+
+def _window_ring_lonlat(lon0, lat0, window_px, n_per_side=8, margin_px=8):
+    """Approximate lon/lat samples along the window's boundary, plus its centre.
+
+    A local flat-Earth conversion is enough here: the test is containment in a
+    granule footprint, with a margin of a few pixels, over a window under 20 km.
+    """
+    half_m = (window_px / 2.0 + margin_px) * cfg.NATIVE_PIXEL_M
+    dlat = half_m / 111320.0
+    dlon = half_m / (111320.0 * max(0.15, math.cos(math.radians(lat0))))
+    pts = [(lon0, lat0)]
+    for i in range(n_per_side + 1):
+        t = -1.0 + 2.0 * i / n_per_side
+        pts += [(lon0 + t * dlon, lat0 - dlat), (lon0 + t * dlon, lat0 + dlat),
+                (lon0 - dlon, lat0 + t * dlat), (lon0 + dlon, lat0 + t * dlat)]
+    return pts
+
+
+def _point_in_ring(px, py, ring) -> bool:
+    inside = False
+    n = len(ring)
+    for i in range(n):
+        x1, y1 = ring[i]
+        x2, y2 = ring[(i + 1) % n]
+        if (y1 > py) != (y2 > py):
+            xin = (x2 - x1) * (py - y1) / (y2 - y1) + x1
+            if px < xin:
+                inside = not inside
+    return inside
+
+
+def _footprint_covers(geom, pts):
+    """Does a GeoJSON footprint contain every test point? None if unknown.
+
+    Sentinel-2 granules at the edge of a swath are only partially filled: the
+    STAC item's geometry is the *valid data* polygon, not the 110 km MGRS
+    square. Testing it before downloading turns 'read 1800x1800 px, discover a
+    no-data wedge, discard' into a metadata comparison -- and it is the only
+    thing that distinguishes a fixed granule edge (identical valid fraction for
+    every acquisition of that tile) from cloud (which varies).
+    """
+    if not geom:
+        return None
+    kind = geom.get("type")
+    if kind == "Polygon":
+        polys = [geom.get("coordinates") or []]
+    elif kind == "MultiPolygon":
+        polys = geom.get("coordinates") or []
+    else:
+        return None
+    for px, py in pts:
+        ok = False
+        for poly in polys:
+            if not poly:
+                continue
+            outer = [(c[0], c[1]) for c in poly[0]]
+            if _point_in_ring(px, py, outer):
+                in_hole = any(_point_in_ring(px, py, [(c[0], c[1]) for c in ring])
+                              for ring in poly[1:])
+                if not in_hole:
+                    ok = True
+                    break
+        if not ok:
+            return False
+    return True
 
 
 def _search_collections(gt, lon0, lat0, collections, cloud_max, date_window, limit=200):
@@ -212,8 +283,17 @@ def fetch_window(gt, site, window_px: int, band: str, *,
         raise RuntimeError(f"{site.scene}: no catalogue item at "
                            f"({lat0:.4f}, {lon0:.4f}) in {collections}")
 
-    attempts, chosen = [], None
-    for coll, item, how in candidates[:max_candidates]:
+    ring = _window_ring_lonlat(lon0, lat0, window_px)
+    attempts, chosen, n_uncovered = [], None, 0
+    for coll, item, how in candidates:
+        if len(attempts) - n_uncovered >= max_candidates:
+            break
+        covers = _footprint_covers(getattr(item, "geometry", None), ring)
+        if covers is False:
+            n_uncovered += 1
+            attempts.append(f"{item.id}[{coll}]: granule footprint does not "
+                            f"cover the {window_px} px window")
+            continue
         key, href, problem = _usable_asset(gt, item)
         if problem:
             attempts.append(f"{item.id}[{coll}]: {problem}")
@@ -239,10 +319,13 @@ def fetch_window(gt, site, window_px: int, band: str, *,
         break
 
     if chosen is None:
-        raise RuntimeError(
-            f"{site.scene}: none of the {len(candidates)} candidate products "
-            f"yielded a readable public COG.\n      "
-            + "\n      ".join(attempts[:6]))
+        summary = (f"{site.scene}: none of the {len(candidates)} candidate "
+                   f"products covers a clean {window_px} px window")
+        if n_uncovered:
+            summary += (f" ({n_uncovered} rejected on footprint alone -- the "
+                        f"anchor sits near a granule edge)")
+        raise NoCoveringProduct(summary + ".\n      "
+                                + "\n      ".join(attempts[:6]))
 
     coll, item, how, asset_key, refl, x, y, crs = chosen
     props = item.properties
@@ -347,6 +430,11 @@ def main(argv=None) -> int:
                     help="STAC collections to try, in order")
     ap.add_argument("--max-candidates", type=int, default=12,
                     help="how many catalogue items to try before giving up")
+    ap.add_argument("--window-fallback", type=int, nargs="*", default=[1280, 1024],
+                    help="smaller windows to fall back to when no product "
+                         "covers the requested one (set empty to disable). The "
+                         "tile and the UTM crop are fixed-size, so a smaller "
+                         "acquisition window changes nothing that is measured")
     ap.add_argument("--min-finite", type=float, default=0.999,
                     help="reject a product whose window has fewer valid pixels "
                          "than this fraction (default 0.999) and try the next")
@@ -373,11 +461,22 @@ def main(argv=None) -> int:
         check(sites)
         return 0
 
+    floor = cfg.MIN_WINDOW_PX + 64
+    windows = [args.window] + [w for w in sorted(args.window_fallback, reverse=True)
+                               if w < args.window]
+    bad = [w for w in windows if w < floor]
+    if bad:
+        raise SystemExit(f"window size(s) {bad} below the {floor} px floor "
+                         f"({cfg.MIN_WINDOW_PX} px tile bound + halo).")
+
     gt = load_gt()
     gt.warn_about_aws_credentials()
     print(f"[source] {gt.EARTH_SEARCH_URL} | collections {args.collections} | "
           f"assets {COG_ASSET_KEYS} | window {args.window} px | "
           f"up to {args.max_candidates} candidates per region")
+    if len(windows) > 1:
+        print(f"[window] {windows[0]} px, falling back to {windows[1:]} px "
+              f"where no product covers it")
 
     logs, failures = [], []
     for i, site in enumerate(sites.itertuples(), 1):
@@ -386,17 +485,30 @@ def main(argv=None) -> int:
             print(f"[{i:>2}/{len(sites)}] {site.scene}: cached")
             continue
         try:
-            ds, info = fetch_window(gt, site, args.window, args.band,
-                                    collections=tuple(args.collections),
-                                    max_candidates=args.max_candidates,
-                                    min_finite=args.min_finite,
-                                    cloud_ladder=args.cloud_max)
+            ds = info = None
+            last = None
+            for w in windows:
+                try:
+                    ds, info = fetch_window(gt, site, w, args.band,
+                                            collections=tuple(args.collections),
+                                            max_candidates=args.max_candidates,
+                                            min_finite=args.min_finite,
+                                            cloud_ladder=args.cloud_max)
+                    break
+                except NoCoveringProduct as exc:
+                    last = exc
+                    if w != windows[-1]:
+                        print(f"    no product covers a {w} px window here; "
+                              f"falling back to {windows[windows.index(w)+1]} px")
+            if ds is None:
+                raise last
             ds.to_zarr(path, mode="w", **gt._zarr_v2_kwargs())
             info["status"] = "ok"
             logs.append(info)
             print(f"[{i:>2}/{len(sites)}] {site.scene}: {info['product_id']} "
                   f"({info['product_resolution']}, cloud {info['cloud_cover']}%, "
-                  f"finite {100*info['finite_fraction']:.2f}%)")
+                  f"finite {100*info['finite_fraction']:.2f}%, "
+                  f"window {info['window_px']} px)")
         except Exception as exc:                          # noqa: BLE001
             failures.append((site.scene, f"{type(exc).__name__}: {exc}"))
             logs.append(dict(scene=site.scene, status="failed",
