@@ -196,7 +196,13 @@ def main(argv=None) -> int:
                     help=f"default: {sorted(codec_lib.CODEC_RUNS)}")
     ap.add_argument("--common-reference", action="store_true",
                     help="also score the HEALPix side against the UTM observation")
-    ap.add_argument("--cr-mode", choices=["knn", "psf"], default="knn")
+    ap.add_argument("--cr-mode", choices=["nearest", "knn", "psf"],
+                    default="nearest",
+                    help="how the decoded HEALPix tile is read on the UTM "
+                         "pixels: 'nearest' takes the cell containing each "
+                         "pixel (exact, no smoothing of its own); 'knn'/'psf' "
+                         "apply healpix-resample's Gaussian observation "
+                         "operator, as a sensitivity check")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--assemble", action="store_true", help="only rebuild the CSVs")
     ap.add_argument("--legacy", action="store_true",

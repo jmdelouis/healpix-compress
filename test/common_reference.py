@@ -46,6 +46,11 @@ import paper_config as cfg
 
 DEFAULT_FWHM_M = 12.5     # healpix-resample's calibrated effective B04 response
 
+# The weighted-operator fallback is a property of the environment, not of a
+# region: once it has been reported, repeating it 39 more times adds nothing.
+# The mode actually used is recorded per region in common_reference_floor.csv.
+_FALLBACK_REPORTED = False
+
 
 class CommonReference:
     """Read the HEALPix tile on the UTM crop's pixels, where both overlap."""
@@ -101,10 +106,15 @@ class CommonReference:
         # would mean the tile and the crop are genuinely misregistered.
         self.support_median = self._constant_field_check()
         if not self._support_ok(self.support_median) and self.op is not None:
-            print(f"    WARNING: the {mode!r} operator projects a constant field "
-                  f"to {self.support_median:.4f} instead of 1.0 -- it is not "
-                  f"usable in this environment. Falling back to the nearest-cell "
-                  f"read; report this as mode 'nearest'.")
+            global _FALLBACK_REPORTED
+            if not _FALLBACK_REPORTED:
+                print(f"    NOTE: the {mode!r} operator projects a constant field "
+                      f"to {self.support_median:.4f} instead of 1.0 and is not "
+                      f"usable in this environment; falling back to the "
+                      f"nearest-cell read for every region (recorded as mode "
+                      f"'nearest' in the results). Pass --cr-mode nearest to "
+                      f"skip building it at all.")
+                _FALLBACK_REPORTED = True
             self.op = None
             self.mode = f"nearest (fallback from {mode})"
             self.support_median = self._constant_field_check()
