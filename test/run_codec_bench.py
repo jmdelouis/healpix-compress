@@ -93,7 +93,8 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
         cr = common_reference.build_for_tile(npz, mode=cr_mode)
         floor = cr.rmse_on_mask(cr.predict(cell_data), utm_tile)
         std_on_mask = float(np.asarray(utm_tile, dtype=np.float64)[cr.mask].std())
-        floor_row = dict(base, mode=cr_mode, npt=cr.npt, scale_m=cr.scale_m,
+        floor_row = dict(base, mode=cr.mode, mode_requested=cr_mode,
+                         npt=cr.npt, scale_m=cr.scale_m,
                          raw_inside_fraction=cr.raw_inside_fraction,
                          support_median=cr.support_median,
                          mask_fraction=cr.mask_fraction,

@@ -92,15 +92,38 @@ class CommonReference:
             self._build_operator(utm_lon, utm_lat, fwhm_m, npt, verbose)
 
         # --- the invariant every projection must satisfy ---------------------
-        support = self.predict(np.ones(cfg.N_CHILDREN, dtype=np.float64))
-        med = float(np.nanmedian(support[self.mask])) if self.mask.any() else np.nan
-        self.support_median = med
-        if not np.isfinite(med) or abs(med - 1.0) > 0.05:
+        # A projection that loses a constant field is worthless and, worse,
+        # invisible: every rate-distortion point then reports the same "error",
+        # the RMS of the observations themselves. The weighted operator does
+        # exactly that on some torch builds, so a failure there falls back to
+        # the nearest-cell read -- which is verified, not a guess -- rather than
+        # dropping the region. Only a nearest-cell failure is fatal, because it
+        # would mean the tile and the crop are genuinely misregistered.
+        self.support_median = self._constant_field_check()
+        if not self._support_ok(self.support_median) and self.op is not None:
+            print(f"    WARNING: the {mode!r} operator projects a constant field "
+                  f"to {self.support_median:.4f} instead of 1.0 -- it is not "
+                  f"usable in this environment. Falling back to the nearest-cell "
+                  f"read; report this as mode 'nearest'.")
+            self.op = None
+            self.mode = f"nearest (fallback from {mode})"
+            self.support_median = self._constant_field_check()
+        if not self._support_ok(self.support_median):
             raise RuntimeError(
                 f"the HEALPix -> UTM projection does not preserve a constant "
-                f"field (median {med} on the comparable area, expected 1.0) in "
-                f"mode {mode!r}. With mode='nearest' this cannot happen unless "
-                f"the tile and the crop are misregistered.")
+                f"field (median {self.support_median} on the comparable area, "
+                f"expected 1.0) even with a nearest-cell read: the tile and the "
+                f"crop must be misregistered.")
+
+    @staticmethod
+    def _support_ok(med) -> bool:
+        return bool(np.isfinite(med)) and abs(float(med) - 1.0) <= 0.05
+
+    def _constant_field_check(self) -> float:
+        support = self.predict(np.ones(cfg.N_CHILDREN, dtype=np.float64))
+        if not self.mask.any():
+            return float("nan")
+        return float(np.nanmedian(np.asarray(support)[self.mask]))
 
     # -- optional PSF-weighted operator --------------------------------------
     def _build_operator(self, utm_lon, utm_lat, fwhm_m, npt, verbose):
