@@ -11,13 +11,13 @@
 | codec | library | version | self-contained | uncharged sidecar | 16-bit floor (RMSE) | lossless claimed | bit-exact vs input | bit-exact vs 16-bit input |
 |---|---|---|---|---|---|---|---|---|
 | `dwt_zstd` | pywt | 1.8.0 | no | 0 B | -- | no | -- | -- |
-| `jpeg2000_lossless` | imagecodecs | 2026.5.10 | no | 8 B | 1.81e-02 | yes | no | yes |
-| `jpeg2000_lossy` | PIL | 12.2.0 | no | 8 B | 1.81e-02 | no | -- | -- |
-| `jpegxl_lossless` | imagecodecs | 2026.5.10 | no | 8 B | 1.81e-02 | yes | no | yes |
-| `jpegxl_lossy` | imagecodecs | 2026.5.10 | no | 8 B | 1.81e-02 | no | -- | -- |
-| `sz3` | pysz | unknown | no | 0 B | -- | no | -- | -- |
+| `jpeg2000_lossless` | imagecodecs | 2026.5.10 | no | 8 B | 5.66e-06 | yes | no | yes |
+| `jpeg2000_lossy` | PIL | 12.2.0 | no | 8 B | 5.66e-06 | no | -- | -- |
+| `jpegxl_lossless` | imagecodecs | 2026.5.10 | no | 8 B | 5.66e-06 | yes | no | yes |
+| `jpegxl_lossy` | imagecodecs | 2026.5.10 | no | 8 B | 5.66e-06 | no | -- | -- |
+| `sz3` | pysz | 1.0.3 | no | 0 B | -- | no | -- | -- |
 | `uncompressed` | numpy | 2.4.6 | no | 0 B | -- | yes | yes | yes |
-| `zfp` | zfpy | unknown | yes | 0 B | -- | no | -- | -- |
+| `zfp` | zfpy | 1.0.1 | yes | 0 B | -- | no | -- | -- |
 
 ## Per scenario
 

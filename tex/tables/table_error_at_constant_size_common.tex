@@ -1,0 +1,15 @@
+\begin{table}[t]
+\centering
+\caption{Per-region HPX/UTM reconstruction-RMSE ratio at a constant shared storage budget, expressed as a fraction of the shared raw HEALPix tile size (4194304 B); the UTM side receives that budget divided by $\gamma_{\mathrm{tile}}=1.3$. Ratio $<1$ favors HEALPix.}
+\label{tab:error_at_size_common}
+\begin{tabular}{lrrrrrl}
+\toprule
+Target & $n$ & Median ratio & Range & $p$ & $p_{\mathrm{Holm}}$ & Favors \\
+\midrule
+$10\%$ & 40 & 33.39 & [18.39, 2971.19] & $<10^{-4}$ & $<10^{-4}$ & UTM \\
+$5\%$ & 40 & 4.08 & [2.40, 467.44] & $<10^{-4}$ & $<10^{-4}$ & UTM \\
+$2\%$ & 40 & 1.50 & [1.08, 24.15] & $<10^{-4}$ & $<10^{-4}$ & UTM \\
+\bottomrule
+\end{tabular}
+\\[2pt]\footnotesize Exact/asymptotic two-sided Wilcoxon on $\log$(ratio); $p_{\mathrm{Holm}}$ corrects across the whole family of 4 targets reported in Tables~\ref{tab:storage_at_rmse} and~\ref{tab:error_at_size_common}.
+\end{table}
