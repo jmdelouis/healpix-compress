@@ -340,7 +340,24 @@ def control_common(scene, codecs, targets, verbose=True):
 
 
 # --- control C: one analytic field on both geometries ------------------------
-def synthetic_field(px, py, *, beta=2.0, k_min, k_max, n_modes=512, seed=0):
+def psf_sigma_from_fwhm(fwhm_m: float) -> float:
+    """Gaussian sigma of the instrument response, in metres.
+
+    Uses healpix-resample's own conversion when it is importable, so the
+    control and the common-reference operator of common_reference.py describe
+    the same instrument rather than two slightly different Gaussians.
+    """
+    if not fwhm_m:
+        return 0.0
+    try:
+        from healpix_resample.psf_geometry import fwhm_to_scale
+        return float(fwhm_to_scale(float(fwhm_m)))
+    except Exception:                                      # noqa: BLE001
+        return float(fwhm_m) / (2.0 * math.sqrt(2.0 * math.log(2.0)))
+
+
+def synthetic_field(px, py, *, beta=2.0, k_min, k_max, n_modes=512, seed=0,
+                    psf_sigma_m=0.0):
     """A band-limited random field evaluable at arbitrary positions.
 
     Built as a sum of plane waves with amplitudes following |k|^(-beta/2), so
@@ -349,12 +366,33 @@ def synthetic_field(px, py, *, beta=2.0, k_min, k_max, n_modes=512, seed=0):
     That is what makes the comparison content-free -- both grids see the same
     function, so any difference in compressed size is the sampling geometry and
     nothing else.
+
+    `psf_sigma_m` convolves the field with the instrument's Gaussian response
+    before sampling, and this matters more than anything else in this module.
+    Sentinel-2's B04 response is about 12.5 m FWHM, so the real imagery carries
+    very little power between the native 10 m sampling and the 6.22 m HEALPix
+    cell: the carrier grid is oversampling a field that is already smooth at
+    its own scale. A synthetic field with power all the way to the native
+    Nyquist is a far harder object than anything the instrument delivers, and
+    comparing the two grids on it measures the chosen band limit rather than
+    the geometry. Because the field is a sum of plane waves the convolution is
+    exact and costs nothing -- each mode's amplitude is scaled by
+    exp(-k^2 sigma^2 / 2) -- and the field stays analytic and grid-free.
     """
     rng = np.random.default_rng(seed)
     k = np.exp(rng.uniform(math.log(k_min), math.log(k_max), n_modes))
     theta = rng.uniform(0, 2 * math.pi, n_modes)
     phase = rng.uniform(0, 2 * math.pi, n_modes)
-    amp = k ** (-0.5 * beta)
+    # `beta` is the slope of the 2-D power spectrum, so that it can be set
+    # directly from what `--control spectrum` fits on the real imagery. With
+    # modes drawn log-uniformly in k, the power in an annulus is amp^2 dk / k
+    # and the 2-D PSD is that over 2 pi k dk, i.e. P(k) ~ amp^2 / k^2; taking
+    # amp ~ k^((2-beta)/2) therefore gives P(k) ~ k^(-beta). The naive
+    # amp ~ k^(-beta/2) instead yields P ~ k^(-beta-2), which would make every
+    # fitted slope unusable as an input.
+    amp = k ** (0.5 * (2.0 - beta))
+    if psf_sigma_m:
+        amp = amp * np.exp(-0.5 * (k * float(psf_sigma_m)) ** 2)
     kx, ky = k * np.cos(theta), k * np.sin(theta)
 
     x = np.asarray(px, dtype=np.float64).ravel()
@@ -373,8 +411,8 @@ def synthetic_field(px, py, *, beta=2.0, k_min, k_max, n_modes=512, seed=0):
     return out.reshape(np.shape(px))
 
 
-def control_synthetic(scene, codecs, targets, betas=(1.5, 2.0, 2.5),
-                      band="utm", seed=0, verbose=True):
+def control_synthetic(scene, codecs, targets, betas=(3.0, 4.0, 5.0),
+                      band="hpx", seed=0, psf_fwhm_m=12.5, verbose=True):
     """Sample one analytic field on both lattices and compress both."""
     import pyproj
     reg = load_region(scene)
@@ -393,12 +431,23 @@ def control_synthetic(scene, codecs, targets, betas=(1.5, 2.0, 2.5),
     gx, gy = np.meshgrid(reg["utm_x"] - x0, reg["utm_y"] - y0)
 
     k_min = 2.0 * math.pi / cfg.TILE_SIDE_M
-    # Band-limit at the coarser grid's Nyquist by default: if the field carried
-    # power above what 10 m sampling can represent, the UTM side would be
-    # penalised for aliasing rather than for its geometry, and the control
-    # would measure the band limit instead of the grids.
+    # The instrument response, not an arbitrary cutoff, is what band-limits the
+    # real imagery, so it is what band-limits this field. Modes are generated
+    # up to the finer grid's Nyquist -- so the HEALPix side never aliases -- and
+    # the PSF then decides how much survives at each scale, leaving the UTM
+    # side to alias exactly the small residual it aliases in reality.
     nyq = {"utm": cfg.NATIVE_PIXEL_M, "hpx": cfg.DELTA_EQ}[band]
     k_max = math.pi / nyq
+    sigma = psf_sigma_from_fwhm(psf_fwhm_m)
+    k_nyq_utm = math.pi / cfg.NATIVE_PIXEL_M
+    k_nyq_hpx = math.pi / cfg.DELTA_EQ
+    mtf_utm = math.exp(-0.5 * (k_nyq_utm * sigma) ** 2) if sigma else 1.0
+    mtf_hpx = math.exp(-0.5 * (k_nyq_hpx * sigma) ** 2) if sigma else 1.0
+    if verbose:
+        print(f"    PSF {psf_fwhm_m:g} m FWHM (sigma {sigma:.2f} m): "
+              f"MTF {mtf_utm:.3f} at the UTM Nyquist, {mtf_hpx:.3f} at the "
+              f"HEALPix Nyquist"
+              if sigma else "    no PSF: the field is hard to the band limit")
 
     target_mean = float(np.mean(reg["cell_data"]))
     target_std = float(np.std(reg["cell_data"]))
@@ -406,9 +455,9 @@ def control_synthetic(scene, codecs, targets, betas=(1.5, 2.0, 2.5),
     rows, sweeps = [], []
     for beta in betas:
         f_h = synthetic_field(hpx_x, hpx_y, beta=beta, k_min=k_min, k_max=k_max,
-                              seed=seed)
+                              seed=seed, psf_sigma_m=sigma)
         f_u = synthetic_field(gx, gy, beta=beta, k_min=k_min, k_max=k_max,
-                              seed=seed)
+                              seed=seed, psf_sigma_m=sigma)
         # One common normalisation for both, derived from the field itself, so
         # the two rasters stay the same function rather than two rescalings.
         mu = float(np.mean(f_h))
@@ -424,7 +473,9 @@ def control_synthetic(scene, codecs, targets, betas=(1.5, 2.0, 2.5),
         sweeps += [hpx, utm]
         for t, r in ratios.items():
             rows.append(dict(scene=scene, control="synthetic", beta=beta,
-                             band=band, target=t, **r,
+                             band=band, psf_fwhm_m=psf_fwhm_m,
+                             psf_sigma_m=sigma, mtf_utm_nyquist=mtf_utm,
+                             mtf_hpx_nyquist=mtf_hpx, target=t, **r,
                              both_bracketed=_both_bracketed(r),
                              hpx_std=float(np.std(f_h)),
                              utm_std=float(np.std(f_u))))
@@ -436,6 +487,75 @@ def control_synthetic(scene, codecs, targets, betas=(1.5, 2.0, 2.5),
             print(f"    beta={beta}: {shown}   (* = not bracketed on both sides)")
     _save_sweeps("synthetic", scene, sweeps)
     return pd.DataFrame(rows)
+
+
+# --- control D: calibrate the synthetic field against the real imagery -------
+def radial_psd(img, pixel_m):
+    """Radially averaged power spectrum of a square image, in rad/m."""
+    a = np.asarray(img, dtype=np.float64)
+    a = a - a.mean()
+    n = a.shape[0]
+    # Hann window in both axes: without it the crop's edges inject a k^-2 tail
+    # that would be read as scene power and bias every slope fitted below.
+    w = np.hanning(n)
+    a = a * np.outer(w, w)
+    f = np.fft.fftshift(np.abs(np.fft.fft2(a)) ** 2)
+    kx = np.fft.fftshift(np.fft.fftfreq(n, d=pixel_m)) * 2.0 * math.pi
+    kk = np.hypot(*np.meshgrid(kx, kx))
+    kmax = math.pi / pixel_m
+    edges = np.linspace(0, kmax, 64)
+    idx = np.digitize(kk.ravel(), edges) - 1
+    ok = (idx >= 0) & (idx < len(edges) - 1)
+    power = np.bincount(idx[ok], weights=f.ravel()[ok], minlength=len(edges) - 1)
+    count = np.bincount(idx[ok], minlength=len(edges) - 1)
+    centres = 0.5 * (edges[1:] + edges[:-1])
+    with np.errstate(invalid="ignore", divide="ignore"):
+        psd = power / np.maximum(count, 1)
+    good = count > 0
+    return centres[good], psd[good]
+
+
+def fit_slope_and_psf(k, psd, k_lo, k_hi):
+    """Fit log P(k) = c - beta log k - k^2 sigma^2 over [k_lo, k_hi].
+
+    Two parameters, linear in (log k, k^2), so an ordinary least squares. The
+    Gaussian term is what the instrument response contributes; recovering its
+    width from the imagery is the point -- the nominal 12.5 m FWHM is a
+    specification, and the control should use what the data actually show.
+    """
+    m = (k >= k_lo) & (k <= k_hi) & np.isfinite(psd) & (psd > 0)
+    if m.sum() < 6:
+        return np.nan, np.nan
+    A = np.column_stack([np.ones(m.sum()), -np.log(k[m]), -(k[m] ** 2)])
+    coef, *_ = np.linalg.lstsq(A, np.log(psd[m]), rcond=None)
+    beta = float(coef[1])
+    sig2 = float(coef[2])
+    sigma = math.sqrt(sig2) if sig2 > 0 else np.nan
+    return beta, sigma
+
+
+def control_spectrum(scene, codecs, targets, verbose=True, **_ignored):
+    """What slope and what instrument width does the real crop actually show?"""
+    reg = load_region(scene)
+    k, psd = radial_psd(reg["utm_crop"], cfg.NATIVE_PIXEL_M)
+    k_nyq_utm = math.pi / cfg.NATIVE_PIXEL_M
+    k_lo = 2.0 * math.pi / (cfg.UTM_SIDE_PX * cfg.NATIVE_PIXEL_M) * 4
+    beta, sigma = fit_slope_and_psf(k, psd, k_lo, k_nyq_utm)
+    fwhm = sigma * 2.0 * math.sqrt(2.0 * math.log(2.0)) if np.isfinite(sigma) else np.nan
+
+    # How much of the crop's variance sits in the octave the carrier grid adds,
+    # i.e. between the UTM Nyquist and the HEALPix Nyquist? On band-limited
+    # imagery this is what the extra HEALPix samples can possibly be carrying.
+    tot = float(np.sum(psd))
+    hi = float(np.sum(psd[k >= 0.5 * k_nyq_utm]))
+    if verbose:
+        print(f"    slope beta={beta:.2f}, fitted PSF sigma={sigma:.2f} m "
+              f"(FWHM {fwhm:.1f} m), variance above half-Nyquist "
+              f"{100*hi/tot:.2f}%")
+    return pd.DataFrame([dict(scene=scene, control="spectrum", beta_fit=beta,
+                              psf_sigma_m=sigma, psf_fwhm_m=fwhm,
+                              frac_var_above_half_nyquist=hi / tot,
+                              k_lo=k_lo, k_hi=k_nyq_utm)])
 
 
 # --- reporting ---------------------------------------------------------------
@@ -483,6 +603,31 @@ def summarize(frames: dict) -> str:
                        f"{ok.utm_bytes_per_km2.median():.3g} | "
                        f"{ok.ratio_per_km2.median():.3f} |")
         out.append("")
+
+    if "spectrum" in frames and len(frames["spectrum"]):
+        d = frames["spectrum"].dropna(subset=["psf_fwhm_m"])
+        if len(d):
+            out += ["## What the real imagery's spectrum says", "",
+                    "Radial power spectrum of each UTM crop, fitted as a power "
+                    "law times a Gaussian instrument response. The fitted FWHM "
+                    "is what the synthetic control should use: the nominal "
+                    "12.5 m is a specification, this is what the data show.", "",
+                    f"- fitted slope beta: median {d.beta_fit.median():.2f}, "
+                    f"range [{d.beta_fit.min():.2f}, {d.beta_fit.max():.2f}]",
+                    f"- fitted PSF FWHM: median {d.psf_fwhm_m.median():.1f} m, "
+                    f"range [{d.psf_fwhm_m.min():.1f}, "
+                    f"{d.psf_fwhm_m.max():.1f}] m",
+                    f"- variance above half the UTM Nyquist: median "
+                    f"{100*d.frac_var_above_half_nyquist.median():.2f}%", "",
+                    "The same estimator is applied to the synthetic field, and "
+                    "it carries a small known bias from the Hann window and the "
+                    "radial binning (about +0.2 in slope and -1 m in FWHM on a "
+                    "field of known parameters). Matching fitted-to-fitted "
+                    "cancels it to first order, which is what feeding these "
+                    "medians straight back in does:", "",
+                    f"    python support_controls.py --control synthetic "
+                    f"--betas {d.beta_fit.median():.1f} "
+                    f"--psf-fwhm {d.psf_fwhm_m.median():.1f}", ""]
 
     if "synthetic" in frames and len(frames["synthetic"]):
         d = frames["synthetic"]
@@ -562,22 +707,31 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--control", nargs="*", default=["synthetic"],
-                    choices=["shift", "common", "synthetic", "all"])
+                    choices=["spectrum", "shift", "common", "synthetic", "all"])
     ap.add_argument("--regions", nargs="*", default=None)
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--codecs", nargs="*", default=cfg.COMPRESSOR_CODECS)
     ap.add_argument("--targets", type=float, nargs="*", default=cfg.TARGET_RMSE)
-    ap.add_argument("--betas", type=float, nargs="*", default=[1.5, 2.0, 2.5])
-    ap.add_argument("--band", choices=["utm", "hpx"], default="utm",
-                    help="Nyquist to band-limit the synthetic field at "
-                         "(default: the coarser grid, so UTM is not penalised "
-                         "for aliasing rather than for its geometry)")
+    ap.add_argument("--betas", type=float, nargs="*", default=[3.0, 4.0, 5.0],
+                    help="slopes of the 2-D power spectrum to synthesise. Set "
+                         "these from what --control spectrum fits on the real "
+                         "crops rather than leaving the defaults")
+    ap.add_argument("--band", choices=["utm", "hpx"], default="hpx",
+                    help="Nyquist up to which synthetic modes are generated "
+                         "(default: the finer grid, so HEALPix never aliases; "
+                         "the PSF, not this cutoff, is what band-limits the "
+                         "field)")
+    ap.add_argument("--psf-fwhm", type=float, default=12.5,
+                    help="instrument response FWHM in metres applied to the "
+                         "synthetic field (Sentinel-2 B04 is about 12.5 m). "
+                         "Pass 0 for an unconvolved field, which is a much "
+                         "harder object than the instrument ever delivers")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--no-tex", action="store_true")
     args = ap.parse_args(argv)
 
-    controls = (["shift", "common", "synthetic"] if "all" in args.control
-                else list(dict.fromkeys(args.control)))
+    controls = (["spectrum", "shift", "common", "synthetic"]
+                if "all" in args.control else list(dict.fromkeys(args.control)))
 
     scenes = args.regions or list(region_sites.load_sites()["scene"])
     scenes = [s for s in scenes if (cfg.TILE_DIR / f"{s}.npz").exists()]
@@ -593,14 +747,16 @@ def main(argv=None) -> int:
     frames, failures = {}, []
     for control in controls:
         fn = {"shift": control_shift, "common": control_common,
-              "synthetic": control_synthetic}[control]
+              "synthetic": control_synthetic,
+              "spectrum": control_spectrum}[control]
         parts = []
         for scene in scenes:
             print(f"  [{control}] {scene}")
             try:
                 if control == "synthetic":
                     df = fn(scene, args.codecs, args.targets,
-                            betas=args.betas, band=args.band, seed=args.seed)
+                            betas=args.betas, band=args.band, seed=args.seed,
+                            psf_fwhm_m=args.psf_fwhm)
                 else:
                     df = fn(scene, args.codecs, args.targets)
             except Exception as exc:                       # noqa: BLE001
