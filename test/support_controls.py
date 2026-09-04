@@ -83,19 +83,48 @@ def sweep_array(arr, scene: str, codecs=None, label: str = "") -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _save_sweeps(control: str, scene: str, frames):
+    """Append the raw rate-distortion points behind every reported ratio.
+
+    They are small, and without them a surprising ratio cannot be told from a
+    sweep that simply failed to reach the target.
+    """
+    frames = [f for f in frames if f is not None and len(f)]
+    if not frames:
+        return
+    cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    path = cfg.RESULTS_DIR / f"support_controls_sweeps_{control}.csv"
+    df = pd.concat(frames, ignore_index=True)
+    df.to_csv(path, mode="a", header=not path.exists(), index=False)
+
+
 def oracle_size(df, scene, codecs, target):
     return st.best_of_codecs_size(df, scene, codecs, target)
 
 
 def ratio_at_targets(hpx_df, utm_df, scene, codecs, targets, gamma=1.0):
-    """HPX/UTM oracle-best size ratio at each target RMSE."""
+    """HPX/UTM oracle-best size ratio at each target RMSE, with bracketing.
+
+    A ratio built from two censored bounds is not an estimate of anything, and
+    on a synthetic field the sweeps can miss a target on one side only -- which
+    would show up as a spurious jump in the ratio and be indistinguishable from
+    a grid effect. Both flags travel with every ratio for that reason.
+    """
     out = {}
     for t in targets:
         h = st.best_of_codecs_size(hpx_df, scene, codecs, t)
         u = st.best_of_codecs_size(utm_df, scene, codecs, t)
-        out[t] = float(h / (u * gamma)) if (np.isfinite(h) and np.isfinite(u)
-                                            and u > 0) else np.nan
+        out[t] = dict(
+            ratio=(float(h / (u * gamma)) if (np.isfinite(h) and np.isfinite(u)
+                                              and u > 0) else np.nan),
+            hpx_bytes=float(h), utm_bytes=float(u),
+            bracketed_hpx=st.any_bracketed(hpx_df, scene, codecs, t, "rmse"),
+            bracketed_utm=st.any_bracketed(utm_df, scene, codecs, t, "rmse"))
     return out
+
+
+def _both_bracketed(d):
+    return bool(d["bracketed_hpx"] and d["bracketed_utm"])
 
 
 # --- geometry helpers --------------------------------------------------------
@@ -217,7 +246,7 @@ def control_shift(scene, codecs, targets, shifts=SHIFTS, verbose=True):
 
     hpx = sweep_array(expanded(reg["cell_data"]), scene, codecs, label="hpx")
 
-    rows = []
+    rows, sweeps = [], []
     for dx, dy in shifts:
         x1, x2 = ccol + dx - half, ccol + dx + half + 1
         y1, y2 = crow + dy - half, crow + dy + half + 1
@@ -235,15 +264,19 @@ def control_shift(scene, codecs, targets, shifts=SHIFTS, verbose=True):
                 continue
         utm = sweep_array(crop, scene, codecs, label=f"utm_{dx:+d}_{dy:+d}")
         ratios = ratio_at_targets(hpx, utm, scene, codecs, targets)
+        sweeps.append(utm)
         for t, r in ratios.items():
             rows.append(dict(scene=scene, control="shift", dx=dx, dy=dy,
-                             target=t, ratio=r,
+                             target=t, **r, both_bracketed=_both_bracketed(r),
                              crop_std=float(np.std(crop)),
                              crop_mean=float(np.mean(crop))))
         if verbose:
-            shown = ", ".join(f"{t:g}:{ratios[t]:.3f}" for t in targets
-                              if np.isfinite(ratios[t]))
+            shown = ", ".join(
+                f"{t:g}:{ratios[t]['ratio']:.3f}"
+                + ("" if _both_bracketed(ratios[t]) else "*")
+                for t in targets if np.isfinite(ratios[t]["ratio"]))
             print(f"    shift ({dx:+d},{dy:+d}): {shown}")
+    _save_sweeps("shift", scene, [hpx] + sweeps)
     return pd.DataFrame(rows)
 
 
@@ -283,12 +316,18 @@ def control_common(scene, codecs, targets, verbose=True):
     hpx = sweep_array(hpx_sub, scene, codecs, label="hpx_common")
     utm = sweep_array(utm_sub, scene, codecs, label="utm_common")
 
+    _save_sweeps("common", scene, [hpx, utm])
     rows = []
     for t in targets:
         h = st.best_of_codecs_size(hpx, scene, codecs, t)
         u = st.best_of_codecs_size(utm, scene, codecs, t)
         rows.append(dict(
             scene=scene, control="common", target=t,
+            bracketed_hpx=st.any_bracketed(hpx, scene, codecs, t, "rmse"),
+            bracketed_utm=st.any_bracketed(utm, scene, codecs, t, "rmse"),
+            both_bracketed=bool(st.any_bracketed(hpx, scene, codecs, t, "rmse")
+                                and st.any_bracketed(utm, scene, codecs, t,
+                                                     "rmse")),
             hpx_bytes=h, utm_bytes=u, hpx_km2=hpx_km2, utm_km2=utm_km2,
             hpx_bytes_per_km2=h / hpx_km2 if np.isfinite(h) else np.nan,
             utm_bytes_per_km2=u / utm_km2 if np.isfinite(u) else np.nan,
@@ -364,7 +403,7 @@ def control_synthetic(scene, codecs, targets, betas=(1.5, 2.0, 2.5),
     target_mean = float(np.mean(reg["cell_data"]))
     target_std = float(np.std(reg["cell_data"]))
 
-    rows = []
+    rows, sweeps = [], []
     for beta in betas:
         f_h = synthetic_field(hpx_x, hpx_y, beta=beta, k_min=k_min, k_max=k_max,
                               seed=seed)
@@ -382,15 +421,20 @@ def control_synthetic(scene, codecs, targets, betas=(1.5, 2.0, 2.5),
         utm = sweep_array(f_u.astype(np.float32), scene, codecs,
                           label=f"utm_synth_b{beta}")
         ratios = ratio_at_targets(hpx, utm, scene, codecs, targets)
+        sweeps += [hpx, utm]
         for t, r in ratios.items():
             rows.append(dict(scene=scene, control="synthetic", beta=beta,
-                             band=band, target=t, ratio=r,
+                             band=band, target=t, **r,
+                             both_bracketed=_both_bracketed(r),
                              hpx_std=float(np.std(f_h)),
                              utm_std=float(np.std(f_u))))
         if verbose:
-            shown = ", ".join(f"{t:g}:{ratios[t]:.3f}" for t in targets
-                              if np.isfinite(ratios[t]))
-            print(f"    beta={beta}: {shown}")
+            shown = ", ".join(
+                f"{t:g}:{ratios[t]['ratio']:.3f}"
+                + ("" if _both_bracketed(ratios[t]) else "*")
+                for t in targets if np.isfinite(ratios[t]["ratio"]))
+            print(f"    beta={beta}: {shown}   (* = not bracketed on both sides)")
+    _save_sweeps("synthetic", scene, sweeps)
     return pd.DataFrame(rows)
 
 
@@ -444,16 +488,25 @@ def summarize(frames: dict) -> str:
         d = frames["synthetic"]
         out += ["## One analytic field on both geometries", "",
                 "Same function sampled by both lattices: no content difference "
-                "at all, so the ratio is the grid effect alone.", "",
-                "| beta | target | regions | median ratio | range |",
-                "|---|---|---|---|---|"]
+                "at all, so the ratio is the grid effect alone. Rows where the "
+                "target is bracketed on both sides for fewer than "
+                f"{100*cfg.MIN_BRACKETED:.0f}% of regions are marked withheld: "
+                "there the sweeps did not reach the target and the ratio is a "
+                "quotient of bounds, not an estimate.", "",
+                "| beta | target | n | bracketed | median ratio | range | "
+                "reportable |", "|---|---|---|---|---|---|---|"]
         for (beta, t), g in d.groupby(["beta", "target"]):
             ok = g.dropna(subset=["ratio"])
             if not len(ok):
                 continue
-            out.append(f"| {beta:g} | {t:g} | {len(ok)} | "
-                       f"{ok.ratio.median():.3f} | "
-                       f"[{ok.ratio.min():.3f}, {ok.ratio.max():.3f}] |")
+            br = ok[ok.both_bracketed]
+            frac = len(br) / len(ok)
+            use = br if len(br) else ok
+            keep = frac >= cfg.MIN_BRACKETED
+            out.append(f"| {beta:g} | {t:g} | {len(ok)} | {frac:.0%} | "
+                       f"{use.ratio.median():.3f} | "
+                       f"[{use.ratio.min():.3f}, {use.ratio.max():.3f}] | "
+                       f"{'yes' if keep else '**withheld**'} |")
         out.append("")
     return "\n".join(out)
 
@@ -464,10 +517,13 @@ def latex_table(frames: dict) -> str:
         d = frames["synthetic"]
         for (beta, t), g in d.groupby(["beta", "target"]):
             ok = g.dropna(subset=["ratio"])
-            if len(ok):
-                rows.append(f"Synthetic, $\\beta={beta:g}$ & ${t:g}$ & {len(ok)} & "
-                            f"{ok.ratio.median():.2f} & "
-                            f"[{ok.ratio.min():.2f}, {ok.ratio.max():.2f}] \\\\")
+            br = ok[ok.both_bracketed] if len(ok) else ok
+            # Same reporting rule as the paper's tables: a target that is not
+            # bracketed for most regions is withheld rather than printed.
+            if len(ok) and len(br) / len(ok) >= cfg.MIN_BRACKETED:
+                rows.append(f"Synthetic, $\\beta={beta:g}$ & ${t:g}$ & {len(br)} & "
+                            f"{br.ratio.median():.2f} & "
+                            f"[{br.ratio.min():.2f}, {br.ratio.max():.2f}] \\\\")
     if "common" in frames and len(frames["common"]):
         d = frames["common"].dropna(subset=["ratio_per_km2"])
         for t, g in d.groupby("target"):
