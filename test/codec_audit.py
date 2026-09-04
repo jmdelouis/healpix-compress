@@ -81,12 +81,30 @@ EXTENSION = {
 }
 
 
+DISTRIBUTION = {"PIL": "pillow", "pysz": "pysz", "zfpy": "zfpy"}
+
+
 def library_version(module_name: str) -> str:
+    """Version of the library actually loaded.
+
+    Several of these packages carry no `__version__` (zfpy and pysz among
+    them), and "unknown" in an audit table is exactly the answer the audit
+    exists to avoid, so fall back to the installed distribution's metadata.
+    """
     try:
         mod = __import__(module_name)
     except Exception:                                      # noqa: BLE001
         return "absent"
-    return str(getattr(mod, "__version__", "unknown"))
+    v = getattr(mod, "__version__", None)
+    if v:
+        return str(v)
+    from importlib import metadata
+    for dist in (DISTRIBUTION.get(module_name, module_name), module_name):
+        try:
+            return str(metadata.version(dist))
+        except Exception:                                  # noqa: BLE001
+            continue
+    return "unknown"
 
 
 # --- the two input scenarios -------------------------------------------------
@@ -136,7 +154,8 @@ def prepare(arr, scenario: str, dn_scale=None, dn_offset=None):
     if scenario == "float32":
         return a, dict(declared_dtype="float32", value_unit="reflectance",
                        pre_pipeline_rmse=0.0, pre_pipeline_max_abs=0.0,
-                       dn_mapping="--", dn_clipped_frac=0.0, nan_frac=nan_frac)
+                       dn_mapping="--", dn_clipped_frac=0.0, nan_frac=nan_frac,
+                       to_reflectance=1.0)
 
     if scenario == "dn":
         scale, offset, name = dn_mapping(a, dn_scale, dn_offset)
@@ -155,7 +174,8 @@ def prepare(arr, scenario: str, dn_scale=None, dn_offset=None):
             pre_pipeline_max_abs=float(np.max(np.abs(err))),
             dn_mapping=name,
             dn_clipped_frac=float(clipped.sum()) / n,
-            nan_frac=nan_frac)
+            nan_frac=nan_frac,
+            to_reflectance=scale)
 
     raise KeyError(f"unknown scenario {scenario!r}")
 
@@ -361,6 +381,11 @@ def audit_run(run, fed, scenario_info, scenario, grid, scene, workdir: Path):
 
     t_min, span = u16_params(np.asarray(fed, dtype=np.float32))
     row["u16_min"], row["u16_span"] = t_min, span
+    # u16_rmse above is in the units of the array that was fed in: DN under the
+    # `dn` scenario, reflectance under `float32`. Normalize so the two rows are
+    # comparable with each other and with the paper's RMSE targets.
+    row["u16_rmse_reflectance"] = row["u16_rmse"] / scenario_info.get(
+        "to_reflectance", 1.0)
     row["encode_seconds"] = run.encode_seconds
     row["decode_seconds"] = run.decode_seconds
     return row
@@ -486,8 +511,11 @@ def summarize(df: pd.DataFrame) -> str:
 
 
 def _median_floor(g):
-    """Median 16-bit requantization RMSE, NaN when the codec has no such step."""
-    v = g["u16_rmse"].to_numpy(dtype=float, na_value=np.nan)
+    """Median 16-bit requantization RMSE in reflectance units, NaN when the
+    codec has no such step."""
+    col = ("u16_rmse_reflectance" if "u16_rmse_reflectance" in g
+           else "u16_rmse")
+    v = g[col].to_numpy(dtype=float, na_value=np.nan)
     v = v[np.isfinite(v) & (v > 0)]
     return float(np.median(v)) if v.size else np.nan
 
