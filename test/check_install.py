@@ -33,6 +33,7 @@ MODULES = [
     ("update_paper_numbers", "tables and digest"),
     ("make_figures", "paper figures"),
     ("codec_audit", "byte/type audit of the codec adapters"),
+    ("support_controls", "controls for the footprint support mismatch"),
 ]
 
 THIRD_PARTY = [

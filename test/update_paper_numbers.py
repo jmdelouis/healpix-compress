@@ -49,13 +49,25 @@ def _fmt(v, nd=2):
     return "--" if not np.isfinite(v) else f"{v:.{nd}f}"
 
 
-def _table(caption, label, colspec, header, body_lines, note=None):
-    out = [r"\begin{table}[t]", r"\centering", f"\\caption{{{caption}}}",
-           f"\\label{{{label}}}", f"\\begin{{tabular}}{{{colspec}}}", r"\toprule",
-           header, r"\midrule", *body_lines, r"\bottomrule", r"\end{tabular}"]
+def _table(caption, label, colspec, header, body_lines, note=None, wide=False):
+    """Assemble one LaTeX table.
+
+    `wide` emits a two-column float. A nine-column table does not fit an IEEE
+    text column, and under `nonstopmode` pdflatex does not stop for that: it
+    sets an overfull box and, if the declared column count is also short, drops
+    a column without complaint. So the width is decided here rather than
+    noticed in the proof.
+    """
+    env = "table*" if wide else "table"
+    out = [f"\\begin{{{env}}}[t]", r"\centering", f"\\caption{{{caption}}}",
+           f"\\label{{{label}}}"]
+    if wide:
+        out.append(r"\footnotesize")
+    out += [f"\\begin{{tabular}}{{{colspec}}}", r"\toprule",
+            header, r"\midrule", *body_lines, r"\bottomrule", r"\end{tabular}"]
     if note:
         out.append(f"\\\\[2pt]\\footnotesize {note}")
-    out.append(r"\end{table}")
+    out.append(f"\\end{{{env}}}")
     return "\n".join(out) + "\n"
 
 
@@ -345,12 +357,12 @@ def table_latitude(rows, index):
         r"HPX/UTM ratio on the tile's position on the sphere. HEALPix cells are "
         r"equal-area but not equal-shape, and their local elongation differs between "
         r"the equatorial belt ($|\mathrm{lat}| < 41.81^\circ$) and the polar caps. "
-        r"Spearman $\rho$ is against $|\mathrm{latitude}|$; the last three columns "
+        r"Spearman $\rho$ is against $|\mathrm{latitude}|$; the last four columns "
         r"compare the two regimes (two-sided Mann--Whitney).",
-        "tab:latitude_effect", "lrrrrrrr",
+        "tab:latitude_effect", "lrrrrrrrr",
         r"Target & $n$ & $\rho$ & $p_\rho$ & $p_\rho^{\mathrm{Holm}}$ & "
         r"Median (belt) & Median (cap) & $p$ & $p^{\mathrm{Holm}}$ \\",
-        body)
+        body, wide=True)
     if not body:
         print("  latitude table skipped: no per-region latitudes "
               "(run build_tiles.py so data/tiles/tiles_index.csv exists)")

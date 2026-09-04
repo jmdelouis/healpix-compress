@@ -549,7 +549,9 @@ def latex_table(df: pd.DataFrame) -> str:
     body = "\n".join(rows)
     n_ok = int(df["file_identical"].fillna(False).sum())
     return (
-        "\\begin{table}[t]\n\\centering\n"
+        # Six columns carrying library names and versions do not fit an IEEE
+        # text column; nonstopmode would ship it overfull without complaining.
+        "\\begin{table*}[t]\n\\centering\n"
         "\\caption{Byte and type audit of the codec adapters. Every operating "
         "point was written to a file, closed, re-opened and decoded by a reader "
         "independent of the encoder; "
@@ -561,10 +563,10 @@ def latex_table(df: pd.DataFrame) -> str:
         "renormalization costs before any compression, which is why points "
         "through it are reported as lossless \\emph{after requantization} "
         "rather than lossless.}\n"
-        "\\label{tab:byte_audit}\n"
+        "\\label{tab:byte_audit}\n\\footnotesize\n"
         "\\begin{tabular}{llccrc}\n\\toprule\n"
         "Codec & Library & Self-cont. & Sidecar (B) & 16-bit floor & Bit-exact \\\\\n"
-        "\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
+        "\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:

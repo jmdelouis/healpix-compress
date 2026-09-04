@@ -42,14 +42,14 @@ on both grids; the rest are conservative bounds, not estimates)
 
 ## HEALPix regime (latitude)
 
-- rmse:0.0001: Spearman rho=-0.050 (p=0.758, Holm=1.000), belt 2.092 vs cap 2.062 (p=0.455, Holm=1.000)
-- rmse:0.0003: Spearman rho=-0.041 (p=0.802, Holm=1.000), belt 1.904 vs cap 1.960 (p=0.407, Holm=1.000)
-- rmse:0.001: Spearman rho=0.023 (p=0.889, Holm=1.000), belt 1.683 vs cap 1.596 (p=0.438, Holm=1.000)
-- rmse:0.003: Spearman rho=0.138 (p=0.396, Holm=1.000), belt 1.216 vs cap 1.327 (p=0.187, Holm=0.749)
-- rmse:0.01: Spearman rho=0.318 (p=0.046, Holm=0.274), belt 0.967 vs cap 1.275 (p=0.004, Holm=0.031)
-- budget:0.1: Spearman rho=0.065 (p=0.692, Holm=1.000), belt 12.365 vs cap 14.223 (p=0.146, Holm=0.729)
-- budget:0.05: Spearman rho=0.370 (p=0.019, Holm=0.132), belt 2.678 vs cap 2.836 (p=0.007, Holm=0.041)
-- budget:0.02: Spearman rho=0.497 (p=0.001, Holm=0.009), belt 0.947 vs cap 1.228 (p=0.001, Holm=0.007)
+- rmse:0.0001: Spearman rho=-0.050 (p=0.760, Holm=1.000), belt 2.092 vs cap 2.062 (p=0.455, Holm=1.000)
+- rmse:0.0003: Spearman rho=-0.040 (p=0.807, Holm=1.000), belt 1.904 vs cap 1.960 (p=0.407, Holm=1.000)
+- rmse:0.001: Spearman rho=0.025 (p=0.879, Holm=1.000), belt 1.683 vs cap 1.596 (p=0.438, Holm=1.000)
+- rmse:0.003: Spearman rho=0.139 (p=0.392, Holm=1.000), belt 1.216 vs cap 1.327 (p=0.187, Holm=0.749)
+- rmse:0.01: Spearman rho=0.318 (p=0.046, Holm=0.275), belt 0.967 vs cap 1.275 (p=0.004, Holm=0.031)
+- budget:0.1: Spearman rho=0.062 (p=0.703, Holm=1.000), belt 12.365 vs cap 14.223 (p=0.146, Holm=0.729)
+- budget:0.05: Spearman rho=0.372 (p=0.018, Holm=0.127), belt 2.678 vs cap 2.836 (p=0.007, Holm=0.041)
+- budget:0.02: Spearman rho=0.499 (p=0.001, Holm=0.008), belt 0.947 vs cap 1.228 (p=0.001, Holm=0.007)
 
 ## Codec ranking (HEALPix side)
 
