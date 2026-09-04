@@ -91,32 +91,72 @@ def library_version(module_name: str) -> str:
 
 # --- the two input scenarios -------------------------------------------------
 DN_SCALE = 10000.0        # Sentinel-2 L2A BOA_QUANTIFICATION_VALUE
+DN_OFFSET_B4 = 1000.0     # BOA_ADD_OFFSET introduced by processing baseline 04.00
+DN_MAX = 65535
 
 
-def prepare(arr, scenario: str):
+def dn_mapping(a, scale=None, offset=None):
+    """Pick the integer DN convention that fits this array, and name it.
+
+    Sentinel-2 L2A is distributed as uint16 digital numbers, but which affine
+    map takes reflectance to those numbers depends on the processing baseline:
+    before 04.00, DN = 10000 x rho with rho >= 0; from 04.00 on, an
+    BOA_ADD_OFFSET of -1000 is applied, so the stored integer is
+    10000 x rho + 1000 and slightly negative reflectance -- an ordinary outcome
+    of atmospheric correction over dark water and shadow -- is representable.
+    Hard-coding the first convention makes the audit refuse real tiles, which
+    is the wrong failure: the audit's job is to report the conversion, not to
+    require a particular one.
+    """
+    finite = np.isfinite(a)
+    if not finite.any():
+        raise ValueError("array is entirely non-finite")
+    lo, hi = float(np.min(a[finite])), float(np.max(a[finite]))
+    if scale is not None:
+        return float(scale), float(offset or 0.0), "given on the command line"
+    # Values that are already integers spanning more than unit range are DN.
+    if hi > 1.5 and np.allclose(a[finite], np.rint(a[finite]), atol=1e-3):
+        return 1.0, 0.0, "array is already integer DN"
+    off = DN_OFFSET_B4 if lo < 0 else 0.0
+    name = (f"DN = {DN_SCALE:.0f} x rho" if off == 0
+            else f"DN = {DN_SCALE:.0f} x rho + {off:.0f} (baseline 04.00 offset)")
+    return DN_SCALE, off, name
+
+
+def prepare(arr, scenario: str, dn_scale=None, dn_offset=None):
     """Return (fed_to_codec_float32, info).
 
     `info` records the dtype the scenario claims to carry, the unit of the
     values, and the error introduced *before* any codec sees the data.
     """
     a = np.asarray(arr, dtype=np.float32)
+    finite = np.isfinite(a)
+    nan_frac = float(1.0 - finite.mean())
+
     if scenario == "float32":
         return a, dict(declared_dtype="float32", value_unit="reflectance",
-                       pre_pipeline_rmse=0.0, pre_pipeline_max_abs=0.0)
+                       pre_pipeline_rmse=0.0, pre_pipeline_max_abs=0.0,
+                       dn_mapping="--", dn_clipped_frac=0.0, nan_frac=nan_frac)
+
     if scenario == "dn":
-        dn = np.rint(a * DN_SCALE)
-        if float(np.nanmin(dn)) < 0 or float(np.nanmax(dn)) > 65535:
-            raise ValueError("reflectance outside the uint16 DN range")
-        dn_u16 = dn.astype(np.uint16)
-        back = dn_u16.astype(np.float32) / DN_SCALE
-        err = back - a
-        return dn_u16.astype(np.float32), dict(
+        scale, offset, name = dn_mapping(a, dn_scale, dn_offset)
+        raw = np.rint(np.where(finite, a, 0.0).astype(np.float64) * scale + offset)
+        clipped = finite & ((raw < 0) | (raw > DN_MAX))
+        dn = np.clip(raw, 0, DN_MAX).astype(np.uint16)
+        back = (dn.astype(np.float64) - offset) / scale
+        err = np.where(finite, back - a.astype(np.float64), 0.0)
+        n = max(int(finite.sum()), 1)
+        return dn.astype(np.float32), dict(
             declared_dtype="uint16",
-            value_unit=f"DN (reflectance x {DN_SCALE:.0f})",
-            # reported in reflectance units so it is comparable with the
-            # paper's RMSE targets
-            pre_pipeline_rmse=float(np.sqrt(np.mean(err.astype(np.float64) ** 2))),
-            pre_pipeline_max_abs=float(np.max(np.abs(err))))
+            value_unit=f"DN ({name})",
+            # reported in reflectance units, so it is directly comparable with
+            # the paper's RMSE targets
+            pre_pipeline_rmse=float(np.sqrt(np.sum(err ** 2) / n)),
+            pre_pipeline_max_abs=float(np.max(np.abs(err))),
+            dn_mapping=name,
+            dn_clipped_frac=float(clipped.sum()) / n,
+            nan_frac=nan_frac)
+
     raise KeyError(f"unknown scenario {scenario!r}")
 
 
@@ -240,6 +280,9 @@ def audit_run(run, fed, scenario_info, scenario, grid, scene, workdir: Path):
         value_unit=scenario_info["value_unit"],
         pre_pipeline_rmse=scenario_info["pre_pipeline_rmse"],
         pre_pipeline_max_abs=scenario_info["pre_pipeline_max_abs"],
+        dn_mapping=scenario_info["dn_mapping"],
+        dn_clipped_frac=scenario_info["dn_clipped_frac"],
+        nan_frac=scenario_info["nan_frac"],
         total_bytes_reported=int(run.total_bytes),
         uncharged_bytes=int(run.uncharged_bytes),
         external_metadata=";".join(run.external_metadata),
@@ -344,7 +387,7 @@ def synthetic_arrays(grids, seed=0):
 
 
 def audit_region(scene: str, grids, codecs, scenarios, workdir: Path,
-                 synthetic=False):
+                 synthetic=False, dn_scale=None, dn_offset=None):
     if synthetic:
         arrays = synthetic_arrays(grids)
     else:
@@ -360,7 +403,14 @@ def audit_region(scene: str, grids, codecs, scenarios, workdir: Path,
     rows = []
     for scenario in scenarios:
         for grid, arr in arrays.items():
-            fed, info = prepare(arr, scenario)
+            fed, info = prepare(arr, scenario, dn_scale, dn_offset)
+            a = np.asarray(arr, dtype=np.float32)
+            fin = np.isfinite(a)
+            print(f"    {scenario:8s} {grid}: range "
+                  f"[{float(np.min(a[fin])):+.5f}, {float(np.max(a[fin])):+.5f}], "
+                  f"{info['nan_frac']:.3%} non-finite, {info['dn_mapping']}, "
+                  f"{info['dn_clipped_frac']:.3%} clipped, "
+                  f"conversion RMSE {info['pre_pipeline_rmse']:.3e}")
             for run in codec_lib.iter_runs(fed, codecs=codecs, on_error="warn"):
                 rows.append(audit_run(run, fed, info, scenario, grid, scene,
                                       workdir))
@@ -414,7 +464,9 @@ def summarize(df: pd.DataFrame) -> str:
         out.append(f"- **{scenario}**: declared dtype "
                    f"{g['declared_dtype'].iloc[0]}, unit "
                    f"{g['value_unit'].iloc[0]}, conversion error before any "
-                   f"codec {pre:.3e} (reflectance units)")
+                   f"codec {pre:.3e} (reflectance units), "
+                   f"{g['dn_clipped_frac'].max():.3%} of samples clipped, "
+                   f"{g['nan_frac'].max():.3%} non-finite")
         loss = g[g["lossless_claimed"]]
         if len(loss):
             ok_in = int(loss["lossless_input_bit_exact"].sum())
@@ -499,6 +551,11 @@ def main(argv=None) -> int:
                     choices=["dn", "float32"])
     ap.add_argument("--codecs", nargs="*", default=None)
     ap.add_argument("--no-tex", action="store_true")
+    ap.add_argument("--dn-scale", type=float, default=None,
+                    help="force the reflectance->DN scale instead of deriving "
+                         "it (Sentinel-2 L2A uses 10000)")
+    ap.add_argument("--dn-offset", type=float, default=None,
+                    help="force the DN offset (baseline 04.00 uses 1000)")
     ap.add_argument("--synthetic", action="store_true",
                     help="smoke-test the audit on a stand-in field, with no "
                          "tiles and no results written to tex/")
@@ -527,7 +584,9 @@ def main(argv=None) -> int:
             print(f"  {scene}")
             rows.extend(audit_region(scene, grids, args.codecs,
                                      args.scenarios, workdir,
-                                     synthetic=args.synthetic))
+                                     synthetic=args.synthetic,
+                                     dn_scale=args.dn_scale,
+                                     dn_offset=args.dn_offset))
 
     df = pd.DataFrame(rows)
     cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
