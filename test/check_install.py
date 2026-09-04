@@ -32,6 +32,7 @@ MODULES = [
     ("paper_stats", "interpolation, oracle codec, Wilcoxon, Holm"),
     ("update_paper_numbers", "tables and digest"),
     ("make_figures", "paper figures"),
+    ("codec_audit", "byte/type audit of the codec adapters"),
 ]
 
 THIRD_PARTY = [

@@ -26,6 +26,28 @@ class CodecRunResult:
     encode_seconds: float
     decode_seconds: float
     reconstruction: np.ndarray = field(repr=False)
+    # The bytes actually produced by the encoder. Carried so that an audit can
+    # write them to a real file, close it, stat it and decode it again --
+    # `total_bytes` alone is a number the adapter asserts, not a number a
+    # reader can verify. None where the encoder has no single byte string
+    # (the zarr-store path).
+    payload: bytes | None = field(default=None, repr=False)
+    # Bytes a decoder needs that `total_bytes` does NOT charge: for the image
+    # codecs, the float32 (min, span) pair of the 16-bit renormalization.
+    # Kept explicit rather than folded in, so the omission is auditable and the
+    # published byte counts stay exactly what they were.
+    uncharged_bytes: int = 0
+    # Metadata the decoder must be handed out of band (array shape, dtype,
+    # wavelet layout). Descriptive: it is what a real container format would
+    # have to store in a header.
+    external_metadata: tuple = ()
+
+
+def _as_bytes(buf) -> bytes:
+    """Encoder outputs come back as bytes, bytearray or a uint8 ndarray."""
+    if isinstance(buf, (bytes, bytearray, memoryview)):
+        return bytes(buf)
+    return np.ascontiguousarray(buf).tobytes()
 
 
 def rmse(a, b) -> float:
@@ -45,7 +67,7 @@ def encode_zfp(tile, *, tolerance):
     dec = zfpy.decompress_numpy(enc)
     t2 = time.perf_counter()
     return CodecRunResult("zfp", dict(tolerance=float(tolerance)), len(enc),
-                          t1 - t0, t2 - t1, dec)
+                          t1 - t0, t2 - t1, dec, payload=_as_bytes(enc))
 
 
 def encode_sz3(tile, *, abs_error):
@@ -61,7 +83,9 @@ def encode_sz3(tile, *, abs_error):
     t2 = time.perf_counter()
     total_bytes = int(getattr(compressed, "nbytes", None) or len(compressed))
     return CodecRunResult("sz3", dict(abs_error=float(abs_error)), total_bytes,
-                          t1 - t0, t2 - t1, np.asarray(dec, dtype=np.float32))
+                          t1 - t0, t2 - t1, np.asarray(dec, dtype=np.float32),
+                          payload=_as_bytes(compressed),
+                          external_metadata=("shape", "dtype"))
 
 
 # --- integer image codecs ----------------------------------------------------
@@ -86,11 +110,14 @@ def encode_jpeg2000_lossy(tile, *, quality):
                               quality_layers=[factor])
     t1 = time.perf_counter()
     total_bytes = buf.tell()
+    payload = buf.getvalue()
     buf.seek(0)
     dec_u16 = np.array(Image.open(buf), dtype=np.uint16)
     t2 = time.perf_counter()
     return CodecRunResult("jpeg2000_lossy", dict(quality=factor), total_bytes,
-                          t1 - t0, t2 - t1, _from_u16(dec_u16, t_min, span))
+                          t1 - t0, t2 - t1, _from_u16(dec_u16, t_min, span),
+                          payload=payload, uncharged_bytes=8,
+                          external_metadata=("u16_min", "u16_span"))
 
 
 def encode_jpeg2000_lossless(tile, **_ignored):
@@ -102,7 +129,9 @@ def encode_jpeg2000_lossless(tile, **_ignored):
     dec_u16 = imagecodecs.jpeg2k_decode(enc)
     t2 = time.perf_counter()
     return CodecRunResult("jpeg2000_lossless", {}, len(enc), t1 - t0, t2 - t1,
-                          _from_u16(dec_u16, t_min, span))
+                          _from_u16(dec_u16, t_min, span),
+                          payload=_as_bytes(enc), uncharged_bytes=8,
+                          external_metadata=("u16_min", "u16_span"))
 
 
 _jpegxl_warned = False
@@ -138,7 +167,9 @@ def encode_jpegxl_lossy(tile, *, level=None, distance=None):
     t2 = time.perf_counter()
     conf = dict(level=int(level)) if level is not None else dict(distance=float(distance))
     return CodecRunResult("jpegxl_lossy", conf, len(enc),
-                          t1 - t0, t2 - t1, _from_u16(dec_u16, t_min, span))
+                          t1 - t0, t2 - t1, _from_u16(dec_u16, t_min, span),
+                          payload=_as_bytes(enc), uncharged_bytes=8,
+                          external_metadata=("u16_min", "u16_span"))
 
 
 def encode_jpegxl_lossless(tile, **_ignored):
@@ -150,7 +181,9 @@ def encode_jpegxl_lossless(tile, **_ignored):
     dec_u16 = imagecodecs.jpegxl_decode(enc)
     t2 = time.perf_counter()
     return CodecRunResult("jpegxl_lossless", {}, len(enc), t1 - t0, t2 - t1,
-                          _from_u16(dec_u16, t_min, span))
+                          _from_u16(dec_u16, t_min, span),
+                          payload=_as_bytes(enc), uncharged_bytes=8,
+                          external_metadata=("u16_min", "u16_span"))
 
 
 def encode_dwt_zstd(tile, *, wavelet="db4", levels=4, quantize_bits):
@@ -176,12 +209,17 @@ def encode_dwt_zstd(tile, *, wavelet="db4", levels=4, quantize_bits):
     return CodecRunResult("dwt_zstd",
                           dict(wavelet=wavelet, levels=levels,
                                quantize_bits=quantize_bits),
-                          total_bytes, t1 - t0, t2 - t1, dec)
+                          total_bytes, t1 - t0, t2 - t1, dec,
+                          payload=payload,
+                          external_metadata=("shape", "wavelet", "levels",
+                                             "coeff_slices"))
 
 
 def encode_uncompressed(tile, **_ignored):
     tile = np.asarray(tile, dtype=np.float32)
-    return CodecRunResult("uncompressed", {}, tile.nbytes, 0.0, 0.0, tile.copy())
+    return CodecRunResult("uncompressed", {}, tile.nbytes, 0.0, 0.0, tile.copy(),
+                          payload=tile.tobytes(),
+                          external_metadata=("shape", "dtype"))
 
 
 # --- the package's own zarr serializer path ----------------------------------
