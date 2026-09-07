@@ -257,7 +257,8 @@ def _evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px):
 
 
 def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
-               max_nodata: float = 1e-3, fill_nan_mean: bool = False,
+               max_nodata: float = 1e-3, max_missing: float = 1e-4,
+               fill_nan_mean: bool = False,
                kernel: str = DEFAULT_KERNEL, verbose: bool = True) -> dict:
     import pyproj
 
@@ -467,10 +468,17 @@ def main(argv=None) -> int:
     ap.add_argument("--max-nodata", type=float, default=1e-3,
                     help="ceiling on the no-data fraction INSIDE the tile "
                          "footprint (default 0.001 = 0.1%%); above it the "
-                         "region is rejected instead of interpolated over. "
-                         "The same ceiling bounds the cells a resampler drops "
-                         "at the hull edge, which are filled from their "
-                         "surviving siblings and counted in the tile metadata")
+                         "region is rejected instead of interpolated over")
+    ap.add_argument("--max-missing", type=float, default=1e-4,
+                    help="ceiling on the cells a resampler drops at the edge "
+                         "of the sample hull (default 0.0001 = 0.01%%, about "
+                         "100 cells of a million). Below it they are filled "
+                         "from their surviving siblings and counted in the "
+                         "tile metadata; above it the region is rejected, "
+                         "because a kernel that cannot populate the grid has "
+                         "failed. Deliberately stricter than --max-nodata: a "
+                         "missing sample and a missing cell are not the same "
+                         "defect")
     ap.add_argument("--resampler", choices=list(KERNELS), default=DEFAULT_KERNEL,
                     help="transfer kernel used to populate the carrier grid. "
                          "Anything other than the default writes to a "
@@ -513,6 +521,7 @@ def main(argv=None) -> int:
         try:
             meta = build_tile(scene, store, band=args.band, halo_px=args.halo,
                               max_nodata=args.max_nodata,
+                              max_missing=args.max_missing,
                               fill_nan_mean=args.fill_nan_mean,
                               kernel=args.resampler, verbose=False)
             rows.append(meta)
