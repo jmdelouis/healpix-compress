@@ -50,7 +50,8 @@ def tile_path(scene: str, kernel: str = DEFAULT_KERNEL) -> Path:
     return cfg.TILE_DIR / f"{scene}{suffix}.npz"
 
 
-def make_resampler(kernel: str, lon, lat, cell_ids, verbose=False):
+def make_resampler(kernel: str, lon, lat, cell_ids, verbose=False,
+                   sigma_m=None):
     """Build one transfer operator.
 
     The KNN-family resamplers take their arguments by keyword: their base class
@@ -76,7 +77,12 @@ def make_resampler(kernel: str, lon, lat, cell_ids, verbose=False):
             fwhm_to_scale = hr.fwhm_to_scale
         except AttributeError:
             from healpix_resample.psf_geometry import fwhm_to_scale
-        return hr.PSFResampler(sigma_m=fwhm_to_scale(PSF_FWHM_M), **common)
+        # Telling the resampler a width different from the one that blurred
+        # the field is a mismatch experiment, not a baseline: the companion
+        # study shows a 20% error in width raises its RMSE by 23-59%. Callers
+        # that know the true width pass it.
+        sig = float(sigma_m) if sigma_m else fwhm_to_scale(PSF_FWHM_M)
+        return hr.PSFResampler(sigma_m=sig, **common)
     raise KeyError(f"unknown resampler {kernel!r} (have {KERNELS})")
 
 

@@ -66,11 +66,29 @@ def inflation(alpha):
     return np.sqrt(1.0 + np.asarray(alpha, dtype=float) ** 2) - 1.0
 
 
-def load_resampling_error(kernel: str, source: str):
-    """e_resampling per scene class, from our measurement or the companion's."""
+def load_resampling_error(kernel: str, source: str, denominator: str):
+    """e_resampling per scene class, and what it is the error *of*.
+
+    Two denominators are defensible for a non-deconvolving transfer and they
+    answer different questions, so neither is chosen silently:
+
+        own    the transfer's error against its own estimand -- for
+               Clough--Tocher, the observed field it claims to represent. This
+               is the strict reading, and it is small, so a compression target
+               is large relative to it.
+
+        blur   the error against the latent scene, which for a transfer that
+               does not deconvolve is the blur itself. This is the yardstick if
+               the carrier grid is used as if it were the scene, which is what
+               a reader treating the HEALPix cube as "the data" does.
+
+    The choice moves alpha by more than an order of magnitude, so the paper has
+    to report both rather than pick one.
+    """
     if source == "companion":
         return ({c: v["matched"] for c, v in COMPANION.items()},
-                "healpix-resample, controlled synthetic (Esri texture)")
+                "healpix-resample, controlled synthetic (Esri texture), "
+                "PSF-aware reconstruction against the latent field")
     path = cfg.RESULTS_DIR / "resampling_error.csv"
     if not path.exists():
         raise FileNotFoundError(
@@ -82,9 +100,16 @@ def load_resampling_error(kernel: str, source: str):
         raise ValueError(f"no rows for kernel {kernel!r} in {path}")
     d = d.assign(cls=d.scene.str.split("__").str[1])
     est = d.estimand.iloc[0]
-    return (d.groupby("cls").e_resample.median().to_dict(),
-            f"measured here on {d.scene.nunique()} regions, "
-            f"{kernel} against the {est} field")
+    if denominator == "blur":
+        col, what = "e_against_other_estimand", "the latent scene (i.e. the blur)"
+    else:
+        col, what = "e_resample", f"its own estimand, the {est} field"
+    if col not in d:
+        raise ValueError(f"{path} has no column {col!r}; re-run "
+                         f"resampling_error.py")
+    return (d.groupby("cls")[col].median().to_dict(),
+            f"measured here on {d.scene.nunique()} regions in "
+            f"{d.cls.nunique()} class(es), {kernel} against {what}")
 
 
 def load_ratios(metric="self"):
@@ -106,9 +131,15 @@ def load_ratios(metric="self"):
     return pd.DataFrame(rows), float(doc["gamma_utm"])
 
 
-def build(kernel="clough_tocher", source="measured", metric="self"):
-    e_res, provenance = load_resampling_error(kernel, source)
+def build(kernel="clough_tocher", source="measured", metric="self",
+          denominator="own"):
+    e_res, provenance = load_resampling_error(kernel, source, denominator)
     ratios, gamma = load_ratios(metric)
+    missing = sorted(set(ratios.cls.unique()) - set(e_res))
+    if missing:
+        print(f"WARNING: no reconstruction error for {', '.join(missing)}; "
+              f"those classes are dropped. Re-run resampling_error.py over all "
+              f"40 regions before reading anything below as a result.")
     ratios = ratios[ratios.cls.isin(e_res)]
     ratios["e_resample"] = ratios.cls.map(e_res)
     ratios["alpha"] = ratios.target / ratios.e_resample
@@ -175,9 +206,26 @@ def summarize(df, e_res, provenance, gamma, kernel):
                    f"error that inflates the product's total error by "
                    f"{100*infl:.1f}%** (target {t:g}, alpha {a:.2f}).")
     out.append("")
-    out.append("Every reported target sits below the reconstruction error of "
-               "its own class, so no result in this paper is obtained by "
-               "compressing more finely than the transfer step is accurate.")
+    above = rep[rep.alpha > 1.0]
+    if len(above):
+        pairs = sorted({(r.cls, float(r.target)) for _, r in above.iterrows()})
+        out.append(f"- **{len(pairs)} of {len(set((r.cls, float(r.target)) for _, r in rep.iterrows()))} "
+                   f"(class, target) pairs have alpha > 1**, i.e. the "
+                   f"compression error there exceeds the reconstruction error "
+                   f"itself: "
+                   + ", ".join(f"{c} at {t:g}" for c, t in pairs[:8])
+                   + ("…" if len(pairs) > 8 else "")
+                   + ". Under this denominator those targets are not "
+                     "conservative, and the inflation figures beside them say "
+                     "by how much.")
+    else:
+        out.append("- every reported target sits below the reconstruction "
+                   "error of its own class, so no result here is obtained by "
+                   "compressing more finely than the transfer step is "
+                   "accurate.")
+    if len(e_res) < 4:
+        out.append(f"- **only {len(e_res)} scene class(es) available**; this is "
+                   f"a partial reading, not a result.")
     return "\n".join(out)
 
 
@@ -260,14 +308,21 @@ def main(argv=None) -> int:
     ap.add_argument("--reference", choices=["measured", "companion"],
                     default="measured")
     ap.add_argument("--metric", choices=["self", "common"], default="self")
+    ap.add_argument("--denominator", choices=["own", "blur"], default="own",
+                    help="what the compression error is measured against: the "
+                         "transfer's own estimand ('own'), or the latent scene "
+                         "('blur'), which for a non-deconvolving transfer is "
+                         "the blur it does not remove. They differ by more "
+                         "than an order of magnitude; report both")
     ap.add_argument("--no-publish", action="store_true")
     ap.add_argument("--no-tex", action="store_true")
     args = ap.parse_args(argv)
 
     df, e_res, provenance, gamma = build(args.kernel, args.reference,
-                                         args.metric)
+                                         args.metric, args.denominator)
     cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    tag = "" if args.reference == "measured" else "_companion"
+    tag = ("" if args.reference == "measured" else "_companion")
+    tag += "" if args.denominator == "own" else f"_{args.denominator}"
     csv = cfg.RESULTS_DIR / f"alpha_budget{tag}.csv"
     df.to_csv(csv, index=False)
     md = summarize(df, e_res, provenance, gamma, args.kernel)

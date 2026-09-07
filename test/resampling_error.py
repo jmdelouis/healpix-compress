@@ -100,7 +100,7 @@ def scene_parameters(scene: str, spectrum: pd.DataFrame | None):
 
 
 def measure(scene: str, store: Path, kernels, spectrum, noise_scale=1.0,
-            seed=23, halo_px=32, verbose=True):
+            seed=23, halo_px=32, lam=1e-3, children=4, verbose=True):
     # Checked once, with a diagnostic: a window that is not the one the tile
     # was built from produces a partial sub-window and a downstream "43% of
     # cells missing" that points at the halo instead of at the geometry.
@@ -120,13 +120,38 @@ def measure(scene: str, store: Path, kernels, spectrum, noise_scale=1.0,
         return sup.synthetic_field(px, py, beta=beta, k_min=k_min, k_max=k_max,
                                    seed=seed, psf_sigma_m=psf)
 
+    def cell_field(psf, n_children=children):
+        """The estimand is a cell *average*, not the value at the centre.
+
+        The companion study makes this explicit and measures the difference:
+        its reconstruction agrees 2.3--2.5 times better with a child-sampled
+        cell average than with a point sample at the cell centre. Scoring
+        against the centre therefore understates every method, and understates
+        a deconvolving one most, since that is the estimator whose output is a
+        cell average by construction. The average is taken over the cell's
+        children one or two levels down, which is exactly how the companion
+        builds it.
+        """
+        import healpix_geo
+        if n_children <= 1:
+            return field(cell_x, cell_y, psf)
+        depth = int(round(math.log(n_children, 4)))
+        kids = (cand["cell_ids"][:, None] * (4 ** depth)
+                + np.arange(4 ** depth, dtype=np.int64)[None, :]).ravel()
+        klon, klat = healpix_geo.nested.healpix_to_lonlat(
+            kids, cfg.LEVEL + depth, ellipsoid="WGS84")
+        kx, ky = to_crs.transform(np.asarray(klon, dtype=np.float64),
+                                  np.asarray(klat, dtype=np.float64))
+        v = field(np.asarray(kx) - x0, np.asarray(ky) - y0, psf)
+        return v.reshape(-1, 4 ** depth).mean(axis=1)
+
     # The latent scene, and what the instrument makes of it. Both are analytic,
     # so each is available at whatever positions a transfer needs.
     src_x, src_y = np.asarray(sx) - x0, np.asarray(sy) - y0
     cell_x, cell_y = np.asarray(cand["cx"]) - x0, np.asarray(cand["cy"]) - y0
     obs_clean = field(src_x, src_y, sigma)
-    latent_cells = field(cell_x, cell_y, 0.0)
-    observed_cells = field(cell_x, cell_y, sigma)
+    latent_cells = cell_field(0.0)
+    observed_cells = cell_field(sigma)
 
     # Put the synthetic on the same scale as the region so the noise estimated
     # from the imagery is the right size relative to it.
@@ -148,8 +173,14 @@ def measure(scene: str, store: Path, kernels, spectrum, noise_scale=1.0,
         truth = latent_cells if estimand == "latent" else observed_cells
         try:
             op = build_tiles.make_resampler(kernel, sub_lon, sub_lat,
-                                            cand["cell_ids"], verbose=False)
-            res = op.resample(np.asarray(obs, dtype=np.float64))
+                                            cand["cell_ids"], verbose=False,
+                                            sigma_m=sigma)
+            # PSFResampler defaults to lam=0, i.e. an undamped solve; the
+            # companion study's reported recovery uses lam=1e-3, and running
+            # the two at different damping compares different estimators.
+            res = (op.resample(np.asarray(obs, dtype=np.float64), lam=lam)
+                   if kernel == "psf"
+                   else op.resample(np.asarray(obs, dtype=np.float64)))
             val, n_filled = build_tiles.complete_block(
                 np.asarray(res.cell_ids, dtype=np.int64).ravel(),
                 np.asarray(res.cell_data, dtype=np.float64).ravel(),
@@ -249,6 +280,14 @@ def main(argv=None) -> int:
                          "0 gives the noiseless control, which flatters a "
                          "deconvolving transfer and is reported as a control "
                          "only")
+    ap.add_argument("--lam", type=float, default=1e-3,
+                    help="Tikhonov damping of the PSF resampler's CG solve; "
+                         "the companion study reports its recovery at 1e-3, "
+                         "and the library defaults to 0")
+    ap.add_argument("--children", type=int, default=4, choices=[1, 4, 16],
+                    help="samples per cell used to build the cell-average "
+                         "estimand; 1 reverts to a point sample at the cell "
+                         "centre, which understates every method")
     ap.add_argument("--seed", type=int, default=23)
     args = ap.parse_args(argv)
 
@@ -277,7 +316,8 @@ def main(argv=None) -> int:
         store = cfg.REGION_DIR / f"{scene}_data.zarr"
         try:
             rows.extend(measure(scene, store, args.kernels, spectrum,
-                                noise_scale=args.noise, seed=args.seed))
+                                noise_scale=args.noise, seed=args.seed,
+                                lam=args.lam, children=args.children))
         except Exception as exc:                           # noqa: BLE001
             print(f"    FAILED {type(exc).__name__}: {exc}")
     if not rows:
@@ -286,10 +326,15 @@ def main(argv=None) -> int:
 
     df = pd.DataFrame(rows)
     cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    csv = cfg.RESULTS_DIR / "resampling_error.csv"
+    # The noiseless run is a control, not the measurement, and it used to write
+    # the same two filenames -- so running it second silently replaced the
+    # result it was meant to be compared against.
+    tag = "" if args.noise == 1.0 else f"_noise{args.noise:g}"
+    csv = cfg.RESULTS_DIR / f"resampling_error{tag}.csv"
     df.to_csv(csv, index=False)
     md = summarize(df)
-    (cfg.RESULTS_DIR / "resampling_error.md").write_text(md, encoding="utf-8")
+    (cfg.RESULTS_DIR / f"resampling_error{tag}.md").write_text(md,
+                                                               encoding="utf-8")
     print("\n" + md)
     print(f"wrote {csv} ({len(df)} rows)")
     return 0
