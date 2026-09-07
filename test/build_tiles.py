@@ -112,6 +112,66 @@ def _open_window(path: Path, band: str):
     return ds, img, lon, lat, x, y, crs_wkt
 
 
+
+def complete_block(out_ids, out_val, cell_ids, max_missing_frac=1e-4):
+    """Fill the few cells a resampler dropped, from their nearest siblings.
+
+    The KNN-family kernels drop a handful of cells at the very edge of the
+    sample hull where the neighbour search fails -- seven out of 1048576 on one
+    region here. Refusing the tile outright is right for the paper's own
+    pipeline, where a tile with holes is not a tile, but it would disqualify a
+    kernel over seven parts per million in an ablation, which measures the
+    library's edge handling rather than the kernel.
+
+    A dropped cell is filled with the mean of its surviving siblings, coarsening
+    through the NESTED hierarchy until one is found: index within a contiguous
+    child block is the Morton index, so `idx >> 2k` is the containing cell k
+    levels up, and the fill is therefore spatially local by construction. The
+    count is returned and recorded, and a fraction above `max_missing_frac`
+    still raises -- a kernel that cannot populate the grid has failed, and that
+    is a result, not something to paper over.
+    """
+    ids = np.asarray(out_ids, dtype=np.int64).ravel()
+    val = np.asarray(out_val, dtype=np.float64).ravel()
+    base = int(cell_ids[0])
+    n = int(cell_ids.size)
+    pos = ids - base
+    if np.any((pos < 0) | (pos >= n)):
+        raise RuntimeError("the resampler returned cells outside the requested "
+                           "contiguous child block")
+    full = np.full(n, np.nan, dtype=np.float64)
+    full[pos] = val
+    missing = ~np.isfinite(full)
+    n_missing = int(missing.sum())
+    if n_missing == 0:
+        return full, 0
+    if n_missing / n > max_missing_frac:
+        raise RuntimeError(
+            f"the resampler kept {n - n_missing} of {n} cells "
+            f"({100*n_missing/n:.4f}% missing, ceiling "
+            f"{100*max_missing_frac:.4f}%): cells outside the sample convex "
+            f"hull are dropped. Increase --halo or acquire a larger window.")
+    idx = np.arange(n, dtype=np.int64)
+    for up in range(1, cfg.DELTA + 1):
+        group = idx >> (2 * up)
+        finite = np.isfinite(full)
+        sums = np.bincount(group, weights=np.where(finite, full, 0.0),
+                           minlength=int(group.max()) + 1)
+        cnts = np.bincount(group, weights=finite.astype(float),
+                           minlength=int(group.max()) + 1)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            means = sums / np.where(cnts > 0, cnts, np.nan)
+        cand = means[group]
+        take = (~finite) & np.isfinite(cand)
+        if take.any():
+            full[take] = cand[take]
+        if np.all(np.isfinite(full)):
+            break
+    if not np.all(np.isfinite(full)):
+        raise RuntimeError("could not fill every dropped cell from its siblings")
+    return full, n_missing
+
+
 def _to_index(cx, cy, x, y):
     """Fractional (col, row) of projected coordinates on a regular x/y grid."""
     dx = float(x[1] - x[0])
@@ -290,16 +350,12 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
     res = op.resample(sub_val[good].astype(np.float64))
     out_ids = np.asarray(res.cell_ids, dtype=np.int64).ravel()
     out_val = np.asarray(res.cell_data, dtype=np.float64).ravel()
-    if out_ids.size != cfg.N_CHILDREN:
-        raise RuntimeError(
-            f"{scene}: the resampler kept {out_ids.size} of {cfg.N_CHILDREN} "
-            "cells (cells outside the sample convex hull are dropped). "
-            "Increase --halo or acquire a larger window.")
-    order = np.argsort(out_ids)
-    if not np.array_equal(out_ids[order], chosen["cell_ids"]):
-        raise RuntimeError(f"{scene}: resampled cell ids differ from the requested "
-                           "contiguous child block.")
-    cell_data = out_val[order].astype(np.float32)
+    try:
+        filled, n_missing = complete_block(out_ids, out_val, chosen["cell_ids"],
+                                           max_missing_frac=max_missing)
+    except RuntimeError as exc:
+        raise RuntimeError(f"{scene}: {exc}") from None
+    cell_data = filled.astype(np.float32)
     if not np.all(np.isfinite(cell_data)):
         raise RuntimeError(f"{scene}: {int((~np.isfinite(cell_data)).sum())} "
                            "non-finite cells after resampling.")
@@ -368,6 +424,7 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
         crs_wkt=crs_wkt,
         resampler=kernel,
         resampler_constant_check=ones_med,
+        resampler_cells_filled=int(n_missing),
         hpx_raw_bytes=int(cell_data.nbytes),
         utm_raw_bytes=int(utm_crop.nbytes),
         hpx_mean=float(cell_data.mean()), hpx_std=float(cell_data.std()),
@@ -410,7 +467,10 @@ def main(argv=None) -> int:
     ap.add_argument("--max-nodata", type=float, default=1e-3,
                     help="ceiling on the no-data fraction INSIDE the tile "
                          "footprint (default 0.001 = 0.1%%); above it the "
-                         "region is rejected instead of interpolated over")
+                         "region is rejected instead of interpolated over. "
+                         "The same ceiling bounds the cells a resampler drops "
+                         "at the hull edge, which are filled from their "
+                         "surviving siblings and counted in the tile metadata")
     ap.add_argument("--resampler", choices=list(KERNELS), default=DEFAULT_KERNEL,
                     help="transfer kernel used to populate the carrier grid. "
                          "Anything other than the default writes to a "

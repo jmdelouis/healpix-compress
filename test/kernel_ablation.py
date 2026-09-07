@@ -181,12 +181,14 @@ def transfer_fidelity(scene: str, kernel: str, store: Path, seed: int = 17,
     res = op.resample(np.asarray(f_src, dtype=np.float64))
     ids = np.asarray(res.cell_ids, dtype=np.int64).ravel()
     val = np.asarray(res.cell_data, dtype=np.float64).ravel()
-    order = np.argsort(ids)
-    if ids.size != cfg.N_CHILDREN:
+    # Same completion as the real-data tiles, so a kernel is not judged on the
+    # handful of hull-edge cells the library drops rather than on its transfer.
+    try:
+        val, n_filled = build_tiles.complete_block(ids, val, cand["cell_ids"])
+    except RuntimeError:
         return dict(transfer_rmse=np.nan, transfer_frac_of_std=np.nan,
                     transfer_p999=np.nan, transfer_overshoot=np.nan,
-                    transfer_cells_kept=int(ids.size))
-    val = val[order]
+                    transfer_cells_kept=int(ids.size), transfer_cells_filled=-1)
     d = val - np.asarray(f_truth, dtype=np.float64)
     sd = float(np.std(f_truth)) or 1.0
     lo, hi = float(np.min(f_src)), float(np.max(f_src))
@@ -197,7 +199,8 @@ def transfer_fidelity(scene: str, kernel: str, store: Path, seed: int = 17,
         transfer_p999=float(np.percentile(np.abs(d), 99.9) / sd),
         # values the transfer invented outside the range of what it was given
         transfer_overshoot=float(np.mean((val < lo) | (val > hi))),
-        transfer_cells_kept=int(ids.size))
+        transfer_cells_kept=int(ids.size),
+        transfer_cells_filled=int(n_filled))
 
 def run_region(scene: str, kernel: str, store: Path, codecs, targets,
                build=True, force=False, do_rd=False, truth=True, verbose=True):
@@ -226,6 +229,7 @@ def run_region(scene: str, kernel: str, store: Path, codecs, targets,
                cells_outside_source_range=float(np.mean((cd < lo) | (cd > hi))),
                scene_std=scene_std, build_seconds=build_s,
                constant_check=meta.get("resampler_constant_check", np.nan),
+               cells_filled=int(meta.get("resampler_cells_filled", 0) or 0),
                hpx_std=float(np.std(cell_data)))
     row.update(spectral_distance(proj, obs, cr.mask))
     if truth:
@@ -311,7 +315,11 @@ def summarize(df, targets, do_rd):
                        f"{100*g.transfer_frac_of_std.median():.2f}% | "
                        f"{g.transfer_p999.median():.3f} | "
                        f"{100*g.transfer_overshoot.median():.3f}% | "
-                       f"{'all' if kept == cfg.N_CHILDREN else f'{kept:.0f}'} |")
+                       f"{'all' if kept == cfg.N_CHILDREN else f'{kept:.0f}'}"
+                       + (f" (+{g.transfer_cells_filled.median():.0f} filled)"
+                          if "transfer_cells_filled" in g
+                          and g.transfer_cells_filled.median() > 0 else "")
+                       + " |")
         out.append("")
     else:
         out.append("_Not run (`--no-truth`)._\n")
