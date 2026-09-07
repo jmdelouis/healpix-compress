@@ -481,15 +481,44 @@ def tile_subwindow(scene, store, halo_px=32, band=None, kernel=DEFAULT_KERNEL):
     parent = int(z["parent_id"])
     cand = _evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px)
     if cand["fit"] < 1.0:
+        # Say which parent this window IS centred on. "The window is not the
+        # one the tile came from" is true but unhelpful; naming the parent the
+        # window was acquired for turns it into a diagnosis, and tells the
+        # caller whether rebuilding would even succeed.
+        import healpix_geo
+        cover = healpix_geo.nested.lonlat_to_healpix(
+            lon.ravel(), lat.ravel(), cfg.LEVEL, ellipsoid="WGS84").astype(np.int64)
+        parents = np.unique(cover // cfg.N_CHILDREN)
+        plon, plat = healpix_geo.nested.healpix_to_lonlat(
+            parents.astype(np.int64), cfg.PARENT_LEVEL, ellipsoid="WGS84")
+        pcx, pcy = to_crs.transform(np.asarray(plon, dtype=np.float64),
+                                    np.asarray(plat, dtype=np.float64))
+        xc, yc = 0.5 * (x[0] + x[-1]), 0.5 * (y[0] + y[-1])
+        ranked = parents[np.argsort(np.hypot(pcx - xc, pcy - yc))]
+        best, best_fit = None, 0.0
+        for q in ranked[:4]:
+            c = _evaluate_parent(int(q), to_crs, x, y, img, H, W, halo_px)
+            if c["fit"] > best_fit:
+                best, best_fit = int(q), c["fit"]
+            if best_fit >= 1.0:
+                break
+        centred = (f"this window is centred on parent {best}, which fits it "
+                   f"{100*best_fit:.1f}%" if best is not None
+                   else "no candidate parent fits this window either")
+        rebuild = ("Rebuilding with build_tiles.py --force would succeed, but "
+                   "on a different parent tile, so every published result for "
+                   "this region would change."
+                   if best_fit >= 1.0 and best != parent else
+                   "Rebuilding would not help: acquire a window centred on the "
+                   "stored parent.")
         raise RuntimeError(
             f"{scene}: only {100*cand['fit']:.1f}% of the stored tile's cells "
             f"(parent {parent}) lie inside the {W}x{H} px window with a "
             f"{halo_px} px halo. The tile spans columns "
             f"[{cand['col'].min():.0f}, {cand['col'].max():.0f}] and rows "
-            f"[{cand['row'].min():.0f}, {cand['row'].max():.0f}]. The window on "
-            f"disk is not the one this tile was built from, so the transfer "
-            f"cannot be reproduced on it; rebuild the tile from this window "
-            f"with build_tiles.py --force, or restore the original window.")
+            f"[{cand['row'].min():.0f}, {cand['row'].max():.0f}]; "
+            f"{centred}. The stored tile was built from a different "
+            f"acquisition. {rebuild}")
     c0 = max(int(np.floor(cand["col"].min())) - halo_px, 0)
     c1 = min(int(np.ceil(cand["col"].max())) + halo_px + 1, W)
     r0 = max(int(np.floor(cand["row"].min())) - halo_px, 0)
@@ -499,6 +528,63 @@ def tile_subwindow(scene, store, halo_px=32, band=None, kernel=DEFAULT_KERNEL):
                 sub_lat=lat[r0:r1, c0:c1].ravel(),
                 bounds=(r0, r1, c0, c1), shape=(H, W), crs_wkt=crs_wkt,
                 x=x, y=y)
+
+
+
+def audit_windows(scenes, halo_px=32, band=None, verbose=True):
+    """Can each stored tile still be reproduced from the window on disk?
+
+    A tile and the window it came from are two files that can drift apart --
+    a window re-acquired after the tile was built, at a different size or with
+    a different centring convention, leaves an archive whose tile cannot be
+    regenerated from its own inputs. Nothing in the compression results depends
+    on the window once the tile exists, so the drift is invisible until
+    something tries to re-run the transfer, which is exactly what the kernel
+    ablation and the resampling-error measurement do. This checks all of them
+    at once and reports the geometry, without building anything.
+    """
+    rows = []
+    for scene in scenes:
+        store = cfg.REGION_DIR / f"{scene}_data.zarr"
+        row = dict(scene=scene, window_px=np.nan, fit=np.nan,
+                   tile_rows="", tile_cols="", centred_on="", status="")
+        if not tile_path(scene).exists():
+            row["status"] = "no tile"
+        elif not store.exists():
+            row["status"] = "no window"
+        else:
+            try:
+                w = tile_subwindow(scene, store, halo_px=halo_px, band=band)
+                H, W = w["shape"]
+                cand = w["cand"]
+                row.update(window_px=f"{W}x{H}", fit=1.0, status="ok",
+                           tile_rows=f"[{cand['row'].min():.0f}, "
+                                     f"{cand['row'].max():.0f}]",
+                           tile_cols=f"[{cand['col'].min():.0f}, "
+                                     f"{cand['col'].max():.0f}]")
+                off = abs(0.5 * (cand["row"].min() + cand["row"].max()) - H / 2)
+                row["centred_on"] = "tile" if off < 0.1 * H else "anchor"
+            except Exception as exc:                       # noqa: BLE001
+                msg = str(exc)
+                row["status"] = "MISMATCH"
+                import re as _re
+                m = _re.search(r"only ([\d.]+)% .*?(\d+)x(\d+) px window", msg)
+                if m:
+                    row["fit"] = float(m.group(1)) / 100.0
+                    row["window_px"] = f"{m.group(2)}x{m.group(3)}"
+                m = _re.search(r"columns \[([-\d]+), ([-\d]+)\] and rows "
+                               r"\[([-\d]+), ([-\d]+)\]", msg)
+                if m:
+                    row["tile_cols"] = f"[{m.group(1)}, {m.group(2)}]"
+                    row["tile_rows"] = f"[{m.group(3)}, {m.group(4)}]"
+        rows.append(row)
+        if verbose:
+            fit = row["fit"]
+            fit_txt = "  --  " if fit != fit else f"{100 * fit:5.1f}%"
+            print(f"  {row['status']:9s} {scene:36s} "
+                  f"window {str(row['window_px']):>10}  fit {fit_txt}  "
+                  f"rows {row['tile_rows']:14s} {row['centred_on']}")
+    return pd.DataFrame(rows)
 
 
 def load_tile(scene: str, kernel: str = DEFAULT_KERNEL):
@@ -537,6 +623,10 @@ def main(argv=None) -> int:
                          "Anything other than the default writes to a "
                          "kernel-suffixed .npz, so the tiles the paper's "
                          "results are built on are never overwritten")
+    ap.add_argument("--audit", action="store_true",
+                    help="check that every stored tile can still be "
+                         "reproduced from the window on disk, and report the "
+                         "geometry of any that cannot. Builds nothing")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--legacy", action="store_true",
                     help="build tiles for the seven original scenes in data/ instead")
@@ -559,6 +649,23 @@ def main(argv=None) -> int:
         scenes = [(s.scene, cfg.REGION_DIR / f"{s.scene}_data.zarr")
                   for s in sites.itertuples()]
         print(region_sites.summary(sites))
+
+    if args.audit:
+        df = audit_windows([sc for sc, _ in scenes], halo_px=args.halo,
+                           band=args.band)
+        out = cfg.RESULTS_DIR / "window_audit.csv"
+        cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+        df.to_csv(out, index=False)
+        bad = df[df.status != "ok"]
+        print(f"\n{len(df) - len(bad)} of {len(df)} tiles reproducible from "
+              f"their window; wrote {out}")
+        if len(bad):
+            print("not reproducible:")
+            for _, r in bad.iterrows():
+                print(f"  {r.scene}: {r.status}, window {r.window_px}, "
+                      f"fit {'' if r.fit != r.fit else f'{100*r.fit:.1f}%'}, "
+                      f"tile rows {r.tile_rows}")
+        return 0 if not len(bad) else 1
 
     rows, failures = [], []
     for i, (scene, store) in enumerate(scenes, 1):
