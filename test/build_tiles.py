@@ -146,11 +146,20 @@ def complete_block(out_ids, out_val, cell_ids, max_missing_frac=1e-4):
     if n_missing == 0:
         return full, 0
     if n_missing / n > max_missing_frac:
+        frac = n_missing / n
+        # Below about a per cent this really is the hull edge and a larger halo
+        # helps. Above it, the samples do not cover the tile at all, and
+        # pointing at --halo sends the reader in the wrong direction.
+        why = ("cells outside the sample convex hull are dropped; a larger "
+               "--halo would recover them"
+               if frac < 0.01 else
+               "the samples do not cover the tile: this is a geometry "
+               "mismatch, not a hull edge, and --halo will not fix it. Check "
+               "that the window on disk is the one the tile was built from")
         raise RuntimeError(
             f"the resampler kept {n - n_missing} of {n} cells "
-            f"({100*n_missing/n:.4f}% missing, ceiling "
-            f"{100*max_missing_frac:.4f}%): cells outside the sample convex "
-            f"hull are dropped. Increase --halo or acquire a larger window.")
+            f"({100*frac:.4f}% missing, ceiling {100*max_missing_frac:.4f}%): "
+            + why)
     idx = np.arange(n, dtype=np.int64)
     for up in range(1, cfg.DELTA + 1):
         group = idx >> (2 * up)
@@ -446,6 +455,50 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
              parent_id=np.int64(chosen["parent"]),
              meta=np.array(json.dumps(meta)))
     return meta
+
+
+
+def tile_subwindow(scene, store, halo_px=32, band=None, kernel=DEFAULT_KERNEL):
+    """Rebuild the native sub-window one stored tile was transferred from.
+
+    Callers that re-run a transfer outside `build_tile` -- the kernel ablation
+    and the resampling-error measurement -- need the same samples the tile was
+    built from. `build_tile` guarantees that by *selecting* a parent whose cells
+    all fall inside the window with halo; reading the stored parent back and
+    trusting it does not, and when the window on disk is not the one the tile
+    came from the sub-window silently covers only part of the tile. That shows
+    up much later as "43% of cells missing", which reads like a halo problem
+    and is not one. The fit is therefore checked here, once, with a message
+    that names the actual geometry.
+    """
+    import pyproj
+    ds, img, lon, lat, x, y, crs_wkt = _open_window(store, band or cfg.BAND)
+    H, W = img.shape
+    crs = pyproj.CRS.from_wkt(crs_wkt)
+    to_crs = pyproj.Transformer.from_crs(pyproj.CRS.from_epsg(4326), crs,
+                                         always_xy=True)
+    z = np.load(tile_path(scene, kernel), allow_pickle=False)
+    parent = int(z["parent_id"])
+    cand = _evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px)
+    if cand["fit"] < 1.0:
+        raise RuntimeError(
+            f"{scene}: only {100*cand['fit']:.1f}% of the stored tile's cells "
+            f"(parent {parent}) lie inside the {W}x{H} px window with a "
+            f"{halo_px} px halo. The tile spans columns "
+            f"[{cand['col'].min():.0f}, {cand['col'].max():.0f}] and rows "
+            f"[{cand['row'].min():.0f}, {cand['row'].max():.0f}]. The window on "
+            f"disk is not the one this tile was built from, so the transfer "
+            f"cannot be reproduced on it; rebuild the tile from this window "
+            f"with build_tiles.py --force, or restore the original window.")
+    c0 = max(int(np.floor(cand["col"].min())) - halo_px, 0)
+    c1 = min(int(np.ceil(cand["col"].max())) + halo_px + 1, W)
+    r0 = max(int(np.floor(cand["row"].min())) - halo_px, 0)
+    r1 = min(int(np.ceil(cand["row"].max())) + halo_px + 1, H)
+    return dict(cand=cand, to_crs=to_crs, img=img,
+                sub_lon=lon[r0:r1, c0:c1].ravel(),
+                sub_lat=lat[r0:r1, c0:c1].ravel(),
+                bounds=(r0, r1, c0, c1), shape=(H, W), crs_wkt=crs_wkt,
+                x=x, y=y)
 
 
 def load_tile(scene: str, kernel: str = DEFAULT_KERNEL):

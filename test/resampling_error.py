@@ -101,22 +101,13 @@ def scene_parameters(scene: str, spectrum: pd.DataFrame | None):
 
 def measure(scene: str, store: Path, kernels, spectrum, noise_scale=1.0,
             seed=23, halo_px=32, verbose=True):
-    import pyproj
-    ds, img, lon, lat, x, y, crs_wkt = build_tiles._open_window(store, cfg.BAND)
-    H, W = img.shape
-    crs = pyproj.CRS.from_wkt(crs_wkt)
-    to_crs = pyproj.Transformer.from_crs(pyproj.CRS.from_epsg(4326), crs,
-                                         always_xy=True)
+    # Checked once, with a diagnostic: a window that is not the one the tile
+    # was built from produces a partial sub-window and a downstream "43% of
+    # cells missing" that points at the halo instead of at the geometry.
+    w = build_tiles.tile_subwindow(scene, store, halo_px=halo_px)
+    cand, to_crs = w["cand"], w["to_crs"]
+    sub_lon, sub_lat = w["sub_lon"], w["sub_lat"]
     _i, _c, utm_crop, _m, npz = build_tiles.load_tile(scene)
-    parent = int(npz["parent_id"])
-    cand = build_tiles._evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px)
-
-    c0 = max(int(np.floor(cand["col"].min())) - halo_px, 0)
-    c1 = min(int(np.ceil(cand["col"].max())) + halo_px + 1, W)
-    r0 = max(int(np.floor(cand["row"].min())) - halo_px, 0)
-    r1 = min(int(np.ceil(cand["row"].max())) + halo_px + 1, H)
-    sub_lon = lon[r0:r1, c0:c1].ravel()
-    sub_lat = lat[r0:r1, c0:c1].ravel()
     sx, sy = to_crs.transform(sub_lon, sub_lat)
     x0, y0 = float(np.mean(cand["cx"])), float(np.mean(cand["cy"]))
 

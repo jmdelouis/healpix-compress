@@ -144,24 +144,12 @@ def transfer_fidelity(scene: str, kernel: str, store: Path, seed: int = 17,
     identity has no advantage, so this is the number that says whether a kernel
     represents the field or merely copies samples.
     """
-    import pyproj
-    ds, img, lon, lat, x, y, crs_wkt = build_tiles._open_window(store, cfg.BAND)
-    H, W = img.shape
-    crs = pyproj.CRS.from_wkt(crs_wkt)
-    to_crs = pyproj.Transformer.from_crs(pyproj.CRS.from_epsg(4326), crs,
-                                         always_xy=True)
     # The parent is whichever one the paper's own tile used, so the geometry is
-    # identical to the real-data rows above.
-    _ids, _cd, _crop, _meta, npz = build_tiles.load_tile(scene)
-    parent = int(npz["parent_id"])
-    cand = build_tiles._evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px)
-
-    c0 = max(int(np.floor(cand["col"].min())) - halo_px, 0)
-    c1 = min(int(np.ceil(cand["col"].max())) + halo_px + 1, W)
-    r0 = max(int(np.floor(cand["row"].min())) - halo_px, 0)
-    r1 = min(int(np.ceil(cand["row"].max())) + halo_px + 1, H)
-    sub_lon = lon[r0:r1, c0:c1].ravel()
-    sub_lat = lat[r0:r1, c0:c1].ravel()
+    # identical to the real-data rows above; the helper checks that the window
+    # on disk actually holds it before rebuilding the sub-window.
+    w = build_tiles.tile_subwindow(scene, store, halo_px=halo_px)
+    cand, to_crs = w["cand"], w["to_crs"]
+    sub_lon, sub_lat = w["sub_lon"], w["sub_lat"]
     sx, sy = to_crs.transform(sub_lon, sub_lat)
 
     x0 = float(np.mean(cand["cx"]))
