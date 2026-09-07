@@ -70,7 +70,13 @@ def make_resampler(kernel: str, lon, lat, cell_ids, verbose=False):
     if kernel == "bicubic":
         return hr.BicubicResampler(**common)
     if kernel == "psf":
-        return hr.PSFResampler(sigma_m=hr.fwhm_to_scale(PSF_FWHM_M), **common)
+        # Older installed versions of healpix-resample do not re-export this
+        # from the package root, only from the submodule where it lives.
+        try:
+            fwhm_to_scale = hr.fwhm_to_scale
+        except AttributeError:
+            from healpix_resample.psf_geometry import fwhm_to_scale
+        return hr.PSFResampler(sigma_m=fwhm_to_scale(PSF_FWHM_M), **common)
     raise KeyError(f"unknown resampler {kernel!r} (have {KERNELS})")
 
 

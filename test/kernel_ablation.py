@@ -122,8 +122,85 @@ def spectral_distance(projected, observed, mask):
         psd_rect_px=int(n))
 
 
+
+def transfer_fidelity(scene: str, kernel: str, store: Path, seed: int = 17,
+                      halo_px: int = 32):
+    """Transfer error against an analytic truth, measured at the cell centres.
+
+    Scoring a transfer by comparing the tile back to the source imagery --
+    which is what the floor does -- rewards any transfer that is close to the
+    identity on the source lattice, whatever it does to the continuous field.
+    A nearest transfer copies native pixel values, and the nearest read then
+    hands most of them straight back, so the two nearly cancel: `nearest` wins
+    that comparison by construction of the metric and not by fidelity. The
+    log-PSD distance has the same weakness, since a copy reproduces the source
+    spectrum exactly.
+
+    The truth here is an analytic field, known at every position, with the
+    slope and instrument width fitted to the imagery in the support controls.
+    It is evaluated at the native pixel centres to play the observation,
+    transferred to the cells by the kernel under test, and compared to the same
+    field evaluated at the cell centres. Neither lattice is privileged and the
+    identity has no advantage, so this is the number that says whether a kernel
+    represents the field or merely copies samples.
+    """
+    import pyproj
+    ds, img, lon, lat, x, y, crs_wkt = build_tiles._open_window(store, cfg.BAND)
+    H, W = img.shape
+    crs = pyproj.CRS.from_wkt(crs_wkt)
+    to_crs = pyproj.Transformer.from_crs(pyproj.CRS.from_epsg(4326), crs,
+                                         always_xy=True)
+    # The parent is whichever one the paper's own tile used, so the geometry is
+    # identical to the real-data rows above.
+    _ids, _cd, _crop, _meta, npz = build_tiles.load_tile(scene)
+    parent = int(npz["parent_id"])
+    cand = build_tiles._evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px)
+
+    c0 = max(int(np.floor(cand["col"].min())) - halo_px, 0)
+    c1 = min(int(np.ceil(cand["col"].max())) + halo_px + 1, W)
+    r0 = max(int(np.floor(cand["row"].min())) - halo_px, 0)
+    r1 = min(int(np.ceil(cand["row"].max())) + halo_px + 1, H)
+    sub_lon = lon[r0:r1, c0:c1].ravel()
+    sub_lat = lat[r0:r1, c0:c1].ravel()
+    sx, sy = to_crs.transform(sub_lon, sub_lat)
+
+    x0 = float(np.mean(cand["cx"]))
+    y0 = float(np.mean(cand["cy"]))
+    k_min = 2.0 * math.pi / cfg.TILE_SIDE_M
+    k_max = math.pi / cfg.DELTA_EQ
+    sigma = sup.psf_sigma_from_fwhm(11.9)
+    f_src = sup.synthetic_field(np.asarray(sx) - x0, np.asarray(sy) - y0,
+                                beta=1.9, k_min=k_min, k_max=k_max, seed=seed,
+                                psf_sigma_m=sigma)
+    f_truth = sup.synthetic_field(np.asarray(cand["cx"]) - x0,
+                                  np.asarray(cand["cy"]) - y0,
+                                  beta=1.9, k_min=k_min, k_max=k_max, seed=seed,
+                                  psf_sigma_m=sigma)
+    op = build_tiles.make_resampler(kernel, sub_lon, sub_lat, cand["cell_ids"],
+                                    verbose=False)
+    res = op.resample(np.asarray(f_src, dtype=np.float64))
+    ids = np.asarray(res.cell_ids, dtype=np.int64).ravel()
+    val = np.asarray(res.cell_data, dtype=np.float64).ravel()
+    order = np.argsort(ids)
+    if ids.size != cfg.N_CHILDREN:
+        return dict(transfer_rmse=np.nan, transfer_frac_of_std=np.nan,
+                    transfer_p999=np.nan, transfer_overshoot=np.nan,
+                    transfer_cells_kept=int(ids.size))
+    val = val[order]
+    d = val - np.asarray(f_truth, dtype=np.float64)
+    sd = float(np.std(f_truth)) or 1.0
+    lo, hi = float(np.min(f_src)), float(np.max(f_src))
+    return dict(
+        transfer_rmse=float(np.sqrt(np.mean(d ** 2))),
+        transfer_frac_of_std=float(np.sqrt(np.mean(d ** 2)) / sd),
+        # a diverging interpolant shows up in the tail long before the RMSE
+        transfer_p999=float(np.percentile(np.abs(d), 99.9) / sd),
+        # values the transfer invented outside the range of what it was given
+        transfer_overshoot=float(np.mean((val < lo) | (val > hi))),
+        transfer_cells_kept=int(ids.size))
+
 def run_region(scene: str, kernel: str, store: Path, codecs, targets,
-               build=True, force=False, do_rd=False, verbose=True):
+               build=True, force=False, do_rd=False, truth=True, verbose=True):
     path, build_s = ensure_tile(scene, kernel, store, build, force)
     cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene, kernel)
     cr = common_reference.CommonReference(cell_ids, np.asarray(npz["utm_lon"]),
@@ -134,12 +211,31 @@ def run_region(scene: str, kernel: str, store: Path, codecs, targets,
     obs = np.asarray(utm_crop, dtype=np.float64)
     scene_std = float(np.std(obs[cr.mask]))
 
+    # A kernel that diverges shows up in the tail and in the range long before
+    # the RMSE makes it obvious, and the constant-field check passes it: a
+    # bicubic interpolant is exact on constants and can still overshoot wildly
+    # on real data. Both diagnostics travel with every row.
+    resid = (np.asarray(proj, dtype=np.float64) - obs)[cr.mask]
+    resid = resid[np.isfinite(resid)]
+    lo, hi = float(np.min(obs[cr.mask])), float(np.max(obs[cr.mask]))
+    cd = np.asarray(cell_data, dtype=np.float64)
     row = dict(scene=scene, kernel=kernel, floor=floor,
                floor_frac_of_std=floor / scene_std if scene_std else np.nan,
+               floor_p999=(float(np.percentile(np.abs(resid), 99.9) / scene_std)
+                           if resid.size and scene_std else np.nan),
+               cells_outside_source_range=float(np.mean((cd < lo) | (cd > hi))),
                scene_std=scene_std, build_seconds=build_s,
                constant_check=meta.get("resampler_constant_check", np.nan),
                hpx_std=float(np.std(cell_data)))
     row.update(spectral_distance(proj, obs, cr.mask))
+    if truth:
+        try:
+            row.update(transfer_fidelity(scene, kernel, store))
+        except Exception as exc:                           # noqa: BLE001
+            print(f"      transfer-fidelity failed: {type(exc).__name__}: {exc}")
+            row.update(transfer_rmse=np.nan, transfer_frac_of_std=np.nan,
+                       transfer_p999=np.nan, transfer_overshoot=np.nan,
+                       transfer_cells_kept=-1)
 
     if do_rd:
         tile = sup.expanded(cell_data)
@@ -157,10 +253,19 @@ def run_region(scene: str, kernel: str, store: Path, codecs, targets,
         if do_rd and np.isfinite(row.get(f"size_at_{targets[0]:g}", np.nan)):
             extra = (f" | size@{targets[0]:g} "
                      f"{row[f'size_at_{targets[0]:g}']/cfg.SHARED_RAW:.3f}")
+        tf = row.get("transfer_frac_of_std", np.nan)
+        flag = ""
+        if row["cells_outside_source_range"] > 0.01:
+            flag = (f"  <-- DIVERGES: "
+                    f"{100*row['cells_outside_source_range']:.1f}% of cells "
+                    f"outside the source range")
         print(f"    {kernel:14s} floor {floor:.3e} "
               f"({100*row['floor_frac_of_std']:.1f}% of std) | "
               f"log-PSD {row['logpsd_rms']:.3f} | "
-              f"top octave {row['logpsd_top_octave']:.2f}x{extra}")
+              f"top octave {row['logpsd_top_octave']:.2f}x | "
+              + (f"transfer {100*tf:.1f}% of std" if np.isfinite(tf)
+                 else "transfer --")
+              + extra + flag)
     return row
 
 
@@ -189,20 +294,64 @@ def summarize(df, targets, do_rd):
            f"{', '.join(sorted(df.kernel.unique()))}",
            f"- reference kernel: `{REFERENCE_KERNEL}` (the one the paper uses)",
            ""]
-    out += ["## Absolute measurements (median over regions)", "",
-            "| kernel | floor | floor / scene std | log-PSD RMS | top-octave "
-            "power ratio | build (s) |", "|---|---|---|---|---|---|"]
+    has_truth = "transfer_frac_of_std" in df
+    out += ["## Against an analytic truth (the metric that decides)", ""]
+    if has_truth:
+        out += ["One analytic field, evaluated at the native pixel centres to "
+                "play the observation, transferred to the cells by each kernel, "
+                "and compared to the same field evaluated at the cell centres. "
+                "Neither lattice is privileged, so a transfer gets no credit "
+                "for merely copying samples.", "",
+                "| kernel | transfer RMSE / std | 99.9th pct / std | overshoot "
+                "outside source range | cells kept |",
+                "|---|---|---|---|---|"]
+        for kernel, g in df.groupby("kernel"):
+            kept = g.transfer_cells_kept.median()
+            out.append(f"| `{kernel}` | "
+                       f"{100*g.transfer_frac_of_std.median():.2f}% | "
+                       f"{g.transfer_p999.median():.3f} | "
+                       f"{100*g.transfer_overshoot.median():.3f}% | "
+                       f"{'all' if kept == cfg.N_CHILDREN else f'{kept:.0f}'} |")
+        out.append("")
+    else:
+        out.append("_Not run (`--no-truth`)._\n")
+
+    out += ["## Against the imagery (read back through the same operator)", "",
+            "**These two columns reward a transfer for being close to the "
+            "identity on the native lattice.** A nearest transfer copies pixel "
+            "values and the nearest read hands most of them straight back, so "
+            "the two nearly cancel; the log-PSD distance has the same weakness, "
+            "since a copy reproduces the source spectrum exactly. Read them as "
+            "a description of the transfer-and-read pair, not as a ranking of "
+            "transfers.", "",
+            "| kernel | floor | floor / scene std | 99.9th pct / std | log-PSD "
+            "RMS | top-octave power | cells outside source range | build (s) |",
+            "|---|---|---|---|---|---|---|---|"]
     for kernel, g in df.groupby("kernel"):
         out.append(f"| `{kernel}` | {g.floor.median():.3e} | "
                    f"{100*g.floor_frac_of_std.median():.1f}% | "
+                   f"{g.floor_p999.median():.2f} | "
                    f"{g.logpsd_rms.median():.3f} | "
                    f"{g.logpsd_top_octave.median():.2f} | "
+                   f"{100*g.cells_outside_source_range.median():.3f}% | "
                    f"{g.build_seconds.replace(0, np.nan).median():.0f} |")
     out.append("")
     out.append("A top-octave ratio above 1 means the transfer leaves more "
                "high-frequency power than the observation carries, which is "
                "the failure the paper describes qualitatively; below 1 means "
                "it smooths.")
+    bad = df[df.cells_outside_source_range > 0.01]
+    if len(bad):
+        for kernel, g in bad.groupby("kernel"):
+            out.append(f"- **`{kernel}` diverges**: "
+                       f"{100*g.cells_outside_source_range.median():.1f}% of "
+                       f"cells fall outside the range of the data it was given, "
+                       f"and its floor reaches "
+                       f"{100*g.floor_frac_of_std.median():.0f}% of the scene's "
+                       f"standard deviation. Note that it passes the "
+                       f"constant-field check, which an interpolant exact on "
+                       f"polynomials always will: that check is necessary and "
+                       f"not sufficient.")
     out.append("")
 
     out += ["## Paired against the reference kernel", "",
@@ -236,43 +385,60 @@ def summarize(df, targets, do_rd):
 
     ref = df[df.kernel == REFERENCE_KERNEL]
     others = df[df.kernel != REFERENCE_KERNEL]
-    if len(ref) and len(others):
-        best = others.groupby("kernel").floor.median().idxmin()
-        bestv = others.groupby("kernel").floor.median().min()
-        refv = ref.floor.median()
-        out.append(f"- lowest floor: `{best}` at {bestv:.3e}, against "
-                   f"{refv:.3e} for `{REFERENCE_KERNEL}` "
-                   f"({100*(bestv/refv - 1):+.1f}%)")
+    col = "transfer_frac_of_std" if has_truth else "floor"
+    label = "transfer error against the analytic truth" if has_truth else "floor"
+    if len(ref) and len(others) and col in df:
+        m = others.groupby("kernel")[col].median().dropna()
+        r = float(ref[col].median())
+        if len(m) and np.isfinite(r) and r > 0:
+            out.append(f"- lowest {label}: `{m.idxmin()}` at {m.min():.3e}, "
+                       f"against {r:.3e} for `{REFERENCE_KERNEL}` "
+                       f"({100*(m.min()/r - 1):+.1f}%)")
     return "\n".join(out)
 
 
 def figure(df, publish=True, name="fig_kernel_psd"):
+    """Three panels, in the order the argument runs.
+
+    The analytic-truth panel comes first because it is the only one of the
+    three that does not reward a transfer for staying close to the identity on
+    the native lattice; the other two describe the transfer-and-read pair.
+    """
     if not len(df):
         return
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.6, 2.9))
+    has_truth = "transfer_frac_of_std" in df and df.transfer_frac_of_std.notna().any()
+    panels = ([("transfer_frac_of_std", "transfer error\n(% of field std)", 100.0,
+                "log")] if has_truth else [])
+    panels += [("floor_frac_of_std", "floor\n(% of scene std)", 100.0, "log"),
+               ("logpsd_top_octave", "top-octave power\nvs observation", 1.0, "log")]
+    fig, axes = plt.subplots(1, len(panels), figsize=(2.4 * len(panels) + 0.6, 3.0))
+    axes = np.atleast_1d(axes)
     kernels = sorted(df.kernel.unique())
     cmap = plt.get_cmap("viridis")
     colors = {k: cmap(i / max(len(kernels) - 1, 1)) for i, k in enumerate(kernels)}
-    for i, k in enumerate(kernels):
-        g = df[df.kernel == k]
-        ax1.scatter(np.full(len(g), i), 100 * g.floor_frac_of_std,
-                    color=colors[k], s=18, alpha=0.75, linewidths=0)
-        ax1.plot([i], [100 * g.floor_frac_of_std.median()], marker="_", ms=18,
-                 mew=2.2, color=colors[k])
-        ax2.scatter(np.full(len(g), i), g.logpsd_top_octave, color=colors[k],
-                    s=18, alpha=0.75, linewidths=0)
-        ax2.plot([i], [g.logpsd_top_octave.median()], marker="_", ms=18,
-                 mew=2.2, color=colors[k])
-    for ax, ylab in ((ax1, "floor (% of scene std)"),
-                     (ax2, "top-octave power vs observation")):
+    for ax, (col, ylab, scale, yscale) in zip(axes, panels):
+        for i, k in enumerate(kernels):
+            g = df[df.kernel == k]
+            v = g[col].to_numpy(dtype=float) * scale
+            v = v[np.isfinite(v)]
+            if not v.size:
+                continue
+            ax.scatter(np.full(v.size, i), v, color=colors[k], s=18,
+                       alpha=0.75, linewidths=0)
+            ax.plot([i], [np.median(v)], marker="_", ms=18, mew=2.2,
+                    color=colors[k])
         ax.set_xticks(range(len(kernels)))
         ax.set_xticklabels([k.replace("clough_tocher", "C--T") for k in kernels],
-                           rotation=30, ha="right", fontsize=8)
+                           rotation=35, ha="right", fontsize=8)
         ax.set_ylabel(ylab, fontsize=9)
+        ax.set_yscale(yscale)
         ax.tick_params(labelsize=8)
-    ax2.axhline(1.0, color="0.6", ls="--", lw=1.0)
-    ax2.set_yscale("log")
-    fig.suptitle("Transfer kernel: representation floor and spectral fidelity",
+        ax.set_xlim(-0.6, len(kernels) - 0.4)
+    if has_truth:
+        axes[0].set_title("against an analytic truth", fontsize=9)
+        axes[1].set_title("against the imagery", fontsize=9)
+    axes[-1].axhline(1.0, color="0.6", ls="--", lw=1.0)
+    fig.suptitle("Transfer kernel: fidelity, representation floor and spectrum",
                  fontsize=10)
     fig.tight_layout()
     cfg.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
@@ -298,23 +464,37 @@ def latex_table(df, targets, do_rd):
                 p = paired(df, col).set_index("kernel") if col in df else None
                 cells += (f" & {p.loc[kernel,'median']:.2f}"
                           if p is not None and kernel in p.index else " & --")
+        tf = (f"{100*g.transfer_frac_of_std.median():.2f}"
+              if "transfer_frac_of_std" in g
+              and np.isfinite(g.transfer_frac_of_std.median()) else "--")
+        ovr = (f"{100*g.cells_outside_source_range.median():.2f}"
+               if "cells_outside_source_range" in g else "--")
         rows.append(
-            f"\\texttt{{{kernel.replace('_', chr(92)+'_')}}} & "
-            f"{g.floor.median():.2e} & {100*g.floor_frac_of_std.median():.1f} & "
+            f"\\texttt{{{kernel.replace('_', chr(92)+'_')}}} & {tf} & {ovr} & "
+            f"{100*g.floor_frac_of_std.median():.1f} & "
             f"{ratio} & {g.logpsd_rms.median():.2f} & "
             f"{g.logpsd_top_octave.median():.2f}" + cells + " \\\\")
     extra_h = "".join(f" & ${t:g}$" for t in targets[:3]) if do_rd else ""
-    spec = "lrrrrr" + ("r" * (3 if do_rd else 0))
+    spec = "lrrrrrr" + ("r" * (3 if do_rd else 0))
     return (
         "\\begin{table}[t]\n\\centering\n"
         "\\caption{Transfer-kernel ablation. Each row rebuilds the carrier tile "
-        "from the same native window with a different kernel and scores it "
-        "against the same observation with the same reading operator, so "
-        "differences between rows are the transfer alone. \\emph{Floor} is the "
-        "RMSE of the uncompressed tile read on the native pixels over the two "
-        "footprints' intersection, absolute and as a fraction of the scene's "
-        "standard deviation; \\emph{rel.} is the per-region ratio to "
-        "\\texttt{clough\\_tocher}, the kernel used throughout this paper. "
+        "from the same native window with a different kernel, with the same "
+        "reading operator throughout, so differences between rows are the "
+        "transfer alone. \\emph{Transfer} is the error against an analytic "
+        "field known at every position --- evaluated at the native pixels to "
+        "play the observation, transferred to the cells, compared to itself at "
+        "the cell centres --- as a percentage of the field's standard "
+        "deviation; it is the only column here that gives a transfer no credit "
+        "for merely copying samples. \\emph{Over} is the percentage of cells "
+        "the transfer places outside the range of the data it was given, which "
+        "detects a diverging interpolant that the constant-field check passes. "
+        "\\emph{Floor} is the RMSE of the uncompressed tile read on the native "
+        "pixels over the two footprints' intersection, as a fraction of the "
+        "scene's standard deviation, and \\emph{rel.} its per-region ratio to "
+        "\\texttt{clough\\_tocher}, the kernel used throughout this paper; both "
+        "reward a transfer for staying close to the identity on the native "
+        "lattice and are reported for that reason, not as a ranking. "
         "\\emph{log-PSD} is the RMS distance in $\\log_{10}$ between the "
         "projected tile's radial power spectrum and the observation's over the "
         "band up to the native Nyquist, and \\emph{top oct.} the ratio of "
@@ -325,7 +505,7 @@ def latex_table(df, targets, do_rd):
            "same reference at three RMSE targets." if do_rd else "") + "}\n"
         "\\label{tab:kernel_ablation}\n\\footnotesize\n"
         f"\\begin{{tabular}}{{@{{}}{spec}@{{}}}}\n\\toprule\n"
-        "Kernel & Floor & \\% std & rel. & log-PSD & top oct." + extra_h
+        "Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct." + extra_h
         + " \\\\\n\\midrule\n" + "\n".join(rows)
         + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
@@ -342,6 +522,10 @@ def main(argv=None) -> int:
                     help="also run the codec sweep per kernel (the expensive "
                          "half; without it only the floor and the spectrum are "
                          "measured)")
+    ap.add_argument("--no-truth", action="store_true",
+                    help="skip the analytic-truth transfer metric (which is "
+                         "the only one of the three that does not reward a "
+                         "transfer for being close to the identity)")
     ap.add_argument("--no-build", action="store_true",
                     help="fail instead of building a missing tile")
     ap.add_argument("--force", action="store_true",
@@ -372,7 +556,8 @@ def main(argv=None) -> int:
             try:
                 rows.append(run_region(scene, kernel, store, args.codecs,
                                        args.targets, build=not args.no_build,
-                                       force=args.force, do_rd=args.rd))
+                                       force=args.force, do_rd=args.rd,
+                                       truth=not args.no_truth))
             except Exception as exc:                       # noqa: BLE001
                 print(f"    {kernel:14s} FAILED {type(exc).__name__}: {exc}")
                 failures.append((scene, kernel, f"{type(exc).__name__}: {exc}"))
