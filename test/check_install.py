@@ -36,6 +36,7 @@ MODULES = [
     ("support_controls", "controls for the footprint support mismatch"),
     ("gamma_analysis", "verdict over a continuous overhead ratio"),
     ("operator_tests", "what the HEALPix->UTM operator does beyond a constant"),
+    ("kernel_ablation", "transfer-kernel ablation"),
 ]
 
 THIRD_PARTY = [

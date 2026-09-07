@@ -36,8 +36,42 @@ import region_sites
 INDEX_PATH = cfg.TILE_DIR / "tiles_index.csv"
 
 
-def tile_path(scene: str) -> Path:
-    return cfg.TILE_DIR / f"{scene}.npz"
+# The transfer kernel that populates the carrier grid is a choice of this
+# study, not a neutral implementation detail, so it is selectable and recorded.
+# `clough_tocher` stays the default and keeps the unsuffixed path, so every
+# tile already built, and every result derived from one, is untouched.
+DEFAULT_KERNEL = "clough_tocher"
+KERNELS = ("nearest", "linear", "bicubic", "clough_tocher", "psf")
+PSF_FWHM_M = 12.5          # nominal Sentinel-2 B04 response
+
+
+def tile_path(scene: str, kernel: str = DEFAULT_KERNEL) -> Path:
+    suffix = "" if kernel == DEFAULT_KERNEL else f"__{kernel}"
+    return cfg.TILE_DIR / f"{scene}{suffix}.npz"
+
+
+def make_resampler(kernel: str, lon, lat, cell_ids, verbose=False):
+    """Build one transfer operator.
+
+    The KNN-family resamplers take their arguments by keyword: their base class
+    puts `Npt` third positionally while the subclasses fix it themselves, so a
+    positional call silently binds `level` to `Npt`. Every construction here is
+    therefore keyword-only.
+    """
+    import healpix_resample as hr
+    common = dict(lon_deg=lon, lat_deg=lat, level=cfg.LEVEL,
+                  out_cell_ids=cell_ids, verbose=verbose)
+    if kernel == "clough_tocher":
+        return hr.CloughTocherResampler(**common)
+    if kernel == "nearest":
+        return hr.NearestResampler(**common)
+    if kernel == "linear":
+        return hr.BilinearResampler(**common)
+    if kernel == "bicubic":
+        return hr.BicubicResampler(**common)
+    if kernel == "psf":
+        return hr.PSFResampler(sigma_m=hr.fwhm_to_scale(PSF_FWHM_M), **common)
+    raise KeyError(f"unknown resampler {kernel!r} (have {KERNELS})")
 
 
 def _open_window(path: Path, band: str):
@@ -158,9 +192,8 @@ def _evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px):
 
 def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
                max_nodata: float = 1e-3, fill_nan_mean: bool = False,
-               verbose: bool = True) -> dict:
+               kernel: str = DEFAULT_KERNEL, verbose: bool = True) -> dict:
     import pyproj
-    from healpix_resample import CloughTocherResampler
 
     ds, img, lon, lat, x, y, crs_wkt = _open_window(store, band)
     H, W = img.shape
@@ -237,8 +270,17 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
     good = np.isfinite(sub_val)
     n_dropped = int((~good).sum())
 
-    op = CloughTocherResampler(sub_lon[good], sub_lat[good], cfg.LEVEL,
-                               out_cell_ids=chosen["cell_ids"], verbose=verbose)
+    op = make_resampler(kernel, sub_lon[good], sub_lat[good],
+                        chosen["cell_ids"], verbose=verbose)
+    # A transfer that does not preserve a constant is unusable, and the failure
+    # is silent: every downstream error then measures the same offset. Checked
+    # once per tile, on the operator that is about to be used.
+    ones = op.resample(np.ones(int(good.sum()), dtype=np.float64))
+    ones_med = float(np.nanmedian(np.asarray(ones.cell_data, dtype=np.float64)))
+    if not np.isfinite(ones_med) or abs(ones_med - 1.0) > 0.05:
+        raise RuntimeError(
+            f"{scene}: the {kernel!r} transfer maps a constant field to "
+            f"{ones_med} instead of 1.0; refusing to build a tile with it.")
     res = op.resample(sub_val[good].astype(np.float64))
     out_ids = np.asarray(res.cell_ids, dtype=np.int64).ravel()
     out_val = np.asarray(res.cell_data, dtype=np.float64).ravel()
@@ -318,7 +360,8 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
         centroid_lon=float(chosen["clon"].mean()),
         centroid_lat=float(chosen["clat"].mean()),
         crs_wkt=crs_wkt,
-        resampler="CloughTocherResampler",
+        resampler=kernel,
+        resampler_constant_check=ones_med,
         hpx_raw_bytes=int(cell_data.nbytes),
         utm_raw_bytes=int(utm_crop.nbytes),
         hpx_mean=float(cell_data.mean()), hpx_std=float(cell_data.std()),
@@ -328,7 +371,7 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
     )
 
     cfg.TILE_DIR.mkdir(parents=True, exist_ok=True)
-    np.savez(tile_path(scene),
+    np.savez(tile_path(scene, kernel),
              cell_data=cell_data,
              utm_crop=utm_crop,
              utm_x=np.asarray(x[x1:x2], dtype=np.float64),
@@ -341,9 +384,9 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
     return meta
 
 
-def load_tile(scene: str):
+def load_tile(scene: str, kernel: str = DEFAULT_KERNEL):
     """Return (cell_ids, cell_data, utm_crop, meta) for one region."""
-    z = np.load(tile_path(scene), allow_pickle=False)
+    z = np.load(tile_path(scene, kernel), allow_pickle=False)
     meta = json.loads(str(z["meta"]))
     parent = int(z["parent_id"])
     cell_ids = parent * cfg.N_CHILDREN + np.arange(cfg.N_CHILDREN, dtype=np.int64)
@@ -362,6 +405,11 @@ def main(argv=None) -> int:
                     help="ceiling on the no-data fraction INSIDE the tile "
                          "footprint (default 0.001 = 0.1%%); above it the "
                          "region is rejected instead of interpolated over")
+    ap.add_argument("--resampler", choices=list(KERNELS), default=DEFAULT_KERNEL,
+                    help="transfer kernel used to populate the carrier grid. "
+                         "Anything other than the default writes to a "
+                         "kernel-suffixed .npz, so the tiles the paper's "
+                         "results are built on are never overwritten")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--legacy", action="store_true",
                     help="build tiles for the seven original scenes in data/ instead")
@@ -387,8 +435,8 @@ def main(argv=None) -> int:
 
     rows, failures = [], []
     for i, (scene, store) in enumerate(scenes, 1):
-        if tile_path(scene).exists() and not args.force:
-            _, _, _, meta, _ = load_tile(scene)
+        if tile_path(scene, args.resampler).exists() and not args.force:
+            _, _, _, meta, _ = load_tile(scene, args.resampler)
             rows.append(meta)
             print(f"[{i:>2}/{len(scenes)}] {scene}: cached")
             continue
@@ -399,7 +447,8 @@ def main(argv=None) -> int:
         try:
             meta = build_tile(scene, store, band=args.band, halo_px=args.halo,
                               max_nodata=args.max_nodata,
-                              fill_nan_mean=args.fill_nan_mean, verbose=False)
+                              fill_nan_mean=args.fill_nan_mean,
+                              kernel=args.resampler, verbose=False)
             rows.append(meta)
             print(f"[{i:>2}/{len(scenes)}] {scene}: parent {meta['parent_id']} "
                   f"(rank {meta['parent_rank']}/{meta['n_candidate_parents']}), "
@@ -415,7 +464,10 @@ def main(argv=None) -> int:
         if not args.legacy:
             idx = idx.merge(sites[["scene", "scene_class", "region_id", "lat", "lon",
                                    "abs_lat", "hpx_regime"]], on="scene", how="left")
-        idx.to_csv(INDEX_PATH, index=False)
+        idx.to_csv(INDEX_PATH if args.resampler == DEFAULT_KERNEL
+                   else INDEX_PATH.with_name(
+                       f"{INDEX_PATH.stem}__{args.resampler}.csv"),
+                   index=False)
         print(f"\n{len(idx)} tiles indexed -> {INDEX_PATH}")
 
     if failures:

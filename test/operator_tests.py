@@ -232,22 +232,40 @@ def run_region(scene: str, mode: str, k_points: int = 10, verbose=True):
 
 # --- reporting ---------------------------------------------------------------
 def figure(df, publish=True, name="fig_operator_response"):
+    """Amplitude response, and why it is not the story.
+
+    An earlier version of this figure plotted the fitted registration shift on
+    its own axis. That shift is under a millimetre at every wavelength and
+    direction, so an autoscaled axis turned numerical zero into what looked
+    like a wavelength-dependent wobble --- the figure said the opposite of what
+    it measured. The registration result is now a single line of text, and the
+    second panel carries the measurement that matters: the total error against
+    the part of it the amplitude response accounts for.
+    """
     d = df[df.family == "sinusoid"].dropna(subset=["amplitude"])
     if not len(d):
         print("  no sinusoid rows; figure skipped")
         return
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6.0, 5.4), sharex=True,
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(6.0, 5.6), sharex=True,
                                    gridspec_kw=dict(hspace=0.12))
     cmap = plt.get_cmap("cividis")
     degs = sorted(d.orientation_deg.unique())
     for i, deg in enumerate(degs):
         g = d[d.orientation_deg == deg].groupby("wavelength_m")
         lam = np.array(sorted(g.groups))
-        amp = g.amplitude.median().reindex(lam).to_numpy()
-        sh = g.shift_m.median().reindex(lam).to_numpy()
         c = cmap(i / max(len(degs) - 1, 1))
-        ax1.plot(lam, amp, "o-", ms=3, lw=1.4, color=c, label=f"{deg:g}$^\\circ$")
-        ax2.plot(lam, sh, "o-", ms=3, lw=1.4, color=c)
+        ax1.plot(lam, g.amplitude.median().reindex(lam), "o-", ms=3, lw=1.4,
+                 color=c, label=f"{deg:g}$^\\circ$")
+        ax2.plot(lam, g.rmse.median().reindex(lam), "o-", ms=3, lw=1.4, color=c)
+    # the part of the error an amplitude response can explain
+    gg = d.groupby("wavelength_m")
+    lam = np.array(sorted(gg.groups))
+    coherent = (1.0 - gg.amplitude.median().reindex(lam)).abs()
+    ax2.plot(lam, coherent, "k--", lw=1.4,
+             label="explained by the amplitude response")
+    ax2.plot(lam, gg.rmse.median().reindex(lam), "k-", lw=1.0, alpha=0.4,
+             label="total RMSE (median over directions)")
+
     for ax in (ax1, ax2):
         ax.set_xscale("log")
         ax.axvline(2 * cfg.NATIVE_PIXEL_M, color="0.6", ls=":", lw=1.0)
@@ -256,11 +274,20 @@ def figure(df, publish=True, name="fig_operator_response"):
     ax1.set_ylabel("amplitude response")
     ax1.legend(fontsize=8, frameon=False, ncol=4, title="wave direction",
                title_fontsize=8, loc="lower right")
-    ax1.set_title("HEALPix $\\to$ UTM operator: transfer and registration",
-                  fontsize=10)
-    ax2.axhline(0.0, color="0.75", lw=0.8, zorder=0)
-    ax2.set_ylabel("registration shift (m)")
+    ax1.set_title("HEALPix $\\to$ UTM reading operator", fontsize=10)
+    shift = float(np.nanmax(np.abs(d.shift_m)))
+    ax1.annotate(f"registration: $|$shift$|$ under {max(shift, 1e-4)*1e3:.1f} mm "
+                 f"at every wavelength and direction\n"
+                 f"({max(shift, 1e-4)/cfg.DELTA_EQ:.0e} of a cell)",
+                 xy=(0.02, 0.96), xycoords="axes fraction", va="top",
+                 fontsize=8, color="0.25")
+    ax2.set_yscale("log")
+    ax2.set_ylabel("RMSE (unit-amplitude wave)")
+    ax2.legend(fontsize=8, frameon=False, loc="lower left")
     ax2.set_xlabel("wavelength (m); dotted: UTM Nyquist, dashed: HEALPix Nyquist")
+    ax2.set_title("the amplitude response accounts for almost none of the error",
+                  fontsize=9)
+
     cfg.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     for ext in ("pdf", "png"):
         fig.savefig(cfg.FIGURES_DIR / f"{name}.{ext}", bbox_inches="tight", dpi=160)
