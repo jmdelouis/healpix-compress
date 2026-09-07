@@ -3,10 +3,23 @@ name = "healpix-compress"
 requires-python = ">= 3.11"
 license = { text = "Apache-2.0" }
 dependencies = [
+  "healpix-resample",   # tile resampling + the common-reference operator
+  "healpix-geo",
+  "xarray",
+  "pandas",
   "numpy>=2",
   "scipy",
   "zarr>=3",
   "PyWavelets",
+  "matplotlib",
+  "pystac-client",
+  "rasterio",
+  "pyproj",
+  "imagecodecs",
+  "zfpy",
+  "pysz",
+  "zstandard",
+  "pillow"
 ]
 dynamic = ["version"]
 
@@ -28,8 +41,6 @@ paper = [
   "pysz",
   "zstandard",
   "pillow",
-  "zfpy",
-  "pysz"
 ]
 
 [project.entry-points."zarr.codecs"]

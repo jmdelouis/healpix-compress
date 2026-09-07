@@ -2,22 +2,12 @@
 
 ## One analytic field on both geometries
 
-Same function sampled by both lattices: no content difference at all, so the ratio is the grid effect alone.
+Same function sampled by both lattices: no content difference at all, so the ratio is the grid effect alone. Rows where the target is bracketed on both sides for fewer than 75% of regions are marked withheld: there the sweeps did not reach the target and the ratio is a quotient of bounds, not an estimate.
 
-| beta | target | regions | median ratio | range |
-|---|---|---|---|---|
-| 1.5 | 0.0001 | 5 | 1.838 | [1.571, 1.984] |
-| 1.5 | 0.0003 | 5 | 1.553 | [1.346, 1.759] |
-| 1.5 | 0.001 | 5 | 1.164 | [0.937, 1.337] |
-| 1.5 | 0.003 | 5 | 1.466 | [1.176, 1.950] |
-| 1.5 | 0.01 | 5 | 1.705 | [1.498, 1.854] |
-| 2 | 0.0001 | 5 | 1.588 | [1.370, 1.767] |
-| 2 | 0.0003 | 5 | 1.243 | [0.972, 1.364] |
-| 2 | 0.001 | 5 | 1.407 | [1.178, 1.626] |
-| 2 | 0.003 | 5 | 1.542 | [1.418, 1.616] |
-| 2 | 0.01 | 5 | 1.842 | [1.554, 2.007] |
-| 2.5 | 0.0001 | 5 | 1.290 | [1.005, 1.426] |
-| 2.5 | 0.0003 | 5 | 1.390 | [1.223, 1.603] |
-| 2.5 | 0.001 | 5 | 1.430 | [1.179, 1.692] |
-| 2.5 | 0.003 | 5 | 1.765 | [1.600, 2.151] |
-| 2.5 | 0.01 | 5 | 1.699 | [1.619, 1.967] |
+| beta | target | n | bracketed | median ratio | range | reportable |
+|---|---|---|---|---|---|---|
+| 1.9 | 0.0001 | 40 | 100% | 2.221 | [1.115, 2.363] | yes |
+| 1.9 | 0.0003 | 40 | 100% | 2.151 | [1.001, 2.295] | yes |
+| 1.9 | 0.001 | 40 | 100% | 1.899 | [0.602, 2.258] | yes |
+| 1.9 | 0.003 | 40 | 92% | 1.494 | [0.959, 2.134] | yes |
+| 1.9 | 0.01 | 40 | 90% | 1.183 | [0.396, 1.941] | yes |
