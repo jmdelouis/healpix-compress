@@ -685,17 +685,35 @@ def latex_table(frames: dict) -> str:
                         f"median ratio {g.ratio.median():.2f} \\\\")
     if not rows:
         return ""
+    # The caption describes the controls that actually ran: a caption listing
+    # controls absent from the table is how a reader is told the wrong thing
+    # about what was done.
+    parts = ["Controls for the support mismatch between the rotated HEALPix "
+             "tile and the axis-aligned equal-area crop."]
+    if "synthetic" in frames and len(frames["synthetic"]):
+        d = frames["synthetic"]
+        fw = d["psf_fwhm_m"].median() if "psf_fwhm_m" in d else float("nan")
+        parts.append(
+            "The synthetic rows evaluate one analytic random field --- a power "
+            "law of slope $\\beta$ times a Gaussian instrument response of "
+            f"{fw:.1f}\\,m FWHM, both fitted to the imagery itself --- at both "
+            "lattices' sample positions. Neither side is resampled and both see "
+            "the same function, so no content difference remains and the ratio "
+            "is the sampling geometry alone. Ratios are intrinsic "
+            "($\\gamma_{\\mathrm{tile}}=1$); $n$ counts the regions where the "
+            "target is bracketed on both grids.")
+    if "common" in frames and len(frames["common"]):
+        parts.append("The common-support rows compress the largest "
+                     "common-ground region on each native lattice and "
+                     "normalise by the ground area each covers.")
+    if "shift" in frames and len(frames["shift"]):
+        parts.append("The shifted-crop rows report how far the ratio moves "
+                     "when the UTM crop is re-cut at offsets of up to 16 "
+                     "native pixels, which bounds the mismatch's contribution "
+                     "without removing it.")
     return (
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Controls for the support mismatch between the rotated "
-        "HEALPix tile and the axis-aligned equal-area crop. The synthetic rows "
-        "sample one analytic band-limited field at both lattices' positions, so "
-        "no content difference remains and the ratio is the grid effect alone; "
-        "the common-support rows compress the largest common-ground region on "
-        "each native lattice and normalise by the ground area covered; the "
-        "shifted-crop rows report how far the ratio moves when the UTM crop is "
-        "re-cut at offsets of up to 16 native pixels, which bounds the "
-        "mismatch's contribution without removing it.}\n"
+        "\\caption{" + " ".join(parts) + "}\n"
         "\\label{tab:support_controls}\n"
         "\\begin{tabular}{llrrl}\n\\toprule\n"
         "Control & Target RMSE & $n$ & Median & Range \\\\\n\\midrule\n"

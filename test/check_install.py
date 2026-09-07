@@ -34,6 +34,7 @@ MODULES = [
     ("make_figures", "paper figures"),
     ("codec_audit", "byte/type audit of the codec adapters"),
     ("support_controls", "controls for the footprint support mismatch"),
+    ("gamma_analysis", "verdict over a continuous overhead ratio"),
 ]
 
 THIRD_PARTY = [

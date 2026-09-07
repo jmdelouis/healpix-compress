@@ -1,5 +1,17 @@
 # Support-mismatch controls (V1)
 
+## What the real imagery's spectrum says
+
+Radial power spectrum of each UTM crop, fitted as a power law times a Gaussian instrument response. The fitted FWHM is what the synthetic control should use: the nominal 12.5 m is a specification, this is what the data show.
+
+- fitted slope beta: median 1.90, range [-0.19, 3.33]
+- fitted PSF FWHM: median 11.9 m, range [4.3, 14.3] m
+- variance above half the UTM Nyquist: median 0.21%
+
+The same estimator is applied to the synthetic field, and it carries a small known bias from the Hann window and the radial binning (about +0.2 in slope and -1 m in FWHM on a field of known parameters). Matching fitted-to-fitted cancels it to first order, which is what feeding these medians straight back in does:
+
+    python support_controls.py --control synthetic --betas 1.9 --psf-fwhm 11.9
+
 ## One analytic field on both geometries
 
 Same function sampled by both lattices: no content difference at all, so the ratio is the grid effect alone. Rows where the target is bracketed on both sides for fewer than 75% of regions are marked withheld: there the sweeps did not reach the target and the ratio is a quotient of bounds, not an estimate.
