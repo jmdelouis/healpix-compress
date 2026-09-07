@@ -9,9 +9,9 @@ One analytic field, evaluated at the native pixel centres to play the observatio
 
 | kernel | transfer RMSE / std | 99.9th pct / std | overshoot outside source range | cells kept |
 |---|---|---|---|---|
-| `bicubic` | 382.81% | 45.939 | 1.321% | 823408 |
+| `bicubic` | 381.75% | 45.508 | 1.309% | all |
 | `clough_tocher` | 1.19% | 0.050 | 0.000% | all |
-| `linear` | 12.36% | 1.700 | 0.000% | 823408 |
+| `linear` | 12.07% | 1.656 | 0.000% | all |
 | `nearest` | 9.84% | 0.398 | 0.000% | all |
 | `psf` | 8.78% | 1.145 | 0.005% | all |
 
@@ -21,14 +21,14 @@ One analytic field, evaluated at the native pixel centres to play the observatio
 
 | kernel | floor | floor / scene std | 99.9th pct / std | log-PSD RMS | top-octave power | cells outside source range | build (s) |
 |---|---|---|---|---|---|---|---|
-| `bicubic` | 1.791e-01 | 325.6% | 19.85 | 1.856 | 151.25 | 1.617% | 7 |
+| `bicubic` | 1.763e-01 | 285.8% | 21.31 | 1.737 | 108.16 | 1.710% | 30 |
 | `clough_tocher` | 4.090e-03 | 8.3% | 0.64 | 0.055 | 0.89 | 0.000% | nan |
-| `linear` | 2.931e-03 | 5.4% | 0.64 | 0.060 | 0.93 | 0.906% | 3 |
-| `nearest` | 9.254e-04 | 2.4% | 0.22 | 0.010 | 1.00 | 0.000% | 4 |
-| `psf` | 6.704e-03 | 18.9% | 1.43 | 0.402 | 2.40 | 0.097% | 68 |
+| `linear` | 2.834e-03 | 6.9% | 0.63 | 0.043 | 0.90 | 0.948% | 3 |
+| `nearest` | 9.254e-04 | 2.4% | 0.22 | 0.010 | 1.00 | 0.000% | nan |
+| `psf` | 6.704e-03 | 18.9% | 1.43 | 0.402 | 2.40 | 0.097% | nan |
 
 A top-octave ratio above 1 means the transfer leaves more high-frequency power than the observation carries, which is the failure the paper describes qualitatively; below 1 means it smooths.
-- **`bicubic` diverges**: 1.6% of cells fall outside the range of the data it was given, and its floor reaches 326% of the scene's standard deviation. Note that it passes the constant-field check, which an interpolant exact on polynomials always will: that check is necessary and not sufficient.
+- **`bicubic` diverges**: 1.7% of cells fall outside the range of the data it was given, and its floor reaches 286% of the scene's standard deviation. Note that it passes the constant-field check, which an interpolant exact on polynomials always will: that check is necessary and not sufficient.
 - **`linear` diverges**: 1.1% of cells fall outside the range of the data it was given, and its floor reaches 4% of the scene's standard deviation. Note that it passes the constant-field check, which an interpolant exact on polynomials always will: that check is necessary and not sufficient.
 - **`psf` diverges**: 2.3% of cells fall outside the range of the data it was given, and its floor reaches 19% of the scene's standard deviation. Note that it passes the constant-field check, which an interpolant exact on polynomials always will: that check is necessary and not sufficient.
 
@@ -36,9 +36,9 @@ A top-octave ratio above 1 means the transfer leaves more high-frequency power t
 
 | kernel | n | floor ratio | range |
 |---|---|---|---|
-| `bicubic` | 2 | 40.931 | [37.389, 44.473] |
+| `bicubic` | 3 | 37.389 | [34.623, 44.473] |
 | `clough_tocher` | 3 | 1.000 | [1.000, 1.000] |
-| `linear` | 2 | 0.667 | [0.642, 0.693] |
+| `linear` | 3 | 0.693 | [0.642, 0.840] |
 | `nearest` | 3 | 0.232 | [0.226, 0.292] |
 | `psf` | 3 | 1.698 | [1.639, 2.295] |
 
