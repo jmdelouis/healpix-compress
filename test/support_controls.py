@@ -680,9 +680,15 @@ def latex_table(frames: dict) -> str:
         d = frames["shift"]
         for t, g in d.groupby("target"):
             per = g.groupby("scene").ratio
-            rows.append(f"Shifted crops, spread & ${t:g}$ & {g.scene.nunique()} & "
-                        f"{(per.max()-per.min()).median():.2f} & "
-                        f"median ratio {g.ratio.median():.2f} \\\\")
+            spread = float((per.max() - per.min()).median())
+            med = float(g.ratio.median())
+            eff = abs(med - 1.0)
+            frac = spread / eff if eff > 1e-6 else float("nan")
+            rows.append(
+                f"Shifted crops, spread & ${t:g}$ & {g.scene.nunique()} & "
+                f"{spread:.3f} & "
+                + ("--" if frac != frac else f"{100*frac:.0f}\\% of effect")
+                + " \\\\")
     if not rows:
         return ""
     # The caption describes the controls that actually ran: a caption listing
@@ -708,15 +714,16 @@ def latex_table(frames: dict) -> str:
                      "normalise by the ground area each covers.")
     if "shift" in frames and len(frames["shift"]):
         parts.append("The shifted-crop rows report how far the ratio moves "
-                     "when the UTM crop is re-cut at offsets of up to 16 "
-                     "native pixels, which bounds the mismatch's contribution "
-                     "without removing it.")
+                     "when the UTM crop is re-cut at eight offsets of up to 16 "
+                     "native pixels with the HEALPix side held fixed, which "
+                     "bounds the mismatch's contribution without removing it; "
+                     "their \\emph{Median} column is that spread, not a ratio.")
     return (
         "\\begin{table}[t]\n\\centering\n"
         "\\caption{" + " ".join(parts) + "}\n"
         "\\label{tab:support_controls}\n"
-        "\\begin{tabular}{llrrl}\n\\toprule\n"
-        "Control & Target RMSE & $n$ & Median & Range \\\\\n\\midrule\n"
+        "\\footnotesize\n\\begin{tabular}{@{}llrrl@{}}\n\\toprule\n"
+        "Control & Target & $n$ & Median & Range \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
 
