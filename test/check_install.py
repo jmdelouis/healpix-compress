@@ -37,6 +37,8 @@ MODULES = [
     ("gamma_analysis", "verdict over a continuous overhead ratio"),
     ("operator_tests", "what the HEALPix->UTM operator does beyond a constant"),
     ("kernel_ablation", "transfer-kernel ablation"),
+    ("resampling_error", "reconstruction error of each transfer"),
+    ("alpha_budget", "the verdict in units of the product's own error"),
 ]
 
 THIRD_PARTY = [

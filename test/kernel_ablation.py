@@ -239,7 +239,8 @@ def run_region(scene: str, kernel: str, store: Path, codecs, targets,
             print(f"      transfer-fidelity failed: {type(exc).__name__}: {exc}")
             row.update(transfer_rmse=np.nan, transfer_frac_of_std=np.nan,
                        transfer_p999=np.nan, transfer_overshoot=np.nan,
-                       transfer_cells_kept=-1)
+                       transfer_cells_kept=-1, transfer_cells_filled=-1,
+                       transfer_fail=f"{type(exc).__name__}: {exc}"[:200])
 
     if do_rd:
         tile = sup.expanded(cell_data)
@@ -306,12 +307,23 @@ def summarize(df, targets, do_rd):
                 "and compared to the same field evaluated at the cell centres. "
                 "Neither lattice is privileged, so a transfer gets no credit "
                 "for merely copying samples.", "",
-                "| kernel | transfer RMSE / std | 99.9th pct / std | overshoot "
-                "outside source range | cells kept |",
-                "|---|---|---|---|---|"]
-        for kernel, g in df.groupby("kernel"):
+                "| kernel | n | transfer RMSE / std | 99.9th pct / std | "
+                "overshoot outside source range | cells kept |",
+                "|---|---|---|---|---|---|"]
+        # A kernel measured on a different set of regions from the others is
+        # not comparable with them, and averaging over whichever regions
+        # happened to succeed is the attrition this project has been removing
+        # everywhere else. The support is printed, and the headline comparison
+        # below is restricted to the regions every kernel reached.
+        ok = df.dropna(subset=["transfer_frac_of_std"])
+        common = None
+        for _k, g in ok.groupby("kernel"):
+            sc = set(g.scene)
+            common = sc if common is None else (common & sc)
+        common = common or set()
+        for kernel, g in ok.groupby("kernel"):
             kept = g.transfer_cells_kept.median()
-            out.append(f"| `{kernel}` | "
+            out.append(f"| `{kernel}` | {g.scene.nunique()} | "
                        f"{100*g.transfer_frac_of_std.median():.2f}% | "
                        f"{g.transfer_p999.median():.3f} | "
                        f"{100*g.transfer_overshoot.median():.3f}% | "
@@ -321,6 +333,28 @@ def summarize(df, targets, do_rd):
                           and g.transfer_cells_filled.median() > 0 else "")
                        + " |")
         out.append("")
+        n_reg = df.scene.nunique()
+        if len(common) < n_reg:
+            miss = sorted(set(df.scene) - common)
+            out.append(f"- **support is not common**: only {len(common)} of "
+                       f"{n_reg} regions were measured for every kernel "
+                       f"(missing: {', '.join(m.split('__')[-1] for m in miss)}). "
+                       f"The medians above are each over that kernel's own "
+                       f"regions; the paired comparison below uses the common "
+                       f"support only.")
+            if "transfer_fail" in df:
+                for _, r in df[df.transfer_fail.notna()].iterrows():
+                    out.append(f"  - `{r.kernel}` on "
+                               f"{r.scene.split('__')[-1]}: {r.transfer_fail}")
+            out.append("")
+        if common:
+            sub = ok[ok.scene.isin(common)]
+            out += ["Restricted to the common support:", "",
+                    "| kernel | n | transfer RMSE / std |", "|---|---|---|"]
+            for kernel, g in sub.groupby("kernel"):
+                out.append(f"| `{kernel}` | {g.scene.nunique()} | "
+                           f"{100*g.transfer_frac_of_std.median():.2f}% |")
+            out.append("")
     else:
         out.append("_Not run (`--no-truth`)._\n")
 
@@ -342,24 +376,38 @@ def summarize(df, targets, do_rd):
                    f"{g.logpsd_rms.median():.3f} | "
                    f"{g.logpsd_top_octave.median():.2f} | "
                    f"{100*g.cells_outside_source_range.median():.3f}% | "
-                   f"{g.build_seconds.replace(0, np.nan).median():.0f} |")
+                   # cached tiles record no build time; an all-cached kernel
+                   # must print "cached", not the NaN of an empty median
+                   + (lambda b: f"{b.median():.0f} |" if b.notna().any()
+                      else "cached |")(g.build_seconds.replace(0, np.nan)))
     out.append("")
     out.append("A top-octave ratio above 1 means the transfer leaves more "
                "high-frequency power than the observation carries, which is "
                "the failure the paper describes qualitatively; below 1 means "
                "it smooths.")
-    bad = df[df.cells_outside_source_range > 0.01]
-    if len(bad):
-        for kernel, g in bad.groupby("kernel"):
-            out.append(f"- **`{kernel}` diverges**: "
-                       f"{100*g.cells_outside_source_range.median():.1f}% of "
-                       f"cells fall outside the range of the data it was given, "
-                       f"and its floor reaches "
-                       f"{100*g.floor_frac_of_std.median():.0f}% of the scene's "
-                       f"standard deviation. Note that it passes the "
-                       f"constant-field check, which an interpolant exact on "
-                       f"polynomials always will: that check is necessary and "
-                       f"not sufficient.")
+    # What separates a diverging interpolant from one that merely overshoots is
+    # the size of the excursion, not the number of cells involved: a per-cent of
+    # cells a hair outside the source range is ordinary for any non-monotone
+    # kernel. The tail is the discriminator.
+    for kernel, g in df.groupby("kernel"):
+        p999 = g.floor_p999.median()
+        over = 100 * g.cells_outside_source_range.median()
+        if np.isfinite(p999) and p999 > 5.0:
+            out.append(f"- **`{kernel}` diverges**: its 99.9th-percentile error "
+                       f"reaches {p999:.0f} times the scene's standard "
+                       f"deviation and its floor {100*g.floor_frac_of_std.median():.0f}%"
+                       f" of it, with {over:.1f}% of cells outside the range of "
+                       f"the data it was given (median over all "
+                       f"{g.scene.nunique()} regions). It passes the "
+                       f"constant-field check, which any interpolant exact on "
+                       f"polynomials will: that check is necessary and not "
+                       f"sufficient.")
+        elif over > 0.5:
+            out.append(f"- `{kernel}` overshoots mildly: {over:.1f}% of cells "
+                       f"outside the source range, but its 99.9th-percentile "
+                       f"error stays at {p999:.2f} times the scene's standard "
+                       f"deviation, so this is non-monotonicity and not "
+                       f"divergence.")
     out.append("")
 
     out += ["## Paired against the reference kernel", "",
@@ -396,12 +444,23 @@ def summarize(df, targets, do_rd):
     col = "transfer_frac_of_std" if has_truth else "floor"
     label = "transfer error against the analytic truth" if has_truth else "floor"
     if len(ref) and len(others) and col in df:
+        allk = df.groupby("kernel")[col].median().dropna()
         m = others.groupby("kernel")[col].median().dropna()
         r = float(ref[col].median())
-        if len(m) and np.isfinite(r) and r > 0:
-            out.append(f"- lowest {label}: `{m.idxmin()}` at {m.min():.3e}, "
-                       f"against {r:.3e} for `{REFERENCE_KERNEL}` "
-                       f"({100*(m.min()/r - 1):+.1f}%)")
+        if len(allk) and np.isfinite(r) and r > 0:
+            best = allk.idxmin()
+            if best == REFERENCE_KERNEL:
+                runner = m.idxmin()
+                out.append(f"- **`{REFERENCE_KERNEL}` has the lowest {label}**, "
+                           f"{allk.min():.3e}; the next best is `{runner}` at "
+                           f"{m.min():.3e}, {m.min()/r:.1f} times worse. The "
+                           f"kernel the paper uses is the right one on this "
+                           f"measure.")
+            else:
+                out.append(f"- **`{best}` has the lowest {label}**, "
+                           f"{allk.min():.3e}, against {r:.3e} for "
+                           f"`{REFERENCE_KERNEL}`: the kernel the paper uses is "
+                           f"{r/allk.min():.1f} times worse on this measure.")
     return "\n".join(out)
 
 
