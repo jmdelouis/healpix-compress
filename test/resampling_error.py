@@ -421,8 +421,16 @@ def main(argv=None) -> int:
         if control is None:
             print(f"note: no {c.name}; the noiseless recovery column will be "
                   f"blank. Run --noise 0 --children {args.children} as well.")
-        elif ("children" in control and "children" in df
-              and set(control.children) != set(df.children)):
+        elif "children" not in control:
+            # A control written before the depth was recorded cannot be shown
+            # to match, and an unverifiable control is worse than none: it
+            # would be published in the same table as a matched one.
+            print(f"note: {c.name} carries no cell-average depth, so it "
+                  f"predates this script's provenance columns and cannot be "
+                  f"matched to the measurement; dropping it. Re-run "
+                  f"--noise 0 --children {args.children} with this version.")
+            control = None
+        elif set(control.children) != set(df.children):
             print(f"note: {c.name} was measured at a different cell-average "
                   f"depth ({sorted(set(control.children))} against "
                   f"{sorted(set(df.children))}); dropping it rather than "
