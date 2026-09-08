@@ -84,6 +84,21 @@ def sweep(kernel: str) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
+def utm_sweep():
+    """The native-UTM sweep, which is the same whichever transfer is studied.
+
+    The native product carries no transfer error, so kappa is undefined for it:
+    there is no reconstruction error to divide by. The comparison is therefore
+    made at the HEALPix product's own absolute target -- how many bytes each
+    representation needs to hold this ground to that accuracy -- which is the
+    convention the rest of the paper already uses.
+    """
+    path = cfg.RESULTS_DIR / "utm_codec_bench.csv"
+    if not path.exists():
+        return None
+    return pd.read_csv(path)
+
+
 def denominators(kernel: str, denominator: str) -> dict:
     """e_resample per scene class for one transfer.
 
@@ -124,11 +139,31 @@ def sizes(df, scenes, codecs, targets_by_scene):
     return out
 
 
+def _vs_utm(scene, A, B, Ub, Ut, gamma=cfg.GAMMA_UTM):
+    """Each HEALPix product against the operational native comparison.
+
+    Composed per region rather than as a product of medians: the surcharge and
+    the HPX/UTM ratio are both skewed, so multiplying their medians is not the
+    median of the product.
+    """
+    def r(num, den):
+        if den is None or not np.isfinite(den) or den == 0:
+            return np.nan
+        return num / (gamma * den)
+    ub = Ub.get(scene, {}).get("size")
+    ut = Ut.get(scene, {}).get("size")
+    return dict(size_utm_base=ub, size_utm_test=ut,
+                ratio_utm_base=r(A[scene]["size"], ub),
+                ratio_utm_test=r(B[scene]["size"], ut))
+
+
 def build(kernel="psf", baseline="clough_tocher", denominator="latent",
           codecs=None):
     codecs = codecs or cfg.COMPRESSOR_CODECS
-    a, b = sweep(baseline), sweep(kernel)
+    a, b, u = sweep(baseline), sweep(kernel), utm_sweep()
     shared = sorted(set(a.scene.unique()) & set(b.scene.unique()))
+    if u is not None:
+        shared = sorted(set(shared) & set(u.scene.unique()))
     if not shared:
         raise ValueError("the two sweeps share no region")
     e_base = denominators(baseline, denominator)
@@ -140,30 +175,39 @@ def build(kernel="psf", baseline="clough_tocher", denominator="latent",
         tb = {s: kappa * e_base[cls[s]] for s in shared if cls[s] in e_base}
         tt = {s: kappa * e_test[cls[s]] for s in shared if cls[s] in e_test}
         A, B = sizes(a, shared, codecs, tb), sizes(b, shared, codecs, tt)
+        Ub = sizes(u, shared, codecs, tb) if u is not None else {}
+        Ut = sizes(u, shared, codecs, tt) if u is not None else {}
         for s in shared:
             if s not in A or s not in B:
                 continue
             rows.append(dict(
                 mode="kappa", kappa=kappa, scene=s, cls=cls[s],
+                **_vs_utm(s, A, B, Ub, Ut),
                 target_base=A[s]["target"], target_test=B[s]["target"],
                 size_base=A[s]["size"], size_test=B[s]["size"],
                 ratio=B[s]["size"] / A[s]["size"]
                 if A[s]["size"] and np.isfinite(A[s]["size"]) else np.nan,
+                bracketed_base=bool(A[s]["bracketed"]),
+                bracketed_test=bool(B[s]["bracketed"]),
                 bracketed=bool(A[s]["bracketed"] and B[s]["bracketed"])))
     # The same comparison at a shared absolute target: no synthetic denominator
     # enters, so this half stands on the real tiles alone.
     for t in cfg.TARGET_RMSE:
         tb = {s: t for s in shared}
         A, B = sizes(a, shared, codecs, tb), sizes(b, shared, codecs, tb)
+        Ub = sizes(u, shared, codecs, tb) if u is not None else {}
         for s in shared:
             if s not in A or s not in B:
                 continue
             rows.append(dict(
                 mode="absolute", kappa=np.nan, scene=s, cls=cls[s],
+                **_vs_utm(s, A, B, Ub, Ub),
                 target_base=t, target_test=t,
                 size_base=A[s]["size"], size_test=B[s]["size"],
                 ratio=B[s]["size"] / A[s]["size"]
                 if A[s]["size"] and np.isfinite(A[s]["size"]) else np.nan,
+                bracketed_base=bool(A[s]["bracketed"]),
+                bracketed_test=bool(B[s]["bracketed"]),
                 bracketed=bool(A[s]["bracketed"] and B[s]["bracketed"])))
     df = pd.DataFrame(rows)
     df["kernel"], df["baseline"] = kernel, baseline
@@ -190,20 +234,95 @@ def summarize(df, e_base, e_test, kernel, baseline, denominator):
         if not len(sub):
             continue
         out += [f"## {label}", "",
-                "| target | n | bracketed | median size ratio | IQR | p |",
-                "|---|---|---|---|---|---|"]
+                "| target | n | bracketed | cens. base | cens. test | "
+                "median size ratio | IQR | p |",
+                "|---|---|---|---|---|---|---|---|"]
         key = "kappa" if mode == "kappa" else "target_base"
+        meds = {}
         for t, g in sub.groupby(key):
             ok = g[g.bracketed]
             frac = len(ok) / len(g) if len(g) else 0.0
+            cb = 1.0 - g.bracketed_base.mean()
+            ctst = 1.0 - g.bracketed_test.mean()
             st = ps.paired_ratio_test(g.ratio)
+            meds[float(t)] = (st["median"], frac)
             flag = "" if frac >= cfg.MIN_BRACKETED else " *(withheld)*"
             extra = (f" (+{100*float(inflation(t)):.1f}% total error)"
                      if mode == "kappa" else "")
             out.append(f"| {t:g}{extra}{flag} | {st['n']} | {100*frac:.0f}% | "
+                       f"{100*cb:.0f}% | {100*ctst:.0f}% | "
                        f"{st['median']:.3f} | [{st['q25']:.3f}, "
                        f"{st['q75']:.3f}] | {st['p']:.1e} |")
         out.append("")
+        # A censored region contributes the size of the coarsest swept setting,
+        # which is larger than the size a genuinely coarser setting would need.
+        # The smoother product reaches a loose target first, so censoring
+        # inflates the baseline more than the deconvolved side and pulls the
+        # ratio *down*: where it bites, the reported surcharge is a floor.
+        keys = sorted(meds)
+        drops = [(a, b) for a, b in zip(keys, keys[1:])
+                 if meds[b][0] < meds[a][0] and meds[b][1] < 1.0]
+        if drops:
+            a, b = drops[-1]
+            out.append(
+                f"- The ratio falls from {meds[a][0]:.2f} at {a:g} to "
+                f"{meds[b][0]:.2f} at {b:g}, where only "
+                f"{100*meds[b][1]:.0f}% of regions are bracketed on both "
+                f"sides. Censoring inflates the smoother product's size more "
+                f"than the deconvolved one's, so it biases the ratio towards "
+                f"1: the fall is a property of the sweep's reach, not a turn "
+                f"in the surcharge, and the affected values are floors.")
+            out.append("")
+
+    # The decision-relevant number: does the deconvolved product still beat
+    # the operational native comparison, or does the surcharge spend the whole
+    # advantage the non-deconvolving product had?
+    if "ratio_utm_test" in df and df.ratio_utm_test.notna().any():
+        out += [f"## Against native UTM (gamma = {cfg.GAMMA_UTM})", "",
+                "Each HEALPix product's compressed size over the equal-area "
+                "native crop's, scaled by the assumed overhead, at that "
+                "product's own target. Composed per region, not as a product "
+                "of medians. Values below 1 favour HEALPix. Restricted to the "
+                "regions bracketed on both HEALPix sweeps, so these differ "
+                "slightly from the paper's own HPX/UTM table, which admits "
+                "censored bounds over all 40 regions; the comparison that "
+                "matters here is between the two columns, which are computed "
+                "on the same regions.", "",
+                "| target | n | " + f"`{baseline}`/UTM | `{kernel}`/UTM | "
+                "still favours HEALPix |", "|---|---|---|---|---|"]
+        for mode, key in (("kappa", "kappa"), ("absolute", "target_base")):
+            sub = df[(df["mode"] == mode) & df.bracketed]
+            if not len(sub):
+                continue
+            for t, g in sub.groupby(key):
+                if len(g) / max(len(df[(df["mode"] == mode)
+                                       & (df[key] == t)]), 1) < cfg.MIN_BRACKETED:
+                    continue
+                rb = float(np.nanmedian(g.ratio_utm_base))
+                rt = float(np.nanmedian(g.ratio_utm_test))
+                if not np.isfinite(rb) or not np.isfinite(rt):
+                    continue
+                lab = (f"kappa {t:g}" if mode == "kappa" else f"RMSE {t:g}")
+                verdict = ("both" if rt < 1 and rb < 1 else
+                           "baseline only" if rb < 1 else "neither")
+                out.append(f"| {lab} | {len(g)} | {rb:.2f} | {rt:.2f} | "
+                           f"{verdict} |")
+        out.append("")
+        won = df[(df["mode"] == "absolute") & df.bracketed]
+        if len(won):
+            per_t = won.groupby("target_base")[["ratio_utm_base",
+                                                "ratio_utm_test"]].median()
+            flipped = per_t[(per_t.ratio_utm_base < 1)
+                            & (per_t.ratio_utm_test >= 1)]
+            if len(flipped):
+                out.append(
+                    f"- **At {', '.join(f'{t:g}' for t in flipped.index)} the "
+                    f"non-deconvolving product is the cheaper representation "
+                    f"and the deconvolved one is not**: the surcharge spends "
+                    f"the whole margin. This is the storage price of "
+                    f"super-resolution, stated as the thing a product designer "
+                    f"has to trade away.")
+                out.append("")
 
     k = df[(df["mode"] == "kappa")]
     rep = []
@@ -278,6 +397,22 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     todo = [args.kernel] + ([args.control] if args.control else [])
+    # Check every transfer's denominator up front. Discovering a missing one
+    # after the first analysis has already written its outputs leaves half a
+    # comparison on disk and no control.
+    missing = []
+    for kern in [args.baseline] + todo:
+        try:
+            denominators(kern, args.denominator)
+        except (FileNotFoundError, ValueError) as exc:
+            missing.append(f"  {kern}: {exc}")
+    if missing:
+        print("no reconstruction error available for every transfer, so "
+              "nothing is comparable yet:")
+        print("\n".join(missing))
+        print(f"\nrun\n    python resampling_error.py --kernels "
+              f"{' '.join(dict.fromkeys([args.baseline] + todo))}")
+        return 1
     for kern in todo:
         df, e_base, e_test = build(kern, args.baseline, args.denominator,
                                    args.codecs)
