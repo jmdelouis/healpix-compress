@@ -233,7 +233,7 @@ def figure(df, e_res, kernel, publish=True, name="fig_alpha_budget"):
     rep = df[df.reported]
     if not len(rep):
         return
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.6, 3.0))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.1, 2.9))
     for cls, g in rep.groupby("cls"):
         med = g.groupby(["target", "alpha"]).ratio.median().reset_index()
         med = med.sort_values("alpha")
@@ -241,7 +241,7 @@ def figure(df, e_res, kernel, publish=True, name="fig_alpha_budget"):
         ax1.plot(med.alpha, med.ratio, "o-", ms=4, lw=1.6, color=c, label=cls)
         ax2.plot(100 * inflation(med.alpha), med.ratio, "o-", ms=4, lw=1.6,
                  color=c)
-    for ax, xlab in ((ax1, r"$\alpha=e_{\rm comp}/e_{\rm resample}$"),
+    for ax, xlab in ((ax1, r"$\kappa=e_{\rm comp}/e_{\rm resample}$"),
                      (ax2, "total-error inflation (%)")):
         ax.axhline(1.0, color="0.6", ls="--", lw=1.0)
         ax.set_xscale("log")
@@ -249,10 +249,13 @@ def figure(df, e_res, kernel, publish=True, name="fig_alpha_budget"):
         ax.set_xlabel(xlab, fontsize=9)
         ax.set_ylabel("HPX / UTM compressed size", fontsize=9)
         ax.tick_params(labelsize=8)
-    ax1.legend(fontsize=8, frameon=False, title="scene class",
-               title_fontsize=8)
-    fig.suptitle(f"Storage verdict against the error already carried "
-                 f"({kernel})", fontsize=10)
+    # The panels are dense at the crossover, which is where the legend used to
+    # sit; putting it outside keeps both readable when the float is set at
+    # full text width.
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, ncol=4,
+               loc="lower center", bbox_to_anchor=(0.5, -0.06),
+               title="scene class", title_fontsize=8)
     fig.tight_layout()
     cfg.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     for ext in ("pdf", "png"):
@@ -266,39 +269,94 @@ def figure(df, e_res, kernel, publish=True, name="fig_alpha_budget"):
     print(f"  {name}")
 
 
-def latex_table(df, e_res, provenance, kernel):
+def _tex_escape(t: str) -> str:
+    """Underscores in a provenance string are text-mode LaTeX errors."""
+    return t.replace("\\", "").replace("_", r"\_").replace("%", r"\%")
+
+
+def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
+                kernel):
+    """One table, both denominators.
+
+    The crossover target depends only on the HPX/UTM ratios, so it is the same
+    under either denominator; what changes is what compressing there costs the
+    product. Reporting one denominator alone would let the reader mistake a
+    choice of yardstick for a result, which is why both columns are here.
+    """
     rep = df[df.reported]
     if not len(rep):
         return ""
-    rows = []
+    n_reg = int(rep.scene.nunique())
+    own, blur = ((e_res, e_other) if denominator == "own"
+                 else (e_other, e_res))
+    rows, worst_own, worst_blur, any_win = [], 0.0, 0.0, False
+    over_blur = []
     for cls, g in sorted(rep.groupby("cls")):
         med = g.groupby("target").ratio.median().sort_index()
         win = med[med < 1.0]
         t = float(win.index.min()) if len(win) else float(med.index.max())
-        r = g[g.target == t].iloc[0]
+        any_win = any_win or bool(len(win))
+        k_own = t / own[cls] if cls in own else float("nan")
+        k_blur = t / blur[cls] if cls in blur else float("nan")
+        worst_own = max(worst_own, 0.0 if k_own != k_own else k_own)
+        worst_blur = max(worst_blur, 0.0 if k_blur != k_blur else k_blur)
+        if k_blur == k_blur and k_blur > 1.0:
+            over_blur.append(cls)
         rows.append(
-            f"{cls.capitalize()} & {e_res[cls]:.3f} & ${t:g}$ & "
-            f"{r.alpha:.2f} & {100*r.inflation:.1f} & {med.loc[t]:.2f} & "
-            f"{'yes' if len(win) else 'no'} \\\\")
+            f"{cls.capitalize()} & ${t:g}$ & {med.loc[t]:.2f} & "
+            f"{'yes' if len(win) else 'no'} & "
+            f"{own.get(cls, float('nan')):.4f} & {k_own:.2f} & "
+            f"{100*float(inflation(k_own)):.1f} & "
+            f"{blur.get(cls, float('nan')):.4f} & {k_blur:.2f} & "
+            f"{100*float(inflation(k_blur)):.1f} \\\\")
+    # The closing sentence is computed, never asserted: under one denominator
+    # some crossings do cost more than the transfer error itself.
+    lo, hi = min(worst_own, worst_blur), max(worst_own, worst_blur)
+    verdict = (f"The choice of denominator moves $\\kappa$ at the crossing by "
+               f"a factor of {hi/lo:.0f} ({lo:.2f} against {hi:.2f} at the "
+               f"most expensive class), which is why both are reported rather "
+               f"than one elected. ")
+    if not over_blur:
+        verdict += ("Against the latent scene no crossing is obtained by "
+                    "compressing more finely than the transfer step is "
+                    "accurate.")
+    else:
+        verdict += ("Against the latent scene the crossing costs less than "
+                    "the transfer error itself in "
+                    f"{len(rows) - len(over_blur)} of {len(rows)} classes; "
+                    f"the exception{'s are' if len(over_blur) > 1 else ' is'} "
+                    + ", ".join(sorted(over_blur))
+                    + ", whose inflation is given rather than glossed.")
     return (
-        "\\begin{table}[t]\n\\centering\n"
+        "\\begin{table*}[t]\n\\centering\n"
         "\\caption{The storage verdict expressed against the error each "
-        "product already carries. $e_{\\mathrm{resample}}$ is the RMSE of the "
-        f"\\texttt{{{kernel.replace('_', chr(92)+'_')}}} transfer against its "
-        "own estimand (" + provenance + "); $\\alpha$ is the compression "
-        "target as a fraction of it. Because the two errors are independent "
-        "they add in quadrature, so compressing at $\\alpha$ inflates the "
-        "product's total error by $\\sqrt{1+\\alpha^2}-1$, given here as a "
-        "percentage. The target shown is the tightest reported one at which "
-        "HEALPix is the smaller representation, or the loosest tested where "
-        "there is none. Every target this paper reports lies below the "
-        "reconstruction error of its own scene class: no result is obtained by "
-        "compressing more finely than the transfer step is accurate.}\n"
+        "product already carries, under both defensible denominators. The "
+        f"transfer is \\texttt{{{kernel.replace('_', chr(92)+'_')}}}, which does "
+        f"not deconvolve, measured on the {n_reg} regions of "
+        "Table~\\ref{tab:benchmark_scenes}. \\emph{Own estimand}: its RMSE "
+        "against the observed field it claims to represent. "
+        "\\emph{Latent scene}: its RMSE against the unblurred scene, which for "
+        "a non-deconvolving transfer is the instrument blur it does not remove "
+        "-- the yardstick that applies when the carrier grid is read as if it "
+        "were the scene. $\\kappa$ is the compression target as a fraction of "
+        "the denominator; the two errors being independent, they add in "
+        "quadrature, so compressing there inflates the product's total error "
+        "by $\\sqrt{1+\\kappa^2}-1$, given as a percentage. The target shown is "
+        "the tightest reported one at which HEALPix is the smaller "
+        "representation, or the loosest tested where there is none; it is set "
+        "by the ratios alone and so is common to both denominators. "
+        + verdict + "}\n"
         "\\label{tab:alpha_budget}\n\\footnotesize\n"
-        "\\begin{tabular}{@{}lrrrrrc@{}}\n\\toprule\n"
-        "Class & $e_{\\mathrm{resample}}$ & Target & $\\alpha$ & "
-        "Inflation (\\%) & HPX/UTM & HPX wins \\\\\n\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
+        "\\begin{tabular}{@{}lrrc rrr rrr@{}}\n\\toprule\n"
+        " & \\multicolumn{3}{c}{Crossover} & "
+        "\\multicolumn{3}{c}{Own estimand} & "
+        "\\multicolumn{3}{c}{Latent scene} \\\\\n"
+        "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}\\cmidrule(lr){8-10}\n"
+        "Class & Target & HPX/UTM & HPX wins & "
+        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Inflation (\\%) & "
+        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Inflation (\\%) \\\\\n"
+        "\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:
@@ -333,9 +391,16 @@ def main(argv=None) -> int:
     figure(df, e_res, args.kernel, publish=not args.no_publish,
            name="fig_alpha_budget" + tag)
     if not args.no_tex and args.reference == "measured":
+        # The published table carries both denominators, so it is identical
+        # whichever one was asked for on the command line and neither run can
+        # silently overwrite the other with half the story.
+        other = "blur" if args.denominator == "own" else "own"
+        e_other, other_prov = load_resampling_error(args.kernel,
+                                                    args.reference, other)
         out = cfg.TEX_TABLES / "table_alpha_budget.tex"
         cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
-        out.write_text(latex_table(df, e_res, provenance, args.kernel),
+        out.write_text(latex_table(df, e_res, e_other, args.denominator,
+                                   provenance, other_prov, args.kernel),
                        encoding="utf-8")
         print(f"wrote {out}")
     return 0

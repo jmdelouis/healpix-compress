@@ -198,6 +198,7 @@ def measure(scene: str, store: Path, kernels, spectrum, noise_scale=1.0,
         other = observed_cells if estimand == "latent" else latent_cells
         rows.append(dict(
             scene=scene, kernel=kernel, estimand=estimand,
+            children=int(children), lam=float(lam),
             beta=beta, psf_fwhm_m=fwhm, gain=gain,
             noise_std=noise_std,
             noise_frac_of_std=noise_std / (float(np.std(obs_clean)) or 1.0),
@@ -269,6 +270,79 @@ def summarize(df):
     return "\n".join(out)
 
 
+def latex_table(df, control=None):
+    """Per-class transfer error for both estimands, plus the noiseless control.
+
+    The recovery fraction is the companion study's own definition,
+    1 - RMSE(reconstruction)/RMSE(blurred observation), so the two numbers are
+    directly comparable. It is reported here at the measured sensor noise and
+    again at zero noise, because the published figure is a noise-free one and
+    quoting only one of ours would make the comparison look like agreement or
+    like failure depending on which we chose.
+    """
+    ok = df.dropna(subset=["e_resample"])
+    ok = ok.assign(cls=ok.scene.str.split("__").str[1])
+    ctrl = None
+    if control is not None and len(control):
+        ctrl = control.dropna(subset=["e_resample"])
+        ctrl = ctrl.assign(cls=ctrl.scene.str.split("__").str[1])
+    rows = []
+    for cls, g in sorted(ok.groupby("cls")):
+        ct = g[g.kernel == "clough_tocher"]
+        ps = g[g.kernel == "psf"]
+        if not len(ct) or not len(ps):
+            continue
+        blur = float(ps.blur_error.median())
+        rec = 100.0 * (1.0 - float(ps.e_resample.median()) / blur)
+        rec0 = float("nan")
+        if ctrl is not None:
+            c = ctrl[(ctrl.cls == cls) & (ctrl.kernel == "psf")]
+            if len(c):
+                rec0 = 100.0 * (1.0 - float(c.e_resample.median())
+                                / float(c.blur_error.median()))
+        rows.append(
+            f"{cls.capitalize()} & {float(g.beta.median()):.2f} & "
+            f"{float(g.psf_fwhm_m.median()):.1f} & "
+            f"{100*float(g.noise_frac_of_std.median()):.1f} & "
+            f"{blur:.4f} & {float(ct.e_resample.median()):.4f} & "
+            f"{float(ps.e_resample.median()):.4f} & "
+            f"{rec:+.1f} & "
+            + ("---" if rec0 != rec0 else f"{rec0:+.1f}") + " \\\\")
+    n = int(ok.scene.nunique())
+    have_control = ctrl is not None and len(ctrl) > 0
+    return (
+        "\\begin{table*}[t]\n\\centering\n"
+        "\\caption{What each transfer costs against the reference it is "
+        "answerable to, on a synthetic scene built per region from that "
+        f"region's own fitted spectral slope $\\beta$ and response width, over "
+        f"{n} regions. The latent field is analytic, the observation is that "
+        "field convolved exactly with the fitted Gaussian response, sampled at "
+        "the native pixel positions and given additive noise at the level "
+        "Immerkaer's estimator reads off the region's own imagery; the truth "
+        "at each cell is the average over its four level-21 children, matching "
+        "the companion study's cell-average estimand. \\emph{Blur} is the RMSE "
+        "between the observed and latent fields, i.e.\\ what a non-deconvolving "
+        "transfer leaves on the table by construction. "
+        "\\texttt{clough\\_tocher} is scored against the observed field it "
+        "claims to represent, \\texttt{psf} against the latent field it claims "
+        "to recover; the last two columns are the companion study's recovery "
+        "fraction $1-e_{\\mathrm{psf}}/e_{\\mathrm{blur}}$ at the measured noise "
+        "and in a noiseless control"
+        + ("" if have_control else
+           ", the latter left blank because no control at the same "
+           "cell-average depth is available")
+        + ".}\n"
+        "\\label{tab:resampling_error}\n\\footnotesize\n"
+        "\\begin{tabular}{@{}lrrr rrr rr@{}}\n\\toprule\n"
+        " & \\multicolumn{3}{c}{Scene} & \\multicolumn{3}{c}{RMSE} & "
+        "\\multicolumn{2}{c}{\\texttt{psf} recovery (\\%)} \\\\\n"
+        "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}\\cmidrule(lr){8-9}\n"
+        "Class & $\\beta$ & FWHM (m) & Noise (\\%) & Blur & "
+        "\\texttt{clough\\_tocher} & \\texttt{psf} & measured & noiseless "
+        "\\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -284,7 +358,7 @@ def main(argv=None) -> int:
                     help="Tikhonov damping of the PSF resampler's CG solve; "
                          "the companion study reports its recovery at 1e-3, "
                          "and the library defaults to 0")
-    ap.add_argument("--children", type=int, default=4, choices=[1, 4, 16],
+    ap.add_argument("--children", type=int, default=16, choices=[1, 4, 16],
                     help="samples per cell used to build the cell-average "
                          "estimand; 1 reverts to a point sample at the cell "
                          "centre, which understates every method")
@@ -330,6 +404,7 @@ def main(argv=None) -> int:
     # the same two filenames -- so running it second silently replaced the
     # result it was meant to be compared against.
     tag = "" if args.noise == 1.0 else f"_noise{args.noise:g}"
+    tag += "" if args.children == 16 else f"_c{args.children}"
     csv = cfg.RESULTS_DIR / f"resampling_error{tag}.csv"
     df.to_csv(csv, index=False)
     md = summarize(df)
@@ -337,6 +412,26 @@ def main(argv=None) -> int:
                                                                encoding="utf-8")
     print("\n" + md)
     print(f"wrote {csv} ({len(df)} rows)")
+
+    # Only the measurement publishes a table; the control feeds its last two
+    # columns, so a control-only run cannot overwrite it with half a result.
+    if not tag:
+        c = cfg.RESULTS_DIR / f"resampling_error_noise0{tag}.csv"
+        control = pd.read_csv(c) if c.exists() else None
+        if control is None:
+            print(f"note: no {c.name}; the noiseless recovery column will be "
+                  f"blank. Run --noise 0 --children {args.children} as well.")
+        elif ("children" in control and "children" in df
+              and set(control.children) != set(df.children)):
+            print(f"note: {c.name} was measured at a different cell-average "
+                  f"depth ({sorted(set(control.children))} against "
+                  f"{sorted(set(df.children))}); dropping it rather than "
+                  f"publishing two depths in one table.")
+            control = None
+        cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
+        out = cfg.TEX_TABLES / "table_resampling_error.tex"
+        out.write_text(latex_table(df, control), encoding="utf-8")
+        print(f"wrote {out}")
     return 0
 
 
