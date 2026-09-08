@@ -5,16 +5,21 @@ one resumable command. Every (region, grid) pair is written to its own part
 file, so a run that dies at region 27 resumes without redoing the first 26.
 
 Outputs (schema-compatible with the previous notebooks, plus new columns):
-    results/bench_parts/<grid>__<scene>.csv
-    results/hpx_codec_bench.csv
-    results/utm_codec_bench.csv
-    results/common_reference_floor.csv        (with --common-reference)
+    results/bench_parts/<grid>[__<kernel>]__<scene>.csv
+    results/hpx_codec_bench[__<kernel>].csv
+    results/utm_codec_bench[__<kernel>].csv
+    results/common_reference_floor[__<kernel>].csv   (with --common-reference)
+
+The kernel suffix is empty for the default transfer, so the published sweep
+keeps its filenames and a sweep on another transfer's tiles writes beside it
+rather than over it.
 
 Usage
 -----
     python run_codec_bench.py --limit 2                 # smoke test
     python run_codec_bench.py --grid both               # the full sweep
     python run_codec_bench.py --grid both --common-reference
+    python run_codec_bench.py --grid hpx --resampler psf   # deconvolved tiles
     python run_codec_bench.py --assemble                # rebuild the two CSVs
 """
 
@@ -76,29 +81,44 @@ def environment() -> dict:
     return env
 
 
-def part_path(grid: str, scene: str) -> Path:
-    return cfg.PARTS_DIR / f"{grid}__{scene}.csv"
+def kernel_tag(kernel: str) -> str:
+    """Suffix for every artefact a non-default transfer produces.
+
+    The default kernel keeps the unsuffixed names, so nothing already published
+    moves; any other kernel writes beside it. Without this a psf sweep would
+    overwrite the Clough--Tocher part files region by region and the two would
+    be indistinguishable afterwards.
+    """
+    return "" if kernel == build_tiles.DEFAULT_KERNEL else f"__{kernel}"
 
 
-def _tile_arrays(scene: str):
+def part_path(grid: str, scene: str,
+              kernel: str = build_tiles.DEFAULT_KERNEL) -> Path:
+    return cfg.PARTS_DIR / f"{grid}{kernel_tag(kernel)}__{scene}.csv"
+
+
+def _tile_arrays(scene: str, kernel: str = build_tiles.DEFAULT_KERNEL):
     from hcc.compression.zorder import expand_tile
-    cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene)
+    cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene,
+                                                                     kernel)
     hpx_tile = expand_tile(np.asarray(cell_data, dtype=np.float32)).astype(np.float32)
     return cell_ids, cell_data, hpx_tile, np.asarray(utm_crop, dtype=np.float32), meta, npz
 
 
 def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
-               cr_mode="nearest", force=False):
-    """Return (rows, floor_row). Rows are also cached per (grid, scene)."""
+               cr_mode="nearest", force=False,
+               kernel=build_tiles.DEFAULT_KERNEL):
+    """Return (rows, floor_row). Rows are also cached per (grid, kernel, scene)."""
     from hcc.compression.zorder import flatten_tile
 
-    todo = [g for g in grids if force or not part_path(g, scene).exists()]
+    todo = [g for g in grids
+            if force or not part_path(g, scene, kernel).exists()]
     if not todo and not common_ref:
         return [], None
     if common_ref and "utm" not in todo and "utm" in grids:
         todo.append("utm")   # the UTM side must be re-scored on the same mask
 
-    cell_ids, cell_data, hpx_tile, utm_tile, meta, npz = _tile_arrays(scene)
+    cell_ids, cell_data, hpx_tile, utm_tile, meta, npz = _tile_arrays(scene, kernel)
     base = {k: site.get(k, "") for k in META_COLS}
     base["scene"] = scene
 
@@ -152,28 +172,30 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
                                           else np.nan)
             rows.append(r)
         df = pd.DataFrame(rows)
-        df.to_csv(part_path(grid, scene), index=False)
+        df.to_csv(part_path(grid, scene, kernel), index=False)
         attempted = sum(v["attempted"] for v in stats.values())
-        (part_path(grid, scene).with_suffix(".skips.json")
+        (part_path(grid, scene, kernel).with_suffix(".skips.json")
          ).write_text(json.dumps(stats, indent=2), encoding="utf-8")
         print(f"    {grid}: {len(df)}/{attempted} sweep points -> "
-              f"{part_path(grid, scene).name}")
+              f"{part_path(grid, scene, kernel).name}")
         # A codec that produced nothing on one grid but works on the other is
         # not a detail: the oracle-best comparison would then be decided by
         # which codec was evaluable rather than by which one was better.
         empty = [c for c, v in stats.items() if v["ok"] == 0]
         if empty:
             print(f"    WARNING [{grid}] no usable point for: {', '.join(empty)}"
-                  f" -- see {part_path(grid, scene).with_suffix('.skips.json').name}")
+                  f" -- see {part_path(grid, scene, kernel).with_suffix('.skips.json').name}")
         all_rows.extend(rows)
     return all_rows, floor_row
 
 
-def assemble():
+def assemble(kernel: str = build_tiles.DEFAULT_KERNEL):
     """Concatenate the part files into the two CSVs the analysis reads."""
     out = {}
-    for grid, name in (("hpx", "hpx_codec_bench.csv"), ("utm", "utm_codec_bench.csv")):
-        parts = sorted(cfg.PARTS_DIR.glob(f"{grid}__*.csv"))
+    tag = kernel_tag(kernel)
+    for grid, name in (("hpx", f"hpx_codec_bench{tag}.csv"),
+                       ("utm", f"utm_codec_bench{tag}.csv")):
+        parts = sorted(cfg.PARTS_DIR.glob(f"{grid}{tag}__*.csv"))
         if not parts:
             print(f"no {grid} parts found in {cfg.PARTS_DIR}")
             continue
@@ -205,6 +227,14 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--grid", choices=["hpx", "utm", "both"], default="both")
+    ap.add_argument("--resampler", choices=list(build_tiles.KERNELS),
+                    default=build_tiles.DEFAULT_KERNEL,
+                    help="which transfer's HEALPix tiles to sweep. Anything "
+                         "other than the default reads kernel-suffixed tiles "
+                         "and writes kernel-suffixed parts and CSVs, so the "
+                         "published sweep is never overwritten. The UTM side "
+                         "is unresampled and identical whichever is chosen; it "
+                         "is re-swept only so the pair stays self-contained")
     ap.add_argument("--regions", nargs="*", default=None)
     ap.add_argument("--classes", nargs="*", default=None)
     ap.add_argument("--limit", type=int, default=None)
@@ -227,7 +257,7 @@ def main(argv=None) -> int:
 
     cfg.ensure_dirs()
     if args.assemble:
-        assemble()
+        assemble(args.resampler)
         return 0
 
     env = environment()
@@ -252,15 +282,18 @@ def main(argv=None) -> int:
     floors, failures = [], []
     for i, site in enumerate(sites.to_dict("records"), 1):
         scene = site["scene"]
-        if not build_tiles.tile_path(scene).exists():
-            failures.append((scene, "no tile -- run build_tiles.py first"))
+        if not build_tiles.tile_path(scene, args.resampler).exists():
+            failures.append((scene, f"no {args.resampler} tile -- run "
+                                    f"build_tiles.py --resampler "
+                                    f"{args.resampler} first"))
             print(f"[{i:>2}/{len(sites)}] {scene}: NO TILE")
             continue
         print(f"[{i:>2}/{len(sites)}] {scene}")
         try:
             _, floor_row = run_region(scene, site, grids, args.codecs,
                                       common_ref=args.common_reference,
-                                      cr_mode=args.cr_mode, force=args.force)
+                                      cr_mode=args.cr_mode, force=args.force,
+                                      kernel=args.resampler)
             if floor_row:
                 floors.append(floor_row)
         except Exception as exc:                          # noqa: BLE001
@@ -268,7 +301,8 @@ def main(argv=None) -> int:
             print(f"    FAILED {type(exc).__name__}: {exc}")
 
     if floors:
-        path = cfg.RESULTS_DIR / "common_reference_floor.csv"
+        path = (cfg.RESULTS_DIR /
+                f"common_reference_floor{kernel_tag(args.resampler)}.csv")
         df = pd.DataFrame(floors)
         if path.exists():
             old = pd.read_csv(path)
@@ -276,7 +310,7 @@ def main(argv=None) -> int:
         df.to_csv(path, index=False)
         print(f"\nrepresentation floors -> {path}")
 
-    assemble()
+    assemble(args.resampler)
     if failures:
         print(f"\n{len(failures)} region(s) failed:")
         for scene, err in failures:

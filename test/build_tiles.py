@@ -274,7 +274,8 @@ def _evaluate_parent(parent, to_crs, x, y, img, H, W, halo_px):
 def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
                max_nodata: float = 1e-3, max_missing: float = 1e-4,
                fill_nan_mean: bool = False,
-               kernel: str = DEFAULT_KERNEL, verbose: bool = True) -> dict:
+               kernel: str = DEFAULT_KERNEL, lam: float = 1e-3,
+               psf_fwhm_m: float = PSF_FWHM_M, verbose: bool = True) -> dict:
     import pyproj
 
     ds, img, lon, lat, x, y, crs_wkt = _open_window(store, band)
@@ -352,18 +353,31 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
     good = np.isfinite(sub_val)
     n_dropped = int((~good).sum())
 
+    sigma_m = None
+    if kernel == "psf":
+        try:
+            fwhm_to_scale = __import__("healpix_resample").fwhm_to_scale
+        except AttributeError:
+            from healpix_resample.psf_geometry import fwhm_to_scale
+        sigma_m = float(fwhm_to_scale(psf_fwhm_m))
     op = make_resampler(kernel, sub_lon[good], sub_lat[good],
-                        chosen["cell_ids"], verbose=verbose)
+                        chosen["cell_ids"], verbose=verbose, sigma_m=sigma_m)
+    # PSFResampler defaults to an undamped solve. Every other measurement in
+    # this study is at lam=1e-3, the companion study's value, so building the
+    # tiles undamped would make the tile a different product from the one the
+    # reconstruction error was measured on.
+    solve = ((lambda v: op.resample(v, lam=lam)) if kernel == "psf"
+             else op.resample)
     # A transfer that does not preserve a constant is unusable, and the failure
     # is silent: every downstream error then measures the same offset. Checked
     # once per tile, on the operator that is about to be used.
-    ones = op.resample(np.ones(int(good.sum()), dtype=np.float64))
+    ones = solve(np.ones(int(good.sum()), dtype=np.float64))
     ones_med = float(np.nanmedian(np.asarray(ones.cell_data, dtype=np.float64)))
     if not np.isfinite(ones_med) or abs(ones_med - 1.0) > 0.05:
         raise RuntimeError(
             f"{scene}: the {kernel!r} transfer maps a constant field to "
             f"{ones_med} instead of 1.0; refusing to build a tile with it.")
-    res = op.resample(sub_val[good].astype(np.float64))
+    res = solve(sub_val[good].astype(np.float64))
     out_ids = np.asarray(res.cell_ids, dtype=np.int64).ravel()
     out_val = np.asarray(res.cell_data, dtype=np.float64).ravel()
     try:
@@ -439,6 +453,9 @@ def build_tile(scene: str, store: Path, band: str = cfg.BAND, halo_px: int = 32,
         centroid_lat=float(chosen["clat"].mean()),
         crs_wkt=crs_wkt,
         resampler=kernel,
+        resampler_lam=(float(lam) if kernel == "psf" else None),
+        resampler_psf_fwhm_m=(float(psf_fwhm_m) if kernel == "psf" else None),
+        resampler_sigma_m=sigma_m,
         resampler_constant_check=ones_med,
         resampler_cells_filled=int(n_missing),
         hpx_raw_bytes=int(cell_data.nbytes),
@@ -624,6 +641,14 @@ def main(argv=None) -> int:
                          "failed. Deliberately stricter than --max-nodata: a "
                          "missing sample and a missing cell are not the same "
                          "defect")
+    ap.add_argument("--lam", type=float, default=1e-3,
+                    help="damping for the psf resampler's solve; ignored by "
+                         "every other kernel. The default matches the value "
+                         "the companion study and resampling_error.py use; 0 "
+                         "is the undamped solve the library defaults to")
+    ap.add_argument("--psf-fwhm", type=float, default=PSF_FWHM_M,
+                    help="response width in metres assumed by the psf "
+                         "resampler; recorded in the tile's metadata")
     ap.add_argument("--resampler", choices=list(KERNELS), default=DEFAULT_KERNEL,
                     help="transfer kernel used to populate the carrier grid. "
                          "Anything other than the default writes to a "
@@ -689,7 +714,8 @@ def main(argv=None) -> int:
                               max_nodata=args.max_nodata,
                               max_missing=args.max_missing,
                               fill_nan_mean=args.fill_nan_mean,
-                              kernel=args.resampler, verbose=False)
+                              kernel=args.resampler, lam=args.lam,
+                              psf_fwhm_m=args.psf_fwhm, verbose=False)
             rows.append(meta)
             print(f"[{i:>2}/{len(scenes)}] {scene}: parent {meta['parent_id']} "
                   f"(rank {meta['parent_rank']}/{meta['n_candidate_parents']}), "
