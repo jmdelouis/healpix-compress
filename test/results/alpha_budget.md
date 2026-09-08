@@ -1,11 +1,14 @@
 # The verdict in units of the product's own error
 
-- transfer: `clough_tocher`; reconstruction error measured here on 3 regions, clough_tocher against the observed field
+- transfer: `clough_tocher`; reconstruction error measured here on 40 regions in 4 class(es), clough_tocher against its own estimand, the observed field
 - operational overhead applied to the ratios: $\gamma$ = 1.3
 
 | class | e_resample |
 |---|---|
-| agriculture | 1.7745e-03 |
+| agriculture | 1.9422e-03 |
+| forest | 1.3171e-03 |
+| urban | 6.2978e-03 |
+| water | 6.9449e-04 |
 
 ## What each target costs, per class
 
@@ -13,18 +16,36 @@ alpha is the compression error as a fraction of the reconstruction error; inflat
 
 | class | target | alpha | total-error inflation | HPX/UTM ratio | n |
 |---|---|---|---|---|---|
-| agriculture | 0.0001 | 0.06 | +0.2% | 1.63 | 10 |
-| agriculture | 0.0003 | 0.17 | +1.4% | 1.51 | 10 |
-| agriculture | 0.001 | 0.56 | +14.8% | 1.21 | 10 |
-| agriculture | 0.003 | 1.69 | +96.4% | 0.88 | 10 |
-| agriculture | 0.01 | 5.64 | +472.3% | 0.81 | 10 |
+| agriculture | 0.0001 | 0.05 | +0.1% | 1.63 | 10 |
+| agriculture | 0.0003 | 0.15 | +1.2% | 1.51 | 10 |
+| agriculture | 0.001 | 0.51 | +12.5% | 1.21 | 10 |
+| agriculture | 0.003 | 1.54 | +84.0% | 0.88 | 10 |
+| agriculture | 0.01 | 5.15 | +424.5% | 0.81 | 10 |
+| forest | 0.0001 | 0.08 | +0.3% | 1.57 | 10 |
+| forest | 0.0003 | 0.23 | +2.6% | 1.42 | 10 |
+| forest | 0.001 | 0.76 | +25.6% | 1.00 | 10 |
+| forest | 0.003 | 2.28 | +148.8% | 0.83 | 10 |
+| forest | 0.01 | 7.59 | +665.8% | 0.96 | 10 |
+| urban | 0.0001 | 0.02 | +0.0% | 1.67 | 10 |
+| urban | 0.0003 | 0.05 | +0.1% | 1.63 | 10 |
+| urban | 0.001 | 0.16 | +1.3% | 1.48 | 10 |
+| urban | 0.003 | 0.48 | +10.8% | 1.21 | 10 |
+| urban | 0.01 | 1.59 | +87.7% | 0.70 | 10 |
+| water | 0.0001 | 0.14 | +1.0% | 1.55 | 10 |
+| water | 0.0003 | 0.43 | +8.9% | 1.12 | 10 |
+| water | 0.001 | 1.44 | +75.3% | 1.16 | 10 |
+| water | 0.003 | 4.32 | +343.4% | 1.14 | 10 |
+| water | 0.01 | 14.40 | +1343.4% | 0.94 | 10 |
 
 ## Where HEALPix becomes the cheaper representation
 
 | class | first target with ratio < 1 | alpha there | inflation | ratio |
 |---|---|---|---|---|
-| agriculture | 0.003 | 1.69 | +96.4% | 0.88 |
+| agriculture | 0.003 | 1.54 | +84.0% | 0.88 |
+| forest | 0.003 | 2.28 | +148.8% | 0.83 |
+| urban | 0.01 | 1.59 | +87.7% | 0.70 |
+| water | 0.01 | 14.40 | +1343.4% | 0.94 |
 
-- **Over agriculture scenes, HEALPix becomes 12% cheaper to store at a compression error that inflates the product's total error by 96.4%** (target 0.003, alpha 1.69).
+- **Over agriculture scenes, HEALPix becomes 12% cheaper to store at a compression error that inflates the product's total error by 84.0%** (target 0.003, alpha 1.54).
 
-Every reported target sits below the reconstruction error of its own class, so no result in this paper is obtained by compressing more finely than the transfer step is accurate.
+- **8 of 20 (class, target) pairs have alpha > 1**, i.e. the compression error there exceeds the reconstruction error itself: agriculture at 0.003, agriculture at 0.01, forest at 0.003, forest at 0.01, urban at 0.01, water at 0.001, water at 0.003, water at 0.01. Under this denominator those targets are not conservative, and the inflation figures beside them say by how much.

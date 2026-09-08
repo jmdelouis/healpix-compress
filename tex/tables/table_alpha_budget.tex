@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{The storage verdict expressed against the error each product already carries. $e_{\mathrm{resample}}$ is the RMSE of the \texttt{clough\_tocher} transfer against its own estimand (measured here on 40 regions in 4 class(es), clough_tocher against the latent scene (i.e. the blur)); $\alpha$ is the compression target as a fraction of it. Because the two errors are independent they add in quadrature, so compressing at $\alpha$ inflates the product's total error by $\sqrt{1+\alpha^2}-1$, given here as a percentage. The target shown is the tightest reported one at which HEALPix is the smaller representation, or the loosest tested where there is none. Every target this paper reports lies below the reconstruction error of its own scene class: no result is obtained by compressing more finely than the transfer step is accurate.}
+\label{tab:alpha_budget}
+\footnotesize
+\begin{tabular}{@{}lrrrrrc@{}}
+\toprule
+Class & $e_{\mathrm{resample}}$ & Target & $\alpha$ & Inflation (\%) & HPX/UTM & HPX wins \\
+\midrule
+Agriculture & 0.016 & $0.003$ & 0.18 & 1.7 & 0.88 & yes \\
+Forest & 0.006 & $0.003$ & 0.49 & 11.3 & 0.83 & yes \\
+Urban & 0.078 & $0.01$ & 0.13 & 0.8 & 0.70 & yes \\
+Water & 0.005 & $0.01$ & 2.19 & 141.0 & 0.94 & yes \\
+\bottomrule
+\end{tabular}
+\end{table}
