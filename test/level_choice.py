@@ -7,13 +7,16 @@ about resolution, not about information, and the paper says as much -- it notes
 that claiming no detail is lost would need a transfer-error analysis it does not
 provide. This is that analysis.
 
-The spectral evidence says the question is live. The observed field carries a
-median $0.21\\%$ of its variance above half the native Nyquist, and propagating
-the fitted slope and response width to the right band puts about $0.03\\%$ above
-the level-19 Nyquist. If a level-19 carrier really discarded three parts in ten
-thousand, it would be the better product by a wide margin: a quarter of the
-cells, which turns the raw HEALPix/UTM ratio from $2.584$ into $0.646$ and makes
-the carrier smaller than the native crop before any compression at all.
+A spectral argument makes the question look live and gets it wrong, which is
+why the measurement here is direct. The observed field carries a median
+$0.21\\%$ of its variance above half the native Nyquist and, propagating the
+fitted slope and response width, about $0.03\\%$ above the level-19 Nyquist --
+from which one would conclude that level 19 discards three parts in ten
+thousand. It discards $3.07\\%$, a hundred times more. Aggregation is not a
+brick wall at the coarser Nyquist: the residual of a $2\\times2$ mean has
+response $1-\\cos^2(k_xd/2)\\cos^2(k_yd/2)$, which grows like $(kd)^4$ and so
+feeds mainly on the shoulder *below* the native Nyquist. Variance above a
+Nyquist is not the error of sampling below it.
 
 Variance above a Nyquist is not the error of sampling below it, though, so the
 measurement here is direct. Two quantities are separated, because a coarser
@@ -32,9 +35,13 @@ level is charged twice and only one of the charges is about information:
                 coarser read -- at level 19 the read jitters over a
                 \\SI{12.4}{m} cell instead of a \\SI{6.2}{m} one.
 
-If `discarded` stays small while `floor` grows, the conclusion is not that level
-20 is necessary but that the reading operator is what needs fixing, which is
-what Section V-F already says about level 20 itself.
+The two charges separate cleanly in the result: the coarser floor is the level-20
+floor and the discarded energy in quadrature (median measured/quadrature $1.07$
+at level 19), so the excess is information the aggregation removes, not a worse
+read. The decision does not follow from the raw ratio, which never appears in a
+compressed pipeline -- at the level-20 floor the coded file is $2.24\\%$ of the
+raw tile. What the per-level energies are good for is the multiresolution coder
+of idea 2: they are the subband energies of the exact HEALPix Haar pyramid.
 
 Usage
 -----
@@ -126,8 +133,10 @@ def summarize(df):
                 f"a factor of {f19/f20:.2f}",
                 f"- aggregating to level 19 discards "
                 f"{100*one.discarded_var_frac.median():.4f}% of the tile's "
-                f"variance, against the {0.21:.2f}% the imagery carries above "
-                f"half the native Nyquist",
+                f"variance. This is *not* the power above the level-19 "
+                f"Nyquist: a $2\\times2$ mean is a high-pass whose response "
+                f"$1-\\cos^2(k_xd/2)\\cos^2(k_yd/2)$ grows like $(kd)^4$, so "
+                f"it feeds mainly on the shoulder below the native Nyquist",
                 f"- raw storage: level 20 is {top.raw_ratio.iloc[0]:.3f} of the "
                 f"equal-area UTM crop, level 19 is {one.raw_ratio.iloc[0]:.3f}",
                 ""]
@@ -139,14 +148,26 @@ def summarize(df):
                        "charges for oversampling buys almost nothing against "
                        "the observation.")
         else:
+            # Is the extra error the information the aggregation removed, or
+            # a coarser read on top of it?  Quadrature settles it per scene.
+            a = top.set_index("scene")
+            b = one.set_index("scene")
+            j = b.join(a[["floor"]].rename(columns={"floor": "floor20"}),
+                       how="inner").dropna(subset=["floor", "floor20",
+                                                   "discarded"])
+            quad = (j.floor20 ** 2 + j.discarded ** 2) ** 0.5
+            over = float((j.floor / quad).median())
+            excess = j.floor ** 2 - j.floor20 ** 2
+            expl = float((j.discarded ** 2 / excess).median())
             out.append(f"- **The level-19 floor is {f19/f20:.2f} times level "
                        f"20's**, so a coarser carrier is not free against the "
-                       f"observation. How much of that is information and how "
-                       f"much is the coarser read is the next question: the "
-                       f"aggregation itself discards only "
-                       f"{100*one.discarded_var_frac.median():.4f}% of the "
-                       f"variance, so most of the gap is the read, not the "
-                       f"level.")
+                       f"observation. That excess is the information the "
+                       f"aggregation removes, not a worse read: the level-19 "
+                       f"floor is the level-20 floor and the discarded "
+                       f"intra-cell energy in quadrature to within "
+                       f"{100*abs(over-1):.0f}% (median measured/quadrature "
+                       f"{over:.3f}), and the discarded energy alone accounts "
+                       f"for {100*expl:.0f}% of the excess variance.")
     out += ["", "## By scene class, level 19 against level 20", "",
             "| class | floor 20 | floor 19 | ratio | discarded % of variance |",
             "|---|---|---|---|---|"]

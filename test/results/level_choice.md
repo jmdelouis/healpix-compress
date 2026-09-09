@@ -10,10 +10,10 @@
 | 17 | 49.74 | 16384 | 0.040 | 2.004e-02 | 48.1% | 20.4015% |
 
 - level 20 floor 4.038e-03, level 19 floor 8.565e-03: a factor of 2.12
-- aggregating to level 19 discards 3.0685% of the tile's variance, against the 0.21% the imagery carries above half the native Nyquist
+- aggregating to level 19 discards 3.0685% of the tile's variance. This is *not* the power above the level-19 Nyquist: a $2\times2$ mean is a high-pass whose response $1-\cos^2(k_xd/2)\cos^2(k_yd/2)$ grows like $(kd)^4$, so it feeds mainly on the shoulder below the native Nyquist
 - raw storage: level 20 is 2.584 of the equal-area UTM crop, level 19 is 0.646
 
-- **The level-19 floor is 2.12 times level 20's**, so a coarser carrier is not free against the observation. How much of that is information and how much is the coarser read is the next question: the aggregation itself discards only 3.0685% of the variance, so most of the gap is the read, not the level.
+- **The level-19 floor is 2.12 times level 20's**, so a coarser carrier is not free against the observation. That excess is the information the aggregation removes, not a worse read: the level-19 floor is the level-20 floor and the discarded intra-cell energy in quadrature to within 7% (median measured/quadrature 1.074), and the discarded energy alone accounts for 84% of the excess variance.
 
 ## By scene class, level 19 against level 20
 
