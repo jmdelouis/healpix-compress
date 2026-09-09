@@ -201,6 +201,35 @@ class CommonReference:
         agg = vals.reshape(-1, 4 ** d).mean(axis=1)
         return agg, np.repeat(agg, 4 ** d)
 
+    # -- the reader's kernel (idea 3) -----------------------------------------
+    def read_weights(self):
+        """How many mask pixels read each carrier cell. Nearest read only.
+
+        For the nearest read the projection is a gather, so this vector *is*
+        the diagonal of R^T R: a cell with weight zero cannot influence the
+        product at all, whatever value it carries. The oversampling the paper
+        charges for is exactly what makes that set large.
+        """
+        if self.op is not None:
+            raise ValueError("read_weights is defined for the nearest read; "
+                             "use read_support() for an operator read")
+        idx = np.asarray(self._safe_index)[np.asarray(self.mask)].ravel()
+        return np.bincount(idx, minlength=cfg.N_CHILDREN)
+
+    def read_support(self):
+        """Boolean per carrier cell: can it influence the masked read at all?
+
+        The reader's kernel is the complement of this set. For the nearest
+        read it is exact. For an operator read only the kept cells enter the
+        projection, so the kept set is returned -- an *over*-estimate of the
+        support, hence a conservative (under-stated) kernel.
+        """
+        if self.op is None:
+            return self.read_weights() > 0
+        sup = np.zeros(cfg.N_CHILDREN, dtype=bool)
+        sup[np.asarray(self._kept_index, dtype=np.int64)] = True
+        return sup
+
     def rmse_on_mask(self, predicted, observed) -> float:
         """RMSE over the two footprints' intersection only."""
         p = np.asarray(predicted, dtype=np.float64)[self.mask]

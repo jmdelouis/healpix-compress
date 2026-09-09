@@ -46,6 +46,30 @@ empirical per-tile distributions. That flatters this coder against the measured
 bytes of real codecs on the same tiles, deliberately: a bound that loses is a
 dead idea.
 
+Idea 3, on the same coefficients
+--------------------------------
+The same run prices the other half of the design. Section V-F says the reader
+dominates the error, which is another way of saying its kernel is large: the
+carrier is oversampled relative to the operator that reads it, so a gather read
+never touches most cells and anything a codec spends on them is spent on
+nothing. What the coder should minimise is ||R(x_hat - x)||, not ||x_hat - x||.
+
+Two different things can make the product see less than the codec is charged
+for, and they call for opposite designs, so the measurement separates them:
+
+    transmission ||Re|| / ||e||    near 1 with a large kernel means the error
+                                   per read pixel is unchanged and the gain is
+                                   in *allocation*: rate spent on unreachable
+                                   cells.
+                                   well below 1 means the reader *attenuates* a
+                                   white coding error, and a coarser step
+                                   reaches the same product distortion.
+
+Both are measured against the two readers that matter: the nearest read the
+paper's floor uses, and the operator read of the companion. The gain belongs to
+the reader, not to HEALPix, and improving the reader removes it -- which is why
+this is reported next to the rate, not instead of it.
+
 Usage
 -----
     python interscale.py --limit 4
@@ -74,6 +98,8 @@ MODELS = (("order0", "no context"),
           ("parent", "parent (inter-scale)"),
           ("neighbour", "neighbour (intra-band)"),
           ("both", "parent + neighbour"))
+READERS = ("nearest", "psf")   # the paper's floor reader, and the
+                               # companion's forward operator
 CLASS_COLOR = {"urban": "#D55E00", "water": "#0072B2",
                "forest": "#009E73", "agriculture": "#E69F00"}
 
@@ -236,6 +262,72 @@ def coder_point(approx, levels, step):
     return float(np.sqrt(err2 / n_leaf)), bits, n_leaf, per_band
 
 
+# --------------------------------------------------------------------------
+# idea 3: what does the reader never see?
+# --------------------------------------------------------------------------
+def reconstruct(approx, levels, step):
+    """The decoded tile at one quantiser step."""
+    _, ra = quantise(approx, step)
+    det = [{o: quantise(lv[o], step)[1] for o in ORIENT} for lv in levels]
+    return rebuild(ra, det)
+
+
+def rms_masked(field, mask):
+    v = np.asarray(field, dtype=np.float64)[np.asarray(mask)]
+    v = v[np.isfinite(v)]
+    return float(np.sqrt(np.mean(v ** 2))) if v.size else np.nan
+
+
+def transmission(cr, e_cells):
+    """||R e|| on the mask over ||e|| in cell space.
+
+    Every reader the paper defines is linear, so R(x_hat - x) is exactly the
+    product-level error a coding error e produces. Two very different things
+    can make this small, and telling them apart is the point:
+
+    * a *kernel*  -- cells the reader never touches. A gather read has one,
+      and it is large precisely because the carrier is oversampled. It does
+      not shrink the error per read pixel, so transmission stays near 1; what
+      it wastes is rate, spent controlling cells nothing depends on.
+    * *attenuation* -- a smoothing read suppresses the high-frequency part of
+      a white coding error, so transmission falls well below 1 and the coder
+      may quantise coarser for the same product distortion.
+    """
+    num = rms_masked(cr.predict(e_cells), cr.mask)
+    den = float(np.sqrt(np.mean(np.asarray(e_cells, dtype=np.float64) ** 2)))
+    return num / den if den > 0 else np.nan
+
+
+def kernel_energy(cr, e_cells):
+    """(share of the error energy in ker(R), share of cells R can reach)."""
+    sup = cr.read_support()
+    e2 = np.asarray(e_cells, dtype=np.float64).ravel() ** 2
+    tot = float(e2.sum())
+    return (float(e2[~sup].sum()) / tot if tot > 0 else np.nan,
+            float(sup.mean()))
+
+
+def solve_step_product(cr, approx, levels, x, target_rmse, seed, iters=20):
+    """Bisect the step so the *product-level* error hits the target.
+
+    The bits saved between this step and the cell-matched one are what a coder
+    would gain from being told the target is a product target -- available
+    with no new codec, only a corrected distortion norm. Any further gain
+    needs a coder that actively steers its error, which this does not measure.
+    """
+    lo, hi = seed / 64.0, seed * 64.0
+    for _ in range(iters):
+        mid = float(np.sqrt(lo * hi))
+        e = reconstruct(approx, levels, mid) - x
+        if rms_masked(cr.predict(e), cr.mask) > target_rmse:
+            hi = mid
+        else:
+            lo = mid
+        if hi / lo < 1.002:
+            break
+    return float(np.sqrt(lo * hi))
+
+
 def zerotree_stats(levels, step):
     """P(child = 0 | parent = 0) against P(child = 0): the zerotree premise."""
     out = []
@@ -283,9 +375,16 @@ def region_rows(scene, front, verbose=True):
                          var_frac=float(((approx - approx.mean()) ** 2).sum()
                                         / (x.size * sd ** 2))))
 
+    crs = {}
+    for name in READERS:
+        try:
+            crs[name] = common_reference.build_for_tile(npz, mode=name)
+        except Exception as exc:            # noqa: BLE001
+            print(f"    reader {name!r} unavailable: {exc}")
+
     targets = front.get(scene) or [(t, np.nan) for t in
                                    np.geomspace(1e-4 * sd, 0.5 * sd, 6)]
-    rows, ztree, bands = [], [], []
+    rows, ztree, bands, reads = [], [], [], []
     for target_rmse, ref_bytes in targets:
         step = solve_step(approx, levels, target_rmse, sd)
         rmse, bits, n_leaf, per_band = coder_point(approx, levels, step)
@@ -303,6 +402,26 @@ def region_rows(scene, front, verbose=True):
         # within-subband context is already being used.
         row["gain_parent_over_neighbour"] = (
             1.0 - bits["both"] / bits["neighbour"])
+        # --- idea 3: the reader's kernel and its attenuation -----------
+        e = reconstruct(approx, levels, step) - x
+        for name, cr in crs.items():
+            t = transmission(cr, e)
+            ker, sup = kernel_energy(cr, e)
+            rec = dict(scene=scene, cls=cls, reader=name,
+                       target_rmse=target_rmse, rmse_cell=rmse,
+                       rmse_product=t * rmse if t == t else np.nan,
+                       transmission=t, kernel_energy_frac=ker,
+                       support_fraction=sup,
+                       bits_cell=bits["both"])
+            if t == t and t > 0 and t < 0.999:
+                s2 = solve_step_product(cr, approx, levels, x, target_rmse,
+                                        seed=step / t)
+                _, b2, _, _ = coder_point(approx, levels, s2)
+                rec["step_product"] = s2
+                rec["bits_product"] = b2["both"]
+                rec["gain_product_target"] = 1.0 - b2["both"] / bits["both"]
+            reads.append(rec)
+
         rows.append(row)
         ztree += [dict(scene=scene, target_rmse=target_rmse, **z)
                   for z in zerotree_stats(levels, step)]
@@ -317,7 +436,7 @@ def region_rows(scene, front, verbose=True):
                   f"  both {row['bpc_both']:.3f} b/coef"
                   f"  (+{100*row['gain_parent_over_neighbour']:.1f}% over nbr)"
                   f"{tail}")
-    return rows, energies, ztree, bands
+    return rows, energies, ztree, bands, reads
 
 
 def pareto_front(path=BENCH, n_points=6):
@@ -345,7 +464,7 @@ def pareto_front(path=BENCH, n_points=6):
 
 
 # --------------------------------------------------------------------------
-def summarize(df, en, zt):
+def summarize(df, en, zt, rd=None):
     n = en.scene.nunique()
     out = ["# Does the link between scales pay?", "",
            f"- regions: {n}; rates are ideal entropy bounds, so they flatter "
@@ -407,6 +526,20 @@ def summarize(df, en, zt):
                 f"parent really predicts insignificant children; here it lifts "
                 f"P(child = 0) by {100*lift:.1f} points", ""]
 
+    q = pd.qcut(np.log10(df.rmse), 4,
+                labels=["tightest", "tight", "loose", "loosest"])
+    out += ["## By distortion regime", "",
+            "| quartile | RMSE | parent adds over neighbour | "
+            "bound / codec bytes |", "|---|---|---|---|"]
+    tmp = df.assign(_q=q, _r=df.bytes_both / df.ref_bytes)
+    for lab, g in tmp.groupby("_q", observed=True):
+        out.append(f"| {lab} | {g.rmse.median():.2e} | "
+                   f"{100*g.gain_parent_over_neighbour.median():.1f}% | "
+                   f"{g._r.median():.2f} |")
+    out += ["", "- the parent earns its keep where most coefficients are "
+                "zero, which is the low-rate end; that is the regime a "
+                "zerotree coder is built for", ""]
+
     h = df.dropna(subset=["ref_bytes"])
     if len(h):
         out += ["## Head to head against the measured codec front", "",
@@ -428,11 +561,58 @@ def summarize(df, en, zt):
                        f"sufficient -- the bound charges nothing for coding "
                        f"overhead, signalling, or the loss from a per-tile "
                        f"adaptive model.")
+    if rd is not None and len(rd):
+        out += ["", "## Idea 3: what the reader never sees", "",
+                "| reader | transmission ||Re||/||e|| | error energy in ker(R) "
+                "| cells R can reach | rate saved by a product target |",
+                "|---|---|---|---|---|"]
+        for name, g in rd.groupby("reader"):
+            gain = (g.gain_product_target.median()
+                    if "gain_product_target" in g else float("nan"))
+            gtxt = "---" if gain != gain else f"{100*gain:.1f}%"
+            out.append(f"| {name} | {g.transmission.median():.3f} | "
+                       f"{100*g.kernel_energy_frac.median():.1f}% | "
+                       f"{100*g.support_fraction.median():.1f}% | {gtxt} |")
+        out.append("")
+        for name, g in rd.groupby("reader"):
+            t = float(g.transmission.median())
+            ker = float(g.kernel_energy_frac.median())
+            sup = float(g.support_fraction.median())
+            if t > 0.9 and ker > 0.2:
+                out.append(
+                    f"- **{name}**: transmission {t:.2f} with {100*ker:.0f}% of "
+                    f"the error energy in the kernel. The kernel does not make "
+                    f"the product error smaller -- it reveals wasted rate. The "
+                    f"product depends on {100*sup:.1f}% of the cells, so at "
+                    f"high rate a reader-aware coder has a bound of about "
+                    f"{1/sup:.1f}x on rate, and it is a bound on *allocation*, "
+                    f"not something a coarser step buys.")
+            elif t <= 0.9:
+                out.append(
+                    f"- **{name}**: transmission {t:.2f}. This reader "
+                    f"*attenuates* a white coding error rather than ignoring "
+                    f"particular cells, so the same product distortion is "
+                    f"reached with a coarser step -- a saving that needs no "
+                    f"new codec, only the target expressed on the product.")
+            else:
+                out.append(f"- **{name}**: transmission {t:.2f}, kernel "
+                           f"{100*ker:.1f}%: nothing free here.")
+        out += ["", "- The gain is a property of the *reader*, not of HEALPix. "
+                    "A gather read has a large kernel exactly because the "
+                    "carrier is oversampled relative to it, which is what "
+                    "Section V-F calls the dominant error; fixing the reader "
+                    "closes the kernel and removes this gain with it. Shaping "
+                    "coding noise into a smoothing reader's stopband is the "
+                    "safer half, and it is safe only for a product consumed "
+                    "through that operator: the companion's point is that the "
+                    "small scales there are real, so a viewer reading the "
+                    "carrier as an image would see the noise put in.", ""]
     return "\n".join(out)
 
 
-def figure(df, en, path="figures/fig_interscale.pdf"):
-    fig, axes = plt.subplots(1, 3, figsize=(11.0, 3.3))
+def figure(df, en, rd=None, path="figures/fig_interscale.pdf"):
+    n_ax = 3 if rd is None or not len(rd) else 4
+    fig, axes = plt.subplots(1, n_ax, figsize=(3.7 * n_ax, 3.3))
 
     ax = axes[0]
     d = en[en.orient != "a"].groupby(["scene", "level"]).var_frac.sum()
@@ -446,7 +626,8 @@ def figure(df, en, path="figures/fig_interscale.pdf"):
 
     ax = axes[1]
     for m, lab in MODELS:
-        s = df.groupby(pd.cut(np.log10(df.rmse), 10))[f"bpc_{m}"].median()
+        s = df.groupby(pd.cut(np.log10(df.rmse), 10),
+                       observed=True)[f"bpc_{m}"].median()
         ax.plot([iv.mid for iv in s.index], s.values, "o-", ms=3, label=lab)
     ax.set_xlabel("log10 RMSE")
     ax.set_ylabel("bits per coefficient")
@@ -465,6 +646,18 @@ def figure(df, en, path="figures/fig_interscale.pdf"):
     ax.set_title("what the link across scales adds")
     ax.legend(fontsize=6, frameon=False)
     ax.grid(alpha=.3)
+
+    if n_ax == 4:
+        ax = axes[3]
+        for name, g in rd.groupby("reader"):
+            ax.scatter(g.rmse_cell, g.transmission, s=14, label=name)
+        ax.set_xscale("log")
+        ax.axhline(1.0, color="0.6", lw=.8)
+        ax.set_xlabel("cell-space RMSE")
+        ax.set_ylabel(r"$\|Re\|/\|e\|$")
+        ax.set_title("what the reader transmits")
+        ax.legend(fontsize=6, frameon=False)
+        ax.grid(alpha=.3)
 
     fig.tight_layout()
     fig.savefig(path)
@@ -492,11 +685,11 @@ def main(argv=None) -> int:
     print(f"{len(scenes)} region(s), pyramid depth {DEPTH_MAX} "
           f"(levels {cfg.LEVEL}..{cfg.LEVEL - DEPTH_MAX + 1} detail)")
 
-    rows, ens, zts, bands = [], [], [], []
+    rows, ens, zts, bands, reads = [], [], [], [], []
     for s in scenes:
         print(f"  {s}")
         try:
-            r, e, z, b = region_rows(s, front)
+            r, e, z, b, k = region_rows(s, front)
         except Exception as exc:            # noqa: BLE001
             print(f"    skipped: {exc}")
             continue
@@ -504,6 +697,7 @@ def main(argv=None) -> int:
         ens += e
         zts += z
         bands += b
+        reads += k
 
     if not rows:
         print("no region produced a measurement")
@@ -513,14 +707,16 @@ def main(argv=None) -> int:
     en = pd.DataFrame(ens)
     zt = pd.DataFrame(zts)
     bd = pd.DataFrame(bands)
+    rd = pd.DataFrame(reads)
     df.to_csv("results/interscale.csv", index=False)
     en.to_csv("results/interscale_energy.csv", index=False)
     zt.to_csv("results/interscale_zerotree.csv", index=False)
     bd.to_csv("results/interscale_bands.csv", index=False)
-    md = summarize(df, en, zt)
+    rd.to_csv("results/interscale_reader.csv", index=False)
+    md = summarize(df, en, zt, rd)
     with open("results/interscale.md", "w", encoding="utf-8") as fh:
         fh.write(md)
-    figure(df, en)
+    figure(df, en, rd)
     print("\n" + md)
     return 0
 

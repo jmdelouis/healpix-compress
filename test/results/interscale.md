@@ -38,6 +38,17 @@
 
 - a zerotree is worth signalling only if an insignificant parent really predicts insignificant children; here it lifts P(child = 0) by 20.5 points
 
+## By distortion regime
+
+| quartile | RMSE | parent adds over neighbour | bound / codec bytes |
+|---|---|---|---|
+| tightest | 6.56e-07 | 0.4% | 0.91 |
+| tight | 2.39e-04 | 3.0% | 1.13 |
+| loose | 1.94e-03 | 9.2% | 1.45 |
+| loosest | 1.23e-02 | 11.1% | 1.06 |
+
+- the parent earns its keep where most coefficients are zero, which is the low-rate end; that is the regime a zerotree coder is built for
+
 ## Head to head against the measured codec front
 
 | model | entropy bytes / codec bytes (median) |
