@@ -532,8 +532,8 @@ def latex_table(df, targets, do_rd):
     extra_h = "".join(f" & ${t:g}$" for t in targets[:3]) if do_rd else ""
     spec = "lrrrrrr" + ("r" * (3 if do_rd else 0))
     return (
-        "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Transfer-kernel ablation. Each row rebuilds the carrier tile "
+        "\\begin{table*}[t]\n\\centering\n"
+        "\\caption{Transfer-kernel ablation. Medians over the {n_scenes} regions swept. Each row rebuilds the carrier tile "
         "from the same native window with a different kernel, with the same "
         "reading operator throughout, so differences between rows are the "
         "transfer alone. \\emph{Transfer} is the error against an analytic "
@@ -562,7 +562,7 @@ def latex_table(df, targets, do_rd):
         f"\\begin{{tabular}}{{@{{}}{spec}@{{}}}}\n\\toprule\n"
         "Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct." + extra_h
         + " \\\\\n\\midrule\n" + "\n".join(rows)
-        + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
+        + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:

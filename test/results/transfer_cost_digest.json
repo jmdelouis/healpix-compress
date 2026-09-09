@@ -1,0 +1,62 @@
+{
+  "0.0001": {
+    "n": 39,
+    "psf_over_base": 1.2653650452676715,
+    "psf_over_base_p": 3.637978807091713e-12,
+    "linear_over_base": 1.2048034883118612,
+    "linear_over_base_p": 3.637978807091713e-12,
+    "deconv_over_control": 1.0513228302997495,
+    "deconv_over_control_p": 4.001776687800884e-10,
+    "clough_tocher_over_utm": 1.5909948678196504,
+    "psf_over_utm": 2.016375462619114,
+    "linear_over_utm": 1.9147064237046953
+  },
+  "0.0003": {
+    "n": 39,
+    "psf_over_base": 1.3595486272572062,
+    "psf_over_base_p": 3.637978807091713e-12,
+    "linear_over_base": 1.306091134553436,
+    "linear_over_base_p": 3.637978807091713e-12,
+    "deconv_over_control": 1.0478641794871881,
+    "deconv_over_control_p": 8.940332918427885e-08,
+    "clough_tocher_over_utm": 1.5018351639353211,
+    "psf_over_utm": 2.028269035451243,
+    "linear_over_utm": 1.9330380236633369
+  },
+  "0.001": {
+    "n": 39,
+    "psf_over_base": 1.643967201715032,
+    "psf_over_base_p": 3.637978807091713e-12,
+    "linear_over_base": 1.6031782366708958,
+    "linear_over_base_p": 7.275957614183426e-12,
+    "deconv_over_control": 1.0359942582014863,
+    "deconv_over_control_p": 0.00016845978825585917,
+    "clough_tocher_over_utm": 1.2284036189370926,
+    "psf_over_utm": 2.0407824883362604,
+    "linear_over_utm": 1.942113618805135
+  },
+  "0.003": {
+    "n": 35,
+    "psf_over_base": 2.108456493108218,
+    "psf_over_base_p": 5.820766091346741e-11,
+    "linear_over_base": 1.9260359578396422,
+    "linear_over_base_p": 5.820766091346741e-11,
+    "deconv_over_control": 1.0597750263151802,
+    "deconv_over_control_p": 0.12675894872518256,
+    "clough_tocher_over_utm": 0.9427416344583636,
+    "psf_over_utm": 2.0045821586076396,
+    "linear_over_utm": 1.8874605994190543
+  },
+  "0.01": {
+    "n": 33,
+    "psf_over_base": 2.187460815047022,
+    "psf_over_base_p": 2.3283064365386963e-10,
+    "linear_over_base": 2.1102016847987355,
+    "linear_over_base_p": 1.1641532182693481e-09,
+    "deconv_over_control": 1.0941336971350615,
+    "deconv_over_control_p": 0.23464361624792218,
+    "clough_tocher_over_utm": 0.7845677477908105,
+    "psf_over_utm": 1.7441410237758441,
+    "linear_over_utm": 1.765926601661974
+  }
+}
