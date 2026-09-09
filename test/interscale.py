@@ -88,6 +88,7 @@ import pandas as pd                       # noqa: E402
 
 import paper_config as cfg                # noqa: E402
 import build_tiles                        # noqa: E402
+import common_reference                 # noqa: E402
 import region_sites                       # noqa: E402
 
 DEPTH_MAX = 6                  # detail at levels 20..15, approximation at 14
@@ -379,8 +380,11 @@ def region_rows(scene, front, verbose=True):
     for name in READERS:
         try:
             crs[name] = common_reference.build_for_tile(npz, mode=name)
+        except (NameError, ImportError, AttributeError, TypeError):
+            # a bug in this file, not a property of the tile: never swallow it
+            raise
         except Exception as exc:            # noqa: BLE001
-            print(f"    reader {name!r} unavailable: {exc}")
+            print(f"    reader {name!r} unavailable on this tile: {exc}")
 
     targets = front.get(scene) or [(t, np.nan) for t in
                                    np.geomspace(1e-4 * sd, 0.5 * sd, 6)]
@@ -702,6 +706,12 @@ def main(argv=None) -> int:
     if not rows:
         print("no region produced a measurement")
         return 1
+
+    if READERS and not reads:
+        raise SystemExit(
+            f"idea 3 measured nothing: none of the readers {list(READERS)} "
+            f"could be built on any of the {len(scenes)} tiles. Rerun once "
+            f"that is fixed rather than publishing a run without it.")
 
     df = pd.DataFrame(rows)
     en = pd.DataFrame(ens)
