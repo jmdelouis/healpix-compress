@@ -137,17 +137,48 @@ class CommonReference:
 
     # -- optional PSF-weighted operator --------------------------------------
     def _build_operator(self, utm_lon, utm_lat, fwhm_m, npt, verbose):
-        from healpix_resample import KNeighborsResampler, PSFResampler
-        from healpix_resample.psf_geometry import fwhm_to_scale, recommend_npt
-        self.scale_m = fwhm_to_scale(fwhm_m)
-        if npt is None:
-            npt = int(recommend_npt(self.scale_m, cfg.LEVEL)["npt"])
-        self.npt = npt
-        cls = PSFResampler if self.mode == "psf" else KNeighborsResampler
-        self.op = cls(np.asarray(utm_lon, dtype=np.float64).ravel(),
-                      np.asarray(utm_lat, dtype=np.float64).ravel(),
-                      npt, cfg.LEVEL, sigma_m=self.scale_m,
-                      out_cell_ids=self.cell_ids, verbose=verbose)
+        """Build the reading operator the same way build_tiles.py does.
+
+        healpix-resample's constructor arguments are keyword-only and have
+        changed across versions; this path had drifted into passing four
+        positionals and stayed broken unnoticed, because no published number
+        used a mode other than `nearest`. It is now built from the same
+        keyword call `build_tiles.make_resampler` uses, and the optional
+        arguments are passed only if the installed class accepts them.
+        """
+        import inspect
+
+        import healpix_resample as hr
+        try:
+            fwhm_to_scale = hr.fwhm_to_scale
+        except AttributeError:
+            from healpix_resample.psf_geometry import fwhm_to_scale
+        self.scale_m = float(fwhm_to_scale(fwhm_m))
+        cls = hr.PSFResampler if self.mode == "psf" else hr.KNeighborsResampler
+        accepted = set(inspect.signature(cls.__init__).parameters)
+        kw = dict(lon_deg=np.asarray(utm_lon, dtype=np.float64).ravel(),
+                  lat_deg=np.asarray(utm_lat, dtype=np.float64).ravel(),
+                  level=cfg.LEVEL, out_cell_ids=self.cell_ids,
+                  verbose=verbose)
+        if "sigma_m" in accepted:
+            kw["sigma_m"] = self.scale_m
+        if "npt" in accepted:
+            if npt is None:
+                from healpix_resample.psf_geometry import recommend_npt
+                npt = int(recommend_npt(self.scale_m, cfg.LEVEL)["npt"])
+            kw["npt"] = int(npt)
+            self.npt = int(npt)
+        else:
+            self.npt = None
+        missing = [k for k in kw if k not in accepted]
+        if missing and not any(
+                pr.kind is inspect.Parameter.VAR_KEYWORD
+                for pr in inspect.signature(cls.__init__).parameters.values()):
+            raise TypeError(
+                f"{cls.__name__} does not accept {missing}; the installed "
+                f"healpix-resample has a different constructor than this "
+                f"code expects")
+        self.op = cls(**kw)
         kept = np.asarray(self.op.get_cell_ids(), dtype=np.int64).ravel()
         self._kept_index = kept - self.base_id
         self.kept_fraction = kept.size / float(self.cell_ids.size)

@@ -376,19 +376,27 @@ def region_rows(scene, front, verbose=True):
                          var_frac=float(((approx - approx.mean()) ** 2).sum()
                                         / (x.size * sd ** 2))))
 
-    crs = {}
+    obs = np.asarray(utm_crop, dtype=np.float64)
+    crs, failures = {}, []
     for name in READERS:
         try:
-            crs[name] = common_reference.build_for_tile(npz, mode=name)
-        except (NameError, ImportError, AttributeError, TypeError):
-            # a bug in this file, not a property of the tile: never swallow it
-            raise
+            cr = common_reference.build_for_tile(npz, mode=name)
+            # A misbuilt operator is not detectable from a transmission ratio,
+            # so each reader publishes its own representation floor next to
+            # the ratio: if this is worse than the nearest read's, the reader
+            # is wrong and idea 3's numbers for it mean nothing.
+            floor = cr.rmse_on_mask(cr.predict(x), obs)
+            if not np.isfinite(floor):
+                raise RuntimeError("non-finite representation floor")
+            crs[name] = (cr, float(floor))
         except Exception as exc:            # noqa: BLE001
-            print(f"    reader {name!r} unavailable on this tile: {exc}")
+            print(f"    reader {name!r} FAILED: {type(exc).__name__}: {exc}")
+            failures.append(dict(scene=scene, cls=scene.split("__")[1],
+                                 reader=name, error=f"{type(exc).__name__}: {exc}"))
 
     targets = front.get(scene) or [(t, np.nan) for t in
                                    np.geomspace(1e-4 * sd, 0.5 * sd, 6)]
-    rows, ztree, bands, reads = [], [], [], []
+    rows, ztree, bands, reads = [], [], [], list(failures)
     for target_rmse, ref_bytes in targets:
         step = solve_step(approx, levels, target_rmse, sd)
         rmse, bits, n_leaf, per_band = coder_point(approx, levels, step)
@@ -408,15 +416,15 @@ def region_rows(scene, front, verbose=True):
             1.0 - bits["both"] / bits["neighbour"])
         # --- idea 3: the reader's kernel and its attenuation -----------
         e = reconstruct(approx, levels, step) - x
-        for name, cr in crs.items():
+        for name, (cr, floor) in crs.items():
             t = transmission(cr, e)
             ker, sup = kernel_energy(cr, e)
             rec = dict(scene=scene, cls=cls, reader=name,
                        target_rmse=target_rmse, rmse_cell=rmse,
                        rmse_product=t * rmse if t == t else np.nan,
                        transmission=t, kernel_energy_frac=ker,
-                       support_fraction=sup,
-                       bits_cell=bits["both"])
+                       support_fraction=sup, reader_floor=floor,
+                       bits_cell=bits["both"], error="")
             if t == t and t > 0 and t < 0.999:
                 s2 = solve_step_product(cr, approx, levels, x, target_rmse,
                                         seed=step / t)
@@ -566,15 +574,17 @@ def summarize(df, en, zt, rd=None):
                        f"overhead, signalling, or the loss from a per-tile "
                        f"adaptive model.")
     if rd is not None and len(rd):
+        rd = rd[rd.get("error", "").eq("")] if "error" in rd else rd
         out += ["", "## Idea 3: what the reader never sees", "",
-                "| reader | transmission ||Re||/||e|| | error energy in ker(R) "
-                "| cells R can reach | rate saved by a product target |",
-                "|---|---|---|---|---|"]
+                "| reader | floor | transmission ||Re||/||e|| | error energy in "
+                "ker(R) | cells R can reach | rate saved by a product "
+                "target |", "|---|---|---|---|---|---|"]
         for name, g in rd.groupby("reader"):
             gain = (g.gain_product_target.median()
                     if "gain_product_target" in g else float("nan"))
             gtxt = "---" if gain != gain else f"{100*gain:.1f}%"
-            out.append(f"| {name} | {g.transmission.median():.3f} | "
+            out.append(f"| {name} | {g.reader_floor.median():.3e} | "
+                       f"{g.transmission.median():.3f} | "
                        f"{100*g.kernel_energy_frac.median():.1f}% | "
                        f"{100*g.support_fraction.median():.1f}% | {gtxt} |")
         out.append("")
@@ -707,11 +717,14 @@ def main(argv=None) -> int:
         print("no region produced a measurement")
         return 1
 
-    if READERS and not reads:
+    ok = [r for r in reads if not r.get("error")]
+    if READERS and not ok:
+        errs = sorted({r.get("error", "?") for r in reads}) or ["no rows"]
         raise SystemExit(
-            f"idea 3 measured nothing: none of the readers {list(READERS)} "
-            f"could be built on any of the {len(scenes)} tiles. Rerun once "
-            f"that is fixed rather than publishing a run without it.")
+            "idea 3 measured nothing: no reader in "
+            f"{list(READERS)} could be built on any of the {len(scenes)} "
+            "tiles. Distinct failures:\n  " + "\n  ".join(errs) +
+            "\nFix that and rerun rather than publishing a run without it.")
 
     df = pd.DataFrame(rows)
     en = pd.DataFrame(ens)
