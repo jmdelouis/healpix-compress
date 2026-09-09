@@ -36,6 +36,8 @@ MODULES = [
     ("support_controls", "controls for the footprint support mismatch"),
     ("gamma_analysis", "verdict over a continuous overhead ratio"),
     ("superres_cost", "storage surcharge of a deconvolving transfer"),
+    ("cross_term", "is the compression error orthogonal to the transfer error"),
+    ("check_paper_numbers", "manuscript figures vs the run that produced them"),
     ("operator_tests", "what the HEALPix->UTM operator does beyond a constant"),
     ("kernel_ablation", "transfer-kernel ablation"),
     ("resampling_error", "reconstruction error of each transfer"),

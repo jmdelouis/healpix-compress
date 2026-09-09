@@ -533,7 +533,9 @@ def latex_table(df, targets, do_rd):
     spec = "lrrrrrr" + ("r" * (3 if do_rd else 0))
     return (
         "\\begin{table*}[t]\n\\centering\n"
-        "\\caption{Transfer-kernel ablation. Medians over the {n_scenes} regions swept. Each row rebuilds the carrier tile "
+        f"\\caption{{Transfer-kernel ablation. Medians over the "
+        f"{df.scene.nunique()} regions swept, which is fewer than the "
+        f"40 the rest of the paper uses. Each row rebuilds the carrier tile "
         "from the same native window with a different kernel, with the same "
         "reading operator throughout, so differences between rows are the "
         "transfer alone. \\emph{Transfer} is the error against an analytic "

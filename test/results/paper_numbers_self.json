@@ -134,130 +134,130 @@
   "latitude": {
     "rmse:0.0001": {
       "spearman": {
-        "n": 1,
-        "rho": NaN,
-        "p": NaN,
-        "p_holm": NaN
+        "n": 40,
+        "rho": -0.10600375234521578,
+        "p": 0.5150429324220337,
+        "p_holm": 1.0
       },
       "equatorial_vs_cap": {
-        "n_a": 0,
-        "n_b": 1,
-        "p": NaN,
-        "median_a": NaN,
-        "median_b": NaN,
-        "p_holm": NaN
+        "n_a": 22,
+        "n_b": 18,
+        "p": 0.8811393893635913,
+        "median_a": 2.0922582482804595,
+        "median_b": 2.0563112815536044,
+        "p_holm": 1.0
       }
     },
     "rmse:0.0003": {
       "spearman": {
-        "n": 1,
-        "rho": NaN,
-        "p": NaN,
-        "p_holm": NaN
+        "n": 40,
+        "rho": -0.07354596622889306,
+        "p": 0.6519841937363078,
+        "p_holm": 1.0
       },
       "equatorial_vs_cap": {
-        "n_a": 0,
-        "n_b": 1,
-        "p": NaN,
-        "median_a": NaN,
-        "median_b": NaN,
-        "p_holm": NaN
+        "n_a": 22,
+        "n_b": 18,
+        "p": 0.6537382864060286,
+        "median_a": 1.9036550592263248,
+        "median_b": 1.9603488683785382,
+        "p_holm": 1.0
       }
     },
     "rmse:0.001": {
       "spearman": {
-        "n": 1,
-        "rho": NaN,
-        "p": NaN,
-        "p_holm": NaN
+        "n": 40,
+        "rho": -0.018011257035647283,
+        "p": 0.912163653395927,
+        "p_holm": 1.0
       },
       "equatorial_vs_cap": {
-        "n_a": 0,
-        "n_b": 1,
-        "p": NaN,
-        "median_a": NaN,
-        "median_b": NaN,
-        "p_holm": NaN
+        "n_a": 22,
+        "n_b": 18,
+        "p": 0.7961981959031372,
+        "median_a": 1.682806119967427,
+        "median_b": 1.5863039109950337,
+        "p_holm": 1.0
       }
     },
     "rmse:0.003": {
       "spearman": {
-        "n": 1,
-        "rho": NaN,
-        "p": NaN,
-        "p_holm": NaN
+        "n": 40,
+        "rho": 0.11088180112570359,
+        "p": 0.49577936140161294,
+        "p_holm": 1.0
       },
       "equatorial_vs_cap": {
-        "n_a": 0,
-        "n_b": 1,
-        "p": NaN,
-        "median_a": NaN,
-        "median_b": NaN,
-        "p_holm": NaN
+        "n_a": 22,
+        "n_b": 18,
+        "p": 0.391792923510785,
+        "median_a": 1.2155940828402148,
+        "median_b": 1.273412403553758,
+        "p_holm": 1.0
       }
     },
     "rmse:0.01": {
       "spearman": {
-        "n": 1,
-        "rho": NaN,
-        "p": NaN,
-        "p_holm": NaN
+        "n": 40,
+        "rho": 0.30431519699812387,
+        "p": 0.056238357056902485,
+        "p_holm": 0.3374301423414149
       },
       "equatorial_vs_cap": {
-        "n_a": 0,
-        "n_b": 1,
-        "p": NaN,
-        "median_a": NaN,
-        "median_b": NaN,
-        "p_holm": NaN
+        "n_a": 22,
+        "n_b": 18,
+        "p": 0.012862559073660029,
+        "median_a": 0.9665950086126489,
+        "median_b": 1.197880899467664,
+        "p_holm": 0.07717535444196016
       }
     },
     "budget:0.1": {
       "spearman": {
-        "n": 1,
-        "rho": NaN,
-        "p": NaN,
-        "p_holm": NaN
+        "n": 40,
+        "rho": 0.012945590994371484,
+        "p": 0.9368082579478432,
+        "p_holm": 1.0
       },
       "equatorial_vs_cap": {
-        "n_a": 0,
-        "n_b": 1,
-        "p": NaN,
-        "median_a": NaN,
-        "median_b": NaN,
-        "p_holm": NaN
+        "n_a": 22,
+        "n_b": 18,
+        "p": 0.43845115444736027,
+        "median_a": 12.364562541819883,
+        "median_b": 13.196945857066627,
+        "p_holm": 1.0
       }
     },
     "budget:0.05": {
       "spearman": {
-        "n": 1,
-        "rho": NaN,
-        "p": NaN,
-        "p_holm": NaN
+        "n": 40,
+        "rho": 0.3707317073170732,
+        "p": 0.018524176671445642,
+        "p_holm": 0.12966923670011948
       },
       "equatorial_vs_cap": {
-        "n_a": 0,
-        "n_b": 1,
-        "p": NaN,
-        "median_a": NaN,
-        "median_b": NaN,
-        "p_holm": NaN
+        "n_a": 22,
+        "n_b": 18,
+        "p": 0.011024386335205907,
+        "median_a": 2.6780082105281937,
+        "median_b": 2.810548863805904,
+        "p_holm": 0.07717070434644135
       }
     },
     "budget:0.02": {
       "spearman": {
-        "n": 1,
-        "rho": NaN,
-        "p": NaN,
-        "p_holm": NaN
+        "n": 40,
+        "rho": 0.4958724202626643,
+        "p": 0.001138630842980142,
+        "p_holm": 0.009109046743841135
       },
       "equatorial_vs_cap": {
-        "n_a": 0,
-        "n_b": 1,
-        "p": NaN,
-        "median_a": NaN,
-        "median_b": NaN,
-        "p_holm": NaN
+        "n_a": 22,
+        "n_b": 18,
+        "p": 0.0010530471619083148,
+        "median_a": 0.9469792651236751,
+        "median_b": 1.2093753216938317,
+        "p_holm": 0.008424377295266518
       }
     }
   },

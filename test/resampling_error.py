@@ -99,8 +99,21 @@ def scene_parameters(scene: str, spectrum: pd.DataFrame | None):
     return beta, fwhm
 
 
-def measure(scene: str, store: Path, kernels, spectrum, noise_scale=1.0,
-            seed=23, halo_px=32, lam=1e-3, children=4, verbose=True):
+class _Case(dict):
+    """Attribute access over a plain dict, so a case reads like a record."""
+    __getattr__ = dict.__getitem__
+
+
+def synthetic_case(scene: str, store: Path, spectrum, noise_scale=1.0,
+                   seed=23, halo_px=32, children=16):
+    """Build one region's synthetic scene: latent field, observation, truth.
+
+    Factored out of `measure` so that anything else needing the same field --
+    the cross-term measurement of cross_term.py, in particular -- gets it from
+    here rather than from a second copy of the construction. Two copies of a
+    forward model drift, and a drift between the reconstruction error and the
+    compression error measured against it would be invisible in the result.
+    """
     # Checked once, with a diagnostic: a window that is not the one the tile
     # was built from produces a partial sub-window and a downstream "43% of
     # cells missing" that points at the halo instead of at the geometry.
@@ -167,24 +180,43 @@ def measure(scene: str, store: Path, kernels, spectrum, noise_scale=1.0,
     obs = obs_clean + (rng.normal(0.0, noise_std, obs_clean.shape)
                        if noise_std > 0 else 0.0)
 
+    return _Case(scene=scene, cand=cand, sub_lon=sub_lon, sub_lat=sub_lat,
+                 obs=obs, obs_clean=obs_clean, latent_cells=latent_cells,
+                 observed_cells=observed_cells, beta=beta, psf_fwhm_m=fwhm,
+                 sigma=sigma, gain=gain, noise_std=noise_std,
+                 children=int(children), utm_crop=crop)
+
+
+def transfer_cells(case, kernel: str, lam: float = 1e-3):
+    """Run one transfer on the case's observation; return (cells, n_filled)."""
+    op = build_tiles.make_resampler(kernel, case.sub_lon, case.sub_lat,
+                                    case.cand["cell_ids"], verbose=False,
+                                    sigma_m=case.sigma)
+    # PSFResampler defaults to lam=0, i.e. an undamped solve; the companion
+    # study's reported recovery uses lam=1e-3, and running the two at different
+    # damping compares different estimators.
+    obs = np.asarray(case.obs, dtype=np.float64)
+    res = op.resample(obs, lam=lam) if kernel == "psf" else op.resample(obs)
+    return build_tiles.complete_block(
+        np.asarray(res.cell_ids, dtype=np.int64).ravel(),
+        np.asarray(res.cell_data, dtype=np.float64).ravel(),
+        case.cand["cell_ids"])
+
+
+def measure(scene: str, store: Path, kernels, spectrum, noise_scale=1.0,
+            seed=23, halo_px=32, lam=1e-3, children=16, verbose=True):
+    case = synthetic_case(scene, store, spectrum, noise_scale=noise_scale,
+                          seed=seed, halo_px=halo_px, children=children)
+    latent_cells, observed_cells = case.latent_cells, case.observed_cells
+    obs_clean, beta, fwhm = case.obs_clean, case.beta, case.psf_fwhm_m
+    gain, noise_std = case.gain, case.noise_std
+
     rows = []
     for kernel in kernels:
         estimand = ESTIMAND.get(kernel, "observed")
         truth = latent_cells if estimand == "latent" else observed_cells
         try:
-            op = build_tiles.make_resampler(kernel, sub_lon, sub_lat,
-                                            cand["cell_ids"], verbose=False,
-                                            sigma_m=sigma)
-            # PSFResampler defaults to lam=0, i.e. an undamped solve; the
-            # companion study's reported recovery uses lam=1e-3, and running
-            # the two at different damping compares different estimators.
-            res = (op.resample(np.asarray(obs, dtype=np.float64), lam=lam)
-                   if kernel == "psf"
-                   else op.resample(np.asarray(obs, dtype=np.float64)))
-            val, n_filled = build_tiles.complete_block(
-                np.asarray(res.cell_ids, dtype=np.int64).ravel(),
-                np.asarray(res.cell_data, dtype=np.float64).ravel(),
-                cand["cell_ids"])
+            val, n_filled = transfer_cells(case, kernel, lam=lam)
         except Exception as exc:                           # noqa: BLE001
             print(f"    {kernel:14s} FAILED {type(exc).__name__}: {exc}")
             rows.append(dict(scene=scene, kernel=kernel, estimand=estimand,
@@ -319,7 +351,7 @@ def latex_table(df, control=None):
         "field convolved exactly with the fitted Gaussian response, sampled at "
         "the native pixel positions and given additive noise at the level "
         "Immerkaer's estimator reads off the region's own imagery; the truth "
-        "at each cell is the average over its four level-21 children, matching "
+        "at each cell is the average over its sixteen level-22 children, matching "
         "the companion study's cell-average estimand. \\emph{Blur} is the RMSE "
         "between the observed and latent fields, i.e.\\ what a non-deconvolving "
         "transfer leaves on the table by construction. "

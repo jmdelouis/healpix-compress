@@ -515,6 +515,19 @@ def main(argv=None) -> int:
         tex_v = tex_v.replace("tab:error_at_size", "tab:error_at_size" + suffix_lbl)
     tex_gs, gammas = table_gamma_star(rows)
     tex_vi, ranking = table_codec_ranking(hpx, scenes, rmse_col, codecs)
+    # Two tables are built from the tile index rather than from the sweep, so a
+    # partial build_tiles run used to make them disagree with every other table
+    # in the same invocation -- n=1 beside n=40, published. Refuse rather than
+    # emit a table that contradicts the run it belongs to.
+    n_index = int(len(index))
+    if n_index and n_index != len(scenes):
+        raise SystemExit(
+            f"the tile index describes {n_index} region(s) but the sweep covers "
+            f"{len(scenes)}: the region and latitude tables would contradict "
+            f"every other table in this run. Rebuild the index over all regions "
+            f"(python build_tiles.py) or delete "
+            f"{cfg.TILE_DIR / 'tiles_index.csv'} to fall back on the site table, "
+            f"then re-run.")
     tex_lat, lat_stats = table_latitude(rows, index)
     tex_fix, fixed = table_fixed_codec(hpx, utm, scenes, rmse_col, codecs)
     tex_reg, per_class = table_regions(index)

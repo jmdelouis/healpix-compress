@@ -19,7 +19,7 @@
     "linear_over_base_p": 3.637978807091713e-12,
     "deconv_over_control": 1.0478641794871881,
     "deconv_over_control_p": 8.940332918427885e-08,
-    "clough_tocher_over_utm": 1.5018351639353211,
+    "clough_tocher_over_utm": 1.5018351639353213,
     "psf_over_utm": 2.028269035451243,
     "linear_over_utm": 1.9330380236633369
   },
@@ -27,7 +27,7 @@
     "n": 39,
     "psf_over_base": 1.643967201715032,
     "psf_over_base_p": 3.637978807091713e-12,
-    "linear_over_base": 1.6031782366708958,
+    "linear_over_base": 1.603178236670896,
     "linear_over_base_p": 7.275957614183426e-12,
     "deconv_over_control": 1.0359942582014863,
     "deconv_over_control_p": 0.00016845978825585917,

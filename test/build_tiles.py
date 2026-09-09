@@ -731,11 +731,27 @@ def main(argv=None) -> int:
         if not args.legacy:
             idx = idx.merge(sites[["scene", "scene_class", "region_id", "lat", "lon",
                                    "abs_lat", "hpx_regime"]], on="scene", how="left")
-        idx.to_csv(INDEX_PATH if args.resampler == DEFAULT_KERNEL
-                   else INDEX_PATH.with_name(
-                       f"{INDEX_PATH.stem}__{args.resampler}.csv"),
-                   index=False)
-        print(f"\n{len(idx)} tiles indexed -> {INDEX_PATH}")
+        out_index = (INDEX_PATH if args.resampler == DEFAULT_KERNEL
+                     else INDEX_PATH.with_name(
+                         f"{INDEX_PATH.stem}__{args.resampler}.csv"))
+        # A partial run must not replace the published index. update_paper_numbers
+        # reads this file for the region table and the latitude table, so a
+        # `--limit 1` diagnostic once left the paper reporting a single region in
+        # two tables while every other table correctly reported forty. Merge
+        # instead of overwrite, and keep the rows this run did not touch.
+        partial = bool(args.limit or args.regions)
+        if partial and out_index.exists():
+            prev = pd.read_csv(out_index)
+            kept = prev[~prev.scene.isin(set(idx.scene))]
+            idx = pd.concat([kept, idx], ignore_index=True).sort_values("scene")
+            print(f"  partial run: merged {len(kept)} untouched row(s) from the "
+                  f"existing index rather than replacing it")
+        elif partial:
+            print(f"  WARNING: partial run and no existing index; {out_index.name} "
+                  f"will describe only the {len(idx)} region(s) built here. "
+                  f"Re-run over all regions before regenerating paper tables.")
+        idx.to_csv(out_index, index=False)
+        print(f"\n{len(idx)} tiles indexed -> {out_index}")
 
     if failures:
         print(f"\n{len(failures)} region(s) rejected:")
