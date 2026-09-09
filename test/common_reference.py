@@ -163,6 +163,44 @@ class CommonReference:
         out = self.op.invert(vals[self._kept_index])
         return np.asarray(out, dtype=np.float64).reshape(self.shape)
 
+    def read_at_level(self, cell_values, depth: int = 0):
+        """Read the tile on the UTM grid after aggregating it `depth` levels up.
+
+        HEALPix NESTED makes this exact rather than approximate: cells are
+        equal-area, so the value of a parent cell *is* the mean of its four
+        children, and a contiguous NESTED block is laid out so that siblings
+        are adjacent. Aggregating by `reshape(-1, 4**depth).mean(axis=1)` is
+        therefore the level-(L-depth) carrier that would be built from the same
+        transfer, not an approximation of it -- which is what lets the question
+        "is a coarser level enough" be answered from the stored tiles instead of
+        from a second pass over the imagery.
+
+        The read stays the nearest containing cell at every depth, so a coarser
+        level is charged twice: once for what the aggregation discards, once for
+        a coarser read. `level_choice.py` separates the two.
+        """
+        d = int(depth)
+        vals = np.asarray(cell_values, dtype=np.float64).ravel()
+        if vals.size != cfg.N_CHILDREN:
+            raise ValueError(f"expected {cfg.N_CHILDREN} cells, got {vals.size}")
+        if d < 0 or 4 ** d > cfg.N_CHILDREN:
+            raise ValueError(f"depth {d} out of range for this block")
+        if d == 0:
+            return vals[self._safe_index]
+        agg = vals.reshape(-1, 4 ** d).mean(axis=1)
+        idx = np.clip(self._safe_index // (4 ** d), 0, agg.size - 1)
+        return agg[idx]
+
+    @staticmethod
+    def aggregate(cell_values, depth: int = 0):
+        """The level-(L-depth) carrier, and the level-L field it prolongs to."""
+        d = int(depth)
+        vals = np.asarray(cell_values, dtype=np.float64).ravel()
+        if d == 0:
+            return vals, vals
+        agg = vals.reshape(-1, 4 ** d).mean(axis=1)
+        return agg, np.repeat(agg, 4 ** d)
+
     def rmse_on_mask(self, predicted, observed) -> float:
         """RMSE over the two footprints' intersection only."""
         p = np.asarray(predicted, dtype=np.float64)[self.mask]

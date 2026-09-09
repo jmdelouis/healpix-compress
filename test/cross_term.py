@@ -270,7 +270,7 @@ def latex_table(df):
                 f"[{w.rho.quantile(.1):+.2f}, {w.rho.quantile(.9):+.2f}] & "
                 f"{100*m:+.1f} & {100*q:+.1f} \\\\")
     return (
-        "\\begin{table}[t]\n\\centering\n"
+        "\\begin{table*}[t]\n\\centering\n"
         "\\caption{The cross term between the transfer error and the "
         "compression error, measured rather than assumed. Both errors are "
         "taken on the level-20 cells and in the same norm; $\\rho$ is their "
@@ -286,7 +286,7 @@ def latex_table(df):
         "Transfer & Reference & $\\kappa$ & $n$ & median $\\rho$ & "
         "$[10,90]\\%$ & Measured (\\%) & Quadrature (\\%) \\\\\n"
         "\\midrule\n"
-        + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
+        + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:

@@ -375,7 +375,7 @@ def figure(df, kernel, baseline, publish=True):
     print(f"  {name}")
 
 
-SHORT = {"clough_tocher": "C--T", "psf": "PSF", "linear": "bilin.",
+SHORT = {"clough_tocher": "C--T", "psf": "PSF", "linear": "IDW",
          "nearest": "near.", "bicubic": "bicub.", "utm": "UTM",
          "native UTM": "native UTM"}
 
@@ -504,8 +504,10 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
     t1 = (
         "\\begin{table*}[t]\n\\centering\n"
         "\\caption{What the transfer costs to store. C--T is "
-        "\\texttt{clough\\_tocher}, PSF the PSF-aware transfer, bilin.\\ "
-        "bilinear interpolation. Every ratio at a given "
+        "\\texttt{clough\\_tocher}, PSF the PSF-aware transfer, IDW the "
+        "inverse-distance-weighted average over four neighbours that the "
+        "library calls \\texttt{linear} and that "
+        "Section~\\ref{sec:resampler} reports abandoning. Every ratio at a given "
         "target is a paired median over the same regions --- those bracketed "
         "on all sweeps at that target --- so the columns are comparable to one "
         "another. Left block: compressed size relative to the "

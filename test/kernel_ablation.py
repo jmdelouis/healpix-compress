@@ -208,13 +208,22 @@ def run_region(scene: str, kernel: str, store: Path, codecs, targets,
     # on real data. Both diagnostics travel with every row.
     resid = (np.asarray(proj, dtype=np.float64) - obs)[cr.mask]
     resid = resid[np.isfinite(resid)]
-    lo, hi = float(np.min(obs[cr.mask])), float(np.max(obs[cr.mask]))
+    # The range has to be taken over the same ground as the values it judges.
+    # An earlier version compared the whole tile against the range of the
+    # observation restricted to the two footprints' intersection, which is
+    # about four fifths of it: a cell whose ground lies outside that mask can
+    # then sit outside the range with no overshoot at all, and a transfer
+    # whose kernel reaches further picks up more such cells. The 0.95% this
+    # reported for the inverse-distance resampler was that, not an artefact of
+    # the transfer.
+    lo, hi = float(np.nanmin(obs)), float(np.nanmax(obs))
     cd = np.asarray(cell_data, dtype=np.float64)
     row = dict(scene=scene, kernel=kernel, floor=floor,
                floor_frac_of_std=floor / scene_std if scene_std else np.nan,
                floor_p999=(float(np.percentile(np.abs(resid), 99.9) / scene_std)
                            if resid.size and scene_std else np.nan),
                cells_outside_source_range=float(np.mean((cd < lo) | (cd > hi))),
+               source_range_lo=lo, source_range_hi=hi,
                scene_std=scene_std, build_seconds=build_s,
                constant_check=meta.get("resampler_constant_check", np.nan),
                cells_filled=int(meta.get("resampler_cells_filled", 0) or 0),
@@ -535,7 +544,12 @@ def latex_table(df, targets, do_rd):
         "\\begin{table*}[t]\n\\centering\n"
         f"\\caption{{Transfer-kernel ablation. Medians over the "
         f"{df.scene.nunique()} regions swept, which is fewer than the "
-        f"40 the rest of the paper uses. Each row rebuilds the carrier tile "
+        f"40 the rest of the paper uses. Two library names mislead and are "
+        f"spelled out here: \\texttt{{linear}} is an inverse-distance-weighted "
+        f"average over four neighbours, not a linear interpolant, and "
+        f"\\texttt{{bicubic}} is Keys' cubic convolution, whose signed kernel "
+        f"rings outside the local sample range by design -- its row is reported "
+        f"for completeness, not as a finding. Each row rebuilds the carrier tile "
         "from the same native window with a different kernel, with the same "
         "reading operator throughout, so differences between rows are the "
         "transfer alone. \\emph{Transfer} is the error against an analytic "

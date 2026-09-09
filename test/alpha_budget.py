@@ -62,8 +62,59 @@ CLASS_COLOR = {"urban": "#D55E00", "water": "#0072B2",
 
 
 def inflation(alpha):
-    """Fractional growth of the total error from adding a compression error."""
+    """Growth of the total error if the two errors were orthogonal.
+
+    This is the rho = 0 case of sqrt(1 + kappa^2 + 2 rho kappa). cross_term.py
+    measures rho and finds it neither zero nor of one sign: against the observed
+    field it is negative (the codec discards part of the sensor noise the
+    transfer faithfully carried, so the errors partly cancel), and against the
+    latent scene it is positive (there the transfer error is essentially a
+    deficit of high-frequency content -- the blur it did not remove -- and a
+    wavelet coder's error is another, so the two align). The published figure is
+    therefore the measured inflation, with this one beside it.
+    """
     return np.sqrt(1.0 + np.asarray(alpha, dtype=float) ** 2) - 1.0
+
+
+# The oracle of the main sweep picks a wavelet coder at essentially every
+# operating point (JPEG 2000 at 165 of 400, JPEG XL at 150), so the inflation a
+# reader would actually incur is the wavelet one. ZFP stays in cross_term.py as
+# the control that makes the mechanism a mechanism: it does not sort by
+# frequency, its rho is ~0, and it reproduces the orthogonal formula.
+INFLATION_CODEC = "jpeg2000_lossy"
+
+
+def measured_inflation(kappas, reference="latent", codec=INFLATION_CODEC,
+                       n_bins=14):
+    """Interpolate the measured total-error inflation at these kappa values.
+
+    NaN outside the kappa range the cross-term run actually sampled, rather
+    than an extrapolation: a crossing beyond the sweep's reach has no
+    measurement, and saying so is the point.
+    """
+    path = cfg.RESULTS_DIR / "cross_term.csv"
+    nan = np.full(np.shape(kappas), np.nan, dtype=float)
+    if not path.exists():
+        return nan, None
+    d = pd.read_csv(path)
+    if "reference" in d:
+        d = d[d.reference == reference]
+    d = d[(d.codec == codec) & (d.kappa > 0)]
+    if len(d) < 20:
+        return nan, None
+    g = (d.assign(_b=pd.cut(np.log10(d.kappa.to_numpy()), n_bins))
+         .groupby("_b", observed=True)
+         .agg(k=("kappa", "median"), infl=("inflation_measured", "median"),
+              n=("kappa", "size")))
+    g = g[g.n >= 5].sort_values("k")
+    if len(g) < 3:
+        return nan, None
+    kx, ky = g.k.to_numpy(), np.clip(g.infl.to_numpy(), 1e-9, None)
+    q = np.asarray(kappas, dtype=float)
+    out = np.exp(np.interp(np.log(q), np.log(kx), np.log(ky)))
+    out = np.where((q >= kx.min()) & (q <= kx.max()), out, np.nan)
+    return out, (f"{codec} against the {reference} field, "
+                 f"{int(d.scene.nunique())} regions")
 
 
 def load_resampling_error(kernel: str, source: str, denominator: str):
@@ -274,6 +325,13 @@ def _tex_escape(t: str) -> str:
     return t.replace("\\", "").replace("_", r"\_").replace("%", r"\%")
 
 
+def _infl_cell(meas, kap):
+    """Measured inflation with the orthogonal value in parentheses."""
+    q = 100.0 * float(inflation(kap))
+    meas = float(meas)
+    return f"--- ({q:.1f})" if meas != meas else f"{100*meas:.1f} ({q:.1f})"
+
+
 def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
                 kernel):
     """One table, both denominators.
@@ -306,9 +364,10 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
             f"{cls.capitalize()} & ${t:g}$ & {med.loc[t]:.2f} & "
             f"{'yes' if len(win) else 'no'} & "
             f"{own.get(cls, float('nan')):.4f} & {k_own:.2f} & "
-            f"{100*float(inflation(k_own)):.1f} & "
+            f"{_infl_cell(measured_inflation([k_own], 'observed')[0][0], k_own)} & "
             f"{blur.get(cls, float('nan')):.4f} & {k_blur:.2f} & "
-            f"{100*float(inflation(k_blur)):.1f} \\\\")
+            f"{_infl_cell(measured_inflation([k_blur], 'latent')[0][0], k_blur)}"
+            f" \\\\")
     # The closing sentence is computed, never asserted: under one denominator
     # some crossings do cost more than the transfer error itself.
     lo, hi = min(worst_own, worst_blur), max(worst_own, worst_blur)
@@ -340,8 +399,13 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
         "-- the yardstick that applies when the carrier grid is read as if it "
         "were the scene. $\\kappa$ is the compression target as a fraction of "
         "the denominator; the two errors being independent, they add in "
-        "quadrature, so compressing there inflates the product's total error "
-        "by $\\sqrt{1+\\kappa^2}-1$, given as a percentage. The target shown is "
+        "quadrature only if their cross term vanishes, and it does not: "
+        "Section~\\ref{sec:cross_term} measures it negative against the "
+        "observed field and positive against the latent scene. The inflation "
+        "columns are therefore the \\emph{measured} growth of the product's "
+        "total error, with the orthogonal value $\\sqrt{1+\\kappa^2}-1$ in "
+        "parentheses; a dash marks a crossing beyond the range the cross-term "
+        "run sampled. The target shown is "
         "the tightest reported one at which HEALPix is the smaller "
         "representation, or the loosest tested where there is none; it is set "
         "by the ratios alone and so is common to both denominators. "
@@ -353,8 +417,8 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
         "\\multicolumn{3}{c}{Latent scene} \\\\\n"
         "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}\\cmidrule(lr){8-10}\n"
         "Class & Target & HPX/UTM & HPX wins & "
-        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Inflation (\\%) & "
-        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Inflation (\\%) \\\\\n"
+        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% m.\\ (o.) & "
+        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% m.\\ (o.) \\\\\n"
         "\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 
