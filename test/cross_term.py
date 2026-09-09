@@ -77,57 +77,80 @@ def region_rows(scene, store, spectrum, kernels, codecs, lam, children,
     rows = []
     for kernel in kernels:
         estimand = R.ESTIMAND.get(kernel, "observed")
-        truth = (case.latent_cells if estimand == "latent"
-                 else case.observed_cells)
         try:
             val, n_filled = R.transfer_cells(case, kernel, lam=lam)
         except Exception as exc:                          # noqa: BLE001
             print(f"    {kernel:14s} FAILED {type(exc).__name__}: {exc}")
             continue
-        e0 = np.asarray(val, dtype=np.float64) - np.asarray(truth, np.float64)
-        d0 = rms(e0)
-        if not np.isfinite(d0) or d0 == 0:
-            print(f"    {kernel:14s} skipped: zero transfer error")
-            continue
+        val = np.asarray(val, dtype=np.float64)
+
+        # Section V-H reports two denominators, and rho is a different quantity
+        # under each: the compression error's alignment with the error against
+        # the observed field is not its alignment with the error against the
+        # latent scene, which differs from it by the whole instrument blur. The
+        # headline crossing costs are quoted against the latent scene, so
+        # measuring only the transfer's own estimand would leave the figure the
+        # paper actually uses unmeasured.
+        refs = [("observed", case.observed_cells), ("latent", case.latent_cells)]
+        tile = None
+        for ref_name, ref_cells in refs:
+            e0 = val - np.asarray(ref_cells, dtype=np.float64)
+            d0 = rms(e0)
+            if not np.isfinite(d0) or d0 == 0:
+                continue
+            is_own = (ref_name == estimand)
 
         # The refactor that made this script possible moved the field
         # construction out of `measure`. If the published measurement is on
         # disk, check we reproduce its transfer error before trusting anything
         # built on top of it.
-        drift = np.nan
-        if reference_csv is not None:
-            m = reference_csv[(reference_csv.scene == scene)
-                              & (reference_csv.kernel == kernel)]
-            if len(m):
-                ref = float(m.e_resample.iloc[0])
-                drift = abs(d0 - ref) / ref if ref else np.nan
+            drift = np.nan
+            if is_own and reference_csv is not None:
+                m = reference_csv[(reference_csv.scene == scene)
+                                  & (reference_csv.kernel == kernel)]
+                if len(m):
+                    pub = float(m.e_resample.iloc[0])
+                    drift = abs(d0 - pub) / pub if pub else np.nan
 
-        tile = expand_tile(np.asarray(val, dtype=np.float32)).astype(np.float32)
-        for run in codec_lib.iter_runs(tile, codecs):
-            if np.shape(run.reconstruction) != np.shape(tile):
-                continue
-            back = flatten_tile(np.asarray(run.reconstruction, dtype=np.float32))
-            ec = np.asarray(back, dtype=np.float64) - np.asarray(val, np.float64)
-            dc = rms(ec)
-            if not np.isfinite(dc) or dc == 0:
-                continue
-            rho = float(np.mean(e0 * ec) / (d0 * dc))
-            dt = rms(e0 + ec)
-            rows.append(dict(
-                scene=scene, cls=scene.split("__")[1], kernel=kernel,
-                estimand=estimand, codec=run.codec,
-                d0=d0, dc=dc, kappa=dc / d0, rho=rho,
-                inflation_measured=dt / d0 - 1.0,
-                inflation_quadrature=float(np.sqrt(1.0 + (dc / d0) ** 2)) - 1.0,
-                total_bytes=int(run.total_bytes),
-                cells_filled=int(n_filled), d0_drift_vs_published=drift))
-        if verbose and rows:
-            k = [r for r in rows if r["kernel"] == kernel]
-            print(f"    {kernel:14s} D0 {d0:.4e}"
-                  + (f" (published within {100*drift:.2g}%)"
-                     if drift == drift else "")
-                  + f" | {len(k)} operating point(s), "
-                    f"rho median {np.median([r['rho'] for r in k]):+.3f}")
+            # The decoded tile does not depend on the reference, so it is
+            # produced once per kernel and reused for both.
+            if tile is None:
+                tile = expand_tile(val.astype(np.float32)).astype(np.float32)
+                decoded = []
+                for run in codec_lib.iter_runs(tile, codecs):
+                    if np.shape(run.reconstruction) != np.shape(tile):
+                        continue
+                    decoded.append((run.codec, int(run.total_bytes),
+                                    flatten_tile(np.asarray(
+                                        run.reconstruction, dtype=np.float32))))
+            n_here = 0
+            for codec_name, nbytes, back in decoded:
+                ec = np.asarray(back, dtype=np.float64) - val
+                dc = rms(ec)
+                if not np.isfinite(dc) or dc == 0:
+                    continue
+                rho = float(np.mean(e0 * ec) / (d0 * dc))
+                dt = rms(e0 + ec)
+                rows.append(dict(
+                    scene=scene, cls=scene.split("__")[1], kernel=kernel,
+                    estimand=estimand, reference=ref_name, is_own_estimand=is_own,
+                    codec=codec_name,
+                    d0=d0, dc=dc, kappa=dc / d0, rho=rho,
+                    inflation_measured=dt / d0 - 1.0,
+                    inflation_quadrature=float(
+                        np.sqrt(1.0 + (dc / d0) ** 2)) - 1.0,
+                    total_bytes=nbytes,
+                    cells_filled=int(n_filled), d0_drift_vs_published=drift))
+                n_here += 1
+            if verbose:
+                sel = [r for r in rows if r["kernel"] == kernel
+                       and r["reference"] == ref_name]
+                print(f"    {kernel:14s} [{ref_name:8s}"
+                      + ("=own" if is_own else "    ") + f"] D0 {d0:.4e}"
+                      + (f" (published within {100*drift:.2g}%)"
+                         if drift == drift else "")
+                      + f" | {n_here} pt, rho median "
+                        f"{np.median([r['rho'] for r in sel]):+.3f}")
     return rows
 
 
@@ -144,50 +167,66 @@ def summarize(df):
                 f"(region, kernel) pairs" + (" **-- investigate**"
                                              if float(d.max()) > 1e-6 else ""),
                 ""]
-    out += ["## rho by kernel, over all operating points", "",
-            "| kernel | n | median rho | 10th | 90th | share |rho| > 0.1 |",
-            "|---|---|---|---|---|---|"]
-    for k, g in df.groupby("kernel"):
-        out.append(f"| `{k}` | {len(g)} | {g.rho.median():+.3f} | "
+    grp = ["kernel", "reference"] if "reference" in df else ["kernel"]
+    out += ["## rho by transfer and reference", "",
+            "| kernel | reference | n | median rho | 10th | 90th | "
+            "share |rho| > 0.1 |", "|---|---|---|---|---|---|---|"]
+    for key, g in df.groupby(grp):
+        k, ref = (key if isinstance(key, tuple) else (key, "-"))
+        out.append(f"| `{k}` | {ref} | {len(g)} | {g.rho.median():+.3f} | "
                    f"{g.rho.quantile(.1):+.3f} | {g.rho.quantile(.9):+.3f} | "
                    f"{100*float((g.rho.abs() > 0.1).mean()):.0f}% |")
     out += ["", "## what the quadrature assumption costs, near the reported "
             "kappa values", "",
-            "| kernel | kappa | n | measured inflation | quadrature | "
-            "difference |", "|---|---|---|---|---|---|"]
-    for k, g in df.groupby("kernel"):
+            "| kernel | reference | kappa | n | measured | quadrature | "
+            "difference |", "|---|---|---|---|---|---|---|"]
+    for key, g in df.groupby(grp):
+        k, ref = (key if isinstance(key, tuple) else (key, "-"))
         for kap in KAPPA_REPORT:
             w = g[(g.kappa > kap / 1.5) & (g.kappa < kap * 1.5)]
             if len(w) < 5:
                 continue
             m, q = w.inflation_measured.median(), w.inflation_quadrature.median()
-            out.append(f"| `{k}` | ~{kap:g} | {len(w)} | {100*m:+.1f}% | "
-                       f"{100*q:+.1f}% | {100*(m - q):+.1f} pt |")
+            out.append(f"| `{k}` | {ref} | ~{kap:g} | {len(w)} | "
+                       f"{100*m:+.1f}% | {100*q:+.1f}% | {100*(m-q):+.1f} pt |")
     out.append("")
-    rho_all = float(df.rho.median())
-    small = float((df.rho.abs() <= 0.1).mean())
-    if abs(rho_all) <= 0.1 and small >= 0.8:
-        out.append(f"- **The cross term is small**: median $\\rho$ = "
-                   f"{rho_all:+.3f}, and {100*small:.0f}% of operating points "
-                   f"have $|\\rho| \\le 0.1$. Quadrature is then an accurate "
-                   f"description rather than an assumption, and Section V-H "
-                   f"can be stated as a measurement.")
-    else:
-        out.append(f"- **The cross term is not negligible**: median $\\rho$ = "
-                   f"{rho_all:+.3f}, and only {100*small:.0f}% of operating "
-                   f"points have $|\\rho| \\le 0.1$. Section V-H must either "
-                   f"carry $\\rho$ explicitly or be declared a scenario under "
-                   f"an orthogonality assumption.")
+    # What matters is not whether rho is exactly zero but which way it pushes
+    # and by how much: a negative cross term makes the published quadrature
+    # figures an upper bound on the damage, which is a usable statement.
+    for key, g in df.groupby(grp):
+        k, ref = (key if isinstance(key, tuple) else (key, "-"))
+        diffs = []
+        for kap in KAPPA_REPORT:
+            w = g[(g.kappa > kap / 1.5) & (g.kappa < kap * 1.5)]
+            if len(w) >= 5:
+                diffs.append((kap,
+                              float(w.inflation_measured.median()
+                                    - w.inflation_quadrature.median())))
+        if not diffs:
+            continue
+        worst = max(diffs, key=lambda d: abs(d[1]))
+        sign = ("over" if worst[1] < 0 else "under")
+        out.append(
+            f"- `{k}` against the {ref} field: median $\\rho$ = "
+            f"{float(g.rho.median()):+.3f}; quadrature **{sign}states** the "
+            f"inflation, by at most {abs(100*worst[1]):.1f} percentage points "
+            f"(at $\\kappa\\approx{worst[0]:g}$). "
+            + ("Quadrature is therefore a conservative bound on the damage, "
+               "and Section V-H can say so."
+               if worst[1] < 0 else
+               "Quadrature therefore understates the damage and Section V-H "
+               "cannot use it as written."))
     return "\n".join(out)
 
 
 def figure(df, publish=True, name="fig_cross_term"):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.1, 2.9))
-    for k, g in df.groupby("kernel"):
-        ax1.scatter(g.kappa, g.rho, s=6, alpha=0.35, label=k)
-        gg = g.sort_values("kappa")
-        ax2.scatter(gg.kappa, 100 * gg.inflation_measured, s=6, alpha=0.35,
-                    label=k)
+    grp = ["kernel", "reference"] if "reference" in df else ["kernel"]
+    for key, g in df.groupby(grp):
+        lab = " / ".join(key) if isinstance(key, tuple) else str(key)
+        ax1.scatter(g.kappa, g.rho, s=6, alpha=0.35, label=lab)
+        ax2.scatter(g.kappa, 100 * g.inflation_measured, s=6, alpha=0.35,
+                    label=lab)
     kk = np.logspace(-2, 0.6, 200)
     ax2.plot(kk, 100 * (np.sqrt(1 + kk ** 2) - 1), "k-", lw=1.2,
              label=r"$\sqrt{1+\kappa^2}-1$")
@@ -216,14 +255,17 @@ def figure(df, publish=True, name="fig_cross_term"):
 
 def latex_table(df):
     body = []
-    for k, g in sorted(df.groupby("kernel")):
+    grp = ["kernel", "reference"] if "reference" in df else ["kernel"]
+    for key, g in sorted(df.groupby(grp)):
+        k, ref = (key if isinstance(key, tuple) else (key, "-"))
         for kap in KAPPA_REPORT:
             w = g[(g.kappa > kap / 1.5) & (g.kappa < kap * 1.5)]
             if len(w) < 5:
                 continue
             m, q = w.inflation_measured.median(), w.inflation_quadrature.median()
             body.append(
-                f"\\texttt{{{k.replace('_', chr(92)+'_')}}} & ${kap:g}$ & "
+                f"\\texttt{{{k.replace('_', chr(92)+'_')}}} & {ref} & "
+                f"${kap:g}$ & "
                 f"{len(w)} & {w.rho.median():+.3f} & "
                 f"[{w.rho.quantile(.1):+.2f}, {w.rho.quantile(.9):+.2f}] & "
                 f"{100*m:+.1f} & {100*q:+.1f} \\\\")
@@ -240,9 +282,10 @@ def latex_table(df):
         "growth of the product's total error as measured, and as quadrature "
         "predicts it.}\n"
         "\\label{tab:cross_term}\n\\footnotesize\n"
-        "\\begin{tabular}{@{}llrrrrr@{}}\n\\toprule\n"
-        "Transfer & $\\kappa$ & $n$ & median $\\rho$ & $[10,90]\\%$ & "
-        "Measured (\\%) & Quadrature (\\%) \\\\\n\\midrule\n"
+        "\\begin{tabular}{@{}lllrrrrr@{}}\n\\toprule\n"
+        "Transfer & Reference & $\\kappa$ & $n$ & median $\\rho$ & "
+        "$[10,90]\\%$ & Measured (\\%) & Quadrature (\\%) \\\\\n"
+        "\\midrule\n"
         + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
 
 
