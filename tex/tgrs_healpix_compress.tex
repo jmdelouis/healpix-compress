@@ -158,11 +158,11 @@ These two factors are easily confused but answer different questions: \eqref{eq:
 
 \subsection{Compressible Redundancy, Not Missing Information}
 \label{sec:redundancy}
-A direct level-20 representation avoids the nominal undersampling that level 19 would impose, level 19's \SI{12.4}{m} cells being coarser than the \SI{10}{m} product; we do not claim that no spatial detail is lost, which would require a transfer-error analysis this paper does not provide. It is nominally storage-inefficient by the factor of \eqref{eq:alpha}, relative to storing the same ground footprint on its native grid. The question is whether that nominal inefficiency survives compression and a realistic accounting of native-grid storage overhead, or whether it is simply redundant, and therefore compressible, structure. We deliberately avoid claiming that the sensor has ``no information'' at the finer scale in an absolute sense, or that the signal is strictly band-limited -- neither claim is needed for, or demonstrated by, the argument here. The level-20 samples are not independent measurements at \SI{6.2}{m}; they are a redundant representation of a coarser physical signal. Statistical redundancy suggests compressibility but does not guarantee it: how much survives depends on the noise, on the interpolator that produced the samples, and on the codec.
+A direct level-20 representation avoids the nominal undersampling that level 19 would impose, level 19's \SI{12.4}{m} cells being coarser than the \SI{10}{m} product; we do not claim that no spatial detail is lost; Section~\ref{sec:level_choice} measures what a level-19 carrier built from the same transfer would discard, and it is not negligible. It is nominally storage-inefficient by the factor of \eqref{eq:alpha}, relative to storing the same ground footprint on its native grid. The question is whether that nominal inefficiency survives compression and a realistic accounting of native-grid storage overhead, or whether it is simply redundant, and therefore compressible, structure. We deliberately avoid claiming that the sensor has ``no information'' at the finer scale in an absolute sense, or that the signal is strictly band-limited -- neither claim is needed for, or demonstrated by, the argument here. The level-20 samples are not independent measurements at \SI{6.2}{m}; they are a redundant representation of a coarser physical signal. Statistical redundancy suggests compressibility but does not guarantee it: how much survives depends on the noise, on the interpolator that produced the samples, and on the codec.
 
 Two established literatures make the expectation precise, and neither has been brought to bear on carrier-grid storage. The first is approximation-theoretic. The $L_2$ error of representing a continuous field by samples on a grid of step $T$ is governed, to leading order, by an error kernel whose decay is fixed by the representation's approximation order, so refining the step buys a predictable and bounded amount of accuracy rather than an arbitrary one~\cite{blu1999fourier,blu1999approximation}; the modern statement of sampling beyond the strictly band-limited case, which is the regime any real instrument occupies, is due to the same school~\cite{unser2000sampling}. On a field the instrument has already band-limited, refining the grid past the response width therefore adds samples whose values are very nearly determined by their neighbours.
 
-The second literature says what a codec does with such samples. Wavelet coefficient magnitudes persist across scales, and it is that persistence which zerotree coders exploit implicitly~\cite{shapiro1993ezw,said1996spiht}; modelling it explicitly as a hidden Markov tree over the scale hierarchy~\cite{crouse1998hmt}, or coding each coefficient conditioned on its parent~\cite{buccigrossi1999joint}, turns the same structure into bits saved. An added octave carrying almost no variance is precisely the case those models handle best, which is why the oversampling penalty is expected to be much smaller than the factor of~\eqref{eq:alpha}, and why the question is quantitative rather than rhetorical. Section~\ref{sec:support_controls} bears on how little that octave carries, though it cannot settle it: a median of $0.21\%$ of each scene's variance lies above half the native Nyquist. That band, $0.025$--$\SI{0.05}{m^{-1}}$, is not the octave level~20 adds over level~19, which runs from $0.040$ to $\SI{0.080}{m^{-1}}$ and lies mostly \emph{above} the native product's own Nyquist. What the native raster can be asked is whether its own top half is nearly empty, and it is; whether the band beyond it is empty cannot be read off a product that does not represent it.
+The second literature says what a codec does with such samples. Wavelet coefficient magnitudes persist across scales, and it is that persistence which zerotree coders exploit implicitly~\cite{shapiro1993ezw,said1996spiht}; modelling it explicitly as a hidden Markov tree over the scale hierarchy~\cite{crouse1998hmt}, or coding each coefficient conditioned on its parent~\cite{buccigrossi1999joint}, turns the same structure into bits saved. An added octave carrying almost no variance is precisely the case those models handle best, which is why the oversampling penalty is expected to be much smaller than the factor of~\eqref{eq:alpha}, and why the question is quantitative rather than rhetorical. Section~\ref{sec:support_controls} bears on how little that octave carries, though it cannot settle it: a median of $0.21\%$ of each scene's variance lies above half the native Nyquist. That band, $0.025$--$\SI{0.05}{m^{-1}}$, is not the octave level~20 adds over level~19, which runs from $0.040$ to $\SI{0.080}{m^{-1}}$ and lies mostly \emph{above} the native product's own Nyquist. What the native raster can be asked is whether its own top half is nearly empty, and it is; whether the band beyond it is empty cannot be read off a product that does not represent it. It can be read off the carrier, and Section~\ref{sec:level_choice} does so: the octave holds $3.07\%$ of the tile's variance, two orders of magnitude more than a spectral extrapolation of the $0.21\%$ suggests, for a reason given there.
 
 \section{Carrier-Grid Compression Methodology}
 \label{sec:method}
@@ -221,7 +221,7 @@ Each codec is swept over its own native quality parameter (tolerance for ZFP, ab
 
 \subsection{Codec Preference Is Empirical, Not a Demonstrated Quadtree Effect}
 \label{sec:why_quadtree}
-Morton de-interleaving (Section~\ref{sec:morton}) converts a NESTED HEALPix parent chunk into a spatially local 2-D raster, making standard image and array codecs directly applicable. Although the resulting $2\times2$ block structure aligns with HEALPix parent/child groups, the experiments in this paper do not isolate a compression advantage from that alignment: a native UTM raster also supports the same dyadic block/wavelet transforms with no HEALPix structure to speak of, and Section~\ref{sec:results} finds the same shift toward JPEG~2000/JPEG~XL at the most aggressive compression ratios on \emph{both} grids. We therefore treat codec ranking (Section~\ref{sec:results}) as an empirical finding about these codecs on this kind of imagery, not as evidence for a HEALPix-specific quadtree advantage.
+Morton de-interleaving (Section~\ref{sec:morton}) converts a NESTED HEALPix parent chunk into a spatially local 2-D raster, making standard image and array codecs directly applicable. Although the resulting $2\times2$ block structure aligns with HEALPix parent/child groups, the experiments in this paper do not isolate a compression advantage from that alignment: a native UTM raster also supports the same dyadic block/wavelet transforms with no HEALPix structure to speak of, and Section~\ref{sec:results} finds the same shift toward JPEG~2000/JPEG~XL at the most aggressive compression ratios on \emph{both} grids. We therefore treat codec ranking (Section~\ref{sec:results}) as an empirical finding about these codecs on this kind of imagery, not as evidence for a HEALPix-specific quadtree advantage. We also tested for one directly, off the main line of the paper: the ideal-entropy rate of a pyramid built on the quadtree itself, coded with a parent-conditioned context model in the spirit of~\cite{buccigrossi1999joint}, is $1.08\times$ the bytes the best generic codec spends at equal distortion on the same 40 tiles with the exact quadtree Haar, and $0.93\times$ with a quadtree-native CDF~5/3 lifting. Those are bounds that charge nothing for coding, and both lie within what an implementation loses to its own bound. The link between scales is real --- conditioning on the parent saves $5.9\%$ of an order-0 rate, twice the $3.0\%$ an intra-band neighbour saves --- but it is small, and the generic codecs already run a better wavelet on this very quadtree.
 
 \section{Experimental Design}
 \label{sec:design}
@@ -657,6 +657,93 @@ but a reconstructor that interpolates within the carrier raster instead of
 reading the containing cell, which is where the \SI{2.1}{m} of jitter comes
 from. We have not implemented one, and we do not claim to know how much of the
 floor it would remove.
+
+The same read has a second consequence, and it is about rate rather than error.
+A nearest-cell read of a $1024^2$ tile by the $637^2$ crop touches only
+$30.8\%$ of the cells (median over 40 regions, on the intersection mask); the
+rest are the operator's kernel, and whatever a codec writes there never reaches
+the product. We measured how much of a coding error lands in it by using, as
+the error source, a uniform dead-zone quantiser in an orthonormal wavelet domain
+--- chosen because its error is close to white in cell space, the neutral case
+for a kernel --- and bisecting its step onto each codec's own achieved RMSE:
+$68.9\%$ of the error energy lies in cells the product never reads. That does
+not, however, make the product error any smaller. The RMS of the error the read
+transmits is $1.00$ times its RMS over all cells, because a gather leaves the
+error per read pixel unchanged, so a coarser step buys nothing ($0.1\%$ of the
+rate). What the kernel reveals is allocation: bits spent controlling cells
+nothing depends on, a bound of $1/0.308\approx3.2\times$ that a uniform
+quantiser cannot reach. Seen from the sweep, $72.5\%$ of the $2\,080$
+codec operating points reach a cell-space RMSE below the floor of
+Table~\ref{tab:representation_floor}: most of the bits in this study are spent
+below the accuracy the carrier can deliver to its reader.
+
+The matched case behaves differently. On the PSF-transferred tiles of
+Section~\ref{sec:transfer_cost}, read through the forward operator they were
+built for --- which is the matched reader: its floor is $0.558$ times the
+nearest read's on the same tiles, and lower on every one of the 40 regions ---
+the operator attenuates a white coding error to $0.67$ of its cell-space RMS,
+and setting the distortion target on the product instead of on the carrier
+reaches the same product distortion with $20\%$ fewer bytes (median; $4.6\%$
+at the tightest quartile of targets, $36\%$ at the loosest). Three
+qualifications keep this from being a recommendation. It is a property of the
+reader, not of the grid: a gather has a large kernel exactly because the
+carrier is oversampled relative to it, and a better reader closes the kernel
+and the gain with it. White error is the best case for attenuation, and a real
+codec's error is not white at loose targets. And it holds only for a product
+consumed through that operator: the companion study's point is that the small
+scales of the PSF product are real, so noise shaped into the operator's
+stop-band is invisible to the operator and visible to anyone who reads the
+carrier as an image. What the measurement establishes is narrower and, we
+think, more useful: the distortion a carrier-grid study should target is the
+one its reader transmits, and on this carrier the two are not the same
+quantity.
+
+\subsection{What Level 20 Buys Over Level 19}
+\label{sec:level_choice}
+
+Section~\ref{sec:redundancy} chose level 20 on a nominal argument and promised
+the measurement. The measurement is direct, and it is exact rather than
+modelled, for a reason specific to this grid: HEALPix cells are equal-area, so
+the value a level-19 carrier would hold in a cell \emph{is} the mean of the
+four level-20 values inside it, and a contiguous NESTED block lays those four
+out as adjacent elements. Aggregating a stored tile by groups of four is
+therefore the level-19 carrier the same transfer would have produced, not a
+model of it, and the question can be answered from the tiles already built
+without a second pass over the imagery.
+
+Two quantities are separated, because a coarser carrier is charged twice and
+only one of the charges is about information. The first is what the
+aggregation discards: the intra-cell variance, i.e.\ the energy of the three
+detail coefficients of the exact quadtree Haar at level 20. It is $3.07\%$ of
+the tile's variance (median over 40 regions; $2.2\%$ in forest to $7.2\%$ in
+urban scenes), an RMS of $17.5\%$ of the scene's standard deviation, which is
+$1.82$ times the level-20 floor of Table~\ref{tab:representation_floor}. The
+second is the level-19 floor itself, read the same way against the same
+observation: $2.23$ times the level-20 floor (paired median). The two charges
+separate cleanly. The level-19 floor equals the level-20 floor and the
+discarded energy added in quadrature to within $7\%$ (median measured over
+quadrature $1.07$), and the discarded energy alone accounts for $84\%$ of the
+excess variance: the extra error of a level-19 carrier is the information the
+aggregation removes, not a coarser read. Set against the sweep, $88.4\%$ of the
+codec operating points lie below the level-19 floor. Level 19 is not a drop-in
+carrier for this product, and the choice made in Section~\ref{sec:redundancy}
+is now a measurement rather than a nominal argument.
+
+The number is also a caution about the spectral argument that made the
+question look settled the other way. The observed field carries $0.21\%$ of its
+variance above half the native Nyquist (Section~\ref{sec:support_controls}),
+and propagating the fitted slope and response width to the level-19 Nyquist
+puts about $0.03\%$ above it --- two orders of magnitude below what the
+aggregation actually discards. The discrepancy is not in the data. Aggregation
+is not a brick wall at the coarser Nyquist: the residual of a $2\times2$ mean
+has response $1-\cos^2(k_x d/2)\cos^2(k_y d/2)$, which grows as $(kd)^4$ and
+therefore feeds mainly on the shoulder of the spectrum \emph{below} the native
+Nyquist, where the power is. Variance above a Nyquist frequency is not the
+error of sampling below it, and the same fitted spectra predict the discarded
+fraction well only in the ensemble median (predicted $3.4\%$ against $3.1\%$
+measured), not scene by scene, which is one more reason the effective spectral
+model of Section~\ref{sec:support_controls} is reported as an ensemble
+parameter and nothing finer.
 
 \subsection{The Verdict Depends on Which Reference Is Accepted}
 \label{sec:common_reference}
