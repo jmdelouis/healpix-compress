@@ -44,7 +44,23 @@ edge to trade for Haar's poor compaction.
 Rates are ideal entropy-coder bounds -- no coding overhead, no signalling,
 empirical per-tile distributions. That flatters this coder against the measured
 bytes of real codecs on the same tiles, deliberately: a bound that loses is a
-dead idea.
+dead idea, and a bound that wins is necessary but not sufficient.
+
+Two transforms, so that the context result is not confounded with the filter
+-------------------------------------------------------------------------------
+`--transform haar` is the exact quadtree Haar above. `--transform cdf53` is the
+quadtree-native CDF 5/3 of `hcc.compression.quadtree_wavelet`, computed by
+lifting with neighbour lookups in NESTED index space. The distinction matters
+because `expand_tile` is a Morton de-interleave: a level-10 parent's
+descendants *are* a square raster, so JPEG 2000 already runs a 9/7 wavelet on
+this very quadtree. Haar's one vanishing moment against its four is a
+compaction deficit no context model can repay, and running both separates "the
+link between scales pays" from "Haar is the wrong filter".
+
+The CDF 5/3 lifting is not normalised, so each subband is quantised with
+step / gain, the gain measured by pushing a unit impulse through the inverse.
+That is JPEG 2000's own L2-norm weighting, and it is what makes the two
+transforms comparable at one allocation instead of two.
 
 Idea 3, on the same coefficients
 --------------------------------
@@ -92,6 +108,7 @@ import common_reference                 # noqa: E402
 import region_sites                       # noqa: E402
 
 DEPTH_MAX = 6                  # detail at levels 20..15, approximation at 14
+TRANSFORM = "haar"             # or "cdf53": the quadtree-native CDF 5/3
 N_CTX = 6                      # magnitude buckets in a context symbol
 BENCH = "results/hpx_codec_bench.csv"
 ORIENT = ("h", "v", "d")
@@ -149,6 +166,89 @@ def rebuild(a, levels):
     return a
 
 
+class Pyr:
+    """A pyramid on the HEALPix quadtree, with the gains its inverse applies.
+
+    The Haar pyramid is orthonormal, so a coefficient error of e becomes an
+    error of e in the tile and every subband takes the same quantiser step.
+    The CDF 5/3 lifting is *not* normalised: a unit coefficient in subband s
+    reconstructs to a tile perturbation of norm `gain[s]`, which varies here
+    by a factor of seven between subbands. Quantising it with a single step
+    would therefore not be the uniform allocation it is for Haar, and any
+    comparison between the two transforms would be a comparison of
+    allocations instead. Each subband is given step / gain[s], which is the
+    L2-norm weighting JPEG 2000 itself uses, so the two transforms are
+    compared at the same distortion allocation and only the transform
+    differs.
+    """
+
+    def __init__(self, approx, levels, gains, inverse, name, source):
+        self.source = np.asarray(source, dtype=np.float64).ravel()
+        self.approx = approx
+        self.levels = levels
+        self.gains = gains
+        self.inverse = inverse
+        self.name = name
+        self.n_leaf = approx.size * (4 ** len(levels))
+
+    def step_of(self, key, step):
+        return step / self.gains[key]
+
+
+def _cdf53_gains(n, depth, qw):
+    """Synthesis gain of each subband, by pushing a unit impulse through."""
+    zero = np.zeros(n, dtype=np.float64)
+    ll, det = qw.qt_dwt53_forward(zero, levels=depth)
+    ll = np.asarray(ll, dtype=np.float64)
+    det = [tuple(np.asarray(a, dtype=np.float64) for a in d) for d in det]
+
+    def norm(fill):
+        a = np.zeros_like(ll)
+        d = [tuple(np.zeros_like(v) for v in dd) for dd in det]
+        fill(a, d)
+        return float(np.linalg.norm(np.asarray(qw.qt_dwt53_inverse(a, d))))
+
+    gains = {"a": norm(lambda a, d: a.__setitem__(a.size // 2, 1.0))}
+    n_lv = len(det)
+    for j, o in enumerate(ORIENT):
+        for c in range(n_lv):                    # c: coarsest-first index
+            k = n_lv - 1 - c                     # k: finest-first index
+            gains[(k, o)] = norm(
+                lambda a, d, c=c, j=j: d[c][j].__setitem__(d[c][j].size // 2, 1.0))
+    return gains
+
+
+_GAIN_CACHE = {}
+
+
+def build_pyramid(x, depth_max=DEPTH_MAX, transform=TRANSFORM):
+    """The pyramid this run codes, with its per-subband synthesis gains."""
+    x = np.asarray(x, dtype=np.float64).ravel()
+    if transform == "haar":
+        a, levels = pyramid(x, depth_max)
+        gains = {"a": 1.0}
+        gains.update({(k, o): 1.0 for k in range(len(levels)) for o in ORIENT})
+        return Pyr(a, levels, gains, rebuild, "haar", x)
+    if transform != "cdf53":
+        raise ValueError(f"unknown transform {transform!r}")
+
+    from hcc.compression import quadtree_wavelet as qw
+    ll, det = qw.qt_dwt53_forward(x, levels=depth_max)
+    ll = np.asarray(ll, dtype=np.float64)
+    # qt_dwt53 returns details coarsest-first; this module works finest-first
+    levels = [{o: np.asarray(d[j], dtype=np.float64)
+               for j, o in enumerate(ORIENT)} for d in reversed(det)]
+
+    def inverse(a, lv):
+        back = [tuple(lv[k][o] for o in ORIENT) for k in range(len(lv) - 1, -1, -1)]
+        return np.asarray(qw.qt_dwt53_inverse(a, back), dtype=np.float64).ravel()
+
+    key = (x.size, depth_max)
+    if key not in _GAIN_CACHE:
+        _GAIN_CACHE[key] = _cdf53_gains(x.size, depth_max, qw)
+    return Pyr(ll, levels, _GAIN_CACHE[key], inverse, "cdf53", x)
+
+
 # --------------------------------------------------------------------------
 # quantisation, rate, distortion
 # --------------------------------------------------------------------------
@@ -159,28 +259,48 @@ def quantise(c, step):
     return q.astype(np.int64), r
 
 
-def rmse_at(approx, levels, step):
-    """Distortion only -- cheap, so the step can be bisected."""
-    n_leaf = approx.size * (4 ** len(levels))
-    _, r = quantise(approx, step)
-    err2 = float(((approx - r) ** 2).sum())
-    for det in levels:
+def rmse_at(pyr, step):
+    """Distortion only -- cheap, so the step can be bisected.
+
+    Exact for an orthonormal transform. For a biorthogonal one the sum of
+    weighted coefficient errors is the standard L2-norm estimate, and the
+    published RMSE is always the one measured after an actual inverse in
+    `coder_point`, never this.
+    """
+    _, r = quantise(pyr.approx, pyr.step_of("a", step))
+    err2 = float((((pyr.approx - r) * pyr.gains["a"]) ** 2).sum())
+    for k, det in enumerate(pyr.levels):
         for o in ORIENT:
-            _, rr = quantise(det[o], step)
-            err2 += float(((det[o] - rr) ** 2).sum())
-    return float(np.sqrt(err2 / n_leaf))
+            g = pyr.gains[(k, o)]
+            _, rr = quantise(det[o], pyr.step_of((k, o), step))
+            err2 += float((((det[o] - rr) * g) ** 2).sum())
+    return float(np.sqrt(err2 / pyr.n_leaf))
 
 
-def solve_step(approx, levels, target_rmse, sd, iters=34):
-    """Bisect the quantiser step onto a given distortion."""
+def rmse_exact(pyr, step):
+    """Distortion measured by inverting the quantised pyramid."""
+    e = np.asarray(reconstruct(pyr, step), dtype=np.float64).ravel() - pyr.source
+    return float(np.sqrt(np.mean(e ** 2)))
+
+
+def solve_step(pyr, target_rmse, sd, iters=30):
+    """Bisect the quantiser step onto a given distortion.
+
+    The bisection is on the *exact* distortion, not on the L2-norm estimate.
+    For an orthonormal transform the two agree; for a biorthogonal one the
+    estimate lands several percent off target, and since the whole point of
+    running two transforms is to compare their rates at the same distortion,
+    an off-target biorthogonal point would credit it with a saving it did not
+    earn.
+    """
     lo, hi = 1e-8 * sd, 8.0 * sd
     for _ in range(iters):
         mid = float(np.sqrt(lo * hi))
-        if rmse_at(approx, levels, mid) > target_rmse:
+        if rmse_exact(pyr, mid) > target_rmse:
             hi = mid
         else:
             lo = mid
-        if hi / lo < 1.0002:
+        if hi / lo < 1.0005:
             break
     return float(np.sqrt(lo * hi))
 
@@ -233,20 +353,25 @@ def neighbour_bucket(q, n_ctx=N_CTX):
     return bucket(prev, n_ctx)
 
 
-def coder_point(approx, levels, step):
-    """Quantise every subband at one step; return (rmse, bits per model)."""
-    n_leaf = approx.size * (4 ** len(levels))
-    qa, ra = quantise(approx, step)
-    err2 = float(((approx - ra) ** 2).sum())
-    h_a = approx.size * entropy0(qa)          # no parent above the top
+def coder_point(pyr, step):
+    """Quantise every subband; return (rmse, bits per model).
+
+    The RMSE is measured by actually inverting the quantised pyramid, so it
+    is exact for a biorthogonal transform too rather than an L2-norm estimate.
+    """
+    qa, ra = quantise(pyr.approx, pyr.step_of("a", step))
+    dec = []
+    h_a = pyr.approx.size * entropy0(qa)      # no parent above the top
     bits = {k: h_a for k, _ in MODELS}
     prev = {o: None for o in ORIENT}
     per_band = []
+    levels = pyr.levels
+    rec = [dict() for _ in levels]
     for k in range(len(levels) - 1, -1, -1):  # coarsest detail first
         for o in ORIENT:
             c = levels[k][o]
-            q, r = quantise(c, step)
-            err2 += float(((c - r) ** 2).sum())
+            q, r = quantise(c, pyr.step_of((k, o), step))
+            rec[k][o] = r
             nb = neighbour_bucket(q)
             pb = (np.zeros(q.size, dtype=np.int64) if prev[o] is None
                   else np.repeat(bucket(prev[o]), 4))
@@ -260,17 +385,21 @@ def coder_point(approx, levels, step):
                                  nonzero=float((q != 0).mean()),
                                  **{f"bpc_{m}": v for m, v in b.items()}))
             prev[o] = q
-    return float(np.sqrt(err2 / n_leaf)), bits, n_leaf, per_band
+    # exact distortion: invert the quantised pyramid rather than model it
+    dec = pyr.inverse(ra, rec)
+    err = np.asarray(dec, dtype=np.float64).ravel() - pyr.source
+    return (float(np.sqrt(np.mean(err ** 2))), bits, pyr.n_leaf, per_band)
 
 
 # --------------------------------------------------------------------------
 # idea 3: what does the reader never see?
 # --------------------------------------------------------------------------
-def reconstruct(approx, levels, step):
+def reconstruct(pyr, step):
     """The decoded tile at one quantiser step."""
-    _, ra = quantise(approx, step)
-    det = [{o: quantise(lv[o], step)[1] for o in ORIENT} for lv in levels]
-    return rebuild(ra, det)
+    _, ra = quantise(pyr.approx, pyr.step_of("a", step))
+    det = [{o: quantise(lv[o], pyr.step_of((k, o), step))[1] for o in ORIENT}
+           for k, lv in enumerate(pyr.levels)]
+    return pyr.inverse(ra, det)
 
 
 def rms_masked(field, mask):
@@ -308,7 +437,7 @@ def kernel_energy(cr, e_cells):
             float(sup.mean()))
 
 
-def solve_step_product(cr, approx, levels, x, target_rmse, seed, iters=20):
+def solve_step_product(cr, pyr, x, target_rmse, seed, iters=20):
     """Bisect the step so the *product-level* error hits the target.
 
     The bits saved between this step and the cell-matched one are what a coder
@@ -319,7 +448,7 @@ def solve_step_product(cr, approx, levels, x, target_rmse, seed, iters=20):
     lo, hi = seed / 64.0, seed * 64.0
     for _ in range(iters):
         mid = float(np.sqrt(lo * hi))
-        e = reconstruct(approx, levels, mid) - x
+        e = reconstruct(pyr, mid) - x
         if rms_masked(cr.predict(e), cr.mask) > target_rmse:
             hi = mid
         else:
@@ -329,13 +458,14 @@ def solve_step_product(cr, approx, levels, x, target_rmse, seed, iters=20):
     return float(np.sqrt(lo * hi))
 
 
-def zerotree_stats(levels, step):
+def zerotree_stats(pyr, step):
     """P(child = 0 | parent = 0) against P(child = 0): the zerotree premise."""
+    levels = pyr.levels
     out = []
     for k in range(len(levels) - 1, 0, -1):
         for o in ORIENT:
-            qp, _ = quantise(levels[k][o], step)
-            qc, _ = quantise(levels[k - 1][o], step)
+            qp, _ = quantise(levels[k][o], pyr.step_of((k, o), step))
+            qc, _ = quantise(levels[k - 1][o], pyr.step_of((k - 1, o), step))
             pz = np.repeat(qp == 0, 4)
             if pz.all() or not pz.any():
                 continue
@@ -348,7 +478,7 @@ def zerotree_stats(levels, step):
 
 
 # --------------------------------------------------------------------------
-def region_rows(scene, front, verbose=True):
+def region_rows(scene, front, verbose=True, transform=TRANSFORM):
     cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene)
     x = np.asarray(cell_data, dtype=np.float64).ravel()
     if x.size != cfg.N_CHILDREN:
@@ -356,24 +486,26 @@ def region_rows(scene, front, verbose=True):
     sd = float(np.std(x))
     if not np.isfinite(sd) or sd <= 0:
         raise ValueError("degenerate tile")
-    approx, levels = pyramid(x)
+    pyr = build_pyramid(x, DEPTH_MAX, transform)
 
     # The transform must be exact before anything measured from it means
     # anything.
-    rt = float(np.max(np.abs(rebuild(approx, levels) - x)))
+    rt = float(np.max(np.abs(np.asarray(
+        pyr.inverse(pyr.approx, pyr.levels)).ravel() - x)))
     scale = max(1.0, float(np.max(np.abs(x))))
     if rt > 1e-9 * scale:
         raise RuntimeError(f"Haar round-trip error {rt:.3e}")
 
     cls = scene.split("__")[1]
     energies = [dict(scene=scene, cls=cls, level=cfg.LEVEL - k, orient=o,
-                     n_coef=levels[k][o].size,
-                     var_frac=float((levels[k][o] ** 2).sum()
-                                    / (x.size * sd ** 2)))
-                for k in range(len(levels)) for o in ORIENT]
+                     transform=pyr.name, n_coef=pyr.levels[k][o].size,
+                     var_frac=float(((pyr.levels[k][o] * pyr.gains[(k, o)]) ** 2
+                                     ).sum() / (x.size * sd ** 2)))
+                for k in range(len(pyr.levels)) for o in ORIENT]
     energies.append(dict(scene=scene, cls=cls, level=cfg.LEVEL - DEPTH_MAX,
-                         orient="a", n_coef=approx.size,
-                         var_frac=float(((approx - approx.mean()) ** 2).sum()
+                         orient="a", transform=pyr.name, n_coef=pyr.approx.size,
+                         var_frac=float((((pyr.approx - pyr.approx.mean())
+                                          * pyr.gains["a"]) ** 2).sum()
                                         / (x.size * sd ** 2))))
 
     obs = np.asarray(utm_crop, dtype=np.float64)
@@ -398,9 +530,10 @@ def region_rows(scene, front, verbose=True):
                                    np.geomspace(1e-4 * sd, 0.5 * sd, 6)]
     rows, ztree, bands, reads = [], [], [], list(failures)
     for target_rmse, ref_bytes in targets:
-        step = solve_step(approx, levels, target_rmse, sd)
-        rmse, bits, n_leaf, per_band = coder_point(approx, levels, step)
-        row = dict(scene=scene, cls=cls, step=step, target_rmse=target_rmse,
+        step = solve_step(pyr, target_rmse, sd)
+        rmse, bits, n_leaf, per_band = coder_point(pyr, step)
+        row = dict(scene=scene, cls=cls, transform=pyr.name, step=step,
+                   target_rmse=target_rmse,
                    rmse=rmse, tile_std=sd, n_coef=n_leaf, ref_bytes=ref_bytes)
         for m, _ in MODELS:
             row[f"bits_{m}"] = bits[m]
@@ -415,20 +548,20 @@ def region_rows(scene, front, verbose=True):
         row["gain_parent_over_neighbour"] = (
             1.0 - bits["both"] / bits["neighbour"])
         # --- idea 3: the reader's kernel and its attenuation -----------
-        e = reconstruct(approx, levels, step) - x
+        e = reconstruct(pyr, step) - x
         for name, (cr, floor) in crs.items():
             t = transmission(cr, e)
             ker, sup = kernel_energy(cr, e)
-            rec = dict(scene=scene, cls=cls, reader=name,
+            rec = dict(scene=scene, cls=cls, transform=pyr.name, reader=name,
                        target_rmse=target_rmse, rmse_cell=rmse,
                        rmse_product=t * rmse if t == t else np.nan,
                        transmission=t, kernel_energy_frac=ker,
                        support_fraction=sup, reader_floor=floor,
                        bits_cell=bits["both"], error="")
             if t == t and t > 0 and t < 0.999:
-                s2 = solve_step_product(cr, approx, levels, x, target_rmse,
+                s2 = solve_step_product(cr, pyr, x, target_rmse,
                                         seed=step / t)
-                _, b2, _, _ = coder_point(approx, levels, s2)
+                _, b2, _, _ = coder_point(pyr, s2)
                 rec["step_product"] = s2
                 rec["bits_product"] = b2["both"]
                 rec["gain_product_target"] = 1.0 - b2["both"] / bits["both"]
@@ -436,7 +569,7 @@ def region_rows(scene, front, verbose=True):
 
         rows.append(row)
         ztree += [dict(scene=scene, target_rmse=target_rmse, **z)
-                  for z in zerotree_stats(levels, step)]
+                  for z in zerotree_stats(pyr, step)]
         bands += [dict(scene=scene, cls=cls, target_rmse=target_rmse, **b)
                   for b in per_band]
         if verbose:
@@ -574,7 +707,10 @@ def summarize(df, en, zt, rd=None):
                        f"overhead, signalling, or the loss from a per-tile "
                        f"adaptive model.")
     if rd is not None and len(rd):
-        rd = rd[rd.get("error", "").eq("")] if "error" in rd else rd
+        if "error" in rd:
+            # an empty marker round-trips through CSV as NaN, so a bare
+            # .eq("") would silently drop every good row
+            rd = rd[rd["error"].fillna("").astype(str).str.len() == 0]
         out += ["", "## Idea 3: what the reader never sees", "",
                 "| reader | floor | transmission ||Re||/||e|| | error energy in "
                 "ker(R) | cells R can reach | rate saved by a product "
@@ -588,6 +724,26 @@ def summarize(df, en, zt, rd=None):
                        f"{100*g.kernel_energy_frac.median():.1f}% | "
                        f"{100*g.support_fraction.median():.1f}% | {gtxt} |")
         out.append("")
+        # Column-wise medians hide a paired comparison. A reader whose own
+        # floor is worse than the nearest read's is reading a carrier it was
+        # not matched to, and its transmission then prices noise against the
+        # wrong estimand.
+        piv = rd.pivot_table(index="scene", columns="reader",
+                             values="reader_floor", aggfunc="median")
+        if "nearest" in piv:
+            for name in [c for c in piv.columns if c != "nearest"]:
+                ratio = (piv[name] / piv["nearest"]).dropna()
+                if not len(ratio):
+                    continue
+                worse = int((ratio > 1).sum())
+                out.append(
+                    f"- paired floors, {name} over nearest: median "
+                    f"{ratio.median():.3f}, worse on {worse}/{len(ratio)} "
+                    f"regions" + ("  **-- this reader is not matched to the "
+                                  "carrier these tiles were built with, so its "
+                                  "numbers below price noise against the wrong "
+                                  "estimand**" if ratio.median() > 1.02 else ""))
+            out.append("")
         for name, g in rd.groupby("reader"):
             t = float(g.transmission.median())
             ker = float(g.kernel_energy_frac.median())
@@ -685,7 +841,17 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--regions", nargs="*", default=None)
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--transform", choices=("haar", "cdf53"), default=TRANSFORM,
+                    help="haar is the exact quadtree Haar; cdf53 is the "
+                         "quadtree-native CDF 5/3 of hcc.compression."
+                         "quadtree_wavelet, i.e. JPEG 2000's own filter on "
+                         "this quadtree")
+    ap.add_argument("--tag", default=None,
+                    help="suffix for the result files; defaults to the "
+                         "transform when it is not the default")
     args = ap.parse_args(argv)
+    tag = args.tag if args.tag is not None else (
+        "" if args.transform == "haar" else f"_{args.transform}")
 
     scenes = args.regions or list(region_sites.load_sites()["scene"])
     scenes = [s for s in scenes if build_tiles.tile_path(s).exists()]
@@ -703,7 +869,7 @@ def main(argv=None) -> int:
     for s in scenes:
         print(f"  {s}")
         try:
-            r, e, z, b, k = region_rows(s, front)
+            r, e, z, b, k = region_rows(s, front, transform=args.transform)
         except Exception as exc:            # noqa: BLE001
             print(f"    skipped: {exc}")
             continue
@@ -731,15 +897,16 @@ def main(argv=None) -> int:
     zt = pd.DataFrame(zts)
     bd = pd.DataFrame(bands)
     rd = pd.DataFrame(reads)
-    df.to_csv("results/interscale.csv", index=False)
-    en.to_csv("results/interscale_energy.csv", index=False)
-    zt.to_csv("results/interscale_zerotree.csv", index=False)
-    bd.to_csv("results/interscale_bands.csv", index=False)
-    rd.to_csv("results/interscale_reader.csv", index=False)
+    df.to_csv(f"results/interscale{tag}.csv", index=False)
+    en.to_csv(f"results/interscale_energy{tag}.csv", index=False)
+    zt.to_csv(f"results/interscale_zerotree{tag}.csv", index=False)
+    bd.to_csv(f"results/interscale_bands{tag}.csv", index=False)
+    rd.to_csv(f"results/interscale_reader{tag}.csv", index=False)
     md = summarize(df, en, zt, rd)
-    with open("results/interscale.md", "w", encoding="utf-8") as fh:
+    with open(f"results/interscale{tag}.md", "w", encoding="utf-8") as fh:
         fh.write(md)
-    figure(df, en, rd)
+    figure(df, en, rd,
+           path=f"figures/fig_interscale{tag}.pdf")
     print("\n" + md)
     return 0
 

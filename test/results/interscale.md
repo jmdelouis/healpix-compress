@@ -67,6 +67,8 @@
 | nearest | 4.038e-03 | 1.002 | 68.9% | 30.8% | 0.1% |
 | psf | 3.863e-03 | 0.382 | 18.6% | 81.2% | 42.3% |
 
+- paired floors, psf over nearest: median 1.188, worse on 33/40 regions  **-- this reader is not matched to the carrier these tiles were built with, so its numbers below price noise against the wrong estimand**
+
 - **nearest**: transmission 1.00 with 69% of the error energy in the kernel. The kernel does not make the product error smaller -- it reveals wasted rate. The product depends on 30.8% of the cells, so at high rate a reader-aware coder has a bound of about 3.2x on rate, and it is a bound on *allocation*, not something a coarser step buys.
 - **psf**: transmission 0.38. This reader *attenuates* a white coding error rather than ignoring particular cells, so the same product distortion is reached with a coarser step -- a saving that needs no new codec, only the target expressed on the product.
 
