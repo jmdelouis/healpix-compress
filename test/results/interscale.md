@@ -59,3 +59,15 @@
 | parent + neighbour | 1.08 |
 
 - At equal distortion the pyramid's *entropy bound* is 1.08 times the bytes real codecs actually spend on the same tiles. A bound above one is decisive against the design: no implementation can reach its own bound, and this one is already losing.
+
+## Idea 3: what the reader never sees
+
+| reader | floor | transmission ||Re||/||e|| | error energy in ker(R) | cells R can reach | rate saved by a product target |
+|---|---|---|---|---|---|
+| nearest | 4.038e-03 | 1.002 | 68.9% | 30.8% | 0.1% |
+| psf | 3.863e-03 | 0.382 | 18.6% | 81.2% | 42.3% |
+
+- **nearest**: transmission 1.00 with 69% of the error energy in the kernel. The kernel does not make the product error smaller -- it reveals wasted rate. The product depends on 30.8% of the cells, so at high rate a reader-aware coder has a bound of about 3.2x on rate, and it is a bound on *allocation*, not something a coarser step buys.
+- **psf**: transmission 0.38. This reader *attenuates* a white coding error rather than ignoring particular cells, so the same product distortion is reached with a coarser step -- a saving that needs no new codec, only the target expressed on the product.
+
+- The gain is a property of the *reader*, not of HEALPix. A gather read has a large kernel exactly because the carrier is oversampled relative to it, which is what Section V-F calls the dominant error; fixing the reader closes the kernel and removes this gain with it. Shaping coding noise into a smoothing reader's stopband is the safer half, and it is safe only for a product consumed through that operator: the companion's point is that the small scales there are real, so a viewer reading the carrier as an image would see the noise put in.
