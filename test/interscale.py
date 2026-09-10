@@ -478,8 +478,10 @@ def zerotree_stats(pyr, step):
 
 
 # --------------------------------------------------------------------------
-def region_rows(scene, front, verbose=True, transform=TRANSFORM):
-    cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene)
+def region_rows(scene, front, verbose=True, transform=TRANSFORM,
+                kernel=None):
+    kernel = kernel or build_tiles.DEFAULT_KERNEL
+    cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene, kernel)
     x = np.asarray(cell_data, dtype=np.float64).ravel()
     if x.size != cfg.N_CHILDREN:
         raise ValueError(f"{x.size} cells, expected {cfg.N_CHILDREN}")
@@ -532,8 +534,8 @@ def region_rows(scene, front, verbose=True, transform=TRANSFORM):
     for target_rmse, ref_bytes in targets:
         step = solve_step(pyr, target_rmse, sd)
         rmse, bits, n_leaf, per_band = coder_point(pyr, step)
-        row = dict(scene=scene, cls=cls, transform=pyr.name, step=step,
-                   target_rmse=target_rmse,
+        row = dict(scene=scene, cls=cls, transform=pyr.name, kernel=kernel,
+                   step=step, target_rmse=target_rmse,
                    rmse=rmse, tile_std=sd, n_coef=n_leaf, ref_bytes=ref_bytes)
         for m, _ in MODELS:
             row[f"bits_{m}"] = bits[m]
@@ -552,7 +554,8 @@ def region_rows(scene, front, verbose=True, transform=TRANSFORM):
         for name, (cr, floor) in crs.items():
             t = transmission(cr, e)
             ker, sup = kernel_energy(cr, e)
-            rec = dict(scene=scene, cls=cls, transform=pyr.name, reader=name,
+            rec = dict(scene=scene, cls=cls, transform=pyr.name, kernel=kernel,
+                       reader=name,
                        target_rmse=target_rmse, rmse_cell=rmse,
                        rmse_product=t * rmse if t == t else np.nan,
                        transmission=t, kernel_energy_frac=ker,
@@ -613,9 +616,14 @@ def summarize(df, en, zt, rd=None):
     n = en.scene.nunique()
     out = ["# Does the link between scales pay?", "",
            f"- regions: {n}; rates are ideal entropy bounds, so they flatter "
-           f"this coder against the measured bytes of real codecs", ""]
+           f"this coder against the measured bytes of real codecs",
+           f"- transform {df['transform'].iloc[0] if 'transform' in df else 'haar'}, "
+           f"tiles {df['kernel'].iloc[0] if 'kernel' in df else 'clough_tocher'}",
+           ""]
 
-    out += ["## Subband energy of the exact HEALPix Haar pyramid", "",
+    tr = df["transform"].iloc[0] if "transform" in df else "haar"
+    name = {"haar": "exact HEALPix Haar", "cdf53": "quadtree CDF 5/3"}.get(tr, tr)
+    out += [f"## Subband energy of the {name} pyramid", "",
             "| level | coefficients | % of cells | % of variance |",
             "|---|---|---|---|"]
     g = en.groupby(["level", "orient"]).agg(nc=("n_coef", "mean"),
@@ -846,12 +854,22 @@ def main(argv=None) -> int:
                          "quadtree-native CDF 5/3 of hcc.compression."
                          "quadtree_wavelet, i.e. JPEG 2000's own filter on "
                          "this quadtree")
+    ap.add_argument("--kernel", default=None,
+                    choices=list(build_tiles.KERNELS),
+                    help="which transfer's tiles to read (default: the "
+                         "paper's Clough-Tocher tiles). Idea 3's PSF reader "
+                         "is matched only to the PSF carrier, so its numbers "
+                         "are meaningful only with --kernel psf")
     ap.add_argument("--tag", default=None,
                     help="suffix for the result files; defaults to the "
                          "transform when it is not the default")
     args = ap.parse_args(argv)
-    tag = args.tag if args.tag is not None else (
-        "" if args.transform == "haar" else f"_{args.transform}")
+    if args.tag is not None:
+        tag = args.tag
+    else:
+        tag = "" if args.transform == "haar" else f"_{args.transform}"
+        if args.kernel and args.kernel != build_tiles.DEFAULT_KERNEL:
+            tag += f"_{args.kernel}"
 
     scenes = args.regions or list(region_sites.load_sites()["scene"])
     scenes = [s for s in scenes if build_tiles.tile_path(s).exists()]
@@ -861,7 +879,10 @@ def main(argv=None) -> int:
         print(f"no tile under {cfg.TILE_DIR}; run build_tiles.py first")
         return 1
 
-    front = pareto_front()
+    bench = BENCH
+    if args.kernel and args.kernel != build_tiles.DEFAULT_KERNEL:
+        bench = BENCH.replace(".csv", f"__{args.kernel}.csv")
+    front = pareto_front(bench)
     print(f"{len(scenes)} region(s), pyramid depth {DEPTH_MAX} "
           f"(levels {cfg.LEVEL}..{cfg.LEVEL - DEPTH_MAX + 1} detail)")
 
@@ -869,7 +890,8 @@ def main(argv=None) -> int:
     for s in scenes:
         print(f"  {s}")
         try:
-            r, e, z, b, k = region_rows(s, front, transform=args.transform)
+            r, e, z, b, k = region_rows(s, front, transform=args.transform,
+                                        kernel=args.kernel)
         except Exception as exc:            # noqa: BLE001
             print(f"    skipped: {exc}")
             continue

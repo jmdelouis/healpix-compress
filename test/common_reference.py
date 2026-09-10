@@ -149,10 +149,19 @@ class CommonReference:
         import inspect
 
         import healpix_resample as hr
-        try:
-            fwhm_to_scale = hr.fwhm_to_scale
-        except AttributeError:
-            from healpix_resample.psf_geometry import fwhm_to_scale
+        # The companion package is under active development and its helper
+        # module has already moved once between two runs of the same day. The
+        # width conversion is the plain Gaussian one (checked against the
+        # companion's own values: 11.921 m FWHM -> 5.0625 m, ratio 2.3548), so
+        # it is computed here when neither import resolves, rather than
+        # letting the reader disappear from a run.
+        fwhm_to_scale = getattr(hr, "fwhm_to_scale", None)
+        if fwhm_to_scale is None:
+            try:
+                from healpix_resample.psf_geometry import fwhm_to_scale
+            except ImportError:
+                def fwhm_to_scale(f):
+                    return float(f) / (2.0 * np.sqrt(2.0 * np.log(2.0)))
         self.scale_m = float(fwhm_to_scale(fwhm_m))
         cls = hr.PSFResampler if self.mode == "psf" else hr.KNeighborsResampler
         accepted = set(inspect.signature(cls.__init__).parameters)
@@ -162,14 +171,12 @@ class CommonReference:
                   verbose=verbose)
         if "sigma_m" in accepted:
             kw["sigma_m"] = self.scale_m
-        if "npt" in accepted:
-            if npt is None:
-                from healpix_resample.psf_geometry import recommend_npt
-                npt = int(recommend_npt(self.scale_m, cfg.LEVEL)["npt"])
+        # npt is passed only when the caller chose one; otherwise the class's
+        # own default applies, exactly as in build_tiles.make_resampler. The
+        # old code derived it from a helper that no longer imports.
+        if npt is not None and "npt" in accepted:
             kw["npt"] = int(npt)
-            self.npt = int(npt)
-        else:
-            self.npt = None
+        self.npt = int(npt) if (npt is not None and "npt" in accepted) else None
         missing = [k for k in kw if k not in accepted]
         if missing and not any(
                 pr.kind is inspect.Parameter.VAR_KEYWORD
