@@ -19,7 +19,8 @@ dependencies = [
   "zfpy",
   "pysz",
   "zstandard",
-  "pillow"
+  "pillow",
+  "healpix-resample",
 ]
 dynamic = ["version"]
 

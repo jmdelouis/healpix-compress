@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\caption{Why the transfers differ: not in how much they carry, but in how compactly. Transfers are labelled as in Table~\ref{tab:transfer_cost}. The second column is each raster's own lossless size, which separates the HEALPix rasters by at most a few percent. The rest is the compressed size at each target as a fraction of that same lossless size, so the entropy difference divides out and what remains is how much of the content a lossy coder can discard. A curvature-minimising $C^1$ interpolant concentrates its energy in coarse coefficients; a $C^0$ transfer leaves gradient discontinuities at cell boundaries and a deconvolving one restores fine structure and amplifies noise with it, and both put energy where a coder targeting an RMSE has to keep it.}
+\label{tab:compactability}
+\footnotesize
+\begin{tabular}{@{}l r rrrrr@{}}
+\toprule
+ & Lossless & \multicolumn{5}{c}{Fraction of that lossless size} \\
+\cmidrule(lr){3-7}
+Transfer & (MB) & $0.0001$ & $0.0003$ & $0.001$ & $0.003$ & $0.01$ \\
+\midrule
+C--T & 1.31 & 0.482 & 0.321 & 0.156 & 0.054 & 0.011 \\
+PSF & 1.36 & 0.577 & 0.410 & 0.245 & 0.123 & 0.025 \\
+bilin. & 1.41 & 0.551 & 0.387 & 0.237 & 0.110 & 0.023 \\
+native UTM & 0.37 & 0.819 & 0.584 & 0.349 & 0.157 & 0.034 \\
+\bottomrule
+\end{tabular}
+\end{table}
