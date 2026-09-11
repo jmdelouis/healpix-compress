@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering
-\caption{The transfer-and-read floor under three readers, on 40 regions (\emph{bilinear} on 25, the others on all): the RMSE of the \emph{uncompressed} carrier, read on the native pixels of the footprints' intersection, against the Sentinel-2 observation. \emph{nearest} is the containing cell, the read used throughout the paper; \emph{bilinear} interpolates within the carrier's own lattice at sub-cell position; \emph{psf} is the companion's forward operator, reported only on the tiles it is matched to. Ratios are paired per region, then the median is taken.}
+\caption{The transfer-and-read floor under three readers, on 40 regions: the RMSE of the \emph{uncompressed} carrier, read on the native pixels of the footprints' intersection, against the Sentinel-2 observation. \emph{nearest} is the containing cell, the read used throughout the paper; \emph{bilinear} interpolates within the carrier's own lattice at sub-cell position; \emph{psf} is the companion's forward operator, reported only on the tiles it is matched to. Ratios are paired per region, then the median is taken.}
 \label{tab:reader_floor}
 \footnotesize
 \begin{tabular}{@{}llrrr@{}}
@@ -8,13 +8,13 @@
 Tiles & Reader & Floor & \% of std & Cells read \\
 \midrule
 Clough--Tocher & nearest & 4.04e-03 & 10.0 & 30.8\% \\
-Clough--Tocher & bilinear & 1.87e-03 & 5.0 & 78.4\% \\
+Clough--Tocher & bilinear & 1.94e-03 & 5.9 & 78.4\% \\
 PSF & nearest & 7.83e-03 & 23.6 & 30.8\% \\
-PSF & bilinear & 3.50e-03 & 11.2 & 78.4\% \\
+PSF & bilinear & 4.29e-03 & 13.8 & 78.4\% \\
 PSF & psf & 4.44e-03 & 13.2 & 81.1\% \\
 \midrule
-\multicolumn{2}{@{}l}{Clough--Tocher: bilinear / nearest} & 0.579 & \multicolumn{2}{l@{}}{read share of variance 66\%} \\
-\multicolumn{2}{@{}l}{PSF: bilinear / nearest} & 0.574 & \multicolumn{2}{l@{}}{read share of variance 67\%} \\
+\multicolumn{2}{@{}l}{Clough--Tocher: bilinear / nearest} & 0.582 & \multicolumn{2}{l@{}}{read share of variance 66\%} \\
+\multicolumn{2}{@{}l}{PSF: bilinear / nearest} & 0.581 & \multicolumn{2}{l@{}}{read share of variance 66\%} \\
 \bottomrule
 \end{tabular}
 \end{table}

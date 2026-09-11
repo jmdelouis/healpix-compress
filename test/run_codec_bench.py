@@ -92,9 +92,31 @@ def kernel_tag(kernel: str) -> str:
     return "" if kernel == build_tiles.DEFAULT_KERNEL else f"__{kernel}"
 
 
+def reader_tag(cr_mode: str) -> str:
+    """Suffix for every HEALPix-side artefact a non-default reader produces.
+
+    `rmse_common` is computed by reading the decoded tile on the native pixels,
+    so it depends on the reader, and a sweep scored through the interpolating
+    read must not overwrite the parts of the sweep scored through the nearest
+    read: they are two measurements of the same tiles. The nearest read keeps
+    the unsuffixed names, so nothing already published moves.
+    """
+    return "" if cr_mode in (None, "nearest") else f"__{cr_mode}"
+
+
+def run_tag(kernel: str, cr_mode: str = "nearest") -> str:
+    return kernel_tag(kernel) + reader_tag(cr_mode)
+
+
 def part_path(grid: str, scene: str,
-              kernel: str = build_tiles.DEFAULT_KERNEL) -> Path:
-    return cfg.PARTS_DIR / f"{grid}{kernel_tag(kernel)}__{scene}.csv"
+              kernel: str = build_tiles.DEFAULT_KERNEL,
+              cr_mode: str = "nearest") -> Path:
+    # The UTM side is scored on the intersection mask alone, which does not
+    # depend on how the HEALPix tile is read (the mask is the footprint
+    # overlap, eroded), so its part is the same whatever the reader and is
+    # never re-swept for a change of reader.
+    tag = kernel_tag(kernel) if grid == "utm" else run_tag(kernel, cr_mode)
+    return cfg.PARTS_DIR / f"{grid}{tag}__{scene}.csv"
 
 
 def _tile_arrays(scene: str, kernel: str = build_tiles.DEFAULT_KERNEL):
@@ -112,11 +134,21 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
     from hcc.compression.zorder import flatten_tile
 
     todo = [g for g in grids
-            if force or not part_path(g, scene, kernel).exists()]
+            if force or not part_path(g, scene, kernel, cr_mode).exists()]
     if not todo and not common_ref:
         return [], None
     if common_ref and "utm" not in todo and "utm" in grids:
-        todo.append("utm")   # the UTM side must be re-scored on the same mask
+        # The UTM side must carry rmse_common on the same mask. It is
+        # reader-independent, so an existing part that already has the column
+        # is reused rather than re-encoded; one produced without
+        # --common-reference is not.
+        try:
+            cols = pd.read_csv(part_path("utm", scene, kernel), nrows=1).columns
+            have = "rmse_common" in cols
+        except Exception:                                  # noqa: BLE001
+            have = False
+        if not have:
+            todo.append("utm")
 
     cell_ids, cell_data, hpx_tile, utm_tile, meta, npz = _tile_arrays(scene, kernel)
     base = {k: site.get(k, "") for k in META_COLS}
@@ -172,29 +204,33 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
                                           else np.nan)
             rows.append(r)
         df = pd.DataFrame(rows)
-        df.to_csv(part_path(grid, scene, kernel), index=False)
+        pp = part_path(grid, scene, kernel, cr_mode)
+        df.to_csv(pp, index=False)
         attempted = sum(v["attempted"] for v in stats.values())
-        (part_path(grid, scene, kernel).with_suffix(".skips.json")
-         ).write_text(json.dumps(stats, indent=2), encoding="utf-8")
-        print(f"    {grid}: {len(df)}/{attempted} sweep points -> "
-              f"{part_path(grid, scene, kernel).name}")
+        pp.with_suffix(".skips.json").write_text(json.dumps(stats, indent=2),
+                                                 encoding="utf-8")
+        print(f"    {grid}: {len(df)}/{attempted} sweep points -> {pp.name}")
         # A codec that produced nothing on one grid but works on the other is
         # not a detail: the oracle-best comparison would then be decided by
         # which codec was evaluable rather than by which one was better.
         empty = [c for c, v in stats.items() if v["ok"] == 0]
         if empty:
             print(f"    WARNING [{grid}] no usable point for: {', '.join(empty)}"
-                  f" -- see {part_path(grid, scene, kernel).with_suffix('.skips.json').name}")
+                  f" -- see {pp.with_suffix('.skips.json').name}")
         all_rows.extend(rows)
     return all_rows, floor_row
 
 
-def assemble(kernel: str = build_tiles.DEFAULT_KERNEL):
-    """Concatenate the part files into the two CSVs the analysis reads."""
+def assemble(kernel: str = build_tiles.DEFAULT_KERNEL, cr_mode: str = "nearest"):
+    """Concatenate the part files into the two CSVs the analysis reads.
+
+    A non-default reader assembles its own HEALPix-side CSV and reuses the
+    UTM-side one, which does not depend on the reader (see `part_path`).
+    """
     out = {}
-    tag = kernel_tag(kernel)
-    for grid, name in (("hpx", f"hpx_codec_bench{tag}.csv"),
-                       ("utm", f"utm_codec_bench{tag}.csv")):
+    for grid, name in (("hpx", f"hpx_codec_bench{run_tag(kernel, cr_mode)}.csv"),
+                       ("utm", f"utm_codec_bench{kernel_tag(kernel)}.csv")):
+        tag = kernel_tag(kernel) if grid == "utm" else run_tag(kernel, cr_mode)
         parts = sorted(cfg.PARTS_DIR.glob(f"{grid}{tag}__*.csv"))
         if not parts:
             print(f"no {grid} parts found in {cfg.PARTS_DIR}")
@@ -242,13 +278,19 @@ def main(argv=None) -> int:
                     help=f"default: {sorted(codec_lib.CODEC_RUNS)}")
     ap.add_argument("--common-reference", action="store_true",
                     help="also score the HEALPix side against the UTM observation")
-    ap.add_argument("--cr-mode", choices=["nearest", "knn", "psf"],
+    ap.add_argument("--cr-mode", choices=["nearest", "bilinear", "knn", "psf"],
                     default="nearest",
                     help="how the decoded HEALPix tile is read on the UTM "
                          "pixels: 'nearest' takes the cell containing each "
-                         "pixel (exact, no smoothing of its own); 'knn'/'psf' "
-                         "apply healpix-resample's Gaussian observation "
-                         "operator, as a sensitivity check")
+                         "pixel (exact, no smoothing of its own); 'bilinear' "
+                         "interpolates within the carrier lattice at sub-cell "
+                         "position (Section V-F: removes two thirds of the "
+                         "nearest read's floor); 'knn'/'psf' apply "
+                         "healpix-resample's observation operator. Any reader "
+                         "but 'nearest' writes reader-suffixed parts and CSVs "
+                         "on the HEALPix side, so the published sweep is never "
+                         "overwritten, and reuses the UTM side, which does not "
+                         "depend on the reader")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--assemble", action="store_true", help="only rebuild the CSVs")
     ap.add_argument("--legacy", action="store_true",
@@ -257,7 +299,7 @@ def main(argv=None) -> int:
 
     cfg.ensure_dirs()
     if args.assemble:
-        assemble(args.resampler)
+        assemble(args.resampler, args.cr_mode)
         return 0
 
     env = environment()
@@ -302,7 +344,7 @@ def main(argv=None) -> int:
 
     if floors:
         path = (cfg.RESULTS_DIR /
-                f"common_reference_floor{kernel_tag(args.resampler)}.csv")
+                f"common_reference_floor{run_tag(args.resampler, args.cr_mode)}.csv")
         df = pd.DataFrame(floors)
         if path.exists():
             old = pd.read_csv(path)
@@ -310,13 +352,17 @@ def main(argv=None) -> int:
         df.to_csv(path, index=False)
         print(f"\nrepresentation floors -> {path}")
 
-    assemble(args.resampler)
+    assemble(args.resampler, args.cr_mode)
     if failures:
         print(f"\n{len(failures)} region(s) failed:")
         for scene, err in failures:
             print(f"  {scene}: {err}")
         return 1
-    print("\nNext: python update_paper_numbers.py")
+    if args.common_reference and args.cr_mode != "nearest":
+        print(f"\nNext: python update_paper_numbers.py --metric common "
+              f"--cr-mode {args.cr_mode}")
+    else:
+        print("\nNext: python update_paper_numbers.py")
     return 0
 
 

@@ -722,12 +722,12 @@ cell centres themselves, and takes the bilinear combination of the four
 bracketing centres. Cell anisotropy and orientation enter through that
 measured Jacobian, the four weights sum to one, and the read is linear. On the
 same Clough--Tocher tiles, the same mask and the same observation, its floor is
-$0.579$ times the nearest read's (paired median; lower on every region
-measured), which means the read accounts for $66\%$ of the floor's variance:
-the transfer-and-read floor falls from $10.0\%$ to $5.0\%$ of a scene's
+$0.582$ times the nearest read's (paired median over the 40 regions; lower on
+every one), which means the read accounts for $66\%$ of the floor's variance:
+the transfer-and-read floor falls from $10.0\%$ to $5.9\%$ of a scene's
 standard deviation when the read is changed and nothing else is. On the
 PSF-transferred tiles the same read lands within $4\%$ of the companion's own
-forward operator ($0.960$), so for a non-deconvolving product the interpolating
+forward operator ($0.957$), so for a non-deconvolving product the interpolating
 read is close to the best available. The floor of
 Table~\ref{tab:representation_floor} is therefore two thirds a property of
 how the carrier was read and one third a property of what was put on it, and
