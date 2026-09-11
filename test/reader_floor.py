@@ -147,9 +147,14 @@ def summarize(df):
 def latex_table(df, path):
     ok = df[df.error.fillna("").astype(str).str.len() == 0]
     n = ok.scene.nunique()
+    per = ok.groupby("reader").scene.nunique()
+    short = {r: int(v) for r, v in per.items() if v < n}
+    cover = f"{n} regions" + (
+        " (" + ", ".join(f"\\emph{{{r}}} on {v}" for r, v in sorted(short.items()))
+        + ", the others on all)" if short else "")
     lines = ["\\begin{table}[t]", "\\centering",
              "\\caption{The transfer-and-read floor under three readers, on "
-             f"{n} regions: the RMSE of the \\emph{{uncompressed}} carrier, "
+             f"{cover}: the RMSE of the \\emph{{uncompressed}} carrier, "
              "read on the native pixels of the footprints' intersection, "
              "against the Sentinel-2 observation. \\emph{nearest} is the "
              "containing cell, the read used throughout the paper; "

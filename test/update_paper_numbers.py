@@ -401,6 +401,49 @@ def table_fixed_codec(hpx, utm, scenes, rmse_col, codecs):
     return tex, out
 
 
+def table_representation_floor(fl):
+    """Table XIII: the transfer-and-read floor by scene class.
+
+    This table had no producing script -- it was written once by hand from
+    common_reference_floor.csv and then drifted from the wording the text
+    settled on. It is now emitted from the same CSV the floors are read from,
+    and it names the quantity the way Section V-F established it: the floor of
+    the transfer-and-read pair, an upper bound on what the carrier costs under
+    the present reading operator, not the grid's own representation error.
+    """
+    if fl is None or not len(fl):
+        return ""
+    fl = fl.copy()
+    fl["pct"] = 100.0 * fl.representation_floor_rmse / fl.utm_std_on_mask
+    mode = sorted(set(fl.get("mode", pd.Series(["nearest"])).astype(str)))
+    body = []
+    for cls, g in fl.groupby("scene_class"):
+        body.append(f"{cls} & {len(g)} & {g.representation_floor_rmse.median():.1e} & "
+                    f"[{g.representation_floor_rmse.min():.1e}, "
+                    f"{g.representation_floor_rmse.max():.1e}] & "
+                    f"{g.pct.median():.1f} \\\\")
+    body.append("\\midrule")
+    body.append(f"all & {len(fl)} & {fl.representation_floor_rmse.median():.1e} & "
+                f"[{fl.representation_floor_rmse.min():.1e}, "
+                f"{fl.representation_floor_rmse.max():.1e}] & "
+                f"{fl.pct.median():.1f} \\\\")
+    caption = (
+        "Transfer-and-read floor: the RMSE of the \\emph{uncompressed} level-20 "
+        "carrier tile, read on the native UTM pixels of the two footprints' "
+        "intersection with the " + "/".join(mode) + " read, against the "
+        "Sentinel-2 observation itself. No codec setting on the HEALPix side "
+        "can go below it, so any target tighter than it is unreachable by "
+        "construction under the common reference. It is the error of the "
+        "transfer and the read together, and Section~\\ref{sec:operator} "
+        "shows that the read alone accounts for an error of this size, so it "
+        "is an upper bound on what the carrier representation costs under the "
+        "present reading operator, not the grid's own representation error. "
+        "It scales with the scene's high-frequency content.")
+    return _table(caption, "tab:representation_floor", "lrrrr",
+                  "Class & $n$ & Median floor & Range & \\% of scene std \\\\",
+                  body)
+
+
 def table_regions(index):
     body = []
     if "scene_class" not in index:
@@ -531,6 +574,9 @@ def main(argv=None) -> int:
     tex_lat, lat_stats = table_latitude(rows, index)
     tex_fix, fixed = table_fixed_codec(hpx, utm, scenes, rmse_col, codecs)
     tex_reg, per_class = table_regions(index)
+    tex_floor = ""
+    if args.metric == "common" and floorf.exists():
+        tex_floor = table_representation_floor(pd.read_csv(floorf))
 
     if not args.no_write_tex:
         cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
@@ -547,6 +593,10 @@ def main(argv=None) -> int:
                           ("table_benchmark_regions", tex_reg)]:
             if tex:
                 (cfg.TEX_TABLES / f"{name}{tag}.tex").write_text(tex, encoding="utf-8")
+        if tex_floor:
+            # one floor, one file: the common-reference run owns it
+            (cfg.TEX_TABLES / "table_representation_floor.tex").write_text(
+                tex_floor, encoding="utf-8")
         print(f"LaTeX tables -> {cfg.TEX_TABLES}")
 
     payload = dict(

@@ -540,11 +540,22 @@ def latex_table(df, targets, do_rd):
             f"{g.logpsd_top_octave.median():.2f}" + cells + " \\\\")
     extra_h = "".join(f" & ${t:g}$" for t in targets[:3]) if do_rd else ""
     spec = "lrrrrrr" + ("r" * (3 if do_rd else 0))
+    n_sc = int(df.scene.nunique())
+    n_all = len(region_sites.load_sites()) if hasattr(region_sites, "load_sites") else n_sc
+    per_kernel = df.groupby("kernel").scene.nunique()
+    short = {k: int(v) for k, v in per_kernel.items() if v < n_sc}
+    coverage = (f"Medians over the {n_sc} regions of the study"
+                if n_sc >= n_all else
+                f"Medians over the {n_sc} regions swept, which is fewer than the "
+                f"{n_all} the rest of the paper uses")
+    if short:
+        coverage += (" (" + ", ".join(
+            f"\\texttt{{{k.replace('_', chr(92)+'_')}}} on {v}"
+            for k, v in sorted(short.items())) + ", the rest on all)")
     return (
         "\\begin{table*}[t]\n\\centering\n"
-        f"\\caption{{Transfer-kernel ablation. Medians over the "
-        f"{df.scene.nunique()} regions swept, which is fewer than the "
-        f"40 the rest of the paper uses. Two library names mislead and are "
+        f"\\caption{{Transfer-kernel ablation. {coverage}. "
+        f"Two library names mislead and are "
         f"spelled out here: \\texttt{{linear}} is an inverse-distance-weighted "
         f"average over four neighbours, not a linear interpolant, and "
         f"\\texttt{{bicubic}} is Keys' cubic convolution, whose signed kernel "

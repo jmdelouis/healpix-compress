@@ -18,7 +18,7 @@
 
 \begin{document}
 
-\title{Rate--Distortion Trade-offs of an Oversampled HEALPix Carrier Grid for Sentinel-2 Imagery}
+\title{Rate--Distortion and Critical Storage Overhead of an Oversampled HEALPix Carrier Grid for Sentinel-2 Imagery}
 
 \author{
 Jean-Marc Delouis\textsuperscript{1},
@@ -64,40 +64,47 @@ Email: vincent.dumoulin@esa.int. ORCID: 0000-0001-5049-3817.}%
 }
 
 \markboth{IEEE Transactions on Geoscience and Remote Sensing,~Vol.~XX, No.~X, Month~2026}%
-{Author \MakeLowercase{\textit{et al.}}: Rate--Distortion Trade-offs of an Oversampled HEALPix Carrier Grid}
+{Author \MakeLowercase{\textit{et al.}}: Rate--Distortion and Critical Storage Overhead of an Oversampled HEALPix Carrier Grid}
 
 \maketitle
 
 \begin{abstract}
 Hierarchical equal-area pixelizations such as HEALPix suit global Earth
-observation, but their dyadic refinement restricts available resolutions to
-powers-of-two steps. Sentinel-2's \SI{10}{m} bands fall between level 19
-(\SI{12.4}{m}) and level 20 (\SI{6.2}{m}), so a level-20 carrier grid
-oversamples them by a factor of about $2.58$ in per-cell area. We ask whether
-that oversampling costs storage once compression and the overhead of native
-tiling are both accounted for. On 40 Sentinel-2 L2A B04 regions spanning four
-land-cover classes and latitudes from $43.5^\circ$S to $64.1^\circ$N, five
-established general-purpose codecs are applied to level-20 chunks reshaped by
-Morton de-interleaving, and to a native UTM square of equal nominal projected
-area. Scored end-to-end against the same Sentinel-2 observation, over the
-intersection of the two footprints, native UTM is the more efficient
-representation at every target we can report: the uncompressed carrier tile
-already differs from the observation by $4.0\times10^{-3}$ in median, about
-$10\%$ of a scene's standard deviation, and no configuration we swept reaches
-the tighter reconstruction targets against it. We show that this floor belongs to the transfer-and-read
-pair rather than to the grid: the nearest-cell read alone is a
-\SI{2.1}{m} positional jitter that costs about $14\%$ of a field's standard
-deviation on the imagery's own measured spectrum. Scored within each representation --- the operational
-question of compressing an already-built HEALPix cube --- the verdict is
-regime-dependent, native UTM leading at high fidelity (median ratios
-$1.23$--$1.59$) and HEALPix at the tightest storage budget ($0.83$) under an
-assumed $30\%$ granule overhead. We summarise this as a critical overhead
-falling from $2.06$ to $1.06$ with the distortion target, and report both
-measures rather than electing one. Both are conditional on the transfer that
-populates the carrier: rebuilding the tiles with a PSF-aware or an
-inverse-distance transfer costs $1.2$ to $2.2$ times the bytes at the same accuracy and leaves
-HEALPix ahead at no target, and we show the cause to be energy compaction
-rather than added content.
+observation, but their dyadic refinement restricts resolutions to
+powers-of-two steps: Sentinel-2's \SI{10}{m} bands fall between level 19
+(\SI{12.4}{m}) and level 20 (\SI{6.2}{m}), so a level-20 carrier grid holds
+about $2.58$ times as many samples per unit area as the native raster. We ask
+whether that redundancy remains expensive once compression and the storage
+overhead of native tiling are both accounted for. On 40 Sentinel-2 L2A B04
+regions spanning four land-cover classes and both HEALPix cell-shape regimes,
+five established general-purpose codecs are applied to level-20 chunks
+reshaped by Morton de-interleaving and to a native UTM square of equal nominal
+projected area. Three findings follow in order. With no overhead assigned to
+either product, native UTM is intrinsically the more compressible
+representation at every tested distortion, but the penalty shrinks
+monotonically as the tolerated distortion grows; expressed as a
+distortion-dependent \emph{critical overhead} $\gamma_\star(e)$ --- the
+native-product storage overhead above which the carrier becomes the smaller
+representation --- it falls from $2.06$ at an RMSE of $10^{-4}$ to $1.06$ at
+$10^{-2}$. Under one illustrative $30\%$ granule-overhead scenario, HEALPix is
+therefore competitive only at aggressive compression ($0.81$ of the
+operational UTM size at the loosest target, $0.83$ of its error at the
+tightest budget) and native UTM leads at high fidelity (median ratios
+$1.23$--$1.59$). That crossover is not a property of the grid alone. It depends
+on the transfer that populates the carrier: rebuilding the tiles with a
+PSF-aware or an inverse-distance transfer costs $1.2$ to $2.2$ times the bytes
+at the same accuracy and leaves HEALPix ahead at no target, and the evidence
+points to energy compaction rather than added content as the mechanism. And it
+disappears under the common native-observation reference with the present
+nearest-cell reader: scored end-to-end against the same Sentinel-2
+observation, the uncompressed carrier already differs from it by
+$4.0\times10^{-3}$ in median, about $10\%$ of a scene's standard deviation, a
+floor we show belongs to the transfer-and-read pair rather than to the grid:
+the nearest-cell read is a \SI{2.1}{m} positional jitter, and an interpolating
+read of the same tiles removes two thirds of the floor's variance. The
+contribution is a quantified decision framework, conditioned on distortion,
+product layout, transfer and reconstruction reference, rather than a claim
+that either grid compresses better.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -121,6 +128,27 @@ The contributions of this work are:
     \item an empirical evaluation across 40 Sentinel-2 regions -- four land-cover classes, latitudes $43.5^\circ$S to $64.1^\circ$N, hence both HEALPix cell-shape regimes, which lets us show that the storage verdict itself depends on where on the sphere a tile sits (Section~\ref{sec:latitude}) -- and five established, general-purpose codecs, including sensitivity to codec choice, target quality, the HEALPix resampling operator, and the assumed operational overhead, reported with an explicit multiple-testing correction that seven of the eight per-target comparisons survive, and with a control that replaces the scene by an analytic field of the imagery's own measured spectrum, showing that the support mismatch and the scene content together account for less than a fifth of the effect (Section~\ref{sec:support_controls}), and with a transparent account of which methodological questions (exact-footprint geometry, the choice of transfer kernel, the assumed operational overhead) remain open (Section~\ref{sec:limitations});
     \item a reusable, assertion-guarded evaluation pipeline sharing its sites, its Sentinel-2 products and its resampling operator with a companion study of HEALPix resampling~\cite{delouis2026resample}, so that the storage question and the transfer question are answered on the same ground rather than on two independently assembled datasets.
 \end{itemize}
+
+What this result is, and is not, should be said before any of it is read. The
+competitive regime reported below belongs to the complete carrier-grid
+representation chain --- transfer, carrier, read --- and not to HEALPix
+geometry alone. It is conditional on three things, each measured in this paper
+rather than assumed. The first is the storage overhead assigned to the native
+product, which we never fix: every verdict is expressed through the critical
+overhead $\gamma_\star(e)$ of Section~\ref{sec:rd_main}, and the $30\%$
+scenario used for illustration is one abscissa on that curve. The second is
+the transfer operator that populates the carrier: the same tiles rebuilt with a
+PSF-aware or an inverse-distance transfer cost $1.2$ to $2.2$ times the bytes at
+equal accuracy and leave HEALPix ahead at no target
+(Section~\ref{sec:transfer_cost}), a sensitivity larger than the advantage
+itself. The third is the reconstruction reference: scored against the native
+observation rather than within each representation, the carrier's
+transfer-and-read floor of about $10\%$ of a scene's standard deviation is not
+crossed by any configuration we swept, and two thirds of that floor's variance
+is the reading operator's, measured by replacing it
+(Sections~\ref{sec:operator} and~\ref{sec:common_reference}). Each
+condition is stated where it arises; they are stated together here so that no
+sentence of the form ``HEALPix is smaller'' is read without them.
 
 \section{Background and Motivation}
 
@@ -179,7 +207,7 @@ Comparing HEALPix and native storage fairly requires both sides to cover the sam
 
 We instead compare each grid in its own native geometry, matched by ground area rather than by exact footprint. Because HEALPix is an equal-area pixelization, a level-20 carrier tile's ground area is an exact geometric constant, independent of scene or location: using \eqref{eq:healpix_width}, a $1024\times1024$-cell tile covers a square of side $1024\,\Delta_{\mathrm{eq}}(20)\approx\SI{6.37}{km}$, equivalent to $1024\,\Delta_{\mathrm{eq}}(20)/\SI{10}{m}\approx636.7$, rounded to $637$, native \SI{10}{m} UTM pixels per side. For each scene, we therefore extract a $637\times637$-pixel, axis-aligned square directly from the native UTM raster (Sentinel-2 B04), centered on the HEALPix tile's centroid (found as the nearest native UTM pixel to the mean longitude/latitude of the tile's constituent cells, computed with \texttt{healpix\_geo} on the WGS84 ellipsoid). This UTM square is not pixel-for-pixel identical to the HEALPix diamond, nor does it have the same support -- it extends beyond the diamond along its edges and falls short of the diamond's north/south and east/west corners, and we do not treat equal nominal area as equivalent to equal scene information, which can differ near class boundaries within the tile (e.g.\ coastlines, cloud edges, ice margins) that fall inside one footprint but outside the other. We call this square equal-area throughout as a shorthand for equal \emph{nominal projected} area, and the shorthand needs qualifying: UTM is conformal, not equivalent, so $637^2$ pixels of nominal \SI{10}{m} do not enclose exactly the same geodesic area as the HEALPix tile. Rounding $636.7$ to $637$ alone introduces about $0.1\%$ of area, before the UTM scale factor, which varies across a zone. These are small terms next to the $2.58\times$ oversampling under study, but they are not zero and we have not computed them scene by scene. What the two do share, by construction, is the same nominal projected \emph{area} ($637^2\times\SI{4}{B}\approx\SI{1.62}{MB}$ raw, a fixed constant across all 40 regions, mirroring the fixed $1024\times1024$ HEALPix side), without requiring any fill value for pixels outside an irregular mask. Section~\ref{sec:limitations} reports the intersection-over-union and per-footprint area outside the intersection as open items to quantify how much this support mismatch matters in practice. Figure~\ref{fig:utm_crop_footprints} shows both footprints for a sample of regions.
 
-It is worth being explicit about what this does and does not settle, because the two lattices are not co-oriented and that is the single most awkward aspect of any HEALPix-versus-projected-grid comparison. Matching by area rather than by shape means each grid is compressed in the frame in which it is actually stored, with no resampling applied to the native side and no fill values on either -- which is the comparison a practitioner faces. It does \emph{not} mean the two representations encode the same ground: the rotated tile and the axis-aligned square overlap over most, but not all, of their common area, and each retains a corner the other does not cover. It would be wrong to conclude that this mismatch cannot affect the storage comparison. The \emph{raw} byte counts are fixed by construction and therefore immune to it, but compressed size depends on texture, edges, cloud, coastlines and heterogeneity, so two supports of equal area that differ over roughly a fifth of their extent can have appreciably different entropies --- and for coastal, urban or class-boundary scenes that difference may be of the same order as the grid effect we are trying to measure. Measured over the 40 regions, the intersection is $74$--$83\%$ of the crop ($81\%$ median), an intersection-over-union of about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}), so the mismatch is not slight. It affects Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} directly, and Section~\ref{sec:support_controls} bounds its contribution by replacing the scene with an analytic field that both geometries sample identically: that control reproduces the measured intrinsic gap to within $7$--$17\%$ at every target, so the mismatch and the scene content together account for less than a fifth of the effect. It bears on the cross-grid comparison of reconstruction \emph{error} in an even more direct way, which is why the common-reference evaluation of Section~\ref{sec:common_reference} is restricted to the intersection rather than run over either footprint whole.
+It is worth being explicit about what this does and does not settle, because the two lattices are not co-oriented and that is the single most awkward aspect of any HEALPix-versus-projected-grid comparison. Matching by area rather than by shape means each grid is compressed in the frame in which it is actually stored, with no resampling applied to the native side and no fill values on either -- which is the comparison a practitioner faces. It does \emph{not} mean the two representations encode the same ground: the rotated tile and the axis-aligned square overlap over most, but not all, of their common area, and each retains a corner the other does not cover. It would be wrong to conclude that this mismatch cannot affect the storage comparison. The \emph{raw} byte counts are fixed by construction and therefore immune to it, but compressed size depends on texture, edges, cloud, coastlines and heterogeneity, so two supports of equal area that differ over roughly a fifth of their extent can have appreciably different entropies --- and for coastal, urban or class-boundary scenes that difference may be of the same order as the grid effect we are trying to measure. Measured over the 40 regions, the intersection is $74$--$83\%$ of the crop ($81\%$ median), an intersection-over-union of about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}), so the mismatch is not slight. It affects Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} directly, and Section~\ref{sec:support_controls} bounds its contribution by replacing the scene with an analytic field that both geometries sample identically: that control reproduces the measured intrinsic gap to within $8$--$19\%$ at every target, so the mismatch and the scene content together account for less than a fifth of the effect. It bears on the cross-grid comparison of reconstruction \emph{error} in an even more direct way, which is why the common-reference evaluation of Section~\ref{sec:common_reference} is restricted to the intersection rather than run over either footprint whole.
 
 \begin{figure}[t]
 \centering
@@ -192,7 +220,7 @@ It is worth being explicit about what this does and does not settle, because the
 \label{sec:resampler}
 Populating the HEALPix level-20 tile requires resampling the native UTM raster onto the HEALPix cell centers, a step with no counterpart on the UTM side, which is used unresampled throughout. During validation of the pipeline, the 2-D power spectrum of the resulting HEALPix raster showed visibly excess high-frequency power relative to both the native UTM spectrum for the same footprint and the tangent-plane spectra obtained in a separate, companion investigation of HEALPix resampling behavior~\cite{delouis2026resample} -- an issue that, left uncorrected, could degrade HEALPix's apparent compressibility, since higher-entropy content compresses less well by construction. We report this comparison qualitatively; we have not yet computed a quantitative spectral-distance metric (e.g.\ a log-PSD error over physically defined wavenumber bins along the two local HEALPix raster axes) to replace the visual comparison, and this is listed as an open item in Section~\ref{sec:limitations}.
 
-We first considered slow, smooth positional distortion of the resampled grid as a candidate cause but found no plausible mechanism: a smooth longitude/latitude gradient in cell placement has no way to inject high-frequency content. A secondary, genuine but apparently insufficient contributor is that HEALPix cells are equal-area but not equal-shape: local elongation between the two raster axes reaches up to $\sim\!1.7\times$ in axis-length ratio (at fixed area, the two local sample spacings scale as $\sqrt{1.7}$ and $1/\sqrt{1.7}$ relative to the isotropic case, not as $1.7\times$ and its inverse directly), compressing the effective sample spacing along the raster's shorter-spacing axis to a value closer to the native \SI{10}{m} Sentinel-2 pixel pitch than the nominal \SI{6.2}{m} level-20 scale would suggest. We have not derived this in physical wavenumber coordinates and so do not claim a proven Nyquist-aliasing mechanism; we describe the observed effect as a spurious high-frequency interpolation artifact rather than aliasing in the strict sampling-theory sense. What we could attribute more directly was the resampler itself: the level-20 tiles were originally populated with a Shepard-style inverse-distance-weighted interpolator (four nearest neighbors) whose smoothing kernel width was tuned to the HEALPix \emph{output} pixel scale ($\sim\SI{6.2}{m}$) rather than to the native \SI{10}{m} \emph{input} grid spacing -- too narrow a kernel to act as an adequate low-pass filter, so it appears to have introduced spurious high-frequency content into the resampled output rather than suppressing it. Comparing interpolation kernels quantitatively, rather than by appearance, is a solved problem in its own right: the approximation-order framework of~\cite{blu1999fourier} and the kernel-by-kernel comparison of~\cite{thevenaz2000interpolation} give the tools, and Section~\ref{sec:support_controls} applies them here by scoring each kernel against an analytic field rather than against the imagery it came from. Replacing this resampler with \texttt{scipy.interpolate.griddata(method="cubic")} -- a Clough--Tocher piecewise-cubic interpolant over a Delaunay triangulation, not bicubic interpolation -- markedly reduced the excess power: the corrected HEALPix spectrum tracks the native UTM spectrum for the same footprint much more closely than before, though we have not yet quantified the residual difference. All results reported in Section~\ref{sec:results} use this corrected resampling; we have not yet run the fuller kernel sweep (nearest, linear, the original IDW, Clough--Tocher, and a PSF-aware method) with paired round-trip RMSE, PSD-error, and rate--distortion metrics that would be needed to fully characterize this sensitivity (Section~\ref{sec:limitations}).
+We first considered slow, smooth positional distortion of the resampled grid as a candidate cause but found no plausible mechanism: a smooth longitude/latitude gradient in cell placement has no way to inject high-frequency content. A secondary, genuine but apparently insufficient contributor is that HEALPix cells are equal-area but not equal-shape: local elongation between the two raster axes reaches up to $\sim\!1.7\times$ in axis-length ratio (at fixed area, the two local sample spacings scale as $\sqrt{1.7}$ and $1/\sqrt{1.7}$ relative to the isotropic case, not as $1.7\times$ and its inverse directly), compressing the effective sample spacing along the raster's shorter-spacing axis to a value closer to the native \SI{10}{m} Sentinel-2 pixel pitch than the nominal \SI{6.2}{m} level-20 scale would suggest. We have not derived this in physical wavenumber coordinates and so do not claim a proven Nyquist-aliasing mechanism; we describe the observed effect as a spurious high-frequency interpolation artifact rather than aliasing in the strict sampling-theory sense. What we could attribute more directly was the resampler itself: the level-20 tiles were originally populated with a Shepard-style inverse-distance-weighted interpolator (four nearest neighbors) whose smoothing kernel width was tuned to the HEALPix \emph{output} pixel scale ($\sim\SI{6.2}{m}$) rather than to the native \SI{10}{m} \emph{input} grid spacing -- too narrow a kernel to act as an adequate low-pass filter, and in a visual comparison of 2-D spectra it appeared to have introduced spurious high-frequency content into the resampled output. The 40-region ablation of Section~\ref{sec:support_controls} later qualified that impression: in the radially averaged spectrum the inverse-distance transfer leaves no excess power in the top octave ($0.92$ of the observation's), but it is $9.5$ times less accurate than Clough--Tocher against an analytic field and its output costs about twice the bytes to compress at equal error (Section~\ref{sec:transfer_cost}). The replacement was right; the reason first given for it was only partly so. Comparing interpolation kernels quantitatively, rather than by appearance, is a solved problem in its own right: the approximation-order framework of~\cite{blu1999fourier} and the kernel-by-kernel comparison of~\cite{thevenaz2000interpolation} give the tools, and Section~\ref{sec:support_controls} applies them here by scoring each kernel against an analytic field rather than against the imagery it came from. Replacing this resampler with \texttt{scipy.interpolate.griddata(method="cubic")} -- a Clough--Tocher piecewise-cubic interpolant over a Delaunay triangulation, not bicubic interpolation -- markedly reduced the excess power: the corrected HEALPix spectrum tracks the native UTM spectrum for the same footprint much more closely than before, though we have not yet quantified the residual difference. All results reported in Section~\ref{sec:results} use this corrected resampling. The sensitivity to that choice is measured later rather than assumed: Section~\ref{sec:transfer_cost} rebuilds the carrier with the PSF-aware and the inverse-distance transfers and re-runs the rate--distortion sweep on the same regions, and Section~\ref{sec:support_controls} scores five kernels (nearest, the inverse-distance resampler, Keys' bicubic, Clough--Tocher and PSF-aware) against an analytic field. Both halves of that ablation cover the 40 regions. The reader should know in advance what it finds: the crossover reported below is a property of the carrier built with this transfer, and it does not survive the other two.
 
 This has a reproducibility implication beyond this paper: the interpolation kernel used to populate a HEALPix -- or, more generally, any DGGS -- grid from a native sensor grid is not a neutral implementation choice. A kernel mismatched to the source sampling interval can materially inflate the resampled grid's apparent entropy, and, on the evidence gathered so far, this can plausibly be large enough to affect which of two grids appears more storage-efficient once compressed -- though we have not yet isolated its quantitative contribution to the headline ratios in Section~\ref{sec:results} from the other factors analyzed there.
 
@@ -232,7 +260,7 @@ We evaluate on 40 real Sentinel-2 L2A \SI{10}{m} regions, ten in each of four la
 
 For each region the native window is centred on the HEALPix tile that contains the anchor, not on the anchor itself. The tile's bounding box is \SI{9.0}{km} across, but an anchor may sit anywhere inside its tile, so an anchor-centred window would have to be twice that -- more than a single Sentinel-2 granule reliably covers at sites near a granule edge. Centring on the tile reduces the requirement to the bounding box plus a resampling halo, about \SI{11}{km}. The anchor still selects the site and the tile; no image is consulted in that choice.
 
-A region is admitted only if a whole level-10 parent tile lies inside its window with halo, if the native pixels under the tile footprint are valid, and if the equal-area UTM square is likewise complete; a region is rejected rather than repaired when invalid pixels exceed $0.1\%$ of the tile footprint. Below that ceiling, isolated invalid pixels are dropped from the triangulation on the HEALPix side and interpolated from their finite neighbours on the UTM side --- so a small number of pixels is reconstructed, symmetrically on both grids, and the per-region counts are reported with the data rather than described as no filling at all. The red band (B04) is then resampled once to the level-20 carrier tile using Clough--Tocher piecewise-cubic interpolation (Section~\ref{sec:resampler}), and the same region's native UTM B04 raster is cropped to the equal-area square of Section~\ref{sec:utm_crop}.
+A region is admitted only if a whole level-10 parent tile lies inside its window with halo, if the native pixels under the tile footprint are valid, and if the equal nominal projected-area UTM square is likewise complete; a region is rejected rather than repaired when invalid pixels exceed $0.1\%$ of the tile footprint. Below that ceiling, isolated invalid pixels are dropped from the triangulation on the HEALPix side and interpolated from their finite neighbours on the UTM side --- so a small number of pixels is reconstructed, symmetrically on both grids, and the per-region counts are reported with the data rather than described as no filling at all. The red band (B04) is then resampled once to the level-20 carrier tile using Clough--Tocher piecewise-cubic interpolation (Section~\ref{sec:resampler}), and the same region's native UTM B04 raster is cropped to the equal-area square of Section~\ref{sec:utm_crop}.
 
 \input{tables/table_benchmark_regions}
 
@@ -263,40 +291,28 @@ For \emph{uncompressed} storage (Table~\ref{tab:storage_accounting}), $\gamma_{\
 \subsection{Raw, Uncompressed Storage Favors Native UTM}
 \input{tables/table_storage_accounting}
 
-Table~\ref{tab:storage_accounting} reports the raw storage accounting between the two grids. Because both the HEALPix level-20 tile and the equal-area UTM crop of Section~\ref{sec:utm_crop} are fixed-size representations of the same nominal ground area, their raw byte counts are geometric constants -- identical for every scene, with zero scene-to-scene variance. At $\gamma_{\mathrm{tile}}=1$ (no assumed overhead), the HEALPix tile is $2.584\times$ larger than the UTM crop, which is $1024^2/637^2$ exactly and therefore identical for every region, by construction rather than by measurement; it matches the analytic oversampling factor $\alpha_{\mathrm{HPX/native}}\approx2.58$ of \eqref{eq:alpha} because the crop side was derived from it. This is the grid-intrinsic result. Under the illustrative $\gamma_{\mathrm{tile}}=1.30$ Sentinel-2/MGRS granule-overhead scenario, the gap narrows but does not close: the raw, completely uncompressed HEALPix tile remains, on average, $1.99\times$ the size of the UTM crop scaled by $\gamma_{\mathrm{tile}}$. Raw storage alone does not make HEALPix competitive under either scenario -- the $2.58\times$ geometric oversampling of level 20 is simply too large for a $30\%$ overhead assumption to offset. Whether HEALPix can nonetheless become competitive is therefore a question that only compression, by exploiting the redundancy that this oversampling represents, can answer.
+Table~\ref{tab:storage_accounting} reports the raw storage accounting between the two grids. Because both the HEALPix level-20 tile and the equal nominal projected-area UTM crop of Section~\ref{sec:utm_crop} are fixed-size representations of the same nominal ground area, their raw byte counts are geometric constants -- identical for every scene, with zero scene-to-scene variance. At $\gamma_{\mathrm{tile}}=1$ (no assumed overhead), the HEALPix tile is $2.584\times$ larger than the UTM crop, which is $1024^2/637^2$ exactly and therefore identical for every region, by construction rather than by measurement; it matches the analytic oversampling factor $\alpha_{\mathrm{HPX/native}}\approx2.58$ of \eqref{eq:alpha} because the crop side was derived from it. This is the grid-intrinsic result. Under the illustrative $\gamma_{\mathrm{tile}}=1.30$ Sentinel-2/MGRS granule-overhead scenario, the gap narrows but does not close: the raw, completely uncompressed HEALPix tile remains, on average, $1.99\times$ the size of the UTM crop scaled by $\gamma_{\mathrm{tile}}$. Raw storage alone does not make HEALPix competitive under either scenario -- the $2.58\times$ geometric oversampling of level 20 is simply too large for a $30\%$ overhead assumption to offset. Whether HEALPix can nonetheless become competitive is therefore a question that only compression, by exploiting the redundancy that this oversampling represents, can answer.
 
-\subsection{Rate-Distortion Comparison: A Regime-Dependent Verdict}
-\input{tables/table_storage_at_constant_rmse}
+\subsection{Rate--Distortion Comparison: the Intrinsic Gap and the Critical Overhead}
+\label{sec:rd_main}
 
-At matched reconstruction RMSE (Table~\ref{tab:storage_at_rmse}), oracle-best per-region ratios show native UTM ahead at the three tightest targets tested: HEALPix requires $1.23$--$1.59\times$ the operational UTM size at RMSE targets from $10^{-3}$ to $10^{-4}$, with Holm-adjusted $p\le8\times10^{-3}$. The picture reverses at the loosest target tested ($10^{-2}$), where HEALPix requires $0.81\times$ the operational UTM size (Holm-adjusted $p=2\times10^{-3}$). Between them, the $3\times10^{-3}$ target sits at parity (median $0.96$) and is the one reported target that does not survive correction ($p^{\mathrm{Holm}}=0.49$); it is reported as inconclusive, not as demonstrated equivalence, no equivalence margin having been defined. All eight reported targets are evaluated on all 40 regions.
+Three quantities carry the result of this paper, and they are reported in this
+order so that no assumption is made before it is needed. The first is the
+intrinsic HEALPix/UTM size ratio at equal reconstruction error, with no
+overhead assigned to either product ($\gamma=1$): a property of the two grids
+and of the transfer that populated one of them. The second is that same ratio
+read as a decision threshold, the distortion-dependent \emph{critical overhead}
+$\gamma_\star(e)$: the native-product storage overhead above which the carrier
+becomes the smaller representation at error $e$. It is the general result, and
+it is a curve, not a verdict. The third is one point on that curve, an
+illustrative $30\%$ granule overhead ($\gamma_{\mathrm{tile}}=1.30$), reported
+in Section~\ref{sec:rd_illustrative} because a concrete operating point is
+useful, and reported after the curve because it is not the result.
 
-\input{tables/table_error_at_constant_size}
-
-At matched, shared storage budget (Table~\ref{tab:error_at_size}), the same regime-dependent pattern holds, and every target survives correction. At the two more generous reportable budgets ($10\%$ and $5\%$), HEALPix's reconstruction RMSE is $4.02\times$ and $1.33\times$ that of the operational UTM comparison: UTM is the better choice when storage is not tightly constrained. At the tightest budget ($2\%$) the ordering flips and HEALPix achieves $0.83\times$ the UTM RMSE (Holm-adjusted $p=1\times10^{-4}$).
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig_ratio_boxplots}
-\caption{Per-scene HPX/UTM ratio distributions underlying Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} (oracle-best codec chosen independently per scene, per grid). Left: compressed-size ratio at each target RMSE. Right: RMSE ratio at each target storage budget (log scale). The dashed line at $1.0$ marks parity; values below it favor HEALPix. Both panels show the same transition -- UTM favored at tight RMSE targets and generous budgets, HEALPix favored or comparable at the loosest RMSE targets and the tightest budget -- together with the inter-scene spread that the medians in Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} alone do not convey.}
-\label{fig:ratio_boxplots}
-\end{figure}
-
-Figure~\ref{fig:ratio_boxplots} shows this transition directly, together with the region-to-region dispersion behind each median. The spread is markedly asymmetric across land-cover classes: urban regions are the most UTM-favourable at tight targets (median $1.67$ at $10^{-4}$) and among the most HEALPix-favourable at the loosest one ($0.70$ at $10^{-2}$), while water regions produce nearly all of the extreme ratios in either direction. Those extremes are not noise in the statistical sense but a property of the scenes: over near-constant water the compressed files fall below \SI{10}{kB}, where container overhead is a large share of the total and where any resampling artifact is, by construction, most of the remaining signal. We report medians rather than means for this reason, and treat individual water-region ratios as uninformative at the loosest targets.
-
-\subsubsection*{Why the verdict flips: intrinsic gap versus critical overhead}
-The ratios above already include the assumed $\gamma_{\mathrm{tile}}=1.30$ operational overhead; setting $\gamma_{\mathrm{tile}}=1$ isolates the two grids' \emph{intrinsic} compressibility, independent of any tiling-layout assumption. Doing so shows native UTM intrinsically more compressible than HEALPix across the entire tested RMSE range, but by a margin that shrinks monotonically as the target loosens: $+106\%$, $+94\%$, $+60\%$, $+25\%$ and $+6\%$ from $10^{-4}$ to $10^{-2}$.
+We begin with the comparison that assumes nothing about product layout. At $\gamma_{\mathrm{tile}}=1$ the two grids are compared on their \emph{intrinsic} compressibility alone, and native UTM is intrinsically the more compressible representation across the entire tested RMSE range --- but by a margin that shrinks monotonically as the target loosens: $+106\%$, $+94\%$, $+60\%$, $+25\%$ and $+6\%$ from $10^{-4}$ to $10^{-2}$.
 
 This intrinsic gap can be restated as a critical overhead. The restatement is an accounting identity rather than a physical explanation: with $\gamma_\star \equiv S_{\mathrm{HPX}}/S_{\mathrm{UTM,crop}}$ the change of sign at $\gamma_{\mathrm{tile}}=\gamma_\star$ is tautological, and it does not tell us \emph{why} the intrinsic gap narrows as distortion grows. What it does give is a decision threshold that a product designer can compare against a measured overhead, which is the use we make of it. Formally, $\gamma_\star(e) = S_{\mathrm{HPX}}(e)/S_{\mathrm{UTM,crop}}(e)$: the operational overhead at which the two representations are exactly equal in size at a given RMSE target $e$. HEALPix's compressed size is smaller than the operational UTM comparison only when the \emph{actual} overhead of the native product exceeds $\gamma_\star(e)$. Table~\ref{tab:gamma_continuous} reports $\gamma_\star$ at every tested target, together with the conclusion each value of $\gamma$ implies. It decreases monotonically from $2.06$ to $1.06$ and reaches $1.25$ at the $3\times10^{-3}$ target, just below the assumed $\gamma_{\mathrm{tile}}=1.30$ --- which is why the measured ratio there is $0.96$, the closest to parity of any target tested. The accounting is internally consistent. At the three tightest targets $\gamma_\star$ ranges from $1.60$ to $2.06$ -- overheads we are not aware of any measurement supporting -- and at the tightest of them native UTM stays ahead for three quarters of the regions even at $\gamma=2$, so UTM remains favored under essentially any realistic tiling assumption; at the loosest targets $\gamma_\star$ falls to $1.06$--$1.25$, so a native product organized with less overhead than assumed here would restore UTM's advantage even there. We have not recomputed $\gamma_\star$ for the matched-budget protocol, since that requires rerunning the budget interpolation at $\gamma_{\mathrm{tile}}=1$ (Section~\ref{sec:limitations}).
 
-
-Figure~\ref{fig:rd_comparison} shows the corresponding absolute-value curves, aggregated by median across scenes at each target rather than as per-scene oracle ratios; the two views are complementary, but should not be read as interchangeable, since aggregating in absolute bytes mixes scenes of different intrinsic difficulty -- exactly the effect the per-scene-ratio protocol of Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} was designed to avoid.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig_storage_at_constant_rmse}
-\caption{Rate-distortion comparison, native UTM (blue) vs.\ HEALPix level-20 (red), same marker per codec on both grids, median \emph{absolute} compressed size/RMSE across the 40 regions (contrast with the per-scene ratios of Fig.~\ref{fig:ratio_boxplots}). Left: compressed size (as a fraction of the shared HEALPix raw tile size) at fixed target RMSE, $10^{-4}$--$10^{-2}$. Right: RMSE at fixed storage budget, $2$--$40\%$ of that same shared reference. Both panels use direct log--log interpolation of the raw codec sweeps (Section~\ref{sec:rd_protocol}); single-configuration lossless codecs (JPEG~2000, JPEG~XL) are shown as isolated points rather than curves.}
-\label{fig:rd_comparison}
-\end{figure}
 
 \input{tables/table_gamma_continuous}
 
@@ -370,6 +386,43 @@ which the two grids cannot be separated at all, and a reader whose product
 falls in that band should conclude nothing from this comparison rather than
 read off a ratio.
 
+\subsection{One Illustrative Operating Point: a 30\% Granule Overhead}
+\label{sec:rd_illustrative}
+
+The tables that follow evaluate the comparison at $\gamma_{\mathrm{tile}}=1.30$,
+the granule-overhead scenario of Section~\ref{sec:overhead}. Every
+verdict in them is the curve of Table~\ref{tab:gamma_continuous} read at one
+abscissa: HEALPix is the smaller representation at a target exactly where
+$1.30$ exceeds that target's $\gamma_\star$, which is why the sign changes
+between $10^{-3}$ and $3\times10^{-3}$ and nowhere else. A reader whose product
+carries a different overhead should read the curve at that value instead.
+
+\input{tables/table_storage_at_constant_rmse}
+
+At matched reconstruction RMSE (Table~\ref{tab:storage_at_rmse}), oracle-best per-region ratios show native UTM ahead at the three tightest targets tested: HEALPix requires $1.23$--$1.59\times$ the operational UTM size at RMSE targets from $10^{-3}$ to $10^{-4}$, with Holm-adjusted $p\le8\times10^{-3}$. The picture reverses at the loosest target tested ($10^{-2}$), where HEALPix requires $0.81\times$ the operational UTM size (Holm-adjusted $p=2\times10^{-3}$). Between them, the $3\times10^{-3}$ target sits at parity (median $0.96$) and is the one reported target that does not survive correction ($p^{\mathrm{Holm}}=0.49$); it is reported as inconclusive, not as demonstrated equivalence, no equivalence margin having been defined. All eight reported targets are evaluated on all 40 regions.
+
+\input{tables/table_error_at_constant_size}
+
+At matched, shared storage budget (Table~\ref{tab:error_at_size}), the same regime-dependent pattern holds, and every target survives correction. At the two more generous reportable budgets ($10\%$ and $5\%$), HEALPix's reconstruction RMSE is $4.02\times$ and $1.33\times$ that of the operational UTM comparison: UTM is the better choice when storage is not tightly constrained. At the tightest budget ($2\%$) the ordering flips and HEALPix achieves $0.83\times$ the UTM RMSE (Holm-adjusted $p=1\times10^{-4}$).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_ratio_boxplots}
+\caption{Per-scene HPX/UTM ratio distributions underlying Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} (oracle-best codec chosen independently per scene, per grid). Left: compressed-size ratio at each target RMSE. Right: RMSE ratio at each target storage budget (log scale). The dashed line at $1.0$ marks parity; values below it favor HEALPix. Both panels show the same transition -- UTM favored at tight RMSE targets and generous budgets, HEALPix favored or comparable at the loosest RMSE targets and the tightest budget -- together with the inter-scene spread that the medians in Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} alone do not convey.}
+\label{fig:ratio_boxplots}
+\end{figure}
+
+Figure~\ref{fig:ratio_boxplots} shows this transition directly, together with the region-to-region dispersion behind each median. The spread is markedly asymmetric across land-cover classes: urban regions are the most UTM-favourable at tight targets (median $1.67$ at $10^{-4}$) and among the most HEALPix-favourable at the loosest one ($0.70$ at $10^{-2}$), while water regions produce nearly all of the extreme ratios in either direction. Those extremes are not noise in the statistical sense but a property of the scenes: over near-constant water the compressed files fall below \SI{10}{kB}, where container overhead is a large share of the total and where any resampling artifact is, by construction, most of the remaining signal. We report medians rather than means for this reason, and treat individual water-region ratios as uninformative at the loosest targets.
+
+Figure~\ref{fig:rd_comparison} shows the corresponding absolute-value curves, aggregated by median across scenes at each target rather than as per-scene oracle ratios; the two views are complementary, but should not be read as interchangeable, since aggregating in absolute bytes mixes scenes of different intrinsic difficulty -- exactly the effect the per-scene-ratio protocol of Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} was designed to avoid.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_storage_at_constant_rmse}
+\caption{Rate-distortion comparison, native UTM (blue) vs.\ HEALPix level-20 (red), same marker per codec on both grids, median \emph{absolute} compressed size/RMSE across the 40 regions (contrast with the per-scene ratios of Fig.~\ref{fig:ratio_boxplots}). Left: compressed size (as a fraction of the shared HEALPix raw tile size) at fixed target RMSE, $10^{-4}$--$10^{-2}$. Right: RMSE at fixed storage budget, $2$--$40\%$ of that same shared reference. Both panels use direct log--log interpolation of the raw codec sweeps (Section~\ref{sec:rd_protocol}); single-configuration lossless codecs (JPEG~2000, JPEG~XL) are shown as isolated points rather than curves.}
+\label{fig:rd_comparison}
+\end{figure}
+
 \subsection{Where on the Sphere the Advantage Lives}
 \label{sec:latitude}
 \input{tables/table_latitude_effect}
@@ -402,7 +455,7 @@ influence there --- that would need an equivalence margin we have not defined
 intrinsic gap is large.
 
 Taken at face value, the surviving association says that the regime in which
-HEALPix becomes competitive is reached in the belt before it is reached in the
+HEALPix becomes competitive at a given overhead is reached in the belt before it is reached in the
 caps, and the two near-threshold contrasts point the same way. We present this as exploratory. Latitude is confounded with scene class,
 spatial spectrum, orientation relative to UTM and HEALPix cell anisotropy, and
 we have measured none of the last three: a correlation with a coordinate is not
@@ -465,9 +518,9 @@ reaches is exactly what this product cannot say.
 
 Table~\ref{tab:support_controls} reports the outcome. With no content
 difference between the two supports, the intrinsic ratio falls monotonically
-from $2.22$ at the $10^{-4}$ target to $1.22$ at $10^{-2}$, against $2.06$ to
+from $2.22$ at the $10^{-4}$ target to $1.18$ at $10^{-2}$, against $2.06$ to
 $1.06$ measured on the imagery: the control tracks the intrinsic gap to
-within $8$--$20\%$ at the five targets, and reproduces its decline
+within $8$--$19\%$ at the five targets, and reproduces its decline
 with the target. Under the same $\gamma_{\mathrm{tile}}=1.30$ it also
 reproduces the change of sides, reaching $0.94$ at the loosest target where the imagery reaches $0.81$. The control reproduces the trend, which suggests it does not rest exclusively on content differences between the two footprints; it does not decompose the contributions of support, transfer and scene statistics, and at the two intermediate targets it departs from the imagery by more than the effect under study, so we report it as corroboration and not as a bound. The monotone decline that Section~\ref{sec:results} measures is therefore a
 property of the sampling geometry rather than of what the scenes happen to
@@ -526,7 +579,7 @@ wide where the median is stable.
 \input{tables/table_codec_ranking}
 \input{tables/table_fixed_codec}
 
-Table~\ref{tab:codec_ranking} aggregates every matched-quality and matched-size operating point on the HEALPix side and ranks codecs by how often each is the best choice. Over the 400 operating points --- 40 regions by all ten swept targets, including the two storage budgets withheld from Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} for insufficient bracketing, since a per-point ranking does not require the target to be bracketed on both grids ---  JPEG~2000 is best at 165 and JPEG~XL at 150, against 37 for SZ3, 35 for ZFP and 13 for the generic DWT+Zstandard baseline; mean ranks are $1.86$, $2.23$, $2.72$, $4.49$ and $3.60$. Every codec is evaluable at essentially every point, so the ordering is not an artefact of sweep coverage. We read the robust conclusion as JPEG~2000 and JPEG~XL forming the leading pair rather than as a strict ranking between the two: these counts are descriptive, the points are not independent (the same regions recur across targets), and we have not computed a BD-rate summary that would order the pair properly.
+Table~\ref{tab:codec_ranking} aggregates every matched-quality and matched-size operating point on the HEALPix side and ranks codecs by how often each is the best choice. Over the 400 operating points --- 40 regions by all ten swept targets, including the two storage budgets withheld from Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} for insufficient bracketing, since a per-point ranking does not require the target to be bracketed on both grids ---  JPEG~2000 is best at 166 and JPEG~XL at 149, against 37 for SZ3, 35 for ZFP and 13 for the generic DWT+Zstandard baseline; mean ranks are $1.85$, $2.25$, $2.71$, $4.48$ and $3.60$. Every codec is evaluable at essentially every point, so the ordering is not an artefact of sweep coverage. We read the robust conclusion as JPEG~2000 and JPEG~XL forming the leading pair rather than as a strict ranking between the two: these counts are descriptive, the points are not independent (the same regions recur across targets), and we have not computed a BD-rate summary that would order the pair properly.
 
 Two caveats matter for this comparison. Reaching it required extending the JPEG~XL sweep beyond its quality-level ladder, which saturates near RMSE $10^{-3}$ on Sentinel-2 B04: without additional Butteraugli-distance operating points, JPEG~XL is simply absent from the high-fidelity targets and would appear to win or lose them by default. The same shift toward JPEG~2000 and JPEG~XL at aggressive compression is observed on the \emph{native UTM} side, a grid with no HEALPix quadtree structure at all, so we read it as a general property of these codecs on natural imagery (Section~\ref{sec:why_quadtree}) rather than as evidence for a HEALPix-specific advantage.
 
@@ -655,8 +708,31 @@ of reference. What would lower it is not a better low-pass --- the amplitude
 response is already above $0.99$ over the band that carries the variance ---
 but a reconstructor that interpolates within the carrier raster instead of
 reading the containing cell, which is where the \SI{2.1}{m} of jitter comes
-from. We have not implemented one, and we do not claim to know how much of the
-floor it would remove.
+from. We implemented one, and Table~\ref{tab:reader_floor} reports what it
+removes.
+
+\input{tables/table_reader_floor}
+
+The interpolating read places each native pixel in the carrier's own lattice at
+sub-cell precision --- a NESTED block's local index is the Morton code of the
+cell's integer position on its base face, so the tile is a $1024\times1024$
+lattice whose neighbours are spatial neighbours --- by inverting, at the
+containing cell, the affine map from lattice steps to metres measured on the
+cell centres themselves, and takes the bilinear combination of the four
+bracketing centres. Cell anisotropy and orientation enter through that
+measured Jacobian, the four weights sum to one, and the read is linear. On the
+same Clough--Tocher tiles, the same mask and the same observation, its floor is
+$0.579$ times the nearest read's (paired median; lower on every region
+measured), which means the read accounts for $66\%$ of the floor's variance:
+the transfer-and-read floor falls from $10.0\%$ to $5.0\%$ of a scene's
+standard deviation when the read is changed and nothing else is. On the
+PSF-transferred tiles the same read lands within $4\%$ of the companion's own
+forward operator ($0.960$), so for a non-deconvolving product the interpolating
+read is close to the best available. The floor of
+Table~\ref{tab:representation_floor} is therefore two thirds a property of
+how the carrier was read and one third a property of what was put on it, and
+every result in Section~\ref{sec:common_reference} that was scored through the
+nearest read inherits that split.
 
 The same read has a second consequence, and it is about rate rather than error.
 A nearest-cell read of a $1024^2$ tile by the $637^2$ crop touches only
@@ -747,6 +823,19 @@ parameter and nothing finer.
 
 \subsection{The Verdict Depends on Which Reference Is Accepted}
 \label{sec:common_reference}
+
+A caveat governs everything in this section and is stated first. Every
+common-reference figure below was scored through the nearest-cell read, and
+Section~\ref{sec:operator} has since measured that an interpolating read
+removes two thirds of that floor's variance on the same tiles
+(Table~\ref{tab:reader_floor}). The floor against which the targets are judged
+is thus $4.0\times10^{-3}$ under the read used here and $1.9\times10^{-3}$
+under the interpolating one; the $3\times10^{-3}$ target that is unreachable
+below lies above the second floor, not the first. Re-scoring the full sweep
+through the interpolating read is a re-run of the codec benchmark and had not
+completed at the time of writing; until it has, the verdict of this section is
+a statement about the transfer-and-read pair as configured, and we do not read
+it as a statement about the carrier.
 Every ratio above compares each grid against its own raw representation: the
 HEALPix side against its already-resampled carrier tile, the native side against
 the raw UTM crop. That is the natural measure for an archive whose reference
@@ -833,9 +922,11 @@ An RMSE target is not interpretable on its own. Whether $3\times10^{-3}$ is an
 aggressive or a conservative place to compress depends on how far the stored
 product already sits from whatever it claims to represent, and that distance is
 not the same quantity for the two transfers this study cares about.
-Clough--Tocher piecewise-cubic interpolation represents the \emph{observed}
-field --- the scene as the instrument's response left it --- and by design
-neither adds nor removes spatial structure. A PSF-aware transfer of the kind
+Clough--Tocher piecewise-cubic interpolation is used here as a smooth
+interpolant intended to reproduce the \emph{observed} field --- the scene as
+the instrument's response left it --- without explicit deconvolution; it is not
+structure-preserving in any absolute sense, and Section~\ref{sec:transfer_cost}
+measures what it does to the spectrum. A PSF-aware transfer of the kind
 the companion study proposes~\cite{delouis2026resample} represents the
 \emph{latent} field, the scene before the response blurred it; it restores
 small-scale structure by construction, and so hands the codec a product with
@@ -1074,11 +1165,13 @@ library calls it \texttt{linear} and it is not a linear interpolant: the weight
 is $1/(\varepsilon + d/\sigma)$ over the four nearest neighbours, a Shepard-type
 average, and $\sigma$ defaults to the HEALPix \emph{output} cell scale rather
 than to the \SI{10}{m} input spacing --- exactly the under-filtering
-configuration Section~\ref{sec:resampler} identifies as having left visible
-excess high-frequency power in the carrier's spectrum. The control is therefore
-not an arbitrary alternative but the operator this study already rejected on
-spectral grounds, and what follows is the quantitative version of that
-rejection. That control is what makes the question
+configuration Section~\ref{sec:resampler} first rejected on the strength of a
+visual spectral comparison, and which the ablation of
+Table~\ref{tab:kernel_ablation} finds $9.5$ times less accurate than
+Clough--Tocher against an analytic field while leaving no excess top-octave
+power. The control is therefore not an arbitrary alternative but the operator
+this study already rejected, and what follows is the quantitative version of
+that rejection on the storage side. That control is what makes the question
 falsifiable. A deconvolved tile costing more bytes than a Clough--Tocher tile
 would tell us nothing on its own, because every property of a deconvolving
 transfer is confounded with the mere fact of its not being Clough--Tocher; only
@@ -1120,16 +1213,20 @@ Clough--Tocher tile compresses to $1.1\%$ of its own lossless size, the
 inverse-distance tile to $2.3\%$ and the deconvolved tile to $2.5\%$; the native UTM
 raster, for comparison, reaches $3.4\%$ of its own, which is the oversampling
 redundancy this paper is about and which every transfer inherits. The
-explanation is energy compaction, and the two transfers reach the same bill by
+observations are consistent with energy compaction, rather than total
+information content, being the dominant mechanism; we have not isolated it at
+the subband level, and the two transfers appear to reach the same bill by
 different routes. Clough--Tocher is a $C^1$ piecewise-cubic interpolant that
 approximately minimises curvature, so its energy sits in coarse wavelet
 coefficients and the fine ones are near zero and free to discard. The
 deconvolution puts power back into the small scales outright: its power in the
-highest octave is $2.4$ times the observation's, against $0.89$ for
+highest octave is $2.80$ times the observation's, against $0.89$ for
 Clough--Tocher (Table~\ref{tab:kernel_ablation}), and a coder asked for an RMSE
 has to encode it. The
 inverse-distance average adds no such power in that band --- its top octave is
-$0.90$, indistinguishable from Clough--Tocher's --- and still pays. We do not
+$0.92$, close to Clough--Tocher's, and its radially averaged spectrum is if
+anything nearer the observation's (log-PSD distance $0.03$ against $0.05$) ---
+and still pays. We do not
 claim to have isolated why. What is established is that it is a
 non-interpolating weighted average whose kernel is narrower than the spacing of
 the samples it averages, that Section~\ref{sec:resampler} found the same
@@ -1163,15 +1260,17 @@ transfer against an analytic field known at every position, evaluated at the
 cell centres of the same field that played the observation; it is the only
 measure there that gives a transfer no credit for merely copying its input
 samples. Among the transfers that claim to reproduce that field,
-Clough--Tocher is at $1.19\%$ of its standard deviation against $9.84\%$ for
-nearest and $12.07\%$ for the inverse-distance average, on three regions. The
+Clough--Tocher is at $1.20\%$ of its standard deviation against $10.04\%$ for
+nearest and $11.43\%$ for the inverse-distance average, on the 40 regions
+(39 for the inverse-distance average and for bicubic, which did not build on
+one). The
 bicubic row of Table~\ref{tab:kernel_ablation} is reported for completeness and
 should not be read as a finding about HEALPix: Keys' cubic convolution kernel is
 signed, its implementation documents ringing outside the local sample range as
 expected behaviour, and its normalisation can nearly cancel between the positive
 and negative lobes, so a sharpening kernel applied at this sampling ratio
 diverging is a property of that choice rather than of the carrier grid. The PSF transfer's
-$8.78\%$ on the same column is not a ranking entry: its estimand is the latent
+$8.16\%$ on the same column is not a ranking entry: its estimand is the latent
 field, so departing from the observed one is what it is for, and the number
 measures the deconvolution rather than an error. What the column does show is
 that the inverse-distance average's extra bytes buy transfer error, tenfold. An
@@ -1247,16 +1346,16 @@ Every result in this paper is measured on one dominant level-10 parent tile per 
 \label{sec:limitations}
 \begin{itemize}
     \item \textbf{The verdict is conditional on the transfer, by about a factor of two, and the transfer this paper uses is the most favourable of those tested.} Section~\ref{sec:transfer_cost} measures this rather than leaving it open: rebuilding the carrier with a PSF-aware or an
-inverse-distance transfer costs $1.2$ to $2.2$ times the bytes at the same accuracy, which  is more than the margin by which HEALPix leads at the loosest targets, so under either of them it leads at none. Clough--Tocher is also the most accurate of the transfers tested against an analytic field, and we argue the two properties share a cause, but the argument does not extend the result to transfers we have not swept --- the original inverse-distance weighting among them --- and it does not make the reported ratios properties of the grid. Three residual gaps remain in this ablation: the accuracy column of Table~\ref{tab:kernel_ablation} is measured on three regions rather than forty, we have not swept the IDW resampler that Section~\ref{sec:resampler} replaced, and we have not tested a non-deconvolving transfer of Clough--Tocher's smoothness class, which is what would isolate deconvolution from smoothness properly rather than bounding it as we do;
+inverse-distance transfer costs $1.2$ to $2.2$ times the bytes at the same accuracy, which  is more than the margin by which HEALPix leads at the loosest targets, so under either of them it leads at none. Clough--Tocher is also the most accurate of the transfers tested against an analytic field, and we argue the two properties share a cause, but the argument does not extend the result to transfers we have not swept --- the original inverse-distance weighting among them --- and it does not make the reported ratios properties of the grid. One residual gap remains in this ablation --- the accuracy column of Table~\ref{tab:kernel_ablation} now covers the 40 regions, and the inverse-distance resampler that Section~\ref{sec:resampler} replaced is the \texttt{linear} row of that table and the IDW control of Section~\ref{sec:transfer_cost} --- namely that we have not tested a non-deconvolving transfer of Clough--Tocher's smoothness class, which is what would isolate deconvolution from smoothness properly rather than bounding it as we do;
     \item \textbf{The equal-area UTM square is not pixel-for-pixel identical to the HEALPix footprint.} As noted in Section~\ref{sec:utm_crop}, the axis-aligned $637\times637$ UTM square extends slightly beyond the rotated HEALPix diamond along its edges and falls slightly short of it at the north/south/east/west corners. It matches the HEALPix tile's ground \emph{area} exactly (both grids being fixed-size representations, Table~\ref{tab:storage_accounting}), but not its exact shape; a polygon-masked, footprint-exact crop remains a possible further refinement, though we do not expect it to materially change the fixed $2.58\times$ oversampling relationship, which follows from HEALPix's equal-area property rather than from the crop shape;
     \item \textbf{The overhead is reported as a parameter because only its container component is measured.} Section~\ref{sec:results} now reports the verdict over a continuous range of the overhead \emph{ratio} $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$ rather than at one value, so no conclusion here depends on choosing $1.30$, and the container cost of each side is measured at under half a percent. What remains assumed is granule geometry, which we have not measured on complete Sentinel-2 products. The following remains true of that assumption:
      UTM is a coordinate reference system; padding, overlap, and per-tile metadata are properties of a particular product organization (here, Sentinel-2's MGRS granule layout), and a native UTM COG or Zarr archive need not carry this overhead at all. We report the $\gamma_{\mathrm{tile}}=1$ result as the grid-intrinsic comparison and the $\gamma_{\mathrm{tile}}=1.30$ result as one illustrative operational scenario (Table~\ref{tab:gamma_continuous} reports the critical overhead $\gamma_\star$ directly, so the conclusion at any other assumed overhead can be read off without rerunning the analysis). We have not measured $\gamma_{\mathrm{tile}}$ from real, complete tiled product files in this study, nor swept it continuously over $[1.0,1.5]$ for the matched-budget protocol (Table~\ref{tab:error_at_size}); both are left for future work. For compressed storage (Section~\ref{sec:overhead}), we further assume the overhead applies proportionally to the compressed byte count, i.e.\ that the padded/overlapping fraction of a native tile compresses at roughly the same ratio as the tile itself; this is a simplifying assumption, not a measurement of real, complete tiled product files;
     \item \textbf{The comparison is powered and drops no region, but the loosest targets carry censored observations.} All 40 paired regions enter every reported target: where a sweep does not bracket the target on one side, that region contributes a conservative bound instead of being discarded, which removes the non-random attrition an earlier version of this analysis suffered. We report exact two-sided Wilcoxon $p$-values on log-ratios together with a Holm correction across the full eight-test family; seven of eight survive it. The exception, the $3\times10^{-3}$ RMSE target, is the crossover point itself and is reported as inconclusive rather than as evidence of equivalence, since no equivalence margin has been defined. Bracketing is complete at the three tightest RMSE targets and falls to $90\%$ and $85\%$ at $3\times10^{-3}$ and $10^{-2}$; the two most generous storage budgets ($40\%$ and $20\%$ of the raw tile) are bracketed on both grids for only $0\%$ and $18\%$ of regions and are withheld entirely rather than reported from bounds;
-    \item \textbf{Neither reconstruction reference is the whole story.} Section~\ref{sec:results} scores each grid against its own raw representation and Section~\ref{sec:common_reference} scores both against the same observation; the two disagree at the crossover, and we report both rather than electing one. The floor of Table~\ref{tab:representation_floor} is the error of a Clough--Tocher tile read at nearest cell, and Section~\ref{sec:operator} shows the read alone is large enough to account for a floor of that size, so the floor is an upper bound on what the representation costs rather than a measurement of it. What we have \emph{not} done is decompose it: that needs the two halves varied independently --- a PSF-aware transfer of the kind the companion study~\cite{delouis2026resample} proposes, and a reconstructor that interpolates within the carrier raster rather than reading the containing cell --- and either could move the reversal. Quantifying that is the natural continuation of this work and the reason the two studies share their sites;
+    \item \textbf{Neither reconstruction reference is the whole story.} Section~\ref{sec:results} scores each grid against its own raw representation and Section~\ref{sec:common_reference} scores both against the same observation; the two disagree at the crossover, and we report both rather than electing one. The floor of Table~\ref{tab:representation_floor} is the error of a Clough--Tocher tile read at nearest cell, and Section~\ref{sec:operator} shows the read alone is large enough to account for a floor of that size, so the floor is an upper bound on what the representation costs rather than a measurement of it. The decomposition is now half done: a reconstructor that interpolates within the carrier raster removes two thirds of the floor's variance (Table~\ref{tab:reader_floor}), and the PSF-aware transfer of the companion study~\cite{delouis2026resample} has been run through the same protocol (Section~\ref{sec:transfer_cost}). What has \emph{not} been done is to re-score the common-reference sweep of Section~\ref{sec:common_reference} through the interpolating read; its verdict is reported under the nearest read and should be read as conditional on it until that re-scoring exists;
     \item \textbf{The super-resolution surcharge is measured, but our deconvolution control does not reproduce the companion's recovery, so the product it prices is not the one that study validates.} Section~\ref{sec:transfer_cost} prices the deconvolved carrier at $1.27$ to $2.19$ times the Clough--Tocher one, of which only a few percent is attributable to deconvolving rather than to leaving Clough--Tocher's smoothness class. That is a measurement on real imagery and does not depend on the synthetic harness. What does depend on it is the claim that the extra bytes buy a better estimand: in our harness the PSF-aware reconstruction recovers $+3.0\%$ to $+6.5\%$ of the blur without noise and nothing at the measured noise level, against the $15.4\%$ to $19.6\%$ the companion study reports noise-free. We identify the added noise and a latent spectrum extrapolated to the level-20 Nyquist as contributors, exclude the depth of the cell average by measurement, and are left with a residual gap we cannot attribute. The storage price is therefore reportable and the quality it purchases is not, which is the asymmetry a reader should carry away rather than a net verdict on PSF-aware carriers;
     \item \textbf{The oracle-best-codec comparison is optimistic by construction.} Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} select the best-performing codec independently per region and per grid at each target, which is an optimistic envelope and can let codec selection contribute to the reported gap alongside any grid effect proper. Table~\ref{tab:fixed_codec} reports the complementary same-codec comparison, in which the identical codec is used on both grids at the same achieved RMSE; it reproduces the same regime-dependent pattern, so codec selection is not what produces the crossover. Because an oracle envelope is not reachable in practice, the same-codec comparison should be read as the operational result and the oracle protocol as an upper bound on what codec selection could add;
     \item \textbf{The byte and type audit covers two regions, not forty.} Table~\ref{tab:byte_audit} reports, per encoded point, the library and version, the input dtype and scaling, the pre-codec conversion error, payload against reported bytes, and a bit-identity test, over two regions on both grids under both input scenarios. It found no gap between reported and on-disk sizes and no disagreement with an independent decoder at any of 424 points. Because what it tests is the adapters, which do not vary by region, we do not expect the remaining 38 to differ --- but we have not run it over them, and two accounting choices it exposes stand as reported: the image codecs' eight-byte scale-and-offset sidecar is not charged to their sizes, and the DWT baseline charges four bytes for a scale it never writes;
-    \item \textbf{The footprint mismatch is bounded, not eliminated, and its geometry is measured from cell centres.} Section~\ref{sec:support_controls} shows that a control with no support mismatch at all reproduces the measured intrinsic gap to within $7$--$17\%$, which bounds what the mismatch and the scene content can jointly contribute but does not separate them, and does not remove either from Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size}. The intersection fractions quoted in Section~\ref{sec:utm_crop} are computed from the convex hull of the cells' centres rather than from the exact cell-boundary polygon, and we have not computed each footprint's geodesic area scene by scene;
+    \item \textbf{The footprint mismatch is bounded, not eliminated, and its geometry is measured from cell centres.} Section~\ref{sec:support_controls} shows that a control with no support mismatch at all reproduces the measured intrinsic gap to within $8$--$19\%$, which bounds what the mismatch and the scene content can jointly contribute but does not separate them, and does not remove either from Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size}. The intersection fractions quoted in Section~\ref{sec:utm_crop} are computed from the convex hull of the cells' centres rather than from the exact cell-boundary polygon, and we have not computed each footprint's geodesic area scene by scene;
     \item \textbf{Codecs are swept over their own native quality parameter, not a common one.} The matched-RMSE/matched-size protocol of Section~\ref{sec:rd_protocol} is designed specifically to make this comparison as fair as achievable without assuming codec-internal parameters are equivalent, but residual convention effects cannot be fully excluded;
     \item \textbf{Single band, single sensor.} Only Sentinel-2 B04 (red, \SI{10}{m}) is evaluated; extending the comparison to other bands, other resolutions, and other sensors whose native sampling also falls between HEALPix levels would strengthen the generality of the claim;
     \item \textbf{The HEALPix side uses a deliberately simple resampling.} Even after the kernel correction of Section~\ref{sec:resampler}, the Clough--Tocher piecewise-cubic interpolation used to populate the level-20 tiles is a generic, PSF-agnostic resampler, chosen to match the native UTM side's content as closely as a simple method allows, not to model the sensor's actual point-spread function. The production resampling pipeline this group is developing for operational use, a point-spread-function-aware resampler~\cite{delouis2026resample}, is expected to inject more genuine high-frequency detail into the HEALPix representation than either resampler evaluated here; since less redundant, higher-entropy content compresses less well, the HEALPix-side compression ratios reported here should be read as optimistic relative to that future operational pipeline, not as a bound on it. We previously argued that the margin was bounded from one side, on the grounds that the imagery carries only $0.21\%$ of its variance above half the native Nyquist; we withdraw that argument. Low power in the \emph{observed} field bounds nothing about the latent one, since an instrument response is precisely what attenuates it --- and this study's own fitted spectra put $2.3\%$ (forest) to $31.1\%$ (urban) of the latent variance above the native Nyquist (Section~\ref{sec:error_budget}). Quantifying the gap is future work;
@@ -1296,13 +1395,29 @@ inverse-distance transfer costs $1.2$ to $2.2$ times the bytes at the same accur
 \section{Conclusion}
 This paper asked whether Earth observation data stored on the HEALPix level next finer than its native resolution -- necessary to avoid loss of spatial detail, but nominally oversampled by a factor of $\approx2.58$ per cell area -- actually costs more to store, once compression and an assumed operational tiling scenario are both taken into account. Using only established, independently published compressors (ZFP, SZ3, JPEG~2000, JPEG~XL, and a generic DWT+Zstandard baseline) with no HEALPix-specific coding, and an equal-area protocol that crops the native UTM raster to a square of the same nominal ground area as each HEALPix tile, the answer on 40 Sentinel-2 regions spanning four land-cover classes and both HEALPix cell-shape regimes is: it depends on the target quality or budget and on the overhead assumed for the native product's storage layout, and native UTM is intrinsically the more compressible representation throughout.
 
-Before compression, the raw HEALPix carrier tile is, by fixed geometric construction, $2.584\times$ the equal-area UTM crop and $1.99\times$ that crop scaled by the illustrative $\gamma_{\mathrm{tile}}=1.30$ overhead. After compression, native UTM remains more storage- and error-efficient at the three tightest RMSE targets and the two more generous reportable storage budgets (median per-region ratios $1.23$--$1.59$ and $1.33$--$4.02$); HEALPix is smaller at the loosest RMSE target ($0.81$) and at the tightest storage budget ($0.83$ at $2\%$), with the intermediate $3\times10^{-3}$ target at parity. Seven of the eight per-target paired tests survive a Holm correction across the family (Holm-adjusted $p\le8\times10^{-3}$, $n=40$ throughout), the exception being the crossover target itself, so the regime-dependent pattern is a measured effect rather than a directional impression.
+Before compression, the raw HEALPix carrier tile is, by fixed geometric construction, $2.584\times$ the equal nominal projected-area UTM crop and $1.99\times$ that crop scaled by the illustrative $\gamma_{\mathrm{tile}}=1.30$ overhead. After compression, native UTM remains more storage- and error-efficient at the three tightest RMSE targets and the two more generous reportable storage budgets (median per-region ratios $1.23$--$1.59$ and $1.33$--$4.02$); HEALPix is smaller at the loosest RMSE target ($0.81$) and at the tightest storage budget ($0.83$ at $2\%$), with the intermediate $3\times10^{-3}$ target at parity. Seven of the eight per-target paired tests survive a Holm correction across the family (Holm-adjusted $p\le8\times10^{-3}$, $n=40$ throughout), the exception being the crossover target itself, so the regime-dependent pattern is a measured effect rather than a directional impression.
 
-An accounting decomposition locates it: removing the assumed overhead reveals an intrinsic HEALPix/UTM compressibility gap that shrinks monotonically with looser targets, from $+106\%$ to $+6\%$, equivalent to a critical overhead $\gamma_\star$ falling from $2.06$ to $1.06$. That decline is a property of the sampling geometry rather than of scene content: one analytic field, of the spectrum and instrument width fitted to the imagery itself, sampled by both lattices with no support mismatch and no content difference, reproduces the same gap to within $7$--$17\%$ at every target and crosses sides at the same place. The gap crosses the assumed $1.30$ exactly where the measured verdict changes sides. HEALPix's compressed size falls below the operational UTM comparison only where the real overhead of the native product exceeds $\gamma_\star$, which is a statement about product layout, not about UTM as a coordinate system.
+An accounting decomposition locates it: removing the assumed overhead reveals an intrinsic HEALPix/UTM compressibility gap that shrinks monotonically with looser targets, from $+106\%$ to $+6\%$, equivalent to a critical overhead $\gamma_\star$ falling from $2.06$ to $1.06$. That decline is a property of the sampling geometry rather than of scene content: one analytic field, of the spectrum and instrument width fitted to the imagery itself, sampled by both lattices with no support mismatch and no content difference, reproduces the same gap to within $8$--$19\%$ at every target and crosses sides at the same place. The gap crosses the assumed $1.30$ exactly where the measured verdict changes sides. HEALPix's compressed size falls below the operational UTM comparison only where the real overhead of the native product exceeds $\gamma_\star$, which is a statement about product layout, not about UTM as a coordinate system.
 
-All results here use one transfer operator, Clough--Tocher piecewise-cubic interpolation, chosen after an earlier inverse-distance-weighted resampler was found to leave visible excess high-frequency power in the carrier tile's 2-D spectrum. We report that observation as the reason for the choice, not as a measured effect: we have not run the kernel ablation (nearest, linear, IDW, Clough--Tocher, PSF-aware) with paired transfer error, log-PSD distance and rate--distortion deltas that would quantify it, and Clough--Tocher is an interpolant that approximately minimises curvature, not a PSF-defined anti-aliasing filter. The choice of transfer operator should therefore be read as a methodological decision of this study whose influence on the reported ratios is not yet bounded. On the codec side, JPEG~2000 and JPEG~XL, not SZ3, are the strongest choices on HEALPix tiles across the tested range, with all five codecs evaluable at comparable numbers of operating points; the same ordering holds on the native UTM side, indicating a general property of these codecs on natural imagery rather than one tied to HEALPix's quadtree recursion.
+The crossover is a result for one transfer operator, and it does not survive
+the others tested. The carrier was populated with Clough--Tocher piecewise-cubic
+interpolation, chosen before any storage figure was measured to replace an
+inverse-distance resampler whose kernel was tuned to the output rather than the
+input spacing (Section~\ref{sec:resampler}); the ablation of
+Section~\ref{sec:transfer_cost} was run afterwards and reports what it found
+rather than what would have been convenient. Rebuilding the same tiles with a
+PSF-aware or with the inverse-distance transfer costs $1.2$ to $2.2$ times the
+bytes at equal accuracy and leaves HEALPix ahead at no target, more than the
+margin by which it leads at the loosest ones, and the observations are
+consistent with energy compaction rather than total information content being
+the dominant mechanism. The observed crossover is therefore a result for a
+carrier populated using a transfer in the smoothness class represented here by
+Clough--Tocher, and should not be interpreted as a transfer-independent
+property of HEALPix. On the codec side, JPEG~2000 and JPEG~XL form the leading
+pair among the generic codecs tested, on both grids alike, which we read as a
+property of these codecs on this kind of imagery rather than of the quadtree.
 
-Finally, the verdict depends on which reconstruction reference is accepted, and we report both. Scored against the same Sentinel-2 observation over the two footprints' intersection, the uncompressed carrier tile already differs from the native product by $4.0\times10^{-3}$ in median --- around $10\%$ of a scene's standard deviation, and more over structured urban scenes --- and no swept configuration reaches four of the five RMSE targets against it; the $2\%$-budget result turns from $0.83$ into $1.44$ in favour of native UTM. We state that as a property of the configurations swept rather than as an impossibility, because it is not one: writing the total error against the observation as $R\tilde{x}-y=(Rx-y)+R(\tilde{x}-x)$, the two terms carry a cross term of either sign, and Section~\ref{sec:cross_term} measures it negative against this very reference --- a codec that discards part of the noise the transfer carried moves the total error \emph{towards} zero, not away from it. Nothing forbids a configuration we did not sweep from landing below the uncompressed residual; none of ours does. That floor belongs to the transfer-and-read pair and not to the grid: the nearest-cell read is exactly registered but jitters by \SI{2.1}{m}, which costs about $14\%$ of a field's standard deviation on the imagery's own measured spectrum, so this second verdict is conditional on how the carrier is read. Which of the two references is operative also decides how expensive the
+Finally, the verdict depends on which reconstruction reference is accepted, and we report both. Scored against the same Sentinel-2 observation over the two footprints' intersection, the uncompressed carrier tile already differs from the native product by $4.0\times10^{-3}$ in median --- around $10\%$ of a scene's standard deviation, and more over structured urban scenes --- and no swept configuration reaches four of the five RMSE targets against it; the $2\%$-budget result turns from $0.83$ into $1.44$ in favour of native UTM. We state that as a property of the configurations swept rather than as an impossibility, because it is not one: writing the total error against the observation as $R\tilde{x}-y=(Rx-y)+R(\tilde{x}-x)$, the two terms carry a cross term of either sign, and Section~\ref{sec:cross_term} measures it negative against this very reference --- a codec that discards part of the noise the transfer carried moves the total error \emph{towards} zero, not away from it. Nothing forbids a configuration we did not sweep from landing below the uncompressed residual; none of ours does. That floor belongs to the transfer-and-read pair and not to the grid: the nearest-cell read is exactly registered but jitters by \SI{2.1}{m}, and replacing it by a read that interpolates within the carrier lattice removes two thirds of the floor's variance on the same tiles (Table~\ref{tab:reader_floor}), so this second verdict is conditional on how the carrier is read, and re-scoring it through that read is the first thing to do next. Which of the two references is operative also decides how expensive the
 crossover is: Section~\ref{sec:error_budget} measures the transfer error
 against each estimand on the same 40 regions and finds that, read against the
 latent scene --- the yardstick that applies when the carrier grid is used as if
@@ -1311,6 +1426,24 @@ compression error is still $0.13$ to $0.50$ of the error the product already
 carries, inflating its total error by a measured $2.5$ to $16.0\%$ for savings of $12$ to
 $30\%$, in three of the four scene classes; read against the observation the
 transfer claims to reproduce, the same crossings cost $84$ to $149\%$. The codec ordering and the latitude effect are unaffected by the switch. The practical conclusion is therefore conditional in a way worth stating plainly: a HEALPix carrier grid is competitive at aggressive compression when the HEALPix cube is itself the reference product, and is not when the native product remains the ground truth and the transfer error is charged to it. That floor, however, is not the grid's alone: Section~\ref{sec:operator} measures the reading operator at a \SI{2.1}{m} positional jitter costing about $14\%$ of a field's standard deviation on the imagery's own spectrum, so the reversal is conditional on how the carrier is read as much as on which reference is accepted. Separating the transfer error from the read, and from the resampling operator that produces the first, is the natural continuation of this work, and the reason this study shares its sites and its acquisitions with a companion study of HEALPix resampling~\cite{delouis2026resample}. How much the operator matters is now measured rather than assumed: rebuilding the carrier with a PSF-aware or an inverse-distance transfer costs $1.2$ to $2.2$ times the bytes at the same accuracy (Section~\ref{sec:transfer_cost}), more than the margin by which HEALPix leads at the loosest targets. Only a few percent of that is the price of deconvolving; the rest is the price of leaving a $C^1$ curvature-minimising interpolant, whose output a lossy coder can discard far more of at equal error. The competitive regime this paper reports therefore belongs to a carrier populated by a transfer in that class, and Clough--Tocher being also the most accurate transfer tested against an analytic field is, we argue, the same fact seen from the other side.
+
+In one sentence: an oversampled HEALPix carrier does not intrinsically compress
+Sentinel-2 imagery more efficiently than its native UTM representation, but its
+oversampling penalty becomes progressively smaller under lossy compression, and
+whether it becomes operationally competitive is determined by the tolerated
+distortion, the relative storage overhead of the two product layouts, the
+transfer used to build the carrier, and the reconstruction reference used to
+evaluate it. The critical-overhead formulation expresses that trade-off without
+privileging any storage architecture, and it is the form in which we think the
+result should be used. The evidence is from Sentinel-2 B04 at \SI{10}{m}, one
+acquisition per region, and it should not be carried to multispectral
+products, temporal cubes, model output or flux-conservative fields without
+being re-measured there. The step we consider most important next is to
+decouple the three parts of the chain this paper has shown to matter ---
+transfer, carrier and reading operator --- and to evaluate the complete chain
+with the operational PSF-aware transfer and a reader matched to it, on the
+same sites, which is what the shared pipeline with the companion study was
+built for.
 
 \appendices
 \section{Toward Global-Sphere Compression}

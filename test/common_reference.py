@@ -237,11 +237,22 @@ class CommonReference:
             self.cell_ids, cfg.LEVEL, ellipsoid="WGS84")
         clon = np.asarray(clon, dtype=np.float64)
         clat = np.asarray(clat, dtype=np.float64)
-        lon0, lat0 = float(clon.mean()), float(clat.mean())
+        # Longitudes arrive in whichever convention each library uses --
+        # healpix_geo hands back [0, 360), the UTM crop carries [-180, 180) --
+        # and the tile's mean is no safer than either. Every difference is
+        # therefore wrapped to (-180, 180]; without this, the western
+        # hemisphere reads as an offset of 2^22 cells and the guard below
+        # rejects the region (it did, on 15 of 40).
+        def wrap(d):
+            return (np.asarray(d, dtype=np.float64) + 180.0) % 360.0 - 180.0
+
+        lon0 = float(clon[0])
+        lon0 = lon0 + float(np.mean(wrap(clon - lon0)))
+        lat0 = float(clat.mean())
         k = cfg.R_EARTH * np.cos(np.deg2rad(lat0))
 
         def to_xy(lon, lat):                        # local metric frame
-            return (np.deg2rad(lon - lon0) * k,
+            return (np.deg2rad(wrap(lon - lon0)) * k,
                     np.deg2rad(lat - lat0) * cfg.R_EARTH)
 
         ex, ey = to_xy(clon, clat)

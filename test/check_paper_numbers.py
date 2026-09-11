@@ -109,7 +109,122 @@ def checks(tex: str):
                 str(len(survivors)),
                 "survivors: " + (", ".join(survivors) or "none")))
     out += level_and_reader_checks()
+    out += consistency_checks(tex)
     return out, survivors
+
+
+def consistency_checks(tex):
+    """The figures the second review found stale, recomputed at the source.
+
+    Each of these had a generated table on one side and a hand-typed number on
+    the other. The table is authoritative, so the check reads the same data the
+    table is built from and asks the prose to agree.
+    """
+    out = []
+    # --- codec wins and mean ranks (Table IX) ------------------------------
+    tab = cfg.REPO_ROOT / "tex" / "tables" / "table_codec_ranking.tex"
+    if tab.exists():
+        for line in tab.read_text(encoding="utf-8").splitlines():
+            m = re.match(r"\\texttt\{(\S+?)\} & (\d+) & (\d+) & ([\d.]+)", line)
+            if m:
+                name = m.group(1).replace("\\_", "_")
+                out.append((f"codec wins, {name}", m.group(2), "Table IX"))
+                out.append((f"codec mean rank, {name}", f"${m.group(4)}$", "Table IX"))
+    else:
+        out.append(("codec ranking  [skipped: table_codec_ranking.tex absent]", "", ""))
+
+    # --- synthetic control medians and the control/measured agreement --------
+    syn = _csv("support_controls_synthetic.csv")
+    if syn is None:
+        out.append(("synthetic control  [skipped: support_controls_synthetic.csv "
+                    "absent]", "", ""))
+    else:
+        syn = syn[syn.both_bracketed]
+        med = syn.groupby("target").ratio.median()
+        gs = {float(k): float(v) for k, v in load("self").get("gamma_star", {}).items()}
+        agree = []
+        ts = sorted(med.index)
+        for t, m in med.items():
+            # the prose quotes the endpoints of the decline; interior values
+            # are reported, as for the self ratios, but never asserted
+            interior = t not in (ts[0], ts[-1])
+            out.append((f"synthetic control ratio @ {t:g}"
+                        + ("  [range interior, not asserted]" if interior else ""),
+                        _fmt(m), "Table VIII"))
+            if t in gs:
+                agree.append(100 * abs(m - gs[t]) / gs[t])
+        if agree:
+            rng = f"${min(agree):.0f}$--${max(agree):.0f}\\%"
+            n_found = tex.count(rng)
+            out.append((f"control/measured agreement range (x{n_found} in text; "
+                        f"needs every occurrence)", rng,
+                        "min/max over targets of |control - gamma_star|/gamma_star"))
+
+    # --- the estimand's depth, as the table caption states it ----------------
+    re_csv = _csv("resampling_error.csv")
+    if re_csv is not None and "children" in re_csv:
+        depths = sorted(set(int(c) for c in re_csv.children.dropna().unique()))
+        if len(depths) == 1:
+            words = {1: "one", 4: "four", 16: "sixteen", 64: "sixty-four"}
+            n_ch = depths[0]
+            lvl = 20 + int(round(np.log(n_ch) / np.log(4))) if n_ch > 1 else 20
+            out.append(("estimand depth in the text",
+                        f"{words.get(n_ch, n_ch)} level-{lvl} children",
+                        "must match table_resampling_error caption"))
+
+    # --- the interpolating reader (Table reader_floor) -------------------------
+    rf = _csv("reader_floor.csv")
+    if rf is None:
+        out.append(("reader floor  [skipped: results/reader_floor.csv absent]", "",
+                    "run reader_floor.py"))
+    else:
+        ok = rf[rf.error.fillna("").astype(str).str.len() == 0]
+        ct = ok[ok.kernel == "clough_tocher"].pivot_table(
+            index="scene", columns="reader", values="floor")
+        if "nearest" in ct and "bilinear" in ct:
+            r = (ct.bilinear / ct.nearest).dropna()
+            share = 1.0 - r.median() ** 2
+            b = ok[(ok.kernel == "clough_tocher") & (ok.reader == "bilinear")]
+            out += [("bilinear / nearest floor, C-T tiles", _fmt(r.median(), 3),
+                     f"paired median over {len(r)} regions"),
+                    ("read share of floor variance, %", f"{100 * share:.0f}\\%",
+                     "1 - ratio^2; the text says 'two thirds' when this is 60-70"),
+                    ("bilinear floor, % of std", _fmt(100 * b.floor_frac_of_std.median(), 1) + "\\%", ""),
+                    ("bilinear floor, absolute",
+                     f"{b.floor.median():.1e}".replace("e-0", "\\times10^{-").replace("e-", "\\times10^{-") + "}",
+                     "as $x.x\\times10^{-3}$")]
+        ps = ok[ok.kernel == "psf"].pivot_table(index="scene", columns="reader", values="floor")
+        if "psf" in ps and "bilinear" in ps:
+            out.append(("psf / bilinear floor, PSF tiles",
+                        _fmt((ps.psf / ps.bilinear).dropna().median(), 3), "paired median"))
+
+    # --- the transfer ablation (Table kernel_ablation) ---------------------------
+    ka = _csv("kernel_ablation.csv")
+    if ka is None:
+        out.append(("kernel ablation  [skipped: results/kernel_ablation.csv absent]",
+                    "", "run kernel_ablation.py"))
+    else:
+        med = ka.groupby("kernel").agg(tr=("transfer_frac_of_std", "median"),
+                                       oc=("logpsd_top_octave", "median"))
+        for k in ("clough_tocher", "nearest", "linear", "psf"):
+            if k in med.index:
+                out.append((f"transfer error vs analytic field, {k}, % of std",
+                            _fmt(100 * med.loc[k, "tr"]) + "\\%", "Table kernel_ablation"))
+        for k in ("psf", "linear"):
+            if k in med.index:
+                out.append((f"top-octave power ratio, {k}", _fmt(med.loc[k, "oc"]), ""))
+        if {"clough_tocher", "linear"} <= set(med.index):
+            out.append(("IDW / C-T transfer error", _fmt(med.loc["linear", "tr"] / med.loc["clough_tocher", "tr"], 1),
+                        "the text says 'x times less accurate'"))
+
+    # --- the floor is never called the grid's own -----------------------------
+    prose = re.sub(r"tab:representation_floor", "", tex)
+    n_bad = len(re.findall(r"representation floor", prose))
+    out.append((f"'representation floor' in prose (found {n_bad}; must be 0)  "
+                "[count, not asserted]" if n_bad == 0 else
+                f"'representation floor' in prose (found {n_bad}; must be 0)",
+                "transfer-and-read floor", "one term throughout"))
+    return out
 
 
 def _csv(name):
@@ -248,6 +363,12 @@ def main(argv=None) -> int:
         if ("not asserted" in label or "[skipped" in label
                 or label.startswith("number of latitude")):
             # a count, not a figure in the text: reported, never asserted
+            continue
+        if "needs every occurrence" in label:
+            if tex.count(value) < 3:
+                bad.append((label, value, note))
+            continue
+        if "[count, not asserted]" in label:
             continue
         if value not in tex:
             bad.append((label, value, note))

@@ -342,6 +342,21 @@ def latex_table(df, control=None):
             + ("---" if rec0 != rec0 else f"{rec0:+.1f}") + " \\\\")
     n = int(ok.scene.nunique())
     have_control = ctrl is not None and len(ctrl) > 0
+    # The estimand's depth is read from the rows, never written by hand: a
+    # caption that said "four level-21 children" outlived the run that used
+    # sixteen, and a reviewer caught it before we did.
+    depths = sorted(set(int(c) for c in ok.children.dropna().unique()))
+    if len(depths) != 1:
+        raise ValueError(f"one table cannot carry several cell-average depths: "
+                         f"{depths}")
+    n_ch = depths[0]
+    words = {1: "one", 4: "four", 16: "sixteen", 64: "sixty-four"}
+    sub_level = cfg.LEVEL + int(round(math.log(n_ch, 4))) if n_ch > 1 else cfg.LEVEL
+    estimand = (f"the truth at each cell is the average over its "
+                f"{words.get(n_ch, n_ch)} level-{sub_level} children, matching "
+                f"the companion study's cell-average estimand"
+                if n_ch > 1 else
+                "the truth at each cell is a point sample at the cell centre")
     return (
         "\\begin{table*}[t]\n\\centering\n"
         "\\caption{What each transfer costs against the reference it is "
@@ -350,9 +365,8 @@ def latex_table(df, control=None):
         f"{n} regions. The latent field is analytic, the observation is that "
         "field convolved exactly with the fitted Gaussian response, sampled at "
         "the native pixel positions and given additive noise at the level "
-        "Immerkaer's estimator reads off the region's own imagery; the truth "
-        "at each cell is the average over its sixteen level-22 children, matching "
-        "the companion study's cell-average estimand. \\emph{Blur} is the RMSE "
+        "Immerkaer's estimator reads off the region's own imagery; "
+        f"{estimand}. \\emph{{Blur}} is the RMSE "
         "between the observed and latent fields, i.e.\\ what a non-deconvolving "
         "transfer leaves on the table by construction. "
         "\\texttt{clough\\_tocher} is scored against the observed field it "
