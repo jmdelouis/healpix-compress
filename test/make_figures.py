@@ -52,39 +52,98 @@ def _load(metric="self"):
     return hpx, utm, scenes, codecs, rmse_col, index
 
 
+def _lonlat_from_tiles(scenes):
+    """Region centres read from the built tiles themselves.
+
+    The manifest is the authority on where a region sits, but it lives in the
+    healpix-resample checkout and is not always reachable (no sibling
+    directory, no $HEALPIX_RESAMPLE_ROOT). The tiles are, whenever these
+    figures can be drawn at all, so the hull stored in each .npz is the
+    fallback: its mean, with the longitudes wrapped, is the tile centre to
+    well within a plotted marker.
+    """
+    try:
+        import build_tiles
+    except Exception:                                     # noqa: BLE001
+        return {}
+    out = {}
+    for scene in scenes:
+        path = build_tiles.tile_path(scene)
+        if not path.exists():
+            continue
+        try:
+            with np.load(path) as z:
+                lon = _wrap_deg(np.asarray(z["hull_lon"], dtype=np.float64))
+                lat = np.asarray(z["hull_lat"], dtype=np.float64)
+        except Exception:                                 # noqa: BLE001
+            continue
+        out[scene] = (float(_wrap_deg(lon.mean())), float(lat.mean()))
+    return out
+
+
 def _region_index(hpx, scenes):
     """One row per benchmarked region: class, lon, lat, |lat|, regime.
 
-    Built from the frozen manifest (region_sites) and the benchmark itself,
-    never from data/tiles/tiles_index.csv alone: a partial build_tiles run
-    once left that file with a single row, and the region map, the box-plot
-    class colours and the latitude figure all silently inherited it (a map
-    titled "1 evaluation regions"). tiles_index.csv is only merged in for
-    tile-specific columns it may carry.
+    Assembled from the sources in order of authority, each one filling only
+    what the previous ones left missing:
+
+      1. the benchmark itself, which carries the class, the latitude and the
+         regime of every region actually compressed;
+      2. the frozen manifest (region_sites), which adds the longitude and is
+         the published definition of the region list;
+      3. the built tiles, whose stored hull gives a centre when the manifest
+         is out of reach;
+      4. data/tiles/tiles_index.csv, for tile-specific columns only.
+
+    It is deliberately not built from tiles_index.csv alone: a partial
+    build_tiles run once left that file with a single row, and the region
+    map, the box-plot class colours and the latitude figure all silently
+    inherited it -- a map titled "1 evaluation regions".
     """
     cols = ["scene", "scene_class", "lat", "abs_lat", "hpx_regime"]
-    base = hpx.drop_duplicates("scene")[[c for c in cols if c in hpx.columns]]
+    idx = (hpx.drop_duplicates("scene")[[c for c in cols if c in hpx.columns]]
+           .pipe(lambda d: d[d.scene.isin(scenes)]).copy())
+    if "lon" not in idx:
+        idx["lon"] = np.nan
+
     try:
         import region_sites
-        sites = region_sites.load_sites()
-        idx = sites[sites.scene.isin(scenes)][
-            ["scene", "scene_class", "lon", "lat", "abs_lat", "hpx_regime"]]
+        sites = region_sites.load_sites().set_index("scene")
+        for col in ("scene_class", "lon", "lat", "abs_lat", "hpx_regime"):
+            if col in sites:
+                filled = idx.scene.map(sites[col])
+                idx[col] = filled.where(filled.notna(), idx.get(col))
     except Exception as exc:                              # noqa: BLE001
         print(f"  region index: manifest unavailable ({type(exc).__name__}: "
-              f"{exc}); falling back to the benchmark columns (no longitude)")
-        idx = base[base.scene.isin(scenes)]
+              f"{exc}); positions will come from the built tiles")
+
+    if idx.lon.isna().any():
+        centres = _lonlat_from_tiles(sorted(idx.loc[idx.lon.isna(), "scene"]))
+        if centres:
+            idx.loc[idx.lon.isna(), "lon"] = idx.scene.map(
+                {k: v[0] for k, v in centres.items()})
+            if "lat" in idx:
+                idx["lat"] = idx.lat.where(idx.lat.notna(),
+                                           idx.scene.map({k: v[1] for k, v in centres.items()}))
+            print(f"  region index: {len(centres)} region centre(s) read from the "
+                  f"built tiles")
+
+    if "lat" in idx and "abs_lat" in idx:
+        idx["abs_lat"] = idx.abs_lat.where(idx.abs_lat.notna(), idx.lat.abs())
+
     idx_path = cfg.TILE_DIR / "tiles_index.csv"
     if idx_path.exists():
         tiles = pd.read_csv(idx_path)
         extra = [c for c in tiles.columns if c not in idx.columns and c != "scene"]
         if extra:
             idx = idx.merge(tiles[["scene"] + extra], on="scene", how="left")
-    missing = sorted(set(scenes) - set(idx.scene))
-    if missing:
-        print(f"  region index: {len(missing)} benchmarked region(s) absent from "
-              f"the manifest: {', '.join(missing[:5])}{'...' if len(missing) > 5 else ''}")
+
     if len(idx) != len(scenes):
         print(f"  region index: {len(idx)} rows for {len(scenes)} benchmarked regions")
+    n_pos = int(idx.lon.notna().sum()) if "lon" in idx else 0
+    if n_pos < len(idx):
+        print(f"  region index: {len(idx) - n_pos} region(s) without a longitude; "
+              f"the region map will show the rest")
     return idx.sort_values("scene").reset_index(drop=True)
 
 
@@ -295,26 +354,84 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
               f"[{100*min(fr):.1f}, {100*max(fr):.1f}]")
 
 
+def _map_axes(figsize):
+    """A geographic axes with coastlines when cartopy is available.
+
+    The continents are context, not data: the region positions are plotted in
+    plain PlateCarree either way, so the figure degrades to a bare lon/lat
+    frame (with a printed reason) rather than failing where cartopy or its
+    Natural Earth cache is missing.
+    """
+    try:
+        import cartopy.crs as ccrs
+        import cartopy.feature as cfeature
+    except Exception as exc:                              # noqa: BLE001
+        print(f"    coastlines: cartopy unavailable ({type(exc).__name__}); "
+              f"plotting a plain lon/lat frame")
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.set_xlim(-180, 180)
+        ax.set_ylim(-70, 75)
+        ax.set_xlabel("Longitude (deg)")
+        ax.set_ylabel("Latitude (deg)")
+        ax.grid(alpha=0.25, linewidth=0.5)
+        return fig, ax, None
+
+    proj = ccrs.PlateCarree()
+    fig, ax = plt.subplots(figsize=figsize, subplot_kw={"projection": proj})
+    ax.set_extent([-180, 180, -70, 75], crs=proj)
+    try:
+        # Resolve the Natural Earth files now. add_feature() is lazy: it
+        # defers the download to draw time, i.e. to inside savefig, where a
+        # failure would take the whole figure down instead of falling back.
+        from cartopy.io import shapereader
+        for name in ("land", "coastline"):
+            shapereader.natural_earth(resolution="110m", category="physical",
+                                      name=name)
+        ax.add_feature(cfeature.LAND, facecolor="#EDEDED", edgecolor="none",
+                       zorder=0)
+        ax.add_feature(cfeature.COASTLINE, edgecolor="#9A9A9A", linewidth=0.5,
+                       zorder=1)
+    except Exception as exc:                              # noqa: BLE001
+        # Natural Earth ships as a download; an offline machine must still
+        # get the figure, with the graticule alone for context.
+        print(f"    coastlines: Natural Earth unavailable "
+              f"({type(exc).__name__}: {str(exc)[:70]}); graticule only")
+    gl = ax.gridlines(draw_labels=True, linewidth=0.4, color="0.8",
+                      alpha=0.6, linestyle="-", zorder=1)
+    gl.top_labels = gl.right_labels = False
+    gl.xlabel_style = gl.ylabel_style = {"size": 8}
+    return fig, ax, proj
+
+
 def fig_region_map(index, publish=True):
-    if "lat" not in index:
+    if not {"lon", "lat"} <= set(index.columns):
+        print("  fig_region_map: skipped (no region positions; set "
+              "HEALPIX_RESAMPLE_ROOT or rebuild the tiles)")
         return
-    fig, ax = plt.subplots(figsize=(9, 4.4))
-    for cls, g in index.groupby("scene_class"):
+    pos = index.dropna(subset=["lon", "lat"])
+    if pos.empty:
+        print("  fig_region_map: skipped (no region has a position)")
+        return
+    fig, ax, proj = _map_axes((9, 4.6))
+    tr = {"transform": proj} if proj is not None else {}
+    for cls, g in pos.groupby("scene_class"):
         ax.scatter(g.lon, g.lat, s=42, label=cls,
                    color=CLASS_COLOR.get(cls, "0.4"),
-                   edgecolor="black", linewidth=0.4, zorder=3)
+                   edgecolor="black", linewidth=0.4, zorder=3, **tr)
     for lat in (cfg.EQUATORIAL_LAT_DEG, -cfg.EQUATORIAL_LAT_DEG):
-        ax.axhline(lat, color="grey", linestyle=":", linewidth=1)
-    ax.text(-178, cfg.EQUATORIAL_LAT_DEG + 2,
+        ax.plot([-180, 180], [lat, lat], color="grey", linestyle=":",
+                linewidth=1, zorder=2, **tr)
+    ax.text(-176, cfg.EQUATORIAL_LAT_DEG + 3.5,
             r"HEALPix equatorial belt boundary  $|\mathrm{lat}|=41.81^\circ$",
-            fontsize=8, color="grey")
-    ax.set_xlim(-180, 180)
-    ax.set_ylim(-70, 75)
-    ax.set_xlabel("Longitude (deg)")
-    ax.set_ylabel("Latitude (deg)")
-    ax.grid(alpha=0.25, linewidth=0.5)
-    ax.legend(ncol=4, frameon=False, loc="lower center", bbox_to_anchor=(0.5, -0.32))
-    ax.set_title(f"{len(index)} evaluation regions, shared with healpix-resample")
+            fontsize=8, color="dimgrey", zorder=4, va="bottom",
+            bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none",
+                      alpha=0.75), **tr)
+    ax.legend(ncol=4, frameon=False, loc="lower center",
+              bbox_to_anchor=(0.5, -0.22), fontsize=9)
+    n_belt = int((pos.lat.abs() < cfg.EQUATORIAL_LAT_DEG).sum())
+    ax.set_title(f"{len(pos)} evaluation regions, shared with healpix-resample "
+                 f"({n_belt} in the equatorial belt, {len(pos) - n_belt} in the "
+                 f"caps)", fontsize=10)
     _save(fig, "fig_region_map", publish)
 
 
