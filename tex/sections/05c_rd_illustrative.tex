@@ -8,7 +8,12 @@ Table~\ref{tab:gamma_continuous} read at one abscissa: HEALPix is the
 smaller representation at a target exactly where $1.30$ exceeds the
 $\gamma_\star$ of that target, which is why the sign changes between
 $10^{-3}$ and $3\times10^{-3}$ and nowhere else. A reader whose product
-carries a different overhead should read the curve at that value.
+carries a different overhead should read the curve at that value. The
+scenario is easy to state in sizes: if the native product is stored with
+$30\%$ of padding and metadata, the Clough--Tocher carrier is $1.59$
+times its size at the tightest tolerance and $0.81$ times at the loosest,
+so that HEALPix is the smaller archive only for users who accept an error
+of a quarter of the scene contrast.
 
 \input{tables/table_storage_at_constant_rmse}
 

@@ -74,7 +74,15 @@ nearest read, becomes $1.12$ against $0.83$, and a third of it was due to
 the reader. What remains is the transfer: the residual floor of
 $1.9\times10^{-3}$ is the cost of a Clough--Tocher tile against the
 observation once it is read well, and at the generous budgets the ratio is
-dominated by this floor rather than by compression.
+dominated by this floor rather than by compression. Put simply, the
+question ``how far is the compressed file from the original?'' has two
+answers for HEALPix, depending on what is called the original. If the
+original is the HEALPix cube, the sizes of Table~\ref{tab:headline} apply
+and the carrier is competitive at loose tolerances. If the original is
+the Sentinel-2 image, then moving the data onto the tile and back already
+costs an error of about a tenth of the scene contrast, a tenth that the
+native product does not pay, and the carrier is then larger at every
+tolerance this study could evaluate.
 
 Two results are unchanged by the switch of reference. JPEG~2000 leads by a
 wide margin under both references and both reads; JPEG~XL and SZ3 exchange

@@ -132,6 +132,7 @@ def checks(tex: str):
                 "survivors: " + (", ".join(survivors) or "none")))
     out += level_and_reader_checks()
     out += gamma_continuous_checks()
+    out += headline_checks()
     out += consistency_checks(tex)
     return out, survivors
 
@@ -162,6 +163,52 @@ def gamma_continuous_checks():
         out.append(("inconclusive gamma band at RMSE 1e-3",
                     f"${r.inconclusive_lo.iloc[0]:.2f}$--${r.inconclusive_hi.iloc[0]:.2f}$",
                     "paired test does not reject parity"))
+    return out
+
+
+def headline_checks():
+    """The plain-language sizes of Section V-B, the abstract and the conclusion.
+
+    Every figure comes from headline.py, which assembles them from the results
+    the other sections are checked against; the abstract quotes them by value,
+    so each one is asserted verbatim.
+    """
+    try:
+        import headline as hl
+        per_target, raw, transfers, std, gamma = hl.load()
+    except Exception as exc:                      # noqa: BLE001
+        return [("headline sizes  [skipped: "
+                 f"{type(exc).__name__}]", "", str(exc)[:60])]
+    out = []
+    ts = sorted(per_target)
+    for name, t in (("tightest", ts[0]), ("loosest", ts[-1])):
+        bc = per_target[t]["by_class"].values()
+        out.append((f"headline class range, {name} target",
+                    f"${min(bc):.2f}$--${max(bc):.2f}$",
+                    "range of the four class medians, gamma=1"))
+    pct = [100 * ts[0] / std, 100 * ts[-1] / std]
+    words = "quarter of a percent" if abs(pct[0] - 0.25) < 0.03 else f"{pct[0]:.2g}\\%"
+    out.append(("tightest target as share of contrast", words,
+                f"{pct[0]:.3f}% of the median tile std {std:.4f}"))
+    words = "quarter of the contrast" if abs(pct[1] - 25) < 3 else f"{pct[1]:.2g}\\%"
+    out.append(("loosest target as share of contrast", words,
+                f"{pct[1]:.2f}% of the median tile std {std:.4f}"))
+    out.append(("median tile contrast (glossary)", f"${std:.2f}$",
+                "median std of the level-20 tiles"))
+    if transfers:
+        vals = [transfers[t] for t in sorted(transfers)]
+        for key, label in (("psf", "PSF-aware"), ("idw", "inverse-distance")):
+            lo, hi = min(v[key] for v in vals), max(v[key] for v in vals)
+            out.append((f"{label} tile / UTM at gamma=1, range",
+                        f"${lo:.1f}$--${hi:.1f}$", "abstract and conclusion"))
+            out.append((f"{label} tile / UTM at gamma=1, tightest",
+                        f"${vals[0][key]:.2f}$", "Section V-J, final sizes"))
+            out.append((f"{label} tile / UTM at gamma=1, loosest",
+                        f"${vals[-1][key]:.2f}$", "Section V-J, final sizes"))
+        out.append(("PSF-aware tile / UTM at gamma=1.3, range",
+                    f"${min(v['psf'] for v in vals)/gamma:.1f}$ to "
+                    f"${max(v['psf'] for v in vals)/gamma:.1f}$",
+                    "Section V-B, illustrative overhead"))
     return out
 
 
@@ -211,6 +258,12 @@ def consistency_checks(tex):
             out.append((f"control/measured agreement range (x{n_found} in text; "
                         f"needs every occurrence)", rng,
                         "min/max over targets of |control - gamma_star|/gamma_star"))
+            # the same paragraph also states the excess in "X% to Y%" form
+            # (the control sits above the measurement); a stale 7--17 % had
+            # survived priority 0 in that form, so it is asserted separately
+            rng2 = f"${min(agree):.0f}\\%$ to ${max(agree):.0f}\\%$"
+            out.append(("control excess over measured, 'X% to Y%' form", rng2,
+                        "same quantity as the agreement range"))
 
     # --- the estimand's depth, as the table caption states it ----------------
     re_csv = _csv("resampling_error.csv")

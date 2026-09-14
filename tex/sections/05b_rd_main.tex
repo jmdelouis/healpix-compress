@@ -18,7 +18,12 @@ useful, and reported after the curve because it is not the result.
 At $\gamma=1$, native UTM is intrinsically the more compressible
 representation over the whole tested RMSE range, by a margin that decreases
 monotonically as the target loosens: $+106\%$, $+94\%$, $+60\%$, $+25\%$ and
-$+6\%$ from $10^{-4}$ to $10^{-2}$.
+$+6\%$ from $10^{-4}$ to $10^{-2}$. In plain terms, the compressed HEALPix
+tile is twice the size of the compressed native square when almost no
+error is tolerated, and about the same size when a quarter of the scene
+contrast is; the $2.58$ of the uncompressed tile is never reached again
+once a codec is involved, and is almost entirely recovered at the loosest
+target.
 
 Restating this gap as
 $\gamma_\star(e)=S_{\mathrm{HPX}}(e)/S_{\mathrm{UTM,crop}}(e)$ is an

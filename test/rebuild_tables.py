@@ -174,6 +174,12 @@ def rebuild(dry=False):
     step("superres_cost -> table_transfer_cost, table_compactability",
          _superres, ["hpx_codec_bench.csv"])
 
+    def _headline():
+        import headline as hl
+        hl.main([])
+    step("headline -> table_headline, fig_headline", _headline,
+         ["paper_numbers_self.json", "level_choice.csv"])
+
     return done, missing
 
 

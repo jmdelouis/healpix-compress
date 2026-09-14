@@ -69,44 +69,42 @@ Email: vincent.dumoulin@esa.int. ORCID: 0009-0005-1217-1143.}%
 \maketitle
 
 \begin{abstract}
-Hierarchical equal-area pixelizations such as HEALPix are well suited to
-global Earth observation, but their dyadic refinement restricts resolution to
-powers-of-two steps. The \SI{10}{m} bands of Sentinel-2 fall between level 19
-(\SI{12.4}{m}) and level 20 (\SI{6.2}{m}), so that a level-20 carrier grid
-holds about $2.58$ times as many samples per unit area as the native raster.
-We ask whether this redundancy remains expensive once compression and the
-storage overhead of native tiling are both taken into account. On 40
-Sentinel-2 L2A B04 regions spanning four land-cover classes and both HEALPix
-cell-shape regimes, five established general-purpose codecs are applied to
-level-20 chunks reshaped by Morton de-interleaving and to a native UTM square
-of equal nominal projected area. Three findings follow in order. With no
-overhead assigned to either product, native UTM is intrinsically the more
-compressible representation at every tested distortion, but the penalty
-decreases monotonically as the tolerated distortion grows; expressed as a
-distortion-dependent \emph{critical overhead} $\gamma_\star(e)$, the
-native-product storage overhead above which the carrier becomes the smaller
-representation, it falls from $2.06$ at an RMSE of $10^{-4}$ to $1.06$ at
-$10^{-2}$. Under an illustrative $30\%$ granule-overhead scenario, HEALPix is
-therefore competitive only at aggressive compression ($0.81$ of the
-operational UTM size at the loosest target, $0.83$ of its error at the
-tightest budget), and native UTM leads at high fidelity (median ratios
-$1.23$--$1.59$). This crossover is not a property of the grid alone. It
-depends on the transfer that populates the carrier: rebuilding the tiles with
-a PSF-aware or an inverse-distance transfer costs $1.2$ to $2.2$ times the
-bytes at the same accuracy and leaves HEALPix ahead at no target, and the
-evidence points to energy compaction rather than added content as the
-mechanism. It also does not survive a common native-observation reference:
-scored end-to-end against the same Sentinel-2 observation, the uncompressed
-carrier already differs from it by $4.0\times10^{-3}$ in median, about $10\%$
-of a scene's standard deviation, and native UTM leads at every reportable
-target. Two thirds of the variance of that floor is due to the nearest-cell
-read itself, a \SI{2.1}{m} positional jitter; re-scoring the sweep through
-an interpolating read halves the floor and narrows the UTM lead at the
-tightest budget from $1.44$ to $1.12$, with the two grids at parity at the
-loosest RMSE target, but does not reverse it. The contribution is a
-quantified decision framework, conditioned on distortion, product layout,
-transfer and reconstruction reference, rather than a claim that either grid
-compresses better.
+Storing Sentinel-2 imagery on a HEALPix grid means choosing between level
+19, whose \SI{12.4}{m} cells are coarser than the \SI{10}{m} product, and
+level 20, whose \SI{6.2}{m} cells hold about $2.58$ times as many samples
+per unit area as the native raster. This paper measures what the finer
+choice costs in storage once both representations are compressed. On 40
+Sentinel-2 L2A B04 regions spanning four land-cover classes and both
+HEALPix cell-shape regimes, five established general-purpose codecs (ZFP,
+SZ3, JPEG~2000, JPEG~XL and a wavelet baseline) are applied to level-20
+tiles reshaped into ordinary rasters and to native UTM squares of equal
+ground area, and sizes are compared at equal reconstruction error. The
+result is one ratio: the compressed size of the HEALPix tile divided by
+that of the UTM square. Uncompressed, it is $2.58$. Compressed to a
+tolerated RMSE of $10^{-4}$ in reflectance, a quarter of a percent of the
+contrast of a typical scene, it is $2.06$ in median, and it falls steadily
+to $1.06$ at $10^{-2}$, a quarter of the contrast; land-cover class moves
+it within $2.01$--$2.17$ at the tightest tolerance and $0.91$--$1.24$ at
+the loosest. These figures hold for a tile filled by Clough--Tocher
+interpolation, a smooth surface passed through the observed pixels. A
+PSF-aware transfer, which also undoes part of the instrument blur, or a
+plain inverse-distance average, gives a tile that compresses far less: its
+ratio stays at $2.3$--$2.7$ over the whole error range, which is $1.2$ to
+$2.2$ times the bytes of the Clough--Tocher tile at the same accuracy.
+Whether the finer grid ever costs less than the native product therefore
+depends on the tolerated error, on the transfer, and on the overhead that
+the native tiling layout carries: under an illustrative $30\%$ granule
+overhead the Clough--Tocher carrier is smaller only at the loosest
+tolerance ($0.81$ of the operational UTM size) and larger at the tighter
+ones ($1.23$--$1.59$). It also depends on the reference. Scored against
+the native observation itself, the transfer and the read of the carrier
+already cost an RMSE of $4.0\times10^{-3}$ before any compression, and
+native UTM leads at every reportable target; an interpolating read halves
+that floor and narrows the lead without reversing it. All of this is
+expressed as a distortion-dependent critical overhead $\gamma_\star(e)$,
+the native-product overhead above which the carrier becomes the smaller
+representation, and offered as a decision framework rather than as a
+verdict for either grid.
 \end{abstract}
 
 \begin{IEEEkeywords}

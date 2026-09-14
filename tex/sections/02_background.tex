@@ -42,6 +42,42 @@ Level 20 has exactly four times as many cells as level 19; this factor is an exa
 \end{equation}
 The two factors answer different questions: \eqref{eq:alpha} compares level 20 with the \emph{native sensor grid}, whereas the factor of four compares level 20 with level 19. Neither indicates by itself whether the additional samples cost more to store once compressed, which is the empirical question addressed in Section~\ref{sec:results}.
 
+\subsection{Terms Used in This Paper}
+\label{sec:glossary}
+The comparison rests on a small number of notions that are standard in
+compression and signal processing but not in Earth-observation data
+management. Table~\ref{tab:glossary} states each in the sense in which
+this paper uses it. Two deserve a word here because the result turns on
+them. The \emph{transfer} is the operation that fills the HEALPix tile
+from the native pixels; it has no counterpart on the UTM side, and the
+storage cost of the tile depends on it more than on anything else in the
+study. The \emph{reference} is the field against which the reconstruction
+error is measured; measured against the tile itself, the transfer costs
+nothing, whereas measured against the native observation the transfer is
+charged to HEALPix, and the two references reach different verdicts.
+
+\begin{table*}[t]
+\centering
+\caption{Terms used in this paper}
+\label{tab:glossary}
+\footnotesize
+\begin{tabular}{@{}p{0.2\textwidth}p{0.76\textwidth}@{}}
+\toprule
+Term & Meaning in this paper \\
+\midrule
+Carrier grid, tile & The HEALPix level-20 grid on which the imagery is stored, and the unit of storage on it: the $1024\times1024$ cells descending from one level-10 cell, about \SI{6.4}{km} across. \\
+Native UTM square & The $637\times637$-pixel square of the original Sentinel-2 raster that covers the same ground area as one tile; the native side is never resampled. \\
+Transfer & The operation that fills the tile from the native pixels. Three are compared. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it adds nothing to the image and is the carrier used throughout. \emph{PSF-aware} additionally undoes part of the blur of the instrument, so the tile is sharper than the product it came from. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
+Read & The operation that returns a value on a native pixel from a decoded tile, needed only when the tile is compared with the observation; nearest cell, or interpolation within the tile. \\
+Size ratio & Compressed bytes of the HEALPix tile divided by compressed bytes of the native square, at the same reconstruction error. Above one, the HEALPix representation is larger. Uncompressed, the ratio is $2.58$ by geometry. \\
+Target RMSE & The tolerated reconstruction error, in reflectance units. Sentinel-2 reflectances are of order $0.1$ and a typical tile has a standard deviation, its contrast, of $0.04$; an RMSE of $10^{-4}$ is a quarter of a percent of that contrast and $10^{-2}$ a quarter of it. Five targets from $10^{-4}$ to $10^{-2}$ are used. \\
+Overhead $\gamma$, critical overhead $\gamma_\star$ & $\gamma$ is the factor by which the native product's tiling layout (padding, overlap, metadata) inflates its stored size; $1.30$ is used as an illustrative value, never as a fact. $\gamma_\star(e)$ is the value of $\gamma$ at which the two representations are the same size at error $e$; it equals the size ratio with no overhead, so a reader with a known $\gamma$ divides every ratio by it. \\
+Reference & The field against which the reconstruction error is measured. \emph{Within-representation}: each grid against its own uncompressed raster, so the transfer costs HEALPix nothing. \emph{Common}: both grids against the same native observation, so the transfer and the read are charged to HEALPix. \\
+Matched error, matched budget & Two ways of comparing rate--distortion curves: at the same error, compare sizes; at the same size (a fraction of the raw tile), compare errors. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 \subsection{Compressible Redundancy, Not Missing Information}
 \label{sec:redundancy}
 A level-20 representation avoids the nominal undersampling of level 19,
