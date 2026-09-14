@@ -1,0 +1,65 @@
+\section{Background and Motivation}
+
+\subsection{HEALPix as an Earth Observation Grid}
+HEALPix is a hierarchical equal-area pixelization of the
+sphere~\cite{gorski2005healpix}. At each level all cells have the same area,
+each cell is subdivided into four children, and in the nested indexing
+scheme a parent and all its descendants occupy a contiguous range of
+indices, referred to here as a HEALPix chunk. This locality is valuable for
+cloud object storage, where chunk contiguity governs I/O performance, and
+for compression, where every chunk is by construction a single quadtree
+rooted at one parent cell. For Earth observation, equal-area cells avoid the
+latitude-dependent area bias of plate-carr\'ee-like grids, and a single
+spherical index simplifies the fusion of products with different map
+projections. Sensor ground sampling distances, however, do not coincide with
+the dyadic sequence of HEALPix levels, as Table~\ref{tab:levels} shows for
+Sentinel-2.
+
+\begin{table}[t]
+\centering
+\caption{Approximate HEALPix equal-area equivalent cell widths near Sentinel-2 high-resolution bands. Values are computed from \eqref{eq:healpix_width} using $\Rearth=\SI{6371008.8}{m}$.}
+\label{tab:levels}
+\begin{tabular}{ccc}
+\toprule
+HEALPix level $\level$ & Equivalent width $\Delta_{\mathrm{eq}}$ & Relation to Sentinel-2 \SI{10}{m} \\
+\midrule
+18 & \SI{24.87}{m} & too coarse \\
+19 & \SI{12.44}{m} & slightly coarser \\
+20 & \SI{6.22}{m}  & finer carrier grid \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On a sphere of radius $\Rearth$, the number of pixels at level $\level$ is $N_{\mathrm{pix}}(\level) = 12\,4^{\level}$, and the equal-area equivalent cell width is
+\begin{equation}
+\Delta_{\mathrm{eq}}(\level) = \sqrt{\frac{4\pi \Rearth^2}{12\,4^{\level}}}.
+\label{eq:healpix_width}
+\end{equation}
+Level 20 has exactly four times as many cells as level 19; this factor is an exact property of the dyadic refinement rule. Separately, the nominal per-cell-area oversampling factor of level 20 relative to a \SI{10}{m} native pixel is
+\begin{equation}
+\alpha_{\mathrm{HPX/native}} = \frac{A_{\mathrm{native}}}{A_{\mathrm{HPX20}}} \simeq \frac{10^2}{6.22^2} \simeq 2.58.
+\label{eq:alpha}
+\end{equation}
+The two factors answer different questions: \eqref{eq:alpha} compares level 20 with the \emph{native sensor grid}, whereas the factor of four compares level 20 with level 19. Neither indicates by itself whether the additional samples cost more to store once compressed, which is the empirical question addressed in Section~\ref{sec:results}.
+
+\subsection{Compressible Redundancy, Not Missing Information}
+\label{sec:redundancy}
+A level-20 representation avoids the nominal undersampling of level 19,
+whose \SI{12.4}{m} cells are coarser than the \SI{10}{m} product. Some
+detail is nevertheless lost at level 19, and Section~\ref{sec:level_choice}
+measures what a level-19 carrier built with the same transfer would discard.
+Level 20 is nominally storage-inefficient by the factor of \eqref{eq:alpha}
+relative to the native grid. The question is whether this inefficiency
+survives compression and a realistic accounting of native-grid overhead, or
+whether it consists of redundant, and therefore compressible, structure. We
+do not claim that the sensor carries no information at the finer scale, nor
+that the signal is strictly band-limited; neither assumption is required.
+The level-20 samples are not independent measurements at \SI{6.2}{m} but a
+redundant representation of a coarser physical signal. Redundancy suggests
+compressibility without guaranteeing it: how much of it survives depends on
+the noise, on the interpolator that produced the samples and on the codec.
+The two bodies of theory that make this expectation precise, approximation
+theory for the error of oversampling a band-limited field and the
+cross-scale persistence exploited by zerotree coders, are summarised in
+Appendix~\ref{app:literatures}; the measurement that establishes what the
+added octave carries is reported in Section~\ref{sec:level_choice}.

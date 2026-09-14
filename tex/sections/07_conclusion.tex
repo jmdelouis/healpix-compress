@@ -1,0 +1,91 @@
+\section{Conclusion}
+This paper asked whether Sentinel-2 imagery stored on the HEALPix level next
+finer than its native resolution, which is necessary to avoid loss of
+spatial detail but nominally oversamples the data by a factor of
+$\approx2.58$ in cell area, costs more to store once compression and the
+storage layout of the native product are both taken into account. Using
+only established, independently published compressors (ZFP, SZ3, JPEG~2000,
+JPEG~XL and a DWT+Zstandard baseline), no HEALPix-specific coding, and an
+equal-area protocol that crops the native UTM raster to a square of the same
+nominal ground area as each HEALPix tile, the answer on 40 regions spanning
+four land-cover classes and both HEALPix cell-shape regimes is that native
+UTM is intrinsically the more compressible representation throughout, and
+that whether the carrier becomes operationally competitive depends on the
+tolerated distortion and on the overhead of the native layout.
+
+Before compression, the carrier tile is by construction $2.584\times$ the
+equal-area UTM crop. After compression, the intrinsic HEALPix/UTM gap at
+$\gamma=1$ decreases monotonically with looser targets, from $+106\%$ to
+$+6\%$, which corresponds to a critical overhead $\gamma_\star$ falling from
+$2.06$ to $1.06$. This decrease is a property of the sampling geometry
+rather than of scene content: an analytic field with the spectrum and
+instrument width fitted to the imagery, sampled by both lattices with no
+support mismatch and no content difference, reproduces the gap to within
+$8$--$19\%$ at every target. At the illustrative overhead
+$\gamma_{\mathrm{tile}}=1.30$, native UTM remains smaller at the three
+tightest RMSE targets and the two looser budgets (median ratios
+$1.23$--$1.59$ and $1.33$--$4.02$), HEALPix is smaller at the loosest RMSE
+target ($0.81$) and the tightest budget ($0.83$), and seven of the eight
+paired tests survive the Holm correction ($p\le8\times10^{-3}$, $n=40$). The
+compressed size of HEALPix falls below the operational comparison only where
+the real overhead of the native product exceeds $\gamma_\star$, which is a
+statement about product layout rather than about UTM as a coordinate
+system.
+
+The crossover is a result for one transfer operator and does not survive
+the others tested. The carrier was populated with Clough--Tocher
+interpolation, chosen before any storage figure was measured
+(Section~\ref{sec:resampler}); rebuilding the same tiles with a PSF-aware or
+an inverse-distance transfer costs $1.2$ to $2.2$ times the bytes at equal
+accuracy and leaves HEALPix ahead at no target
+(Section~\ref{sec:transfer_cost}). Only a few percent of this cost is the
+price of deconvolution; the remainder is the price of leaving a $C^1$
+curvature-minimising interpolant, whose output a lossy coder can discard far
+more of at equal error, and the observations are consistent with energy
+compaction rather than total information content as the mechanism. The
+observed crossover is therefore a result for a carrier populated by a
+transfer in the smoothness class represented here by Clough--Tocher, and
+should not be read as a transfer-independent property of HEALPix. On the
+codec side, JPEG~2000 and JPEG~XL lead on both grids alike, which we
+interpret as a property of these codecs on this imagery rather than of the
+quadtree.
+
+The verdict also depends on which reconstruction reference is accepted, and
+both are reported. Against the same Sentinel-2 observation, the uncompressed
+carrier already differs from the native product by $4.0\times10^{-3}$ in
+median under the nearest-cell read, about $10\%$ of the standard deviation
+of a scene, and no swept configuration reaches four of the five RMSE targets
+against it; the $2\%$-budget ratio changes from $0.83$ to $1.44$ in favour
+of native UTM. This floor belongs to the transfer-and-read pair rather than
+to the grid: a read that interpolates within the carrier lattice removes two
+thirds of its variance on the same tiles (Table~\ref{tab:reader_floor}), and
+when the sweep is re-scored through that read the lead of native UTM narrows
+to $1.12$ without reversing, the loosest RMSE target reaches parity ($1.02$,
+$n=40$), and the residual floor of $1.9\times10^{-3}$ is due to the
+transfer. Read against the latent scene instead, the reference that applies
+when the carrier is used as if it were the scene, HEALPix becomes the
+smaller representation while the compression error is still $0.13$ to
+$0.50$ of the error the product already carries, in three of the four scene
+classes (Appendix~\ref{app:error_budget}). The practical conclusion is
+conditional and should be stated as such: a HEALPix carrier is competitive
+at aggressive compression when the HEALPix cube is itself the reference
+product, and is not when the native product remains the ground truth and
+the transfer error is charged to it.
+
+In summary, an oversampled HEALPix carrier does not intrinsically compress
+Sentinel-2 imagery more efficiently than its native UTM representation, but
+its oversampling penalty decreases under lossy compression, and whether it
+becomes operationally competitive is determined by the tolerated
+distortion, the relative storage overhead of the two layouts, the transfer
+used to build the carrier and the reference used to evaluate it. The
+critical-overhead formulation expresses this trade-off without privileging
+any storage architecture, and it is the form in which we consider the
+result should be used. The evidence is from Sentinel-2 B04 at \SI{10}{m},
+one acquisition per region, and should not be transferred to multispectral
+products, temporal cubes, model output or flux-conservative fields without
+being re-measured there. The most important next step is to decouple the
+three parts of the chain that this paper has shown to matter, namely the
+transfer, the carrier and the reading operator, and to evaluate the
+complete chain with the operational PSF-aware transfer and a reader matched
+to it on the same sites, which is what the pipeline shared with the
+companion study~\cite{delouis2026resample} was built for.

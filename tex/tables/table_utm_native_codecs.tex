@@ -1,0 +1,50 @@
+% DEPRECATED -- not \input by the paper. Predates the real SZ3 binding (rows
+% below still say "sz3 (zstd proxy)") and the sub-tile statistical
+% replication used everywhere else. Superseded by
+% table_utm_vs_healpix_hypothesis.tex. Kept only for historical reference.
+\begin{table*}[t]
+\centering
+\caption{Generic-codec benchmarks on the native UTM \SI{10}{m} grid (no HEALPix carrier, $\sim$637$\times$637 patch), band B04, all seven scenes. \texttt{healpix-compress} presets are not applicable on this grid (no HEALPix chunking); compare against Table~\ref{tab:benchmarks_urban} / Table~\ref{tab:medium_by_scene_dwt} for the HEALPix-carrier numbers on the same scenes.}
+\label{tab:utm_native_codecs}
+\begin{tabular}{@{}llrrrrr@{}}
+\toprule
+Scene & Codec & Size (MiB) & Ratio & Reduction (\%) & PSNR (dB) & SSIM \\
+\midrule
+Agriculture & jpeg2000\_lossless & 0.606 & 5.110  & 80.431 & 111.703  & 1.000 \\
+Agriculture & jpeg2000\_lossy    & 0.258 & 12.006 & 91.671 & 75.138   & 1.000 \\
+Agriculture & sz3 (zstd proxy)   & 0.748 & 4.137  & 75.831 & $\infty$ & 1.000 \\
+Agriculture & uncompressed       & 3.096 & 1.000  & 0.000  & $\infty$ & 1.000 \\
+Agriculture & zfp                & 0.350 & 8.843  & 88.692 & 75.520   & 1.000 \\
+Clouds      & jpeg2000\_lossless & 0.497 & 6.226  & 83.939 & 97.973   & 1.000 \\
+Clouds      & jpeg2000\_lossy    & 0.258 & 12.000 & 91.667 & 74.319   & 1.000 \\
+Clouds      & sz3 (zstd proxy)   & 0.617 & 5.016  & 80.064 & $\infty$ & 1.000 \\
+Clouds      & uncompressed       & 3.096 & 1.000  & 0.000  & $\infty$ & 1.000 \\
+Clouds      & zfp                & 0.281 & 11.033 & 90.936 & 63.477   & 1.000 \\
+Forest      & jpeg2000\_lossless & 0.539 & 5.739  & 82.576 & 105.945  & 1.000 \\
+Forest      & jpeg2000\_lossy    & 0.258 & 12.015 & 91.677 & 77.117   & 1.000 \\
+Forest      & sz3 (zstd proxy)   & 0.710 & 4.360  & 77.062 & $\infty$ & 1.000 \\
+Forest      & uncompressed       & 3.096 & 1.000  & 0.000  & $\infty$ & 1.000 \\
+Forest      & zfp                & 0.273 & 11.328 & 91.172 & 69.490   & 1.000 \\
+Ocean       & jpeg2000\_lossless & 0.718 & 4.313  & 76.813 & 145.047  & 1.000 \\
+Ocean       & jpeg2000\_lossy    & 0.258 & 12.002 & 91.668 & 93.445   & 1.000 \\
+Ocean       & sz3 (zstd proxy)   & 0.403 & 7.691  & 86.998 & $\infty$ & 1.000 \\
+Ocean       & uncompressed       & 3.096 & 1.000  & 0.000  & $\infty$ & 1.000 \\
+Ocean       & zfp                & 0.452 & 6.856  & 85.414 & 105.602  & 1.000 \\
+Snow/ice    & jpeg2000\_lossless & 0.668 & 4.634  & 78.421 & 120.012  & 1.000 \\
+Snow/ice    & jpeg2000\_lossy    & 0.258 & 12.001 & 91.667 & 75.531   & 1.000 \\
+Snow/ice    & sz3 (zstd proxy)   & 0.411 & 7.532  & 86.723 & $\infty$ & 1.000 \\
+Snow/ice    & uncompressed       & 3.096 & 1.000  & 0.000  & $\infty$ & 1.000 \\
+Snow/ice    & zfp                & 0.419 & 7.392  & 86.473 & 81.514   & 1.000 \\
+Urban       & jpeg2000\_lossless & 0.577 & 5.369  & 81.375 & 96.464   & 1.000 \\
+Urban       & jpeg2000\_lossy    & 0.258 & 12.006 & 91.671 & 63.390   & 0.9998 \\
+Urban       & sz3 (zstd proxy)   & 0.797 & 3.885  & 74.261 & $\infty$ & 1.000 \\
+Urban       & uncompressed       & 3.096 & 1.000  & 0.000  & $\infty$ & 1.000 \\
+Urban       & zfp                & 0.292 & 10.586 & 90.553 & 57.492   & 0.9994 \\
+Water       & jpeg2000\_lossless & 0.503 & 6.160  & 83.767 & 119.471  & 1.000 \\
+Water       & jpeg2000\_lossy    & 0.258 & 12.000 & 91.667 & 94.292   & 1.000 \\
+Water       & sz3 (zstd proxy)   & 0.419 & 7.394  & 86.476 & $\infty$ & 1.000 \\
+Water       & uncompressed       & 3.096 & 1.000  & 0.000  & $\infty$ & 1.000 \\
+Water       & zfp                & 0.237 & 13.089 & 92.360 & 81.541   & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table*}

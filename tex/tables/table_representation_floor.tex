@@ -1,0 +1,17 @@
+\begin{table}[t]
+\centering
+\caption{Transfer-and-read floor: the RMSE of the \emph{uncompressed} level-20 carrier tile, read on the native UTM pixels of the two footprints' intersection with the nearest read, against the Sentinel-2 observation itself. No codec setting on the HEALPix side can go below it, so any target tighter than it is unreachable by construction under the common reference. It is the error of the transfer and the read together, and Section~\ref{sec:operator} shows that the read alone accounts for an error of this size, so it is an upper bound on what the carrier representation costs under the present reading operator, not the grid's own representation error. It scales with the scene's high-frequency content.}
+\label{tab:representation_floor}
+\begin{tabular}{lrrrr}
+\toprule
+Class & $n$ & Median floor & Range & \% of scene std \\
+\midrule
+agriculture & 10 & 3.8e-03 & [2.1e-03, 7.8e-03] & 9.5 \\
+forest & 10 & 2.0e-03 & [8.1e-04, 1.4e-02] & 8.2 \\
+urban & 10 & 7.9e-03 & [4.9e-03, 9.7e-03] & 14.0 \\
+water & 10 & 8.1e-04 & [1.3e-04, 9.2e-03] & 11.3 \\
+\midrule
+all & 40 & 4.0e-03 & [1.3e-04, 1.4e-02] & 10.3 \\
+\bottomrule
+\end{tabular}
+\end{table}

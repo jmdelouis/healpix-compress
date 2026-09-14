@@ -1,0 +1,73 @@
+\begin{table*}[t]
+\centering
+\caption{Real NDVI error, $(\mathrm{NIR}-\mathrm{Red})/(\mathrm{NIR}+\mathrm{Red})$, computed from Sentinel-2 bands B08 and B04 before and after compression (replacing the earlier placeholder that compared a single band to itself), now covering every codec in this paper's main sweep. \emph{Water is marked N/A}: NDVI is not a physically meaningful index over open water (both bands are near zero, so the index is dominated by noise even before compression) and operational pipelines mask water out before computing it; reporting a compression-error number for a quantity that would never be computed in practice would misrepresent a non-use-case as a finding (Section~\ref{sec:limitations} discusses the underlying numerical instability, which is severe for every codec tested here, as a methodological caution rather than a deployment risk). For every other scene, NDVI $R^2$ stays $\geq 0.90$ for every codec from the \texttt{medium} preset upward, and $\geq 0.999$ from \texttt{high} upward; ZFP is the one exception, at $R^2=-24.4$ on urban despite near-best reflectance RMSE there (Section~\ref{sec:limitations}).}
+\label{tab:ndvi_real}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Scene & Codec & NDVI RMSE & NDVI MAE & NDVI $R^2$ \\
+\midrule
+Urban       & uncompressed             & 0.000000 & 0.000000 & 1.000 \\
+Urban       & jpeg2000\_lossy          & 0.050372 & 0.032917 & 0.971 \\
+Urban       & zfp                      & 1.489173 & 0.004669 & $-24.4$ \\
+Urban       & sz3                      & 0.045573 & 0.028203 & 0.976 \\
+Urban       & healpix-compress\_low    & 0.045006 & 0.015595 & 0.977 \\
+Urban       & healpix-compress\_medium & 0.091991 & 0.009340 & 0.903 \\
+Urban       & healpix-compress\_high   & 0.011396 & 0.000051 & 0.999 \\
+Urban       & healpix-compress\_ultra  & 0.000000 & 0.000000 & 1.000 \\
+\addlinespace
+Forest      & uncompressed             & 0.000000 & 0.000000 & 1.000 \\
+Forest      & jpeg2000\_lossy          & 0.008935 & 0.006331 & 0.994 \\
+Forest      & zfp                      & 0.001895 & 0.001423 & 1.000 \\
+Forest      & sz3                      & 0.017113 & 0.013553 & 0.978 \\
+Forest      & healpix-compress\_low    & 0.006433 & 0.004918 & 0.997 \\
+Forest      & healpix-compress\_medium & 0.004284 & 0.003271 & 0.999 \\
+Forest      & healpix-compress\_high   & 0.000018 & 0.000014 & 1.000 \\
+Forest      & healpix-compress\_ultra  & 0.000000 & 0.000000 & 1.000 \\
+\addlinespace
+Agriculture & uncompressed             & 0.000000 & 0.000000 & 1.000 \\
+Agriculture & jpeg2000\_lossy          & 0.009568 & 0.007211 & 0.998 \\
+Agriculture & zfp                      & 0.001529 & 0.001155 & 1.000 \\
+Agriculture & sz3                      & 0.010704 & 0.008525 & 0.998 \\
+Agriculture & healpix-compress\_low    & 0.004483 & 0.003478 & 1.000 \\
+Agriculture & healpix-compress\_medium & 0.002003 & 0.001554 & 1.000 \\
+Agriculture & healpix-compress\_high   & 0.000008 & 0.000006 & 1.000 \\
+Agriculture & healpix-compress\_ultra  & 0.000000 & 0.000000 & 1.000 \\
+\addlinespace
+Snow/ice    & uncompressed             & 0.000000 & 0.000000 & 1.000 \\
+Snow/ice    & jpeg2000\_lossy          & 0.001252 & 0.000992 & 0.784 \\
+Snow/ice    & zfp                      & 0.000055 & 0.000044 & 1.000 \\
+Snow/ice    & sz3                      & 0.000534 & 0.000437 & 0.961 \\
+Snow/ice    & healpix-compress\_low    & 0.000094 & 0.000076 & 0.999 \\
+Snow/ice    & healpix-compress\_medium & 0.000054 & 0.000043 & 1.000 \\
+Snow/ice    & healpix-compress\_high   & 0.000000 & 0.000000 & 1.000 \\
+Snow/ice    & healpix-compress\_ultra  & 0.000000 & 0.000000 & 1.000 \\
+\addlinespace
+Clouds      & uncompressed             & 0.000000 & 0.000000 & 1.000 \\
+Clouds      & jpeg2000\_lossy          & 0.008674 & 0.003730 & 0.948 \\
+Clouds      & zfp                      & 0.004250 & 0.001606 & 0.987 \\
+Clouds      & sz3                      & 0.030320 & 0.012728 & 0.360 \\
+Clouds      & healpix-compress\_low    & 0.003002 & 0.001169 & 0.994 \\
+Clouds      & healpix-compress\_medium & 0.003990 & 0.001581 & 0.989 \\
+Clouds      & healpix-compress\_high   & 0.000019 & 0.000007 & 1.000 \\
+Clouds      & healpix-compress\_ultra  & 0.000000 & 0.000000 & 1.000 \\
+\addlinespace
+Ocean       & uncompressed             & 0.000000 & 0.000000 & 1.000 \\
+Ocean       & jpeg2000\_lossy          & 0.021016 & 0.016398 & 0.894 \\
+Ocean       & zfp                      & 0.001957 & 0.001529 & 0.999 \\
+Ocean       & sz3                      & 0.013722 & 0.011675 & 0.955 \\
+Ocean       & healpix-compress\_low    & 0.004629 & 0.003723 & 0.995 \\
+Ocean       & healpix-compress\_medium & 0.002793 & 0.002231 & 0.998 \\
+Ocean       & healpix-compress\_high   & 0.000011 & 0.000009 & 1.000 \\
+Ocean       & healpix-compress\_ultra  & 0.000000 & 0.000000 & 1.000 \\
+\addlinespace
+Water       & uncompressed             & N/A & N/A & N/A \\
+Water       & jpeg2000\_lossy          & N/A & N/A & N/A \\
+Water       & zfp                      & N/A & N/A & N/A \\
+Water       & sz3                      & N/A & N/A & N/A \\
+Water       & healpix-compress\_low    & N/A & N/A & N/A \\
+Water       & healpix-compress\_medium & N/A & N/A & N/A \\
+Water       & healpix-compress\_high   & N/A & N/A & N/A \\
+Water       & healpix-compress\_ultra  & N/A & N/A & N/A \\
+\bottomrule
+\end{tabular}
+\end{table*}

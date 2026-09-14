@@ -1,0 +1,42 @@
+\begin{table*}[t]
+\centering
+\caption{All four \texttt{healpix-compress} presets across all seven benchmark scenes, HEALPix level-20 carrier grid, band B04, averaged over 4 spatial sub-tiles each. Ratio is monotonic in preset order (low $>$ medium $>$ high $>$ ultra) for every one of the seven scenes, generalizing the single-scene check of an earlier draft (Table~\ref{tab:benchmarks_urban}).}
+\label{tab:full_preset_sweep}
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+Preset & Scene & Ratio & Reduction (\%) & RMSE & MAE & PSNR (dB) & SSIM \\
+\midrule
+low    & Agriculture & 11.689 & 91.43 & 0.000675 & 0.000546 & 63.54    & 1.000 \\
+low    & Clouds      & 11.636 & 91.23 & 0.000335 & 0.000259 & 69.53    & 1.000 \\
+low    & Forest      & 13.869 & 92.69 & 0.000810 & 0.000650 & 62.38    & 0.999 \\
+low    & Ocean       & 8.554  & 88.31 & 0.000015 & 0.000012 & 96.78    & 1.000 \\
+low    & Snow/ice    & 8.737  & 88.55 & 0.000111 & 0.000090 & 79.12    & 1.000 \\
+low    & Urban       & 12.472 & 91.96 & 0.002775 & 0.002224 & 51.15    & 0.997 \\
+low    & Water       & 19.480 & 93.86 & 0.000231 & 0.000181 & 76.00    & 1.000 \\
+\addlinespace
+medium & Agriculture & 5.660  & 82.33 & 0.000367 & 0.000295 & 68.83    & 1.000 \\
+medium & Clouds      & 6.855  & 84.88 & 0.000365 & 0.000281 & 68.93    & 1.000 \\
+medium & Forest      & 6.244  & 83.96 & 0.000518 & 0.000416 & 66.05    & 1.000 \\
+medium & Ocean       & 5.074  & 80.29 & 0.000009 & 0.000007 & 100.68   & 1.000 \\
+medium & Snow/ice    & 5.089  & 80.35 & 0.000052 & 0.000042 & 85.74    & 1.000 \\
+medium & Urban       & 5.920  & 83.09 & 0.001710 & 0.001366 & 55.41    & 0.999 \\
+medium & Water       & 7.225  & 85.80 & 0.000182 & 0.000143 & 77.51    & 1.000 \\
+\addlinespace
+high   & Agriculture & 3.106  & 67.80 & 0.000001 & 0.000001 & 117.05   & 1.000 \\
+high   & Clouds      & 3.631  & 71.79 & 0.000002 & 0.000001 & 116.05   & 1.000 \\
+high   & Forest      & 3.222  & 68.95 & 0.000002 & 0.000002 & 114.11   & 1.000 \\
+high   & Ocean       & 2.968  & 66.31 & 0.000000 & 0.000000 & 148.91   & 1.000 \\
+high   & Snow/ice    & 2.987  & 66.52 & 0.000000 & 0.000000 & 133.54   & 1.000 \\
+high   & Urban       & 3.158  & 68.34 & 0.000007 & 0.000005 & 103.41   & 1.000 \\
+high   & Water       & 3.431  & 70.71 & 0.000001 & 0.000001 & 124.32   & 1.000 \\
+\addlinespace
+ultra  & Agriculture & 2.242  & 55.39 & 0.000000 & 0.000000 & $\infty$ & 1.000 \\
+ultra  & Clouds      & 2.844  & 63.02 & 0.000000 & 0.000000 & $\infty$ & 1.000 \\
+ultra  & Forest      & 2.255  & 55.65 & 0.000000 & 0.000000 & $\infty$ & 1.000 \\
+ultra  & Ocean       & 2.391  & 58.17 & 0.000000 & 0.000000 & $\infty$ & 1.000 \\
+ultra  & Snow/ice    & 2.577  & 61.20 & 0.000000 & 0.000000 & $\infty$ & 1.000 \\
+ultra  & Urban       & 2.226  & 55.08 & 0.000000 & 0.000000 & $\infty$ & 1.000 \\
+ultra  & Water       & 2.273  & 56.00 & 0.000000 & 0.000000 & $\infty$ & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table*}

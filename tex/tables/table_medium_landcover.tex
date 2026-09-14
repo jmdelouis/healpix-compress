@@ -1,0 +1,24 @@
+% DEPRECATED -- not \input by the paper. Pre-dates the grad_dwt production
+% pipeline; superseded by table_utm_vs_healpix_hypothesis.tex (same UTM vs.
+% HEALPix comparison, with real generic codecs and full statistical
+% replication). Kept only for historical reference.
+\begin{table*}[t]
+\centering
+\caption{Scene-level results for the medium hierarchical residual preset. Values compare the native UTM grid and the finer HEALPix carrier grid.}
+\label{tab:medium_landcover}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+& \multicolumn{3}{c}{UTM native} & \multicolumn{3}{c}{HEALPix carrier} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Scene & Size (MiB) & Ratio & RMSE & Size (MiB) & Ratio & RMSE \\
+\midrule
+Urban & 0.629 & 2.459 & 0.001 & 1.613 & 2.479 & 2.43e-04 \\
+Lake water & 0.652 & 2.374 & 9.23e-05 & 1.685 & 2.374 & 6.12e-05 \\
+Forest & 0.644 & 2.404 & 1.07e-04 & 1.644 & 2.433 & 6.60e-05 \\
+Agriculture & 0.626 & 2.474 & 1.46e-04 & 1.623 & 2.465 & 8.56e-05 \\
+Snow/ice & 0.578 & 2.679 & 0.001 & 1.515 & 2.641 & 3.61e-04 \\
+Clouds & 0.630 & 2.455 & 1.21e-04 & 1.540 & 2.597 & 7.72e-05 \\
+Ocean & 0.653 & 2.371 & 9.23e-05 & 1.689 & 2.369 & 6.01e-05 \\
+\bottomrule
+\end{tabular}
+\end{table*}

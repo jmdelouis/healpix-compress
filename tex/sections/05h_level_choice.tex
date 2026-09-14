@@ -1,0 +1,44 @@
+\subsection{What Level 20 Buys Over Level 19}
+\label{sec:level_choice}
+
+Section~\ref{sec:redundancy} selected level 20 on a nominal argument and
+deferred the measurement. The measurement is exact rather than modelled,
+for a reason specific to this grid: HEALPix cells are equal-area, so the
+value that a level-19 carrier would hold in a cell \emph{is} the mean of the
+four level-20 values it contains, and a NESTED block stores these four as
+adjacent elements. Aggregating a stored tile in groups of four therefore
+yields the level-19 carrier that the same transfer would have produced, not
+a model of it.
+
+Two quantities are separated, because a coarser carrier is charged twice
+and only one of the charges concerns information. The first is what the
+aggregation discards: the intra-cell variance, i.e.\ the energy of the three
+detail coefficients of the exact quadtree Haar transform at level 20. It
+amounts to $3.07\%$ of the variance of the tile (median over 40 regions;
+$2.2\%$ in forest to $7.2\%$ in urban scenes), an RMS of $17.5\%$ of the
+standard deviation of the scene, which is $1.82$ times the level-20 floor
+of Table~\ref{tab:representation_floor}. The second is the level-19 floor
+itself, read in the same way against the same observation: $2.23$ times the
+level-20 floor (paired median). The two separate cleanly. The level-19 floor
+equals the level-20 floor and the discarded energy added in quadrature to
+within $7\%$ (median ratio of measured to quadrature $1.07$), and the
+discarded energy alone accounts for $84\%$ of the excess variance, so that
+the additional error of a level-19 carrier is the information removed by
+the aggregation rather than a coarser read. Against the sweep, $88.4\%$ of
+the codec operating points lie below the level-19 floor. Level 19 is not a
+drop-in carrier for this product.
+
+The result is also a caution regarding the spectral argument that made the
+question appear settled the other way. The observed field carries $0.21\%$
+of its variance above half the native Nyquist frequency
+(Section~\ref{sec:support_controls}), and propagating the fitted spectrum
+to the level-19 Nyquist frequency places about $0.03\%$ above it, two
+orders of magnitude below what the aggregation discards. Aggregation is not
+a brick-wall filter at the coarser Nyquist frequency: the residual of a
+$2\times2$ mean has response $1-\cos^2(k_x d/2)\cos^2(k_y d/2)$, which grows
+as $(kd)^4$ and draws mainly on the shoulder of the spectrum \emph{below}
+the native Nyquist frequency, where the power lies. The same fitted spectra
+predict the discarded fraction well only in the ensemble median (predicted
+$3.4\%$ against $3.1\%$ measured), not scene by scene, which is a further
+reason for reporting the spectral model of
+Section~\ref{sec:support_controls} as an ensemble parameter only.

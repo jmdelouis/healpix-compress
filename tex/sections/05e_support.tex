@@ -1,0 +1,68 @@
+\subsection{The Support Mismatch Does Not Drive the Result}
+\label{sec:support_controls}
+
+Section~\ref{sec:utm_crop} left an objection open. The rotated tile and the
+axis-aligned crop enclose equal areas but overlap over only $81\%$ of them,
+so that every ratio above is measured between rasters that cover partly
+different ground, and compressed size depends on content. The protocol
+itself cannot settle this point, because it never compresses the same
+ground twice. We therefore remove the content rather than the mismatch.
+
+The control is an analytic random field: a sum of plane waves whose
+amplitudes produce a power spectrum $P(k)\propto k^{-\beta}$, multiplied by
+a Gaussian instrument response of width $\sigma$. As a sum of plane waves,
+the field is defined on the plane rather than on any grid, the instrument
+convolution is exact (each mode is scaled by $\exp(-k^2\sigma^2/2)$), and
+the field can be evaluated at arbitrary positions. It is evaluated at the
+level-20 cell centres and at the native pixel centres of the same region,
+and both samplings are compressed. Neither side is resampled and both see
+the same function, so that whatever ratio survives is due to the sampling
+geometry alone.
+
+The two parameters of the field are measured rather than assumed. Fitting
+$\log P(k)=c-\beta\log k-k^2\sigma^2$ to the radially averaged spectrum of
+each of the 40 crops, from four fundamental wavenumbers to the native
+Nyquist frequency, returns a median slope of $1.9$ and a median response of
+\SI{11.9}{m} FWHM, against a nominal Sentinel-2 B04 response near
+\SI{12.5}{m}. Natural images have power-law spectra with exponents near two,
+a regularity that is robust to the choice of image
+ensemble~\cite{tolhurst1992amplitude,vanderschaaf1996powerspectra}, so the
+fitted slope lies within the documented range; and recovering the width of
+the instrument from the imagery, without prior knowledge of it, is what
+qualifies the synthetic field as the appropriate object rather than merely
+a plausible one. The same fit provides the spectral evidence that a
+level-20 carrier is affordable at all: a median of $0.21\%$ of the variance
+of each crop lies above half the native Nyquist frequency. The inference
+must be stated with care. That band is $0.025$--$\SI{0.05}{m^{-1}}$, whereas
+the octave that level~20 adds over level~19 is
+$0.040$--$\SI{0.080}{m^{-1}}$, most of which lies above the
+\SI{0.05}{m^{-1}} Nyquist frequency of the product being measured. The
+observed spectrum falls steeply towards the native Nyquist frequency; it
+does not follow that the added octave is empty, and this cannot be observed
+from a product that does not represent it.
+
+\input{tables/table_support_controls}
+
+Table~\ref{tab:support_controls} reports the outcome. With no content
+difference between the two supports, the intrinsic ratio decreases
+monotonically from $2.22$ at the $10^{-4}$ target to $1.18$ at $10^{-2}$,
+against $2.06$ to $1.06$ measured on the imagery. The control thus tracks
+the intrinsic gap to within $8$--$19\%$ at the five targets and reproduces
+its decline with the target. Under the same $\gamma_{\mathrm{tile}}=1.30$ it
+also reproduces the change of sides, reaching $0.94$ at the loosest target
+where the imagery reaches $0.81$. The monotone decline of
+Section~\ref{sec:rd_main} is therefore a property of the sampling geometry
+rather than of the content of the scenes. The control does not decompose
+the contributions of support, transfer and scene statistics, and at the two
+intermediate targets it departs from the imagery by more than the effect
+under study, so it is corroboration rather than a bound. The synthetic
+ratio lies above the measured one at all five targets, by $7\%$ to $17\%$
+and always in the same direction, so that real imagery is slightly more
+favourable to HEALPix than a Gaussian field with the same spectrum. Scene
+structure and support mismatch both contribute to this residual; what the
+control establishes is that together they account for less than a fifth of
+the effect. Two further controls on subsets, reported in
+Appendix~\ref{app:support}, agree from different directions: a
+common-support comparison on ten regions, and re-cutting the UTM crop at
+shifted positions on four regions, which moves the ratio by about $1\%$ of
+the effect.

@@ -1,0 +1,120 @@
+\section{Experimental Design}
+\label{sec:design}
+
+\subsection{Datasets}
+\label{sec:datasets}
+The evaluation uses 40 Sentinel-2 L2A \SI{10}{m} regions, ten in each of
+four land-cover classes (urban, water, forest, agriculture), spanning
+latitudes from $43.5^\circ$S to $64.1^\circ$N
+(Table~\ref{tab:benchmark_scenes}, Fig.~\ref{fig:region_map}). The sites are
+those of a companion study of PSF-aware resampling onto
+HEALPix~\cite{delouis2026resample}, whose $256\times256$-pixel patches are
+archived under a public dataset DOI. A level-20 carrier tile requires a much
+larger native window, so each region is re-extracted here at the same anchor
+and, wherever the archive still serves it, from the same Sentinel-2 product,
+so that the two studies share sites, acquisitions and radiometric
+conventions.
+
+The native window is centred on the HEALPix tile that contains the anchor
+rather than on the anchor itself. The bounding box of the tile is
+\SI{9.0}{km} across and an anchor may lie anywhere within it, so that an
+anchor-centred window would have to be twice as large, more than a single
+granule reliably covers near a granule edge. Centring on the tile reduces
+the requirement to the bounding box plus a resampling halo, about
+\SI{11}{km}; no image content is consulted in this choice. A region is
+admitted only if a complete level-10 parent tile lies inside its window with
+halo, if the native pixels under the footprint are valid, and if the
+equal-area UTM square is complete. It is rejected rather than repaired when
+invalid pixels exceed $0.1\%$ of the footprint. Below this threshold,
+isolated invalid pixels are removed from the triangulation on the HEALPix
+side and interpolated from their finite neighbours on the UTM side,
+symmetrically on both grids, and the per-region counts are reported with
+the data. The red band (B04) is then resampled once onto the level-20
+carrier tile by Clough--Tocher interpolation (Section~\ref{sec:resampler}),
+and the native B04 raster of the same region is cropped to the equal-area
+square of Section~\ref{sec:utm_crop}.
+
+\input{tables/table_benchmark_regions}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_region_map}
+\caption{The 40 evaluation regions. Dotted lines mark $|\mathrm{lat}|=41.81^\circ$, the boundary between the equatorial belt and the polar caps of HEALPix, where the local cell-shape anisotropy changes character; both regimes are populated (22 and 18 regions).}
+\label{fig:region_map}
+\end{figure}
+
+\subsection{Rate--Distortion Protocol}
+\label{sec:rd_protocol}
+For every (scene, codec, parameter) combination we measure the encoded byte
+count and the reconstruction RMSE against the corresponding raw tile
+(level-20 carrier or native crop). Two matched-quality comparisons are then
+derived from the raw sweep, following the principle recommended for this
+kind of evaluation~\cite{lindstrom2014zfp,liang2022sz3}: codecs are never
+compared at a nominal parameter value, only at an \emph{achieved} error or
+size.
+
+The comparisons interpolate $\log(\text{size})$ against $\log(\text{RMSE})$,
+and the inverse, directly on the sorted and de-duplicated sweep points.
+Interpolating through a dominated configuration would produce a target that
+no real configuration achieves. We verified that this does not occur:
+restricting each of the 400 (region, codec) sweeps to its Pareto frontier
+removes two dominated points in total, both on the HEALPix side, and changes
+no reported median, range or $p$-value. Two further rules govern the
+evaluation of targets. First, the curve is treated as the constrained
+problem $R(D)=\min\{S(q): d(q)\le D\}$: when the coarsest setting of a codec
+is already more accurate than the target, that setting is admissible and its
+size is reported as a bound, rather than the region being dropped for lack
+of a bracketing pair. An earlier version of the analysis required bracketing
+and consequently discarded four to six regions at the two loosest RMSE
+targets, which were precisely the smoothest scenes and the targets at which
+the verdict changes sides. Second, the fraction of regions for which the
+target is bracketed on both grids is reported per target, and any target
+below $75\%$ is withheld: the $40\%$ and $20\%$ storage budgets ($0\%$ and
+$18\%$ bracketed) are excluded on this criterion, as they would be sets of
+bounds rather than estimates. Every target reported below is evaluated on
+all 40 regions, with $85$--$100\%$ bracketing. No extrapolation beyond the
+measured range of a codec is performed, and an interpolated point remains an
+estimate between two measured configurations.
+
+Target RMSE values range from $10^{-4}$ to $10^{-2}$ (normalised reflectance
+units). Storage budgets range from $2\%$ to $40\%$ of a single shared
+reference, the raw size of the HEALPix tile (\num{4194304}~B), for both
+grids; the UTM side receives this budget divided by $\gamma_{\mathrm{tile}}$
+when an operational overhead is assumed (Section~\ref{sec:overhead}). Codecs
+with a single operating point (the two lossless variants) are reported at
+their achieved point only. All reported values are medians across the 40
+regions.
+
+\subsection{Operational UTM Storage}
+\label{sec:overhead}
+Sentinel-2 and comparable operational products are distributed as fixed
+geographic tiles (MGRS $\SI{110}{km}\times\SI{110}{km}$ granules with a
+$\SI{9.8}{km}$ overlap band), whose padding, overlap and per-tile metadata
+add storage beyond the area actually needed \emph{under that granule
+layout}. This overhead is a property of the Sentinel-2/MGRS product
+organisation, not of UTM as a coordinate reference system; a native UTM COG
+or Zarr archive need not carry it at all. We adopt a commonly used
+illustrative value, $\gamma_{\mathrm{tile}}=1.30$, as a stated modelling
+assumption for one layout rather than a value re-measured from complete
+product files (Section~\ref{sec:limitations}). The
+$\gamma_{\mathrm{tile}}=1$ comparison is the grid-intrinsic result, and
+$1.30$ is one scenario among others.
+
+For \emph{uncompressed} storage (Table~\ref{tab:storage_accounting}),
+$\gamma_{\mathrm{tile}}$ is applied once to the raw equal-area UTM byte
+count. For \emph{compressed} storage, applying it to the raw size alone
+would assume that the padded $30\%$ of native pixels compresses to zero
+additional bytes, which is not a safe assumption for a codec that encodes
+each tile independently. We therefore apply $\gamma_{\mathrm{tile}}$ to the
+\emph{compressed} byte count of the equal-area crop and compare in absolute
+bytes, using the raw size of the fixed HEALPix tile ($\num{4194304}$ bytes)
+as the single shared reference for both grids. The tile and the crop of the
+same ground area have different pixel counts ($1024\times1024$ against
+$637\times637$), so only absolute operational bytes for the same ground are
+comparable. For a target RMSE, the reported HEALPix value is its
+interpolated compressed size divided by the reference, and the reported UTM
+value is its interpolated size multiplied by $\gamma_{\mathrm{tile}}$ and
+divided by the same reference. For a storage budget expressed as a share of
+the reference, the UTM crop receives the budget divided by
+$\gamma_{\mathrm{tile}}$, the remainder being assumed to be consumed by the
+operational padding.

@@ -1,0 +1,27 @@
+% DEPRECATED -- not \input by the paper. These "HRes"/"Blosc2 lossless" rows
+% predate the grad_dwt-based hcc-decompose/hcc-grad-dwt codec pipeline this
+% paper now describes and are not comparable to any current codec name.
+% Superseded by table_all_codecs_summary.tex and table_utm_vs_healpix_hypothesis.tex.
+% Kept only for historical reference; do not \input this file.
+\begin{table*}[t]
+\centering
+\caption{Mean compression performance over seven benchmark scenes. The HEALPix carrier uses a $1024\times1024$ level-20 patch, while the UTM native grid uses a $637\times637$ patch with comparable native information content.}
+\label{tab:grid_codec_summary}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+Grid & Codec & Size (MiB) & Ratio & RMSE & PSNR (dB) \\
+\midrule
+UTM native & Raw float32 & 1.548 & 1.000 & 0.000 & -- \\
+ & Blosc2 lossless & 1.096 & 1.419 & 0.000 & -- \\
+ & HRes low & 0.440 & 3.519 & 0.004 & 58.830 \\
+ & HRes medium & 0.630 & 2.460 & 4.71e-04 & 72.929 \\
+ & HRes high & 1.008 & 1.537 & 1.68e-04 & 81.894 \\
+\midrule
+HEALPix carrier & Raw float32 & 4.000 & 1.000 & 0.000 & -- \\
+ & Blosc2 lossless & 2.787 & 1.442 & 0.000 & -- \\
+ & HRes low & 1.125 & 3.557 & 0.003 & 61.946 \\
+ & HRes medium & 1.616 & 2.480 & 1.36e-04 & 79.572 \\
+ & HRes high & 2.568 & 1.559 & 2.88e-05 & 90.911 \\
+\bottomrule
+\end{tabular}
+\end{table*}

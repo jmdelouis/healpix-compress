@@ -1,0 +1,189 @@
+\section{Carrier-Grid Compression Methodology}
+\label{sec:method}
+
+\subsection{From a Nested Chunk to a 2-D Raster}
+\label{sec:morton}
+Every codec used in this paper is a generic two-dimensional array or image
+compressor with no knowledge of HEALPix. To apply such a codec to a HEALPix
+chunk, the chunk must first be converted into an ordinary 2-D raster in which
+horizontally and vertically adjacent elements are spatial neighbours. A
+nested chunk of $4^{\delta}$ cells (all descendants, $\delta$ levels down, of
+one coarser parent) is a one-dimensional array whose index is a Morton
+(Z-order) code: bit $b$ of the local $x$ coordinate occupies bit $2b$ of the
+index and bit $b$ of the local $y$ coordinate occupies bit $2b+1$.
+De-interleaving the bits recovers $(x,y)$ for every cell and scatters the
+flat array into a $2^{\delta}\times2^{\delta}$ raster; the operation is
+exactly invertible. We use $\delta=10$ throughout, so that the $1024\times1024$
+level-20 descendants of one level-10 parent form one carrier tile, which is
+large enough to amortise per-chunk codec overhead and small enough to remain
+a practical unit of chunked storage.
+
+This reshaping is the only HEALPix-specific step of the compression
+pipeline; all subsequent steps operate on an ordinary float32 raster. The
+raster reaching the codec is nevertheless not unremarkable. Both the kernel
+used to populate the grid from the native sensor grid and the local shape
+anisotropy of equal-area HEALPix cells (equal in area but not in shape, with
+a local axis-length ratio of up to $\sim\!1.7$ between the two raster axes)
+affect its compressibility (Section~\ref{sec:resampler}). The reshaping is
+geometrically neutral; the sampling that precedes it is not.
+
+\subsection{Equal-Area Native UTM Comparison}
+\label{sec:utm_crop}
+A fair comparison requires both sides to cover the same amount of ground,
+but the two grids are not co-oriented. A carrier tile projected into the UTM
+system of a scene is a rotated square, because the local axes of HEALPix do
+not align with UTM north and east. An axis-aligned bounding box around the
+tile contains roughly twice the pixel count of its true footprint and would
+penalise the native side; this was observed on real scenes before the
+protocol below was adopted.
+
+Each grid is instead compared in its own native geometry, matched by ground
+area rather than by footprint. Because HEALPix is equal-area, the ground
+area of a level-20 tile is a geometric constant. By \eqref{eq:healpix_width},
+a $1024\times1024$-cell tile covers a square of side
+$1024\,\Delta_{\mathrm{eq}}(20)\approx\SI{6.37}{km}$, i.e.\ approximately
+$636.7$, rounded to $637$, native \SI{10}{m} pixels per side. For each scene
+a $637\times637$-pixel axis-aligned square is therefore extracted from the
+native Sentinel-2 B04 raster, centred on the native pixel nearest to the mean
+longitude and latitude of the cells of the tile, computed with
+\texttt{healpix\_geo} on the WGS84 ellipsoid. The square is not
+pixel-for-pixel identical to the rotated tile: it extends beyond the tile
+along its edges and falls short of its corners. It is called equal-area
+throughout as a shorthand for equal \emph{nominal projected} area. UTM is
+conformal rather than equivalent, so $637^2$ nominal pixels do not enclose
+exactly the geodesic area of the tile, and rounding $636.7$ to $637$ alone
+adds about $0.1\%$ of area before the scale factor of the zone is
+considered. These terms are small compared with the $2.58\times$
+oversampling under study, but they are not zero, and they have not been
+computed scene by scene. What the two sides share by construction is the raw
+size, $637^2\times\SI{4}{B}\approx\SI{1.62}{MB}$, constant across the 40
+regions in the same way as the fixed HEALPix tile, with no fill value on
+either side. Figure~\ref{fig:utm_crop_footprints} shows both footprints for a
+sample of regions.
+
+Matching by area rather than by shape means that each grid is compressed in
+the frame in which it is stored, with no resampling of the native side,
+which is the comparison a practitioner faces. It does not mean that the two
+representations encode the same ground. Raw byte counts are unaffected by
+the mismatch, but compressed size depends on texture, edges and class
+boundaries, so two supports of equal area that differ over a fifth of their
+extent can have different entropies. Over the 40 regions the intersection is
+$74$--$83\%$ of the crop ($81\%$ median), an intersection-over-union of
+about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}); the mismatch is not
+negligible. Section~\ref{sec:support_controls} bounds its contribution by
+replacing the scene with an analytic field that both geometries sample
+identically. That control reproduces the measured intrinsic gap to within
+$8$--$19\%$ at every target, so that mismatch and scene content together
+account for less than a fifth of the effect. The mismatch bears more
+directly on cross-grid comparisons of reconstruction \emph{error}, which is
+why the common-reference evaluation of Section~\ref{sec:common_reference} is
+restricted to the intersection.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_utm_crop_footprints}
+\caption{HEALPix tile footprint (blue, the convex hull of its level-20 cell centres) and the axis-aligned, equal-area $637\times637$ native UTM reference square compressed on the UTM side (red outline), for a sample of regions. Grey points show the locally available native UTM raster extent.}
+\label{fig:utm_crop_footprints}
+\end{figure}
+
+\subsection{Resampling Kernel Choice Is Not Neutral}
+\label{sec:resampler}
+Populating the level-20 tile requires resampling the native raster onto the
+HEALPix cell centres, a step with no counterpart on the UTM side. During
+validation, the 2-D power spectrum of the resulting raster showed visibly
+excess high-frequency power relative to the native spectrum of the same
+footprint and to the tangent-plane spectra of the companion
+study~\cite{delouis2026resample}. Left uncorrected, this excess would have
+degraded the apparent compressibility of HEALPix. Slow positional distortion
+of the grid was ruled out as a cause, since a smooth gradient in cell
+placement cannot inject high frequencies. Cell anisotropy is a genuine but
+insufficient contributor: at fixed area the two local sample spacings scale
+as $\sqrt{1.7}$ and $1/\sqrt{1.7}$, which brings the shorter spacing closer
+to the native \SI{10}{m} pitch than the nominal \SI{6.2}{m} level-20 scale
+suggests. We describe the effect as an interpolation artefact rather than as
+aliasing in the strict sampling-theory sense.
+
+The cause that could be attributed directly was the resampler. The tiles
+were originally populated with a Shepard-type inverse-distance interpolator
+over the four nearest neighbours, whose kernel width was set to the HEALPix
+\emph{output} scale ($\sim\SI{6.2}{m}$) rather than to the \SI{10}{m}
+\emph{input} spacing, and a visual comparison of spectra suggested that it
+injected high-frequency content. The 40-region ablation of
+Section~\ref{sec:support_controls} later qualified this impression: in the
+radially averaged spectrum the inverse-distance transfer leaves no excess
+power in the top octave ($0.92$ of the observation's), but it is $9.5$ times
+less accurate than Clough--Tocher against an analytic field, and its output
+costs about twice the bytes at equal error (Section~\ref{sec:transfer_cost}).
+The replacement was justified; the reason first given for it was only partly
+so. Comparing kernels quantitatively rather than visually is a well-posed
+problem, for which the approximation-order framework of~\cite{blu1999fourier}
+and the kernel-by-kernel comparison of~\cite{thevenaz2000interpolation}
+provide the tools; Section~\ref{sec:support_controls} applies them by
+scoring each kernel against an analytic field rather than against the
+imagery it was derived from. Replacing the resampler with
+\texttt{scipy.interpolate.griddata(method="cubic")}, a Clough--Tocher
+piecewise-cubic interpolant over a Delaunay triangulation (not bicubic
+interpolation), brought the HEALPix spectrum much closer to the native one,
+and all results of Section~\ref{sec:results} use it. The sensitivity to this
+choice is measured rather than assumed: Section~\ref{sec:transfer_cost}
+rebuilds the carrier with the PSF-aware and the inverse-distance transfers
+and repeats the sweep, and Section~\ref{sec:support_controls} scores five
+kernels against an analytic field, both on the 40 regions. The reader should
+be aware of their outcome in advance: the crossover reported below is a
+property of the carrier built with this transfer and does not survive the
+other two. The implication for reproducibility extends beyond this paper.
+The kernel used to populate a HEALPix grid from a native sensor grid is not
+a neutral implementation choice, and a kernel mismatched to the source
+sampling can change which of two grids appears more storage-efficient once
+compressed.
+
+\subsection{Codecs Compared}
+\label{sec:codecs}
+No custom or HEALPix-aware codec is used. We evaluate established,
+independently maintained codecs so that any redundancy found to survive
+compression can be exploited with tools a practitioner can already install.
+One family is deliberately absent. Learned codecs have reshaped the
+rate--distortion frontier for natural images since~\cite{balle2017endtoend}
+and have been applied to remote sensing, including on-board
+scenarios~\cite{valsesia2019onboard}. They are not evaluated here because
+the performance of a learned codec depends on its training distribution, so
+that a HEALPix-versus-UTM comparison would measure the training set as much
+as the geometry, and no pair of models trained symmetrically on the two
+grids exists. Compression practice for optical space imagery is well
+surveyed in~\cite{blanes2014tutorial}. The mission-side standards described
+there, the CCSDS wavelet coder and its multispectral
+successor~\cite{hernandez2021ccsds123}, target the on-board bandwidth
+problem, where complexity, memory and channel errors constrain the coder as
+much as its rate~\cite{abrardo2010onboard}, rather than the archive-side
+question studied here. Five general-purpose compressors are used, applied
+identically on both grids:
+\begin{itemize}
+    \item \textbf{ZFP}~\cite{lindstrom2014zfp}: a fixed-accuracy compressed floating-point array codec based on a near-orthogonal block transform;
+    \item \textbf{SZ3}~\cite{liang2022sz3}: a modular, prediction-based, error-bounded lossy compressor for scientific floating-point data;
+    \item \textbf{JPEG~2000}~\cite{taubman2000jpeg2000}, lossy and lossless: a wavelet codec with embedded block coding and optimised truncation (EBCOT);
+    \item \textbf{JPEG~XL}~\cite{alakuijala2019jpegxl}, lossy and lossless: a multiscale (\emph{Squeeze}) modular mode for lossless and near-lossless coding and a block-DCT (\emph{VarDCT}) mode for lossy coding;
+    \item \textbf{DWT+Zstandard}: a textbook baseline consisting of a multi-level 2-D wavelet transform~\cite{antonini1992wavelet} with uniform scalar quantisation, entropy-coded with Zstandard~\cite{rfc8878zstd}.
+\end{itemize}
+Each codec is swept over its own native quality parameter (tolerance for
+ZFP, absolute error bound for SZ3, quality/rate for JPEG~2000, distance/level
+for JPEG~XL, quantisation depth for DWT+Zstandard) to trace a full
+rate--distortion curve; JPEG~2000 and JPEG~XL contribute one lossless point
+each. Sweeping the parameter deliberately bypasses the rate control of each
+codec, in JPEG~2000 the quality layers and the post-compression optimisation
+that populates them, which are a research subject in their own
+right~\cite{auli2008scalability}. A rate controller targets a budget,
+whereas this comparison requires an \emph{achieved} error or size on both
+grids; the matching is therefore performed afterwards
+(Section~\ref{sec:rd_protocol}).
+
+\subsection{Codec Preference Is Empirical, Not a Demonstrated Quadtree Effect}
+\label{sec:why_quadtree}
+Although the $2\times2$ block structure of the de-interleaved raster aligns
+with HEALPix parent--child groups, the experiments reported here do not
+isolate an advantage from that alignment. A native UTM raster supports the
+same dyadic transforms, and Section~\ref{sec:results} finds the same shift
+towards JPEG~2000 and JPEG~XL at aggressive ratios on \emph{both} grids. The
+codec ranking is therefore treated as an empirical finding about these
+codecs on this imagery, not as evidence of a quadtree advantage; a direct
+test of a quadtree-native coder (Appendix~\ref{app:quadtree}) found none
+large enough to matter.

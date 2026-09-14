@@ -1,0 +1,40 @@
+\subsection{Where on the Sphere the Advantage Lives}
+\label{sec:latitude}
+\input{tables/table_latitude_effect}
+
+HEALPix cells are equal in area but not in shape. Their local elongation is
+smallest in the equatorial belt ($|\mathrm{lat}|<41.81^\circ$, where the
+pixelization is a simple cylindrical arrangement) and grows through the
+polar caps. That equal-area pixelizations obtain their area guarantee at the
+cost of a latitude-dependent shape distortion is a general property of
+discrete global grids~\cite{kmoch2022distortions}; the narrower question
+here is whether this distortion reaches the storage result.
+Table~\ref{tab:latitude_effect} correlates the \emph{intrinsic}
+($\gamma_{\mathrm{tile}}=1$) ratio of each region with $|\mathrm{latitude}|$
+and compares the two regimes directly.
+
+These tests form a second family and carry their own Holm correction across
+the eight reported targets. One association survives it: at the tightest
+storage budget the equatorial belt reaches a median intrinsic ratio of
+$0.95$ against $1.21$ in the caps ($\rho=0.50$,
+$p^{\mathrm{Holm}}_\rho=0.009$; belt-versus-cap $p^{\mathrm{Holm}}=0.008$).
+Two further contrasts fall just outside the threshold and are reported as
+such rather than as findings: the loosest RMSE target, $0.97$ against $1.20$
+($p^{\mathrm{Holm}}=0.077$), and the $5\%$ budget
+($p^{\mathrm{Holm}}=0.077$). Nothing at the three tightest RMSE targets
+approaches significance. This is not read as evidence of no influence, but
+as an indication that any influence is smaller than this sample can resolve
+where the intrinsic gap is large.
+
+Taken at face value, the surviving association indicates that the regime in
+which HEALPix becomes competitive at a given overhead is reached in the belt
+before the caps, and the two near-threshold contrasts point in the same
+direction. The result is presented as exploratory. Latitude is confounded
+with scene class, spatial spectrum, orientation relative to UTM and cell
+anisotropy, and none of the last three has been measured, so a correlation
+with a coordinate is not a correlation with the geometric quantity suspected
+of causing it. The measurement that would settle the question, the local
+Jacobian of the UTM-to-HEALPix map with its singular-value ratio and
+orientation per tile, entered as covariates alongside scene class and a
+spectral-slope proxy, is available in principle. Until it is made, this
+subsection is kept out of the abstract.

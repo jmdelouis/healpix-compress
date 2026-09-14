@@ -1,0 +1,22 @@
+% DEPRECATED -- not \input by the paper. Superseded by table_full_preset_sweep.tex
+% (same medium-preset-by-scene numbers, plus low/high/ultra, plus a real
+% n=4-subtile statistical replication that this table's single-tile-per-scene
+% numbers below predate). Kept only for historical reference.
+\begin{table*}[t]
+\centering
+\caption{Performance of the \texttt{healpix-compress\_medium} preset (production \texttt{hcc.codecs.grad\_dwt.HccGradDwtCodec} pipeline) across the seven benchmark land-cover scenes, HEALPix level-20 carrier grid, band B04. An earlier draft table (\texttt{table\_medium\_landcover.tex}, not included in this document) reported different figures for a different codec/parameter set on the same scenes.}
+\label{tab:medium_by_scene_dwt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Land cover & Ratio & Reduction (\%) & RMSE & PSNR (dB) & SSIM \\
+\midrule
+Agriculture & 5.744 & 82.592 & 0.000 & 67.816  & 1.000 \\
+Clouds      & 6.957 & 85.626 & 0.001 & 65.279  & 1.000 \\
+Forest      & 6.714 & 85.106 & 0.001 & 62.061  & 0.999 \\
+Ocean       & 5.121 & 80.471 & 0.000 & 99.786  & 1.000 \\
+Snow/ice    & 5.219 & 80.839 & 0.000 & 83.101  & 1.000 \\
+Urban       & 6.038 & 83.438 & 0.002 & 54.027  & 0.998 \\
+Water       & 8.888 & 88.749 & 0.000 & 68.258  & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table*}

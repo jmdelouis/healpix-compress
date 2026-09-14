@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\caption{Compression benchmarks for the Sentinel-2 L2A \SI{10}{m} band B04 (red), urban scene (Paris), HEALPix level-20 carrier grid, all codecs, averaged over 4 genuinely distinct spatial sub-tiles. \texttt{healpix-compress\_*} uses the production \texttt{hcc.codecs.grad\_dwt.HccGradDwtCodec} pipeline inside \texttt{HccDecomposeCodec} (Table~\ref{tab:presets}); \texttt{sz3} is the real SZ3 codec (via \texttt{pysz}), not a proxy (see Section~\ref{sec:limitations}).}
+\label{tab:benchmarks_urban}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Codec & Ratio & Reduction (\%) & RMSE & MAE & PSNR (dB) & SSIM \\
+\midrule
+sz3                      & 32.348 & 96.875 & 0.005529 & 0.004726 & 45.149    & 0.987 \\
+healpix-compress\_low    & 12.472 & 91.958 & 0.002775 & 0.002224 & 51.150    & 0.997 \\
+zfp                      & 9.678  & 89.631 & 0.000667 & 0.000528 & 63.517    & 1.000 \\
+jpeg2000\_lossy          & 8.008  & 87.512 & 0.000093 & 0.000075 & 80.839    & 1.000 \\
+healpix-compress\_medium & 5.920  & 83.093 & 0.001710 & 0.001366 & 55.408    & 0.999 \\
+jpeg2000\_lossless       & 5.188  & 80.704 & 0.000009 & 0.000008 & 101.102   & 1.000 \\
+level\_19\_only          & 4.000  & 75.000 & 0.030151 & 0.016200 & 30.444    & 0.794 \\
+healpix-compress\_high   & 3.158  & 68.336 & 0.000007 & 0.000005 & 103.411   & 1.000 \\
+healpix-compress\_ultra  & 2.226  & 55.085 & 0.000000 & 0.000000 & $\infty$  & 1.000 \\
+uncompressed             & 1.000  & 0.000  & 0.000000 & 0.000000 & $\infty$  & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table*}

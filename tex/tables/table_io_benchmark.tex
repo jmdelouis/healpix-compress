@@ -1,0 +1,15 @@
+\begin{table*}[t]
+\centering
+\caption{I/O benchmark on a real on-disk Zarr v3 array written with the registered \texttt{hcc-grad-dwt} codec (one $1024\times1024$ chunk per benchmark scene, 7 chunks total per preset). \texttt{roundtrip\_rmse} is the error between the original chunk and the value actually read back from the store after a real \texttt{zarr.Array} write/read round trip, cross-checking the algorithmic numbers of Tables~\ref{tab:benchmarks_all_scenes}--\ref{tab:full_preset_sweep} (obtained by calling the same pipeline functions directly) against the packaged codec as Zarr resolves and dispatches it. Throughput/latency columns are single-run wall-clock measurements on a shared machine and should be read as indicative, not reproducible to the millisecond (Section~\ref{sec:limitations}); \texttt{roundtrip\_rmse} is deterministic and reproduces exactly across runs. Random-read latency reopens the store on every read to defeat in-process caching only, not the OS page cache.}
+\label{tab:io_benchmark}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Preset & Round-trip RMSE & Seq.\ throughput (MB/s) & Read latency, mean (ms) & Read latency, p95 (ms) & Decompress CPU (ms) \\
+\midrule
+low    & 0.003267 & 36.96 & 111.49 & 119.95 & 139.12 \\
+medium & 0.001989 & 40.88 & 99.85  & 112.69 & 148.04 \\
+high   & 0.000008 & 39.62 & 107.27 & 113.94 & 155.48 \\
+ultra  & 0.000000 & 29.76 & 156.20 & 174.32 & 155.97 \\
+\bottomrule
+\end{tabular}
+\end{table*}

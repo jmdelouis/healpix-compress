@@ -1,0 +1,88 @@
+\subsection{What the Reading Operator Itself Contributes}
+\label{sec:operator}
+
+The floor reported above is the error of a pair of operators: the
+Clough--Tocher transfer that places the data on the carrier, and the
+nearest-cell read that retrieves them. Appendix~\ref{app:operator}
+characterises the read alone, on analytic single-frequency fields placed on
+the cell centres of three regions with nothing resampled. The read is
+registered to well under a cell (largest fitted displacement
+\SI{2.1}{\milli\metre}), its amplitude response is $0.99$ or higher beyond
+\SI{100}{m}, and almost all of its error ($95\%$ at \SI{21}{m}, essentially
+$100\%$ above \SI{60}{m}) is a residual that no amplitude-and-phase model
+describes. Reading the containing cell is therefore not a filter but a
+sub-pixel positional jitter of about \SI{2.1}{m} on a \SI{10}{m} native
+pixel, and this jitter is what the floor is largely made of. On a
+band-limited field carrying the spectrum of the imagery ($0.19\%$ of its
+variance above half the native Nyquist frequency, against the $0.21\%$
+median measured on the crops in Section~\ref{sec:support_controls}), the
+read alone produces an RMSE of $14.0$--$14.4\%$ of the standard deviation of
+the field, against a floor of about $10\%$ on the real tiles. The two
+figures are consistent: a carrier tile is a Clough--Tocher interpolation of
+the scene rather than a point sampling of it, and the smoothing removes the
+gradients that a jitter converts into error.
+
+The floor of Table~\ref{tab:representation_floor} therefore cannot be read
+as the representation error of the carrier grid itself. It is a property of
+the transfer-and-read pair and an upper bound on the cost of the
+representation. What would lower it is not a better low-pass filter, since
+the amplitude response is already above $0.99$ over the band that carries
+the variance, but a reconstructor that interpolates within the carrier
+lattice instead of reading the containing cell. Such a reconstructor was
+implemented, and Table~\ref{tab:reader_floor} reports what it removes.
+
+\input{tables/table_reader_floor}
+
+The interpolating read places each native pixel in the lattice of the
+carrier at sub-cell precision. The local index of a NESTED block is the
+Morton code of the integer position of the cell on its base face, so the
+tile is a $1024\times1024$ lattice whose neighbours are spatial neighbours.
+The read inverts, at the containing cell, the affine map from lattice steps
+to metres measured on the cell centres, and takes the bilinear combination
+of the four bracketing centres; anisotropy and orientation enter through
+this Jacobian, the weights sum to one, and the read is linear. On the same
+tiles, mask and observation, its floor is $0.582$ times that of the nearest
+read (paired median over the 40 regions, lower on every region), so that
+the read accounts for $66\%$ of the variance of the floor: the
+transfer-and-read floor decreases from $10.0\%$ to $5.9\%$ of the standard
+deviation of a scene when the read is changed and nothing else. On the
+PSF-transferred tiles the same read lies within $4\%$ of the forward
+operator of the companion study ($0.957$). The floor is thus two thirds a
+property of how the carrier is read and one third a property of what was
+placed on it, and every result of Section~\ref{sec:common_reference} scored
+through the nearest read inherits this decomposition.
+
+The read has a second consequence, which concerns rate rather than error. A
+nearest-cell read of a $1024^2$ tile by the $637^2$ crop touches only
+$30.8\%$ of the cells (median over 40 regions, on the intersection mask);
+the remaining cells form the kernel of the operator, and whatever a codec
+writes there never reaches the product. Using as error source a uniform
+dead-zone quantiser in an orthonormal wavelet domain, whose error is close
+to white in cell space, and bisecting its step onto the RMSE achieved by
+each codec, $68.9\%$ of the error energy lies in cells that the product
+never reads. This does not make the product error smaller: the RMS of the
+transmitted error is $1.00$ times its RMS over all cells, because a gather
+leaves the error per read pixel unchanged, so a coarser step gains nothing
+($0.1\%$ of the rate). What the kernel reveals is allocation, namely bits
+spent on cells that nothing depends on, with a bound of
+$1/0.308\approx3.2\times$ that a uniform quantiser cannot reach. Seen from
+the sweep, $72.5\%$ of the $2\,080$ codec operating points reach a
+cell-space RMSE below the floor of Table~\ref{tab:representation_floor}.
+
+The matched case behaves differently. On the PSF-transferred tiles of
+Section~\ref{sec:transfer_cost}, read through the forward operator for
+which they were built (floor $0.558$ times that of the nearest read, lower
+on all 40 regions), the operator attenuates a white coding error to $0.67$
+of its cell-space RMS, and setting the distortion target on the product
+rather than on the carrier reaches the same product distortion with $20\%$
+fewer bytes (median; $4.6\%$ at the tightest quartile of targets, $36\%$ at
+the loosest). Three qualifications prevent this from being a
+recommendation. It is a property of the reader rather than of the grid,
+since a gather has a large kernel precisely because the carrier is
+oversampled relative to it; white error is the most favourable case for
+attenuation; and the gain holds only for a product consumed through that
+operator, since noise shaped into its stop-band remains visible to anyone
+who reads the carrier as an image. What the measurement establishes is
+narrower: the distortion that a carrier-grid study should target is the one
+its reader transmits, and on this carrier the two are not the same
+quantity.

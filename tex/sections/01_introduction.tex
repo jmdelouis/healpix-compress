@@ -1,0 +1,76 @@
+\section{Introduction}
+\label{sec:intro}
+\IEEEPARstart{E}{arth} observation archives are growing in volume, combine
+several sensors and resolutions, and are increasingly hosted in the cloud.
+Their scientific use depends on storage organisations that provide globally
+consistent spatial referencing, efficient local access and scalable
+chunking. Discrete Global Grid Systems (DGGS) divide the Earth into
+hierarchically indexed cells that serve as a shared spatial reference for
+storage, aggregation and analysis~\cite{ogc_dggs,iso19170}. Prominent
+instances include H3~\cite{h3}, S2~\cite{s2geometry} and
+HEALPix~\cite{gorski2005healpix}, which differ in cell shape, refinement
+strategy and area preservation.
+
+HEALPix was designed for the analysis of astronomical data on the
+sphere~\cite{gorski2005healpix}. It provides equal-area pixels, a dyadic
+hierarchical refinement and a nested indexing scheme in which all descendants
+of a pixel occupy a contiguous block of indices. These properties are equally
+attractive for Earth observation, but they impose a practical limitation:
+HEALPix resolution changes only by powers of two, so the native ground
+sampling distance of an instrument almost never coincides with a level. The
+\SI{10}{m} bands of Sentinel-2, for example, lie between level 19
+(\SI{12.4}{m}, too coarse) and level 20 (\SI{6.2}{m}, geometrically safe but
+nominally oversampled).
+
+The question addressed in this paper is whether such oversampling is
+expensive once storage and compression are both considered. The level-20
+samples are not independent observations at \SI{6.2}{m}; they form an
+overcomplete representation whose information content remains limited by the
+sensor response. If this redundancy compresses well, storing the data at
+level 20 and compressing them should cost no more, and possibly less, than
+keeping the equivalent information on the native UTM grid. The native
+product, when distributed under an operational tiling layout such as the
+MGRS granule scheme of Sentinel-2, carries padding, overlap and per-tile
+metadata beyond the area actually needed. This paper uses a $30\%$ overhead
+as an illustrative operational scenario; it is not a property of UTM as a
+coordinate reference system (Section~\ref{sec:overhead}).
+
+The question is addressed empirically, with established and independently
+maintained compression libraries and without any HEALPix-specific coding.
+The finer HEALPix level is treated strictly as a two-dimensional raster,
+obtained by Morton/Z-order de-interleaving of the nested chunk, and passed to
+standard codecs as a conventional image. The comparison is made over matched
+ground area: the centroid of the HEALPix tile defines an axis-aligned,
+equal-area square extracted directly from the native UTM raster
+(Section~\ref{sec:utm_crop}), so that the UTM side is always the untouched
+native product.
+
+The contributions of this work are the following:
+\begin{itemize}
+    \item a storage--distortion formulation of the resolution mismatch between native Sentinel-2 sampling and the next finer HEALPix level, with a geometric accounting showing that the $2.58\times$ oversampling of level 20 makes the raw HEALPix tile the \emph{larger} representation by a factor of $\approx\!1.99$ under the illustrative $30\%$ granule-overhead scenario, so that compression rather than raw storage must make HEALPix competitive;
+    \item an equal-area rate--distortion protocol that separates the intrinsic compressibility of the grids from the overhead of the native layout through a critical-overhead $\gamma_\star$ analysis, comparing HEALPix tiles with a native UTM square of identical nominal area (rather than a bounding box of the rotated footprint, which inflates the UTM pixel count by roughly $2\times$), with matched error and matched budget obtained by log--log interpolation over the sweep of each codec;
+    \item an evaluation across 40 Sentinel-2 regions, covering four land-cover classes and latitudes from $43.5^\circ$S to $64.1^\circ$N, hence both HEALPix cell-shape regimes (Section~\ref{sec:latitude}), and five general-purpose codecs, with sensitivity analyses on codec, target, resampling operator and assumed overhead, a multiple-testing correction that seven of the eight per-target comparisons survive, and a control that replaces the scene by an analytic field with the spectrum of the imagery and shows that support mismatch and scene content together account for less than a fifth of the effect (Section~\ref{sec:support_controls});
+    \item a reusable, assertion-guarded evaluation pipeline that shares its sites, products and resampling operator with a companion study of HEALPix resampling~\cite{delouis2026resample}, so that the storage and transfer questions are answered on the same data.
+\end{itemize}
+
+The scope of the result should be stated before the result itself. The
+competitive regime reported below belongs to the complete carrier-grid chain
+(transfer, carrier and read), not to HEALPix geometry alone, and it is
+conditional on three quantities, each measured here rather than assumed. The
+first is the storage overhead assigned to the native product, which is never
+fixed: every verdict is expressed through the critical overhead
+$\gamma_\star(e)$ of Section~\ref{sec:rd_main}, and the $30\%$ scenario is
+one abscissa on that curve. The second is the transfer that populates the
+carrier: the same tiles rebuilt with a PSF-aware or an inverse-distance
+transfer cost $1.2$ to $2.2$ times the bytes at equal accuracy and leave
+HEALPix ahead at no target (Section~\ref{sec:transfer_cost}), a sensitivity
+larger than the advantage itself. The third is the reconstruction reference:
+when the carrier is scored against the native observation rather than within
+its own representation, its transfer-and-read floor of about $10\%$ of a
+scene's standard deviation is not reached by any swept configuration under
+the nearest-cell read; two thirds of the variance of that floor is due to the
+reading operator, and re-scoring through an interpolating read narrows the
+lead of native UTM without reversing it (Sections~\ref{sec:operator}
+and~\ref{sec:common_reference}). These three conditions are stated together
+here so that no statement of the form ``HEALPix is smaller'' is read without
+them.

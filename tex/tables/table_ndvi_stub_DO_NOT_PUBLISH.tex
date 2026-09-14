@@ -1,0 +1,43 @@
+% CAUTION -- see review notes. compute_ndvi_error() in the notebook is currently a
+% placeholder: it compares the reconstructed band directly against the original
+% (ndvi_original = original; ndvi_reconstructed = reconstructed), it does NOT compute
+% an actual NDVI = (NIR-Red)/(NIR+Red). Only band B04 is downloaded in the notebook;
+% B08 (NIR) is never fetched. So despite the caption below, these numbers are just
+% single-band reconstruction error (RMSE/MAE/R2 on B04), not NDVI error.
+% Do not use this table in the manuscript until compute_ndvi_error is implemented
+% for real using B04+B08 and re-run.
+\begin{table*}[t]
+\centering
+\caption{[PLACEHOLDER -- NOT REAL NDVI, see comment in .tex source] ``NDVI'' error metrics for \texttt{healpix-compress\_medium} compared to uncompressed and JPEG2000 lossy.}
+\label{tab:ndvi_metrics_stub}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Land cover & Codec & RMSE$^\dagger$ & MAE$^\dagger$ & $R^2$$^\dagger$ \\
+\midrule
+Agriculture & healpix-compress\_medium & 0.004 & 0.003 & 0.959 \\
+Agriculture & jpeg2000\_lossy          & 0.018 & 0.014 & 0.819 \\
+Agriculture & uncompressed             & 0.000 & 0.000 & 1.000 \\
+Clouds      & healpix-compress\_medium & 0.005 & 0.004 & 0.946 \\
+Clouds      & jpeg2000\_lossy          & 0.017 & 0.013 & 0.833 \\
+Clouds      & uncompressed             & 0.000 & 0.000 & 1.000 \\
+Forest      & healpix-compress\_medium & 0.008 & 0.006 & 0.921 \\
+Forest      & jpeg2000\_lossy          & 0.013 & 0.010 & 0.875 \\
+Forest      & uncompressed             & 0.000 & 0.000 & 1.000 \\
+Ocean       & healpix-compress\_medium & 0.000 & 0.000 & 0.999 \\
+Ocean       & jpeg2000\_lossy          & 0.002 & 0.002 & 0.978 \\
+Ocean       & uncompressed             & 0.000 & 0.000 & 1.000 \\
+Snow/ice    & healpix-compress\_medium & 0.001 & 0.001 & 0.993 \\
+Snow/ice    & jpeg2000\_lossy          & 0.017 & 0.013 & 0.832 \\
+Snow/ice    & uncompressed             & 0.000 & 0.000 & 1.000 \\
+Urban       & healpix-compress\_medium & 0.020 & 0.016 & 0.801 \\
+Urban       & jpeg2000\_lossy          & 0.064 & 0.052 & 0.355 \\
+Urban       & uncompressed             & 0.000 & 0.000 & 1.000 \\
+Water       & healpix-compress\_medium & 0.004 & 0.003 & 0.961 \\
+Water       & jpeg2000\_lossy          & 0.002 & 0.002 & 0.981 \\
+Water       & uncompressed             & 0.000 & 0.000 & 1.000 \\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}
+{\footnotesize $^\dagger$Placeholder metric: reconstructed-vs-original error on band B04 directly, not a true NDVI computed from red/NIR bands. Do not cite as NDVI error.}
+\end{table*}

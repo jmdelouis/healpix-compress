@@ -1,0 +1,14 @@
+\begin{table*}[t]
+\centering
+\caption{Same codec, two grids: compression ratio and RMSE for three generic codecs run identically on the native UTM \SI{10}{m} grid and on the HEALPix level-20 carrier grid, averaged over all seven scenes and 4 sub-tiles each. All three codecs compress \emph{better}, not worse, on the geometrically redundant HEALPix carrier grid despite it storing $4\times$ as many raw samples -- direct evidence for the main hypothesis (Section~\ref{sec:results}). \texttt{jpeg2000\_lossy} is omitted here: its quality-layer parameter is computed from tile side length and degenerates to a near-lossless setting on the smaller native-UTM sub-tiles used in this sweep, making its two grid conditions not comparable as configured (see Section~\ref{sec:limitations}).}
+\label{tab:utm_vs_healpix}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Codec & Ratio (UTM) & Ratio (HEALPix) & Gain & RMSE (UTM) $\to$ (HEALPix) \\
+\midrule
+sz3                & 36.039 & 115.826 & $+221\%$ & 0.002774 $\to$ 0.002187 \\
+jpeg2000\_lossless  & 5.131  & 5.498   & $+7\%$   & 0.000004 $\to$ 0.000004 \\
+zfp                 & 9.197  & 10.281  & $+12\%$  & 0.000359 $\to$ 0.000268 \\
+\bottomrule
+\end{tabular}
+\end{table*}

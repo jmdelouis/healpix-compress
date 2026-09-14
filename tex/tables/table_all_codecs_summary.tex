@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\caption{All evaluated codecs, HEALPix level-20 carrier grid, band B04, averaged over all seven benchmark scenes (Table~\ref{tab:benchmark_scenes}) and 4 spatial sub-tiles each ($n=28$ per codec). \texttt{sz3} is the real SZ3 codec (\texttt{pysz}), using the same nominal 1\,\% relative error-bound convention as \texttt{zfp}; the two codecs are nonetheless not directly comparable at matched configuration (see Section~\ref{sec:limitations}).}
+\label{tab:benchmarks_all_scenes}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Codec & Ratio & Reduction (\%) & RMSE & MAE & PSNR (dB) & SSIM \\
+\midrule
+sz3                      & 115.826 & 96.92 & 0.002187 & 0.001842 & 59.80     & 0.995 \\
+healpix-compress\_low    & 12.348  & 91.15 & 0.000707 & 0.000566 & 71.21     & 0.999 \\
+zfp                      & 10.281  & 89.44 & 0.000268 & 0.000208 & 78.22     & 1.000 \\
+jpeg2000\_lossy          & 8.031   & 87.55 & 0.000027 & 0.000022 & 96.14     & 1.000 \\
+healpix-compress\_medium & 6.010   & 82.96 & 0.000458 & 0.000364 & 74.73     & 1.000 \\
+jpeg2000\_lossless       & 5.498   & 81.27 & 0.000004 & 0.000003 & 115.22    & 1.000 \\
+level\_19\_only          & 4.000   & 75.00 & 0.009541 & 0.004888 & 45.88     & 0.949 \\
+healpix-compress\_high   & 3.215   & 68.63 & 0.000002 & 0.000002 & 122.48    & 1.000 \\
+healpix-compress\_ultra  & 2.401   & 57.79 & 0.000000 & 0.000000 & $\infty$  & 1.000 \\
+uncompressed             & 1.000   & 0.00  & 0.000000 & 0.000000 & $\infty$  & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table*}
