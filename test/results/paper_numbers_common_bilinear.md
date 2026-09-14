@@ -33,10 +33,6 @@ on both grids; the rest are conservative bounds, not estimates)
 
 ## HEALPix regime (latitude)
 
-- rmse:0.01: Spearman rho=0.350 (p=0.027, Holm=0.027), belt 1.259 vs cap 1.437 (p=0.006, Holm=0.007)
-- budget:0.1: Spearman rho=0.448 (p=0.004, Holm=0.007), belt 52.106 vs cap 73.176 (p=0.002, Holm=0.007)
-- budget:0.05: Spearman rho=0.518 (p=0.001, Holm=0.002), belt 4.461 vs cap 5.867 (p=0.002, Holm=0.007)
-- budget:0.02: Spearman rho=0.520 (p=0.001, Holm=0.002), belt 1.305 vs cap 1.602 (p=0.002, Holm=0.007)
 
 ## Codec ranking (HEALPix side)
 
