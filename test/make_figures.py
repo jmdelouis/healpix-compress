@@ -47,10 +47,45 @@ def _load(metric="self"):
     utm = pd.read_csv(cfg.RESULTS_DIR / "utm_codec_bench.csv")
     rmse_col = "rmse_common" if metric == "common" else "rmse"
     scenes = sorted(set(hpx.scene) & set(utm.scene))
-    idx_path = cfg.TILE_DIR / "tiles_index.csv"
-    index = pd.read_csv(idx_path) if idx_path.exists() else pd.DataFrame()
+    index = _region_index(hpx, scenes)
     codecs = [c for c in cfg.COMPRESSOR_CODECS if c in set(hpx.codec)]
     return hpx, utm, scenes, codecs, rmse_col, index
+
+
+def _region_index(hpx, scenes):
+    """One row per benchmarked region: class, lon, lat, |lat|, regime.
+
+    Built from the frozen manifest (region_sites) and the benchmark itself,
+    never from data/tiles/tiles_index.csv alone: a partial build_tiles run
+    once left that file with a single row, and the region map, the box-plot
+    class colours and the latitude figure all silently inherited it (a map
+    titled "1 evaluation regions"). tiles_index.csv is only merged in for
+    tile-specific columns it may carry.
+    """
+    cols = ["scene", "scene_class", "lat", "abs_lat", "hpx_regime"]
+    base = hpx.drop_duplicates("scene")[[c for c in cols if c in hpx.columns]]
+    try:
+        import region_sites
+        sites = region_sites.load_sites()
+        idx = sites[sites.scene.isin(scenes)][
+            ["scene", "scene_class", "lon", "lat", "abs_lat", "hpx_regime"]]
+    except Exception as exc:                              # noqa: BLE001
+        print(f"  region index: manifest unavailable ({type(exc).__name__}: "
+              f"{exc}); falling back to the benchmark columns (no longitude)")
+        idx = base[base.scene.isin(scenes)]
+    idx_path = cfg.TILE_DIR / "tiles_index.csv"
+    if idx_path.exists():
+        tiles = pd.read_csv(idx_path)
+        extra = [c for c in tiles.columns if c not in idx.columns and c != "scene"]
+        if extra:
+            idx = idx.merge(tiles[["scene"] + extra], on="scene", how="left")
+    missing = sorted(set(scenes) - set(idx.scene))
+    if missing:
+        print(f"  region index: {len(missing)} benchmarked region(s) absent from "
+              f"the manifest: {', '.join(missing[:5])}{'...' if len(missing) > 5 else ''}")
+    if len(idx) != len(scenes):
+        print(f"  region index: {len(idx)} rows for {len(scenes)} benchmarked regions")
+    return idx.sort_values("scene").reset_index(drop=True)
 
 
 def ratios_per_target(hpx, utm, scenes, codecs, rmse_col, gamma=cfg.GAMMA_UTM):
@@ -133,9 +168,19 @@ def _local_km(lon, lat, lon0, lat0):
     """
     m_per_deg_lat = 111132.95
     m_per_deg_lon = 111320.0 * np.cos(np.radians(lat0))
-    x = (np.asarray(lon, dtype=np.float64) - lon0) * m_per_deg_lon
+    # healpix_geo returns cell-centre longitudes in [0, 360) while the UTM
+    # crop carries [-180, 180): west of Greenwich the two footprints of one
+    # region were 360 degrees (40 000 km) apart and every panel shared that
+    # scale, which is what reduced the footprints to dots. Wrap the offset.
+    dlon = _wrap_deg(np.asarray(lon, dtype=np.float64) - lon0)
+    x = dlon * m_per_deg_lon
     y = (np.asarray(lat, dtype=np.float64) - lat0) * m_per_deg_lat
     return x / 1000.0, y / 1000.0
+
+
+def _wrap_deg(d):
+    """Longitude difference wrapped to (-180, 180]."""
+    return (np.asarray(d, dtype=np.float64) + 180.0) % 360.0 - 180.0
 
 
 def _overlap_fractions(z):
@@ -159,10 +204,25 @@ def _overlap_fractions(z):
     return f, f / (2.0 - f)
 
 
+def _spread_over_classes(scenes, max_panels):
+    """Pick regions round-robin over the land-cover classes, in scene order,
+    so that eight panels show two of each class rather than eight agriculture
+    regions (the first eight alphabetically)."""
+    by_cls = {}
+    for s in scenes:
+        by_cls.setdefault(s.split("__")[1] if "__" in s else "", []).append(s)
+    out, queues = [], [list(v) for _, v in sorted(by_cls.items())]
+    while len(out) < max_panels and any(queues):
+        for q in queues:
+            if q and len(out) < max_panels:
+                out.append(q.pop(0))
+    return out
+
+
 def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
     import build_tiles
-    shown = [s for s in scenes[:max_panels]
-             if build_tiles.tile_path(s).exists()]
+    avail = [s for s in scenes if build_tiles.tile_path(s).exists()]
+    shown = _spread_over_classes(avail, max_panels)
     n = len(shown)
     if n == 0:
         print("  fig_utm_crop_footprints: skipped (no tiles under data/tiles)")
@@ -176,7 +236,7 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
     panels, lim = [], 0.0
     for scene in shown:
         z = np.load(build_tiles.tile_path(scene))
-        lon0 = float(np.mean(z["hull_lon"]))
+        lon0 = float(_wrap_deg(np.mean(_wrap_deg(z["hull_lon"]))))
         lat0 = float(np.mean(z["hull_lat"]))
         hx, hy = _local_km(z["hull_lon"], z["hull_lat"], lon0, lat0)
         # close the hull ring

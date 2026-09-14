@@ -400,7 +400,7 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
         "were the scene. $\\kappa$ is the compression target as a fraction of "
         "the denominator; the two errors being independent, they add in "
         "quadrature only if their cross term vanishes, and it does not: "
-        "Section~\\ref{sec:cross_term} measures it negative against the "
+        "Appendix~\\ref{app:cross_term} measures it negative against the "
         "observed field and positive against the latent scene. The inflation "
         "columns are therefore the \\emph{measured} growth of the product's "
         "total error, with the orthogonal value $\\sqrt{1+\\kappa^2}-1$ in "

@@ -34,6 +34,28 @@ import paper_config as cfg
 TEX = cfg.REPO_ROOT / "tex" / "tgrs_healpix_compress.tex"
 
 
+def read_manuscript(path):
+    """The manuscript with every \\input{sections/...} expanded in place.
+
+    Since the split of revision 3 the text lives in one file per section; the
+    figures the checks look for may sit in any of them, so the check runs on
+    the concatenation, in document order. Table inputs are not expanded: the
+    tables are generated, and checked at their source.
+    """
+    root = path.parent
+    def expand(p):
+        out = []
+        for line in p.read_text(encoding="utf-8").splitlines(keepends=True):
+            m = re.match(r"\\input\{(sections/[^}]+)\}", line.strip())
+            if m:
+                sub = root / (m.group(1) + ("" if m.group(1).endswith(".tex") else ".tex"))
+                out.append(expand(sub) if sub.exists() else line)
+            else:
+                out.append(line)
+        return "".join(out)
+    return expand(path)
+
+
 def _fmt(x, nd=2):
     return f"{x:.{nd}f}"
 
@@ -109,8 +131,38 @@ def checks(tex: str):
                 str(len(survivors)),
                 "survivors: " + (", ".join(survivors) or "none")))
     out += level_and_reader_checks()
+    out += gamma_continuous_checks()
     out += consistency_checks(tex)
     return out, survivors
+
+
+def gamma_continuous_checks():
+    """The win-fraction ranges and the inconclusive band of Section V-B.
+
+    They are read off the same per-region critical overheads that
+    gamma_analysis.py turns into table_gamma_continuous, so the prose cannot
+    drift from the table without this firing (revision 3: it had, by 6 points
+    at gamma = 1.3).
+    """
+    try:
+        import gamma_analysis as ga
+        df, _, _ = ga.analyse("self")
+    except Exception as exc:                      # noqa: BLE001
+        return [("gamma-continuous ranges  [skipped: "
+                 f"{type(exc).__name__}]", "", str(exc)[:60])]
+    rep = df[df.reported] if "reported" in df else df
+    out = []
+    for g, label in ((1.0, "gamma=1"), (1.3, "gamma=1.3"), (2.0, "gamma=2")):
+        w = 100 * rep[f"win_at_{g:g}"]
+        out.append((f"HPX-smaller range at {label}",
+                    f"${w.min():.0f}\\%$ to ${w.max():.0f}\\%$",
+                    "over the reported RMSE targets"))
+    r = rep[np.isclose(rep.target, 1e-3)]
+    if len(r) and np.isfinite(r.inconclusive_lo.iloc[0]):
+        out.append(("inconclusive gamma band at RMSE 1e-3",
+                    f"${r.inconclusive_lo.iloc[0]:.2f}$--${r.inconclusive_hi.iloc[0]:.2f}$",
+                    "paired test does not reject parity"))
+    return out
 
 
 def consistency_checks(tex):
@@ -216,6 +268,51 @@ def consistency_checks(tex):
         if {"clough_tocher", "linear"} <= set(med.index):
             out.append(("IDW / C-T transfer error", _fmt(med.loc["linear", "tr"] / med.loc["clough_tocher", "tr"], 1),
                         "the text says 'x times less accurate'"))
+
+    # --- the common reference under both readers (Section V-H) ------------------
+    for reader, fname in (("nearest", "paper_numbers_common.json"),
+                          ("bilinear", "paper_numbers_common_bilinear.json")):
+        pth = cfg.RESULTS_DIR / fname
+        if not pth.exists():
+            out.append((f"common reference, {reader}  [skipped: {fname} absent]", "", ""))
+            continue
+        doc = json.loads(pth.read_text(encoding="utf-8"))
+        for tgt in doc["targets"]:
+            r = list(tgt["ratios"].values())
+            br = float(tgt["bracketed_fraction"])
+            kind, tv = tgt["kind"], float(tgt["target"])
+            if kind == "budget" and tv in (0.02, 0.05, 0.1) and r:
+                m = float(np.median(r))
+                out.append((f"common ratio @ budget {100*tv:g}%, {reader}",
+                            _fmt(m) if m < 10 else _fmt(m, 1), f"n={len(r)}"))
+            if kind == "rmse" and tv in (3e-4, 1e-3, 3e-3, 1e-2):
+                out.append((f"bracketed @ RMSE {tv:g}, {reader}", f"{100*br:.0f}\\%",
+                            "censoring figure quoted in V-H"))
+            if kind == "rmse" and tv == 1e-2 and br >= 0.75 and r:
+                g1 = (tgt.get("test_gamma1") or {}).get("median")
+                out += [(f"common ratio @ RMSE 0.01, {reader}", _fmt(float(np.median(r))), "operational"),
+                        (f"common p_Holm @ RMSE 0.01, {reader}", f"{tgt['p_holm']:.2f}", ""),
+                        (f"intrinsic ratio @ RMSE 0.01, {reader}", _fmt(float(g1)), "gamma_star under this reference")]
+        cr = doc.get("codec_ranking", {})
+        if isinstance(cr, dict):
+            for c in ("jpegxl_lossy", "sz3"):
+                v = cr.get(c)
+                if isinstance(v, dict) and "wins" in v:
+                    out.append((f"common codec wins, {c}, {reader}", str(int(v["wins"])), ""))
+                    if "mean_rank" in v:
+                        out.append((f"common codec mean rank, {c}, {reader}", _fmt(float(v["mean_rank"])), ""))
+        lat = doc.get("latitude", {}).get("budget:0.02", {})
+        evc = lat.get("equatorial_vs_cap", {})
+        if evc:
+            for k, lab in (("belt", "belt"), ("cap", "cap")):
+                if k in evc:
+                    out.append((f"belt/cap ratio @ budget 2%, {lab}, {reader}", _fmt(float(evc[k])), ""))
+            if "p_holm" in evc:
+                out.append((f"belt vs cap Holm p @ budget 2%, {reader}", f"{evc['p_holm']:.2f}" if evc["p_holm"] >= 0.01 else f"{evc['p_holm']:.3f}", ""))
+    fl = _csv("common_reference_floor__bilinear.csv")
+    if fl is not None:
+        out.append(("bilinear common floor, median",
+                    f"{fl.representation_floor_rmse.median():.1e}".replace("e-0", "\\times10^{-") + "}", ""))
 
     # --- the floor is never called the grid's own -----------------------------
     prose = re.sub(r"tab:representation_floor", "", tex)
@@ -355,7 +452,7 @@ def main(argv=None) -> int:
 
     if not TEX.exists():
         raise SystemExit(f"{TEX} not found")
-    tex = TEX.read_text(encoding="utf-8")
+    tex = read_manuscript(TEX)
     rows, survivors = checks(tex)
 
     bad = []

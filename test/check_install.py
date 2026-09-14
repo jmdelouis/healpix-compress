@@ -40,6 +40,7 @@ MODULES = [
     ("level_choice", "is level 20 the right carrier level"),
     ("interscale", "does the link between scales pay"),
     ("reader_floor", "how much of the floor is the read"),
+    ("reader_rescore", "the common-reference verdict under two readers"),
     ("check_paper_numbers", "manuscript figures vs the run that produced them"),
     ("operator_tests", "what the HEALPix->UTM operator does beyond a constant"),
     ("kernel_ablation", "transfer-kernel ablation"),
