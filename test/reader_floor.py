@@ -152,17 +152,17 @@ def latex_table(df, path):
     cover = f"{n} regions" + (
         " (" + ", ".join(f"\\emph{{{r}}} on {v}" for r, v in sorted(short.items()))
         + ", the others on all)" if short else "")
+    note = (f"On {cover}: the RMSE of the \\emph{{uncompressed}} carrier, read "
+            "on the native pixels of the footprints' intersection, against the "
+            "Sentinel-2 observation. \\emph{nearest} is the containing cell, "
+            "the read used throughout the paper; \\emph{bilinear} interpolates "
+            "within the carrier's own lattice at sub-cell position; "
+            "\\emph{psf} is the companion's forward operator, reported only on "
+            "the tiles it is matched to. Ratios are paired per region, then "
+            "the median is taken.")
     lines = ["\\begin{table}[t]", "\\centering",
-             "\\caption{The transfer-and-read floor under three readers, on "
-             f"{cover}: the RMSE of the \\emph{{uncompressed}} carrier, "
-             "read on the native pixels of the footprints' intersection, "
-             "against the Sentinel-2 observation. \\emph{nearest} is the "
-             "containing cell, the read used throughout the paper; "
-             "\\emph{bilinear} interpolates within the carrier's own lattice "
-             "at sub-cell position; \\emph{psf} is the companion's forward "
-             "operator, reported only on the tiles it is matched to. Ratios "
-             "are paired per region, then the median is taken.}",
-             "\\label{tab:reader_floor}", "\\footnotesize",
+             *cfg.tex_caption("The transfer-and-read floor under three readers",
+                              "tab:reader_floor"), "\\footnotesize",
              "\\begin{tabular}{@{}llrrr@{}}", "\\toprule",
              "Tiles & Reader & Floor & \\% of std & Cells read \\\\", "\\midrule"]
     for (k, r), g in ok.groupby(["kernel", "reader"], sort=False):
@@ -181,7 +181,8 @@ def latex_table(df, path):
                          f"nearest}} & {r.median():.3f} & "
                          f"\\multicolumn{{2}}{{l@{{}}}}{{read share of variance "
                          f"{100*(1 - r.median()**2):.0f}\\%}} \\\\")
-    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    lines += ["\\bottomrule", "\\end{tabular}", *cfg.tex_note(note),
+              "\\end{table}"]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"  wrote {path}")
 

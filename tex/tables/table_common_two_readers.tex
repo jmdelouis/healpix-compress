@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering
-\caption{The common-reference verdict under the two readers. Median per-region ratio of the HEALPix side to the operational UTM side ($\gamma_{\mathrm{tile}}=1.30$) at each target the sweep brackets for at least 75\% of the regions under that reader, with the Holm-adjusted paired signed-rank $p$; the last column is the same ratio at $\gamma=1$ under the interpolating read, which for an RMSE target is the critical overhead $\gamma_\star$. \emph{nearest} is the read the paper's sweep used; \emph{bilinear} interpolates within the carrier lattice (Section~\ref{sec:operator}). The UTM side is identical under both, since it depends on the intersection mask alone. The floor row is the uncompressed carrier's RMSE against the observation.}
+\caption{The common-reference verdict under the two readers}
 \label{tab:common_two_readers}
 \footnotesize
 \begin{tabular}{@{}lrrlrrlr@{}}
@@ -17,4 +17,9 @@ budget $10\%$ & 37 & 32.3 & $<10^{-4}$ & 40 & 19.3 & $<10^{-4}$ & 62.9 \\
 floor (median) & \multicolumn{3}{l}{4.0e-03} & \multicolumn{3}{l}{1.9e-03} & \\
 \bottomrule
 \end{tabular}
+\vspace{3pt}
+\begin{minipage}{\columnwidth}
+\footnotesize
+Median per-region ratio of the HEALPix side to the operational UTM side ($\gamma_{\mathrm{tile}}=1.30$) at each target the sweep brackets for at least 75\% of the regions under that reader, with the Holm-adjusted paired signed-rank $p$; the last column is the same ratio at $\gamma=1$ under the interpolating read, which for an RMSE target is the critical overhead $\gamma_\star$. \emph{nearest} is the read the paper's sweep used; \emph{bilinear} interpolates within the carrier lattice (Section~\ref{sec:operator}). The UTM side is identical under both, since it depends on the intersection mask alone. The floor row is the uncompressed carrier's RMSE against the observation.
+\end{minipage}
 \end{table}

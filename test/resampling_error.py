@@ -357,18 +357,15 @@ def latex_table(df, control=None):
                 f"the companion study's cell-average estimand"
                 if n_ch > 1 else
                 "the truth at each cell is a point sample at the cell centre")
-    return (
-        "\\begin{table*}[t]\n\\centering\n"
-        "\\caption{What each transfer costs against the reference it is "
-        "answerable to, on a synthetic scene built per region from that "
-        f"region's own fitted spectral slope $\\beta$ and response width, over "
-        f"{n} regions. The latent field is analytic, the observation is that "
-        "field convolved exactly with the fitted Gaussian response, sampled at "
-        "the native pixel positions and given additive noise at the level "
-        "Immerkaer's estimator reads off the region's own imagery; "
-        f"{estimand}. \\emph{{Blur}} is the RMSE "
-        "between the observed and latent fields, i.e.\\ what a non-deconvolving "
-        "transfer leaves on the table by construction. "
+    note = (
+        "On a synthetic scene built per region from that region's own fitted "
+        f"spectral slope $\\beta$ and response width, over {n} regions. The "
+        "latent field is analytic, the observation is that field convolved "
+        "exactly with the fitted Gaussian response, sampled at the native "
+        "pixel positions and given additive noise at the level Immerkaer's "
+        f"estimator reads off the region's own imagery; {estimand}. "
+        "\\emph{Blur} is the RMSE between the observed and latent fields, i.e.\\ "
+        "what a non-deconvolving transfer leaves on the table by construction. "
         "\\texttt{clough\\_tocher} is scored against the observed field it "
         "claims to represent, \\texttt{psf} against the latent field it claims "
         "to recover; the last two columns are the companion study's recovery "
@@ -377,8 +374,12 @@ def latex_table(df, control=None):
         + ("" if have_control else
            ", the latter left blank because no control at the same "
            "cell-average depth is available")
-        + ".}\n"
-        "\\label{tab:resampling_error}\n\\footnotesize\n"
+        + ".")
+    return (
+        "\\begin{table*}[t]\n\\centering\n"
+        + "\n".join(cfg.tex_caption(
+            "What each transfer costs against the reference it answers to",
+            "tab:resampling_error")) + "\n\\footnotesize\n"
         "\\begin{tabular}{@{}lrrr rrr rr@{}}\n\\toprule\n"
         " & \\multicolumn{3}{c}{Scene} & \\multicolumn{3}{c}{RMSE} & "
         "\\multicolumn{2}{c}{\\texttt{psf} recovery (\\%)} \\\\\n"
@@ -386,7 +387,8 @@ def latex_table(df, control=None):
         "Class & $\\beta$ & FWHM (m) & Noise (\\%) & Blur & "
         "\\texttt{clough\\_tocher} & \\texttt{psf} & measured & noiseless "
         "\\\\\n\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:

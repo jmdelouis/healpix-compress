@@ -287,27 +287,30 @@ def latex_table(df, gamma_utm):
             f"[{r.gamma_star_q25:.2f}, {r.gamma_star_q75:.2f}] & "
             f"{100*r['win_at_1']:.0f} & {100*r['win_at_1.3']:.0f} & "
             f"{100*r['win_at_2']:.0f} & {inc} \\\\")
+    note = (
+        "Each region's critical overhead $\\gamma_\\star$ is the value at which "
+        "the two representations reach equal compressed size for that region, "
+        "so HEALPix is the smaller of the two exactly where "
+        "$\\gamma\\ge\\gamma_\\star$; the win columns are the fraction of the 40 "
+        "regions satisfying that at three illustrative values. "
+        "\\emph{Inconclusive} is the range of $\\gamma$ over which the paired "
+        "signed-rank test does not separate the two grids at the $5\\%$ level. "
+        "No value of $\\gamma$ is privileged: the table maps an assumption a "
+        "reader may hold to the conclusion it implies.")
     return (
         "\\begin{table*}[t]\n\\centering\n"
-        "\\caption{The verdict over a continuous range of the overhead ratio "
-        "$\\gamma=\\gamma_{\\mathrm{UTM}}/\\gamma_{\\mathrm{HPX}}$, rather than "
-        "at one assumed value. Each region's critical overhead "
-        "$\\gamma_\\star$ is the value at which the two representations reach "
-        "equal compressed size for that region, so HEALPix is the smaller of "
-        "the two exactly where $\\gamma\\ge\\gamma_\\star$; the win columns are "
-        "the fraction of the 40 regions satisfying that at three illustrative "
-        "values. \\emph{Inconclusive} is the range of $\\gamma$ over which the "
-        "paired signed-rank test does not separate the two grids at the $5\\%$ "
-        "level. No value of $\\gamma$ is privileged: the table is a map from an "
-        "assumption a reader may hold to the conclusion it implies.}\n"
-        "\\label{tab:gamma_continuous}\n\\footnotesize\n"
+        + "\n".join(cfg.tex_caption(
+            "The verdict over a continuous range of the overhead ratio "
+            "$\\gamma=\\gamma_{\\mathrm{UTM}}/\\gamma_{\\mathrm{HPX}}$",
+            "tab:gamma_continuous")) + "\n\\footnotesize\n"
         "\\begin{tabular}{lrrlrrrl}\n\\toprule\n"
         "Target RMSE & $n$ & $\\gamma_\\star$ & IQR & \\multicolumn{3}{c}{HPX "
         "smaller (\\% of regions)} & Inconclusive \\\\\n"
         "\\cmidrule(lr){5-7}\n"
         " & & median & & $\\gamma{=}1$ & $\\gamma{=}1.3$ & $\\gamma{=}2$ & "
         "$\\gamma$ range \\\\\n\\midrule\n"
-        + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+        + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")
 
 
 def summarize(df, gamma_utm, containers=None):

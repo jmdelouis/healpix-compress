@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering
-\caption{Codec ranking on the HEALPix side. An operating point is one (region, target) pair over the 40 regions and the 5 RMSE plus 5 budget targets (400 in total), retained when at least one codec is evaluable there, which leaves 400. Wins sum to the number of points by construction: each point has exactly one best codec. `Evaluable' counts the points where a codec produced a value at all.}
+\caption{Codec ranking on the HEALPix side}
 \label{tab:codec_ranking}
 \begin{tabular}{lrrr}
 \toprule
@@ -13,4 +13,9 @@ Codec & Wins & Evaluable points & Mean rank \\
 \texttt{dwt\_zstd} & 13 & 395 & 3.60 \\
 \bottomrule
 \end{tabular}
+\vspace{3pt}
+\begin{minipage}{\columnwidth}
+\footnotesize
+An operating point is one (region, target) pair over the 40 regions and the 5 RMSE plus 5 budget targets (400 in total), retained when at least one codec is evaluable there, which leaves 400. Wins sum to the number of points by construction, each point having exactly one best codec; \emph{evaluable} counts the points where a codec produced a value at all.
+\end{minipage}
 \end{table}

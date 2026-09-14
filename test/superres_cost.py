@@ -501,24 +501,26 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
         if utm is not None else ""
     n_utm = (1 + len(kn)) if utm is not None else 0
     ncol = 2 + n_over + n_utm
-    t1 = (
-        "\\begin{table*}[t]\n\\centering\n"
-        "\\caption{What the transfer costs to store. C--T is "
-        "\\texttt{clough\\_tocher}, PSF the PSF-aware transfer, IDW the "
+    note1 = (
+        "C--T is \\texttt{clough\\_tocher}, PSF the PSF-aware transfer, IDW the "
         "inverse-distance-weighted average over four neighbours that the "
-        "library calls \\texttt{linear} and that "
-        "Section~\\ref{sec:resampler} reports abandoning. Every ratio at a given "
-        "target is a paired median over the same regions --- those bracketed "
-        "on all sweeps at that target --- so the columns are comparable to one "
-        "another. Left block: compressed size relative to the "
+        "library calls \\texttt{linear} and that Section~\\ref{sec:resampler} "
+        "reports abandoning. Every ratio at a given target is a paired median "
+        "over the same regions, those bracketed on all sweeps at that target, "
+        "so the columns are comparable to one another. Left block: compressed "
+        "size relative to the "
         f"\\texttt{{{baseline.replace('_', chr(92)+'_')}}} tile of the same "
         "region at the same absolute RMSE; its last column is the deconvolving "
         "transfer over the non-deconvolving one, which is the cost of "
         "deconvolving separated from the cost of leaving Clough--Tocher. Right "
         "block: each product against the equal-area native crop scaled by "
         f"$\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$, composed per region "
-        "rather than as a product of medians; below one favours HEALPix.}\n"
-        "\\label{tab:transfer_cost}\n\\footnotesize\n"
+        "rather than as a product of medians; below one favours HEALPix.")
+    t1 = (
+        "\\begin{table*}[t]\n\\centering\n"
+        + "\n".join(cfg.tex_caption("What the transfer costs to store",
+                                    "tab:transfer_cost"))
+        + "\n\\footnotesize\n"
         f"\\begin{{tabular}}{{@{{}}lr{'r'*(ncol-2)}@{{}}}}\n\\toprule\n"
         f" & & \\multicolumn{{{n_over}}}{{c}}{{Relative to {_short(baseline)}}}"
         + (f" & \\multicolumn{{{n_utm}}}{{c}}{{HPX/UTM}}" if utm is not None
@@ -528,7 +530,8 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
         + "\n"
         f"Target RMSE & $n$ & {over}"
         + (f" & {utm_head}" if utm is not None else "") + " \\\\\n\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(note1, wide=True)) + "\n\\end{table*}\n")
 
     csrc = {k: have[k] for k in [baseline] + kn}
     if utm is not None:
@@ -542,23 +545,19 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
             v = r[f"t{t:g}"]
             cells.append("--" if v != v else f"{v:.3f}")
         body.append(f"{name} & " + " & ".join(cells) + r" \\")
+    note2 = (
+        "Transfers are labelled as in Table~\\ref{tab:transfer_cost}. The "
+        "second column is each raster's own lossless size, which separates the "
+        "HEALPix rasters by less than a tenth; the rest is the compressed size "
+        "at each target as a fraction of that same lossless size, so the "
+        "entropy difference divides out and what remains is how much of the "
+        "content a lossy coder can discard. Section~\\ref{sec:transfer_cost} "
+        "reads the two surcharges apart.")
     t2 = (
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{Why the transfers differ: not in how much they carry, but "
-        "in how compactly. Transfers are labelled as in "
-        "Table~\\ref{tab:transfer_cost}. The second column is each raster's own lossless "
-        "size, which separates the HEALPix rasters by less than a tenth. "
-        "The rest is the compressed size at each target as a fraction of that "
-        "same lossless size, so the entropy difference divides out and what "
-        "remains is how much of the content a lossy coder can discard. A "
-        "curvature-minimising $C^1$ interpolant concentrates its energy in "
-        "coarse coefficients. The deconvolving transfer puts power back into "
-        "the small scales outright; the $C^0$ transfer adds no such power but "
-        "leaves a gradient discontinuity at every cell boundary, whose "
-        "localised kinks scatter small non-zero coefficients across the fine "
-        "scales. Both cost a coder bytes, and for opposite reasons: "
-        "Section~\\ref{sec:transfer_cost} separates them.}\n"
-        "\\label{tab:compactability}\n\\footnotesize\n"
+        + "\n".join(cfg.tex_caption(
+            "Lossless size and compressed fraction, by transfer",
+            "tab:compactability")) + "\n\\footnotesize\n"
         f"\\begin{{tabular}}{{@{{}}l r {'r'*len(cfg.TARGET_RMSE)}@{{}}}}\n"
         "\\toprule\n"
         f" & Lossless & \\multicolumn{{{len(cfg.TARGET_RMSE)}}}{{c}}"
@@ -567,7 +566,7 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
         "Transfer & (MB) & "
         + " & ".join(f"${t:g}$" for t in cfg.TARGET_RMSE) + " \\\\\n"
         "\\midrule\n" + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n"
-        "\\end{table}\n")
+        + "\n".join(cfg.tex_note(note2)) + "\n\\end{table}\n")
 
     if publish:
         cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)

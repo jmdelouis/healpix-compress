@@ -269,24 +269,26 @@ def latex_table(df):
                 f"{len(w)} & {w.rho.median():+.3f} & "
                 f"[{w.rho.quantile(.1):+.2f}, {w.rho.quantile(.9):+.2f}] & "
                 f"{100*m:+.1f} & {100*q:+.1f} \\\\")
-    return (
-        "\\begin{table*}[t]\n\\centering\n"
-        "\\caption{The cross term between the transfer error and the "
-        "compression error, measured rather than assumed. Both errors are "
-        "taken on the level-20 cells and in the same norm; $\\rho$ is their "
-        "normalised inner product, so the exact relation is "
+    note = (
+        "Both errors are taken on the level-20 cells and in the same norm; "
+        "$\\rho$ is their normalised inner product, so the exact relation is "
         "$D_{\\mathrm{total}}/D_0=\\sqrt{1+\\kappa^2+2\\rho\\kappa}$ and the "
         "quadrature form used in Appendix~\\ref{app:error_budget} is its "
         "$\\rho=0$ case. Operating points are grouped around each reported "
         "$\\kappa$ within a factor of $1.5$. The last two columns are the "
         "growth of the product's total error as measured, and as quadrature "
-        "predicts it.}\n"
-        "\\label{tab:cross_term}\n\\footnotesize\n"
+        "predicts it.")
+    return (
+        "\\begin{table*}[t]\n\\centering\n"
+        + "\n".join(cfg.tex_caption(
+            "Cross term between the transfer and compression errors",
+            "tab:cross_term")) + "\n\\footnotesize\n"
         "\\begin{tabular}{@{}lllrrrrr@{}}\n\\toprule\n"
         "Transfer & Reference & $\\kappa$ & $n$ & median $\\rho$ & "
         "$[10,90]\\%$ & Measured (\\%) & Quadrature (\\%) \\\\\n"
         "\\midrule\n"
-        + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+        + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:

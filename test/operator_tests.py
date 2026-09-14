@@ -388,27 +388,30 @@ def latex_table(df):
     sp = _med(df, "spectrum", "rmse")
     imp = _med(df, "impulse", "n_pixels_hit")
     ramp = _med(df, "ramp", "rmse_cells", parameter="ramp_x")
+    note = (
+        "Each row is a single-frequency wave placed analytically on the "
+        "level-20 cell centres, read on the native UTM pixels, and regressed "
+        "against the same wave evaluated at those pixels; the columns are the "
+        "recovered amplitude response by wave direction in the projected "
+        "frame, and the largest phase shift converted to metres. Nothing is "
+        "resampled: the ground truth is the same analytic function, so the "
+        "residual is the operator and the unavoidable discretisation of "
+        "reading a cell centre. On a band-limited field with the imagery's "
+        f"own fitted spectrum the operator contributes {sp:.1e} of the field's "
+        f"standard deviation; one cell lights {imp:.1f} native pixels; a unit "
+        f"gradient is reproduced to {ramp:.2f} cells.")
     return (
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{What the HEALPix$\\to$UTM reading operator does beyond "
-        "preserving a constant. Each row is a single-frequency wave placed "
-        "analytically on the level-20 cell centres, read on the native UTM "
-        "pixels, and regressed against the same wave evaluated at those pixels; "
-        "the columns are the recovered amplitude response by wave direction in "
-        "the projected frame, and the largest phase shift converted to metres. "
-        "Nothing is resampled: the ground truth is the same analytic function, "
-        "so the residual is the operator and the unavoidable discretisation of "
-        "reading a cell centre. On a band-limited field with the imagery's own "
-        f"fitted spectrum the operator contributes {sp:.1e} of the field's "
-        f"standard deviation; one cell lights {imp:.1f} native pixels; a unit "
-        f"gradient is reproduced to {ramp:.2f} cells.}}\n"
-        "\\label{tab:operator_tests}\n\\footnotesize\n"
+        + "\n".join(cfg.tex_caption(
+            "What the HEALPix$\\to$UTM read does beyond preserving a constant",
+            "tab:operator_tests")) + "\n\\footnotesize\n"
         "\\begin{tabular}{@{}rccccr@{}}\n\\toprule\n"
         "Wavelength & \\multicolumn{4}{c}{Amplitude response} & Max shift \\\\\n"
         "\\cmidrule(lr){2-5}\n"
         "(m) & $0^\\circ$ & $45^\\circ$ & $90^\\circ$ & $135^\\circ$ & (m) \\\\\n"
         "\\midrule\n" + "\n".join(rows) + "\n\\bottomrule\n"
-        "\\end{tabular}\n\\end{table}\n")
+        "\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(note)) + "\n\\end{table}\n")
 
 
 def main(argv=None) -> int:

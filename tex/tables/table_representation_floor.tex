@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering
-\caption{Transfer-and-read floor: the RMSE of the \emph{uncompressed} level-20 carrier tile, read on the native UTM pixels of the two footprints' intersection with the nearest read, against the Sentinel-2 observation itself. No codec setting on the HEALPix side can go below it, so any target tighter than it is unreachable by construction under the common reference. It is the error of the transfer and the read together, and Section~\ref{sec:operator} shows that the read alone accounts for an error of this size, so it is an upper bound on what the carrier representation costs under the present reading operator, not the grid's own representation error. It scales with the scene's high-frequency content.}
+\caption{Transfer-and-read floor against the observation}
 \label{tab:representation_floor}
 \begin{tabular}{lrrrr}
 \toprule
@@ -14,4 +14,9 @@ water & 10 & 8.1e-04 & [1.3e-04, 9.2e-03] & 11.3 \\
 all & 40 & 4.0e-03 & [1.3e-04, 1.4e-02] & 10.3 \\
 \bottomrule
 \end{tabular}
+\vspace{3pt}
+\begin{minipage}{\columnwidth}
+\footnotesize
+The RMSE of the \emph{uncompressed} level-20 carrier tile, read on the native UTM pixels of the two footprints' intersection with the nearest read, against the Sentinel-2 observation itself. No codec setting on the HEALPix side can go below it, so any target tighter than it is unreachable under the common reference. It is the error of the transfer and the read together: Section~\ref{sec:operator} shows that the read alone accounts for an error of this size, so the floor is an upper bound on what the carrier representation costs under the present reading operator, not the grid's own representation error. It scales with the scene's high-frequency content.
+\end{minipage}
 \end{table}

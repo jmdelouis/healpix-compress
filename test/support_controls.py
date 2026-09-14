@@ -694,8 +694,9 @@ def latex_table(frames: dict) -> str:
     # The caption describes the controls that actually ran: a caption listing
     # controls absent from the table is how a reader is told the wrong thing
     # about what was done.
-    parts = ["Controls for the support mismatch between the rotated HEALPix "
-             "tile and the axis-aligned equal-area crop."]
+    parts = ["The rotated HEALPix tile and the axis-aligned equal-area crop "
+             "enclose the same nominal area but not the same ground; these "
+             "controls bound what that mismatch contributes."]
     if "synthetic" in frames and len(frames["synthetic"]):
         d = frames["synthetic"]
         fw = d["psf_fwhm_m"].median() if "psf_fwhm_m" in d else float("nan")
@@ -720,11 +721,12 @@ def latex_table(frames: dict) -> str:
                      "their \\emph{Median} column is that spread, not a ratio.")
     return (
         "\\begin{table}[t]\n\\centering\n"
-        "\\caption{" + " ".join(parts) + "}\n"
-        "\\label{tab:support_controls}\n"
-        "\\footnotesize\n\\begin{tabular}{@{}llrrl@{}}\n\\toprule\n"
+        + "\n".join(cfg.tex_caption(
+            "Controls for the support mismatch", "tab:support_controls"))
+        + "\n\\footnotesize\n\\begin{tabular}{@{}llrrl@{}}\n\\toprule\n"
         "Control & Target & $n$ & Median & Range \\\\\n\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n")
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(" ".join(parts))) + "\n\\end{table}\n")
 
 
 # --- driver ------------------------------------------------------------------

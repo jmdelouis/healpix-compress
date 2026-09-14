@@ -386,31 +386,30 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
                     f"the exception{'s are' if len(over_blur) > 1 else ' is'} "
                     + ", ".join(sorted(over_blur))
                     + ", whose inflation is given rather than glossed.")
-    return (
-        "\\begin{table*}[t]\n\\centering\n"
-        "\\caption{The storage verdict expressed against the error each "
-        "product already carries, under both defensible denominators. The "
-        f"transfer is \\texttt{{{kernel.replace('_', chr(92)+'_')}}}, which does "
-        f"not deconvolve, measured on the {n_reg} regions of "
+    note = (
+        "The transfer is "
+        f"\\texttt{{{kernel.replace('_', chr(92)+'_')}}}, which does not "
+        f"deconvolve, over the {n_reg} regions of "
         "Table~\\ref{tab:benchmark_scenes}. \\emph{Own estimand}: its RMSE "
         "against the observed field it claims to represent. "
         "\\emph{Latent scene}: its RMSE against the unblurred scene, which for "
-        "a non-deconvolving transfer is the instrument blur it does not remove "
-        "-- the yardstick that applies when the carrier grid is read as if it "
-        "were the scene. $\\kappa$ is the compression target as a fraction of "
-        "the denominator; the two errors being independent, they add in "
-        "quadrature only if their cross term vanishes, and it does not: "
-        "Appendix~\\ref{app:cross_term} measures it negative against the "
-        "observed field and positive against the latent scene. The inflation "
-        "columns are therefore the \\emph{measured} growth of the product's "
-        "total error, with the orthogonal value $\\sqrt{1+\\kappa^2}-1$ in "
-        "parentheses; a dash marks a crossing beyond the range the cross-term "
-        "run sampled. The target shown is "
-        "the tightest reported one at which HEALPix is the smaller "
-        "representation, or the loosest tested where there is none; it is set "
-        "by the ratios alone and so is common to both denominators. "
-        + verdict + "}\n"
-        "\\label{tab:alpha_budget}\n\\footnotesize\n"
+        "a non-deconvolving transfer is the instrument blur it does not "
+        "remove, the yardstick that applies when the carrier grid is read as "
+        "if it were the scene. $\\kappa$ is the compression target as a "
+        "fraction of that denominator. The two errors add in quadrature only "
+        "if their cross term vanishes, and it does not "
+        "(Appendix~\\ref{app:cross_term}), so the inflation columns are the "
+        "\\emph{measured} growth of the product's total error, with the "
+        "orthogonal value $\\sqrt{1+\\kappa^2}-1$ in parentheses; a dash marks "
+        "a crossing beyond the range the cross-term run sampled. The target "
+        "shown is the tightest reported one at which HEALPix is the smaller "
+        "representation, or the loosest tested where there is none. "
+        + verdict)
+    return (
+        "\\begin{table*}[t]\n\\centering\n"
+        + "\n".join(cfg.tex_caption(
+            "The storage verdict against the error the product already carries",
+            "tab:alpha_budget")) + "\n\\footnotesize\n"
         "\\begin{tabular}{@{}lrrc rrr rrr@{}}\n\\toprule\n"
         " & \\multicolumn{3}{c}{Crossover} & "
         "\\multicolumn{3}{c}{Own estimand} & "
@@ -420,7 +419,8 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
         "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% m.\\ (o.) & "
         "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% m.\\ (o.) \\\\\n"
         "\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:

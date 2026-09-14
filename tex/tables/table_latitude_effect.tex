@@ -1,20 +1,25 @@
 \begin{table*}[t]
 \centering
-\caption{Dependence of the \emph{intrinsic} (i.e.\ $\gamma_{\mathrm{tile}}=1$) HPX/UTM ratio on the tile's position on the sphere. HEALPix cells are equal-area but not equal-shape, and their local elongation differs between the equatorial belt ($|\mathrm{lat}| < 41.81^\circ$) and the polar caps. Spearman $\rho$ is against $|\mathrm{latitude}|$; the last four columns compare the two regimes (two-sided Mann--Whitney).}
+\caption{Does the intrinsic ratio depend on latitude?}
 \label{tab:latitude_effect}
 \footnotesize
 \begin{tabular}{lrrrrrrrr}
 \toprule
 Target & $n$ & $\rho$ & $p_\rho$ & $p_\rho^{\mathrm{Holm}}$ & Median (belt) & Median (cap) & $p$ & $p^{\mathrm{Holm}}$ \\
 \midrule
-RMSE $10^{-4}$ & 40 & -0.11 & 0.515 & 1.000 & 2.09 & 2.06 & 0.881 & 1.000 \\
-RMSE $3\times10^{-4}$ & 40 & -0.07 & 0.652 & 1.000 & 1.90 & 1.96 & 0.654 & 1.000 \\
-RMSE $10^{-3}$ & 40 & -0.02 & 0.912 & 1.000 & 1.68 & 1.59 & 0.796 & 1.000 \\
-RMSE $3\times10^{-3}$ & 40 & 0.11 & 0.496 & 1.000 & 1.22 & 1.27 & 0.392 & 1.000 \\
-RMSE $10^{-2}$ & 40 & 0.30 & 0.056 & 0.337 & 0.97 & 1.20 & 0.013 & 0.077 \\
-Budget $10\%$ & 40 & 0.01 & 0.937 & 1.000 & 12.36 & 13.20 & 0.438 & 1.000 \\
-Budget $5\%$ & 40 & 0.37 & 0.019 & 0.130 & 2.68 & 2.81 & 0.011 & 0.077 \\
-Budget $2\%$ & 40 & 0.50 & 0.001 & 0.009 & 0.95 & 1.21 & 0.001 & 0.008 \\
+RMSE $10^{-4}$ & 40 & -0.11 & 0.514 & 1.000 & 2.09 & 2.06 & 0.881 & 1.000 \\
+RMSE $3\times10^{-4}$ & 40 & -0.07 & 0.646 & 1.000 & 1.90 & 1.96 & 0.654 & 1.000 \\
+RMSE $10^{-3}$ & 40 & -0.02 & 0.902 & 1.000 & 1.68 & 1.59 & 0.796 & 1.000 \\
+RMSE $3\times10^{-3}$ & 40 & 0.11 & 0.502 & 1.000 & 1.22 & 1.27 & 0.392 & 1.000 \\
+RMSE $10^{-2}$ & 40 & 0.30 & 0.056 & 0.336 & 0.97 & 1.20 & 0.013 & 0.077 \\
+Budget $10\%$ & 40 & 0.02 & 0.926 & 1.000 & 12.36 & 13.20 & 0.438 & 1.000 \\
+Budget $5\%$ & 40 & 0.37 & 0.019 & 0.135 & 2.68 & 2.81 & 0.011 & 0.077 \\
+Budget $2\%$ & 40 & 0.49 & 0.001 & 0.010 & 0.95 & 1.21 & 0.001 & 0.008 \\
 \bottomrule
 \end{tabular}
+\vspace{3pt}
+\begin{minipage}{\textwidth}
+\footnotesize
+Ratios are intrinsic, i.e.\ $\gamma_{\mathrm{tile}}=1$. HEALPix cells are equal in area but not in shape, and their local elongation differs between the equatorial belt ($|\mathrm{lat}| < 41.81^\circ$) and the polar caps. Spearman $\rho$ is against $|\mathrm{latitude}|$; the last four columns compare the two regimes (two-sided Mann--Whitney).
+\end{minipage}
 \end{table*}

@@ -49,8 +49,12 @@ def _fmt(v, nd=2):
     return "--" if not np.isfinite(v) else f"{v:.{nd}f}"
 
 
-def _table(caption, label, colspec, header, body_lines, note=None, wide=False):
-    """Assemble one LaTeX table.
+def _table(title, label, colspec, header, body_lines, note=None, wide=False):
+    """Assemble one LaTeX table: short caption, data, then a note.
+
+    `title` is a caption, not an explanation: IEEEtran sets it in small caps,
+    where a paragraph becomes a block of capitals nobody reads. What the
+    columns mean goes in `note`, under the table, in normal case.
 
     `wide` emits a two-column float. A nine-column table does not fit an IEEE
     text column, and under `nonstopmode` pdflatex does not stop for that: it
@@ -59,14 +63,12 @@ def _table(caption, label, colspec, header, body_lines, note=None, wide=False):
     noticed in the proof.
     """
     env = "table*" if wide else "table"
-    out = [f"\\begin{{{env}}}[t]", r"\centering", f"\\caption{{{caption}}}",
-           f"\\label{{{label}}}"]
+    out = [f"\\begin{{{env}}}[t]", r"\centering", *cfg.tex_caption(title, label)]
     if wide:
         out.append(r"\footnotesize")
     out += [f"\\begin{{tabular}}{{{colspec}}}", r"\toprule",
             header, r"\midrule", *body_lines, r"\bottomrule", r"\end{tabular}"]
-    if note:
-        out.append(f"\\\\[2pt]\\footnotesize {note}")
+    out += cfg.tex_note(note, wide=wide)
     out.append(f"\\end{{{env}}}")
     return "\n".join(out) + "\n"
 
@@ -152,12 +154,13 @@ def table_storage_accounting(utm, scenes):
         f"{np.mean(list(raw.values()))*cfg.GAMMA_UTM/1e6:.3f} & {t_g['median']:.3f} \\\\",
     ]
     tex = _table(
-        f"Raw, uncompressed storage for the same nominal ground area, across the "
-        f"{len(ratios_g)} regions. Both representations are fixed-size, so the ratio is a "
-        f"geometric constant (measured range {t_1['lo']:.3f}--{t_1['hi']:.3f} at "
-        f"$\\gamma_{{\\mathrm{{tile}}}}=1$).",
+        "Raw storage for the same nominal ground area",
         "tab:storage_accounting", "lrr",
-        r"Representation & Raw size (MB) & HEALPix / this \\", body)
+        r"Representation & Raw size (MB) & HEALPix / this \\", body,
+        note=(f"Over the {len(ratios_g)} regions. Both representations are "
+              f"fixed-size, so the ratio is a geometric constant (measured "
+              f"range {t_1['lo']:.3f}--{t_1['hi']:.3f} at "
+              f"$\\gamma_{{\\mathrm{{tile}}}}=1$)."))
     return tex, dict(n=int(t_g["n"]), ratio_gamma1=t_1, ratio_gamma=t_g,
                      utm_raw_bytes_mean=float(np.mean(list(raw.values()))))
 
@@ -216,7 +219,7 @@ def _ratio_rows(hpx, utm, scenes, rmse_col, codecs):
     return rows, len(reported)
 
 
-def table_iv_v(rows, family_size, n_regions):
+def table_iv_v(rows, family_size, n_regions, metric="self"):
     def lines(kind, fmt_target):
         out = []
         for r in rows:
@@ -235,21 +238,26 @@ def table_iv_v(rows, family_size, n_regions):
             f"and~\\ref{{tab:error_at_size}}.")
     header = (r"Target & $n$ & Median ratio & Range & $p$ & $p_{\mathrm{Holm}}$ "
               r"& Favors \\")
+    ref = ("" if metric == "self"
+           else ", scored against the native observation")
     tex_iv = _table(
-        f"Per-region HPX/UTM compressed-size ratio at constant reconstruction RMSE "
-        f"(oracle-best codec chosen independently per region per grid; the UTM side "
-        f"already includes $\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$). Ratio $<1$ "
-        f"favors HEALPix. Median and [min, max] across the $n$ evaluable regions "
-        f"(of {n_regions}).",
+        "Compressed-size ratio at constant reconstruction RMSE" + ref,
         "tab:storage_at_rmse", "lrrrrrl", header,
-        lines("rmse", lambda t: RMSE_LABEL.get(t, f"${t:g}$")), note)
+        lines("rmse", lambda t: RMSE_LABEL.get(t, f"${t:g}$")),
+        note=(f"Per-region HPX/UTM ratio, oracle-best codec chosen "
+              f"independently per region and grid; the UTM side already "
+              f"includes $\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$. A ratio "
+              f"below one favours HEALPix. Median and [min, max] over the $n$ "
+              f"evaluable regions of {n_regions}. " + note))
     tex_v = _table(
-        f"Per-region HPX/UTM reconstruction-RMSE ratio at a constant shared storage "
-        f"budget, expressed as a fraction of the shared raw HEALPix tile size "
-        f"({cfg.SHARED_RAW} B); the UTM side receives that budget divided by "
-        f"$\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$. Ratio $<1$ favors HEALPix.",
+        "Reconstruction-error ratio at a constant storage budget" + ref,
         "tab:error_at_size", "lrrrrrl", header,
-        lines("budget", lambda t: f"${100*t:g}\\%$"), note)
+        lines("budget", lambda t: f"${100*t:g}\\%$"),
+        note=(f"Per-region HPX/UTM RMSE ratio at a budget expressed as a "
+              f"fraction of the shared raw HEALPix tile size "
+              f"({cfg.SHARED_RAW} B); the UTM side receives that budget "
+              f"divided by $\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$. A ratio "
+              f"below one favours HEALPix. " + note))
     return tex_iv, tex_v
 
 
@@ -267,14 +275,15 @@ def table_gamma_star(rows):
         body.append(f"{label} & {_fmt(g)} & {cmp_} & "
                     f"{'UTM' if g > cfg.GAMMA_UTM else 'HPX'} \\\\")
     tex = _table(
-        r"Critical operational overhead $\gamma_\star$ at which HEALPix and native UTM "
-        r"reach equal compressed size, by RMSE target (median across regions, "
-        r"oracle-best codec per side, $\gamma_{\mathrm{tile}}=1$). HEALPix is smaller "
-        r"than the operational UTM comparison only where the real overhead of the "
-        r"native product exceeds $\gamma_\star$.",
+        r"Critical overhead $\gamma_\star$ by RMSE target",
         "tab:gamma_star", "lrrr",
         r"Target RMSE & $\gamma_\star$ & vs.\ $\gamma_{\mathrm{tile}}$ & Favors \\",
-        body)
+        body,
+        note=(r"The overhead at which HEALPix and native UTM reach equal "
+              r"compressed size: median across regions, oracle-best codec per "
+              r"side, $\gamma_{\mathrm{tile}}=1$. HEALPix is the smaller "
+              r"representation only where the real overhead of the native "
+              r"product exceeds $\gamma_\star$."))
     return tex, gammas
 
 
@@ -316,16 +325,18 @@ def table_codec_ranking(hpx, scenes, rmse_col, codecs):
                     f"{evaluable.get(c,0):d} & "
                     f"{np.mean(ranks.get(c, [np.nan])):.2f} \\\\")
     tex = _table(
-        f"Codec ranking on the HEALPix side. An operating point is one (region, "
-        f"target) pair over the {len(scenes)} regions and the "
-        f"{len(cfg.TARGET_RMSE)} RMSE plus {len(cfg.BUDGETS)} budget targets "
-        f"({len(scenes)*(len(cfg.TARGET_RMSE)+len(cfg.BUDGETS))} in total), "
-        f"retained when at least one codec is evaluable there, which leaves "
-        f"{points}. Wins sum to the number of points by construction: "
-        f"each point has exactly one best codec. `Evaluable' counts the points where a "
-        f"codec produced a value at all.",
+        "Codec ranking on the HEALPix side",
         "tab:codec_ranking", "lrrr",
-        r"Codec & Wins & Evaluable points & Mean rank \\", body)
+        r"Codec & Wins & Evaluable points & Mean rank \\", body,
+        note=(f"An operating point is one (region, target) pair over the "
+              f"{len(scenes)} regions and the {len(cfg.TARGET_RMSE)} RMSE plus "
+              f"{len(cfg.BUDGETS)} budget targets "
+              f"({len(scenes)*(len(cfg.TARGET_RMSE)+len(cfg.BUDGETS))} in "
+              f"total), retained when at least one codec is evaluable there, "
+              f"which leaves {points}. Wins sum to the number of points by "
+              f"construction, each point having exactly one best codec; "
+              f"\\emph{{evaluable}} counts the points where a codec produced a "
+              f"value at all."))
     return tex, dict(points=points, wins=wins, evaluable=evaluable,
                      mean_rank={c: float(np.mean(v)) for c, v in ranks.items()})
 
@@ -370,16 +381,17 @@ def table_latitude(rows, index):
             for ln, a, b in zip(body, adj_rho, adj_mw)]
 
     tex = _table(
-        r"Dependence of the \emph{intrinsic} (i.e.\ $\gamma_{\mathrm{tile}}=1$) "
-        r"HPX/UTM ratio on the tile's position on the sphere. HEALPix cells are "
-        r"equal-area but not equal-shape, and their local elongation differs between "
-        r"the equatorial belt ($|\mathrm{lat}| < 41.81^\circ$) and the polar caps. "
-        r"Spearman $\rho$ is against $|\mathrm{latitude}|$; the last four columns "
-        r"compare the two regimes (two-sided Mann--Whitney).",
+        r"Does the intrinsic ratio depend on latitude?",
         "tab:latitude_effect", "lrrrrrrrr",
         r"Target & $n$ & $\rho$ & $p_\rho$ & $p_\rho^{\mathrm{Holm}}$ & "
         r"Median (belt) & Median (cap) & $p$ & $p^{\mathrm{Holm}}$ \\",
-        body, wide=True)
+        body, wide=True,
+        note=(r"Ratios are intrinsic, i.e.\ $\gamma_{\mathrm{tile}}=1$. HEALPix "
+              r"cells are equal in area but not in shape, and their local "
+              r"elongation differs between the equatorial belt "
+              r"($|\mathrm{lat}| < 41.81^\circ$) and the polar caps. Spearman "
+              r"$\rho$ is against $|\mathrm{latitude}|$; the last four columns "
+              r"compare the two regimes (two-sided Mann--Whitney)."))
     if not body:
         print("  latitude table skipped: no per-region latitudes "
               "(run build_tiles.py so data/tiles/tiles_index.csv exists)")
@@ -409,12 +421,13 @@ def table_fixed_codec(hpx, utm, scenes, rmse_col, codecs):
     header = "Codec & " + " & ".join(RMSE_LABEL.get(t, f"${t:g}$")
                                      for t in cfg.TARGET_RMSE) + r" \\"
     tex = _table(
-        r"Same-codec control: median per-region HPX/UTM compressed-size ratio at each "
-        r"target RMSE when the \emph{same} codec is used on both grids (UTM includes "
-        r"$\gamma_{\mathrm{tile}}$). Complements the oracle-best comparison of "
-        r"Table~\ref{tab:storage_at_rmse}, which lets codec selection differ between "
-        r"grids.",
-        "tab:fixed_codec", "l" + "r" * len(cfg.TARGET_RMSE), header, body)
+        "Same-codec control",
+        "tab:fixed_codec", "l" + "r" * len(cfg.TARGET_RMSE), header, body,
+        note=(r"Median per-region HPX/UTM compressed-size ratio at each target "
+              r"RMSE when the \emph{same} codec is used on both grids (the UTM "
+              r"side includes $\gamma_{\mathrm{tile}}$). It complements the "
+              r"oracle-best comparison of Table~\ref{tab:storage_at_rmse}, "
+              r"which lets codec selection differ between grids."))
     return tex, out
 
 
@@ -444,21 +457,22 @@ def table_representation_floor(fl):
                 f"[{fl.representation_floor_rmse.min():.1e}, "
                 f"{fl.representation_floor_rmse.max():.1e}] & "
                 f"{fl.pct.median():.1f} \\\\")
-    caption = (
-        "Transfer-and-read floor: the RMSE of the \\emph{uncompressed} level-20 "
-        "carrier tile, read on the native UTM pixels of the two footprints' "
-        "intersection with the " + "/".join(mode) + " read, against the "
-        "Sentinel-2 observation itself. No codec setting on the HEALPix side "
-        "can go below it, so any target tighter than it is unreachable by "
-        "construction under the common reference. It is the error of the "
-        "transfer and the read together, and Section~\\ref{sec:operator} "
-        "shows that the read alone accounts for an error of this size, so it "
-        "is an upper bound on what the carrier representation costs under the "
-        "present reading operator, not the grid's own representation error. "
-        "It scales with the scene's high-frequency content.")
-    return _table(caption, "tab:representation_floor", "lrrrr",
+    note = (
+        "The RMSE of the \\emph{uncompressed} level-20 carrier tile, read on "
+        "the native UTM pixels of the two footprints' intersection with the "
+        + "/".join(mode) + " read, against the Sentinel-2 observation itself. "
+        "No codec setting on the HEALPix side can go below it, so any target "
+        "tighter than it is unreachable under the common reference. It is the "
+        "error of the transfer and the read together: "
+        "Section~\\ref{sec:operator} shows that the read alone accounts for an "
+        "error of this size, so the floor is an upper bound on what the "
+        "carrier representation costs under the present reading operator, not "
+        "the grid's own representation error. It scales with the scene's "
+        "high-frequency content.")
+    return _table("Transfer-and-read floor against the observation",
+                  "tab:representation_floor", "lrrrr",
                   "Class & $n$ & Median floor & Range & \\% of scene std \\\\",
-                  body)
+                  body, note=note)
 
 
 def table_regions(index):
@@ -470,12 +484,14 @@ def table_regions(index):
         body.append(f"{cls} & {len(g):d} & {g.lat.min():.1f} & {g.lat.max():.1f} & "
                     f"{regimes.get('equatorial', 0)} / {regimes.get('cap', 0)} \\\\")
     tex = _table(
-        f"Evaluation regions, shared with the companion \\texttt{{healpix-resample}} "
-        f"study: one Sentinel-2 L2A B04 tile per region, {cfg.WINDOW_PX}$\\times$"
-        f"{cfg.WINDOW_PX} native pixels re-extracted at the same anchors and from the "
-        f"same products as its published 256$\\times$256 patches.",
+        "Evaluation regions",
         "tab:benchmark_scenes", "lrrrl",
-        r"Class & Regions & Min lat & Max lat & Belt / cap \\", body)
+        r"Class & Regions & Min lat & Max lat & Belt / cap \\", body,
+        note=(f"Shared with the companion \\texttt{{healpix-resample}} study: one "
+              f"Sentinel-2 L2A B04 tile per region, {cfg.WINDOW_PX}$\\times$"
+              f"{cfg.WINDOW_PX} native pixels, re-extracted at the same anchors "
+              f"and from the same products as its published "
+              f"256$\\times$256 patches."))
     return tex, {c: int(n) for c, n in index.scene_class.value_counts().items()}
 
 
@@ -575,7 +591,7 @@ def main(argv=None) -> int:
 
     tex_iii, acc = table_storage_accounting(utm, scenes)
     rows, family = _ratio_rows(hpx, utm, scenes, rmse_col, codecs)
-    tex_iv, tex_v = table_iv_v(rows, family, len(scenes))
+    tex_iv, tex_v = table_iv_v(rows, family, len(scenes), args.metric)
     if args.metric != "self":
         suffix_lbl = "_" + args.metric
         for _i, _t in enumerate([tex_iv, tex_v]):

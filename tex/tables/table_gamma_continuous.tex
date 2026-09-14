@@ -1,6 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{The verdict over a continuous range of the overhead ratio $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$, rather than at one assumed value. Each region's critical overhead $\gamma_\star$ is the value at which the two representations reach equal compressed size for that region, so HEALPix is the smaller of the two exactly where $\gamma\ge\gamma_\star$; the win columns are the fraction of the 40 regions satisfying that at three illustrative values. \emph{Inconclusive} is the range of $\gamma$ over which the paired signed-rank test does not separate the two grids at the $5\%$ level. No value of $\gamma$ is privileged: the table is a map from an assumption a reader may hold to the conclusion it implies.}
+\caption{The verdict over a continuous range of the overhead ratio $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$}
 \label{tab:gamma_continuous}
 \footnotesize
 \begin{tabular}{lrrlrrrl}
@@ -16,4 +16,9 @@ $3\times10^{-3}$ & 40 & 1.25 & [1.04, 1.59] & 22 & 52 & 98 & $1.14$--$1.37$ \\
 $10^{-2}$ & 40 & 1.06 & [0.92, 1.27] & 35 & 78 & 98 & $1.02$--$1.20$ \\
 \bottomrule
 \end{tabular}
+\vspace{3pt}
+\begin{minipage}{\textwidth}
+\footnotesize
+Each region's critical overhead $\gamma_\star$ is the value at which the two representations reach equal compressed size for that region, so HEALPix is the smaller of the two exactly where $\gamma\ge\gamma_\star$; the win columns are the fraction of the 40 regions satisfying that at three illustrative values. \emph{Inconclusive} is the range of $\gamma$ over which the paired signed-rank test does not separate the two grids at the $5\%$ level. No value of $\gamma$ is privileged: the table maps an assumption a reader may hold to the conclusion it implies.
+\end{minipage}
 \end{table*}

@@ -69,20 +69,21 @@ def latex_table(df, floors):
     keep = df[df.reported].copy()
     targets = sorted(set(zip(keep.kind, keep.target)),
                      key=lambda kt: (kt[0] != "rmse", -kt[1] if kt[0] == "rmse" else kt[1]))
+    note = ("Median per-region ratio of the HEALPix side to the operational "
+            "UTM side ($\\gamma_{\\mathrm{tile}}=1.30$) at each target the sweep "
+            f"brackets for at least {100*MIN_BRACKETED:.0f}\\% of the regions "
+            "under that reader, with the Holm-adjusted paired signed-rank $p$; "
+            "the last column is the same ratio at $\\gamma=1$ under the "
+            "interpolating read, which for an RMSE target is the critical "
+            "overhead $\\gamma_\\star$. \\emph{nearest} is the read the paper's "
+            "sweep used; \\emph{bilinear} interpolates within the carrier "
+            "lattice (Section~\\ref{sec:operator}). The UTM side is identical "
+            "under both, since it depends on the intersection mask alone. The "
+            "floor row is the uncompressed carrier's RMSE against the "
+            "observation.")
     lines = ["\\begin{table}[t]", "\\centering",
-             "\\caption{The common-reference verdict under the two readers. "
-             "Median per-region ratio of the HEALPix side to the operational "
-             "UTM side ($\\gamma_{\\mathrm{tile}}=1.30$) at each target the "
-             f"sweep brackets for at least {100*MIN_BRACKETED:.0f}\\% of the "
-             "regions under that reader, with the Holm-adjusted paired "
-             "signed-rank $p$; the last column is the same ratio at "
-             "$\\gamma=1$ under the interpolating read, which for an RMSE target "
-             "is the critical overhead $\\gamma_\\star$. \\emph{nearest} is the read the paper's sweep used; "
-             "\\emph{bilinear} interpolates within the carrier lattice "
-             "(Section~\\ref{sec:operator}). The UTM side is identical under "
-             "both, since it depends on the intersection mask alone. The floor "
-             "row is the uncompressed carrier's RMSE against the observation.}",
-             "\\label{tab:common_two_readers}", "\\footnotesize",
+             *cfg.tex_caption("The common-reference verdict under the two readers",
+                              "tab:common_two_readers"), "\\footnotesize",
              "\\begin{tabular}{@{}lrrlrrlr@{}}", "\\toprule",
              " & \\multicolumn{3}{c}{nearest} & \\multicolumn{3}{c}{bilinear} & \\\\",
              "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}",
@@ -109,7 +110,8 @@ def latex_table(df, floors):
     lines += ["\\midrule",
               f"floor (median) & \\multicolumn{{3}}{{l}}{{{floors['nearest']:.1e}}} & "
               f"\\multicolumn{{3}}{{l}}{{{floors['bilinear']:.1e}}} & \\\\",
-              "\\bottomrule", "\\end{tabular}", "\\end{table}"]
+              "\\bottomrule", "\\end{tabular}", *cfg.tex_note(note),
+              "\\end{table}"]
     return "\n".join(lines) + "\n"
 
 

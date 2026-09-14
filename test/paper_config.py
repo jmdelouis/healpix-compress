@@ -118,6 +118,32 @@ def ensure_dirs() -> None:
         d.mkdir(parents=True, exist_ok=True)
 
 
+# --- LaTeX table helpers ----------------------------------------------------
+# IEEEtran sets table captions in small caps, so a caption that explains the
+# columns becomes a block of capitals above the data and is read by nobody.
+# Every generated table therefore emits a short title as the caption and puts
+# what the columns mean in a note under the table, in normal case.
+
+def tex_caption(title: str, label: str) -> list[str]:
+    """The two caption lines of a table: a short title, then its label."""
+    title = " ".join(str(title).split())
+    return [f"\\caption{{{title}}}", f"\\label{{{label}}}"]
+
+
+def tex_note(text: str | None, wide: bool = False) -> list[str]:
+    """A justified note under a table, for what the columns mean.
+
+    Emitted as a minipage so the text is set as a paragraph rather than
+    inheriting the float's \\centering; `wide` matches a table* float.
+    """
+    if not text:
+        return []
+    text = " ".join(str(text).split())
+    width = "\\textwidth" if wide else "\\columnwidth"
+    return ["\\vspace{3pt}", f"\\begin{{minipage}}{{{width}}}",
+            "\\footnotesize", text, "\\end{minipage}"]
+
+
 def describe() -> str:
     return "\n".join([
         f"HEALPix level {LEVEL}, delta {DELTA} -> tile {TILE_SIDE}x{TILE_SIDE} cells",

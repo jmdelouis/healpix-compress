@@ -552,44 +552,43 @@ def latex_table(df, targets, do_rd):
         coverage += (" (" + ", ".join(
             f"\\texttt{{{k.replace('_', chr(92)+'_')}}} on {v}"
             for k, v in sorted(short.items())) + ", the rest on all)")
-    return (
-        "\\begin{table*}[t]\n\\centering\n"
-        f"\\caption{{Transfer-kernel ablation. {coverage}. "
-        f"Two library names mislead and are "
-        f"spelled out here: \\texttt{{linear}} is an inverse-distance-weighted "
-        f"average over four neighbours, not a linear interpolant, and "
-        f"\\texttt{{bicubic}} is Keys' cubic convolution, whose signed kernel "
-        f"rings outside the local sample range by design -- its row is reported "
-        f"for completeness, not as a finding. Each row rebuilds the carrier tile "
-        "from the same native window with a different kernel, with the same "
-        "reading operator throughout, so differences between rows are the "
-        "transfer alone. \\emph{Transfer} is the error against an analytic "
-        "field known at every position --- evaluated at the native pixels to "
-        "play the observation, transferred to the cells, compared to itself at "
-        "the cell centres --- as a percentage of the field's standard "
-        "deviation; it is the only column here that gives a transfer no credit "
-        "for merely copying samples. \\emph{Over} is the percentage of cells "
-        "the transfer places outside the range of the data it was given, which "
-        "detects a diverging interpolant that the constant-field check passes. "
-        "\\emph{Floor} is the RMSE of the uncompressed tile read on the native "
-        "pixels over the two footprints' intersection, as a fraction of the "
-        "scene's standard deviation, and \\emph{rel.} its per-region ratio to "
-        "\\texttt{clough\\_tocher}, the kernel used throughout this paper; both "
+    note = (
+        f"{coverage}. Each row rebuilds the carrier tile from the "
+        "same native window with a different kernel and the same reading "
+        "operator, so differences between rows are the transfer alone. Two "
+        "library names mislead: \\texttt{linear} is an inverse-distance-weighted "
+        "average over four neighbours, not a linear interpolant, and "
+        "\\texttt{bicubic} is Keys' cubic convolution, whose signed kernel rings "
+        "outside the local sample range by design; its row is reported for "
+        "completeness, not as a finding. \\emph{Transfer} is the error against "
+        "an analytic field known at every position, as a percentage of the "
+        "field's standard deviation; it is the only column that gives a "
+        "transfer no credit for copying its input samples. \\emph{Over} is the "
+        "percentage of cells placed outside the range of the data the transfer "
+        "was given, which detects a diverging interpolant that the "
+        "constant-field check passes. \\emph{Floor} is the RMSE of the "
+        "uncompressed tile read on the native pixels over the two footprints' "
+        "intersection, as a fraction of the scene's standard deviation, and "
+        "\\emph{rel.} its per-region ratio to \\texttt{clough\\_tocher}; both "
         "reward a transfer for staying close to the identity on the native "
         "lattice and are reported for that reason, not as a ranking. "
         "\\emph{log-PSD} is the RMS distance in $\\log_{10}$ between the "
-        "projected tile's radial power spectrum and the observation's over the "
-        "band up to the native Nyquist, and \\emph{top oct.} the ratio of "
-        "their power in the highest octave alone: above 1 the transfer leaves "
-        "more high-frequency power than the observation carries, which is the "
-        "failure this paper reports qualitatively for its first resampler."
+        "projected tile's radial power spectrum and the observation's up to the "
+        "native Nyquist, and \\emph{top oct.} the ratio of their power in the "
+        "highest octave alone: above 1 the transfer leaves more high-frequency "
+        "power than the observation carries."
         + (" The last columns are per-region compressed-size ratios to the "
-           "same reference at three RMSE targets." if do_rd else "") + "}\n"
-        "\\label{tab:kernel_ablation}\n\\footnotesize\n"
+           "same reference at three RMSE targets." if do_rd else ""))
+    return (
+        "\\begin{table*}[t]\n\\centering\n"
+        + "\n".join(cfg.tex_caption("Transfer-kernel ablation",
+                                    "tab:kernel_ablation"))
+        + "\n\\footnotesize\n"
         f"\\begin{{tabular}}{{@{{}}{spec}@{{}}}}\n\\toprule\n"
         "Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct." + extra_h
         + " \\\\\n\\midrule\n" + "\n".join(rows)
-        + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+        + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:

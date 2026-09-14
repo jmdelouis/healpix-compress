@@ -552,21 +552,24 @@ def latex_table(df: pd.DataFrame) -> str:
         # Six columns carrying library names and versions do not fit an IEEE
         # text column; nonstopmode would ship it overfull without complaining.
         "\\begin{table*}[t]\n\\centering\n"
-        "\\caption{Byte and type audit of the codec adapters. Every operating "
-        "point was written to a file, closed, re-opened and decoded by a reader "
-        "independent of the encoder; "
-        f"{n_ok} of {len(df)} points reproduced the encoder's array exactly. "
-        "\\emph{Self-contained} asks whether the file alone suffices to decode; "
-        "\\emph{sidecar} is the number of bytes a decoder needs that the "
-        "reported size does not charge (the float32 minimum and span of the "
-        "16-bit renormalization). The 16-bit floor is the RMSE that "
-        "renormalization costs before any compression, which is why points "
-        "through it are reported as lossless \\emph{after requantization} "
-        "rather than lossless.}\n"
-        "\\label{tab:byte_audit}\n\\footnotesize\n"
+        + "\n".join(cfg.tex_caption("Byte and type audit of the codec adapters",
+                                    "tab:byte_audit")) + "\n\\footnotesize\n"
         "\\begin{tabular}{llccrc}\n\\toprule\n"
         "Codec & Library & Self-cont. & Sidecar (B) & 16-bit floor & Bit-exact \\\\\n"
-        "\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+        "\\midrule\n" + body + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(
+            "Every operating point was written to a file, closed, re-opened "
+            "and decoded by a reader independent of the encoder; "
+            f"{n_ok} of {len(df)} points reproduced the encoder's array "
+            "exactly. \\emph{Self-contained} asks whether the file alone "
+            "suffices to decode; \\emph{sidecar} is the number of bytes a "
+            "decoder needs that the reported size does not charge (the "
+            "float32 minimum and span of the 16-bit renormalisation). The "
+            "16-bit floor is the RMSE that renormalisation costs before any "
+            "compression, which is why points through it are reported as "
+            "lossless \\emph{after requantisation} rather than lossless.",
+            wide=True))
+        + "\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:
