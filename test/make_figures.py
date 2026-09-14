@@ -345,8 +345,8 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
                                 r"$^2$ px)")]
     fig.legend(handles=handles, loc="lower center", ncol=2, frameon=False,
                fontsize=7.5, bbox_to_anchor=(0.5, -0.015))
-    fig.suptitle("Footprints in a local metric frame, common scale for every "
-                 "panel", fontsize=8.5, y=1.0)
+    # No in-figure title: these figures are published with a LaTeX caption,
+    # and a title inside the image duplicates it in the proof.
     _save(fig, "fig_utm_crop_footprints", publish)
     fr = [p[5] for p in panels if np.isfinite(p[5])]
     if fr:
@@ -429,9 +429,9 @@ def fig_region_map(index, publish=True):
     ax.legend(ncol=4, frameon=False, loc="lower center",
               bbox_to_anchor=(0.5, -0.22), fontsize=9)
     n_belt = int((pos.lat.abs() < cfg.EQUATORIAL_LAT_DEG).sum())
-    ax.set_title(f"{len(pos)} evaluation regions, shared with healpix-resample "
-                 f"({n_belt} in the equatorial belt, {len(pos) - n_belt} in the "
-                 f"caps)", fontsize=10)
+    print(f"    {len(pos)} regions, {n_belt} in the equatorial belt and "
+          f"{len(pos) - n_belt} in the caps (the LaTeX caption states this; "
+          f"the figure carries no title of its own)")
     _save(fig, "fig_region_map", publish)
 
 
