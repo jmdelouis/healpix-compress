@@ -1,6 +1,6 @@
 \begin{table}[t]
 \centering
-\caption{Same-codec control: median per-region HPX/UTM compressed-size ratio at each target RMSE when the \emph{same} codec is used on both grids (UTM includes $\gamma_{\mathrm{tile}}$). Complements the oracle-best comparison of Table~\ref{tab:storage_at_rmse}, which lets codec selection differ between grids.}
+\caption{Same-codec control}
 \label{tab:fixed_codec}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -13,4 +13,9 @@ Codec & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ & $3\times10^{-3}$ & $10^{-2}$ 
 \texttt{dwt\_zstd} & -- & 1.55 & 1.36 & 1.17 & 0.87 \\
 \bottomrule
 \end{tabular}
+\vspace{3pt}
+\begin{minipage}{\columnwidth}
+\footnotesize
+Median per-region HPX/UTM compressed-size ratio at each target RMSE when the \emph{same} codec is used on both grids (the UTM side includes $\gamma_{\mathrm{tile}}$). It complements the oracle-best comparison of Table~\ref{tab:storage_at_rmse}, which lets codec selection differ between grids.
+\end{minipage}
 \end{table}
