@@ -110,14 +110,18 @@ def markdown(df):
         f"- mismatched: {len(bad)}",
         "",
     ]
+    # Column access is by key throughout: `row.corr` is Series.corr, the
+    # method, not the column, and formatting it fails at the end of a run
+    # rather than at the start of one.
     if len(bad):
         lines += ["Mismatched regions:", ""]
         for _, r in bad.iterrows():
             lines.append(
-                f"- `{r.scene}`: corr {r.corr:.3f}, slope {r.slope:.3f}, "
-                f"offset {r.offset:+.5f} ({r.offset_frac_of_std:+.2f} of the "
-                f"tile's std), RMS {r.rms:.2e} "
-                f"({r.rms_frac_of_std:.2f} of the tile's std)")
+                f"- `{r['scene']}`: corr {r['corr']:.3f}, "
+                f"slope {r['slope']:.3f}, "
+                f"offset {r['offset']:+.5f} ({r['offset_frac_of_std']:+.2f} of "
+                f"the tile's std), RMS {r['rms']:.2e} "
+                f"({r['rms_frac_of_std']:.2f} of the tile's std)")
         lines += [
             "",
             "A mismatched window does not affect any result read from the "
@@ -130,9 +134,9 @@ def markdown(df):
               "| scene | corr | slope | offset/std | RMS/std | status |",
               "| --- | ---: | ---: | ---: | ---: | --- |"]
     for _, r in df.sort_values("rms_frac_of_std", ascending=False).head(10).iterrows():
-        lines.append(f"| {r.scene} | {r.corr:.4f} | {r.slope:.3f} | "
-                     f"{r.offset_frac_of_std:+.3f} | {r.rms_frac_of_std:.3f} | "
-                     f"{r.status} |")
+        lines.append(f"| {r['scene']} | {r['corr']:.4f} | {r['slope']:.3f} | "
+                     f"{r['offset_frac_of_std']:+.3f} | "
+                     f"{r['rms_frac_of_std']:.3f} | {r['status']} |")
     return "\n".join(lines) + "\n"
 
 
@@ -172,13 +176,19 @@ def main(argv=None) -> int:
     cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     tag = "__subset" if (args.regions or args.classes or args.limit) else ""
     df.to_csv(cfg.RESULTS_DIR / f"window_radiometry{tag}.csv", index=False)
-    (cfg.RESULTS_DIR / f"window_radiometry{tag}.md").write_text(
-        markdown(df), encoding="utf-8")
+    # The CSV is the result; the report is a convenience. A bug in the report
+    # must not throw away a run that has already finished.
+    try:
+        (cfg.RESULTS_DIR / f"window_radiometry{tag}.md").write_text(
+            markdown(df), encoding="utf-8")
+    except Exception as exc:                                  # noqa: BLE001
+        print(f"note: the markdown report failed ({type(exc).__name__}: {exc}); "
+              "the CSV is written and the verdict below is unaffected")
     bad = df[df.status != "ok"]
     print(f"\n{len(df)} region(s) audited, {len(bad)} mismatched")
     for _, r in bad.iterrows():
-        print(f"  MISMATCH {r.scene}: stored ~ {r.slope:.3f} * window "
-              f"{r.offset:+.5f}, corr {r.corr:.3f}")
+        print(f"  MISMATCH {r['scene']}: stored ~ {r['slope']:.3f} * window "
+              f"{r['offset']:+.5f}, corr {r['corr']:.3f}")
     print(f"wrote {cfg.RESULTS_DIR / f'window_radiometry{tag}.csv'}")
     if failures:
         print(f"\n{len(failures)} region(s) could not be audited:")
