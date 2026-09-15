@@ -75,6 +75,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 
 import numpy as np
 import pandas as pd
@@ -138,7 +139,7 @@ def build_at_level(scene, sw, delta, verbose=False):
                 n_returned=int(n_out))
 
 
-def region_row(scene, verbose=False, diagnose=False, dump=False):
+def region_row(scene, verbose=False, diagnose=False, dump=False, control=True):
     store = cfg.REGION_DIR / f"{scene}_data.zarr"
     cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene)
     cr = common_reference.build_for_tile(npz, mode="nearest")
@@ -190,14 +191,19 @@ def region_row(scene, verbose=False, diagnose=False, dump=False):
             n_returned=b["n_returned"], n_cells=int(v19.size))
         # The control: the same rebuild, asked for the level the tile is
         # stored at. If it does not return the stored tile, the level-19
-        # number is measuring the rebuild and not the level.
-        c = build_at_level(scene, sw, 0, verbose=verbose)
-        r20 = c["values"]
-        extras.update(
-            rebuild20_rms=rms(r20 - flat20),
-            rebuild20_rms_frac_of_std=rms(r20 - flat20) / sd if sd == sd else np.nan,
-            rebuild20_corr=float(np.corrcoef(r20, flat20)[0, 1]),
-            rebuild20_n_missing=c["n_missing"])
+        # number is measuring the rebuild and not the level. It costs a second
+        # triangulation of the same ~700k native samples, which doubles the
+        # run; --no-control skips it when only the moments are wanted.
+        r20 = None
+        if control:
+            c = build_at_level(scene, sw, 0, verbose=verbose)
+            r20 = c["values"]
+            extras.update(
+                rebuild20_rms=rms(r20 - flat20),
+                rebuild20_rms_frac_of_std=(rms(r20 - flat20) / sd
+                                           if sd == sd else np.nan),
+                rebuild20_corr=float(np.corrcoef(r20, flat20)[0, 1]),
+                rebuild20_n_missing=c["n_missing"])
         if dump:
             lon = lat = None
             try:
@@ -208,8 +214,9 @@ def region_row(scene, verbose=False, diagnose=False, dump=False):
                 pass
             out = dict(direct=v19.astype(np.float32),
                        aggregate=agg19.astype(np.float32),
-                       rebuild20=r20.astype(np.float32),
                        stored20=flat20.astype(np.float32))
+            if r20 is not None:
+                out["rebuild20"] = r20.astype(np.float32)
             if lon is not None:
                 out["lon"] = np.asarray(lon, dtype=np.float32)
                 out["lat"] = np.asarray(lat, dtype=np.float32)
@@ -308,6 +315,9 @@ def main(argv=None) -> int:
     ap.add_argument("--diagnose", action="store_true",
                     help="record the ten most divergent cells, the moments of "
                          "both carriers, and the level-20 rebuild control")
+    ap.add_argument("--no-control", action="store_true",
+                    help="with --diagnose, skip the level-20 rebuild control "
+                         "(it costs a second triangulation per region)")
     ap.add_argument("--dump", action="store_true",
                     help="with --diagnose, also write both carriers and the "
                          "cell centres to results/level19_diag__<scene>.npz")
@@ -326,7 +336,7 @@ def main(argv=None) -> int:
             continue
         try:
             r = region_row(scene, verbose=args.verbose, diagnose=args.diagnose,
-                           dump=args.dump)
+                           dump=args.dump, control=not args.no_control)
         except Exception as exc:                          # noqa: BLE001
             failures.append((scene, f"{type(exc).__name__}: {exc}"))
             continue
@@ -346,11 +356,12 @@ def main(argv=None) -> int:
             print(f"      aggreg. mean {r['agg_mean']:+.5f} std "
                   f"{r['agg_std']:.5f}  corr(direct, aggregate) = "
                   f"{r['corr_direct_agg']:+.4f}")
-            print(f"      CONTROL: level-20 rebuild vs stored tile: RMS "
-                  f"{r['rebuild20_rms']:.3e} = "
-                  f"{100*r['rebuild20_rms_frac_of_std']:.2f}% of std, "
-                  f"corr {r['rebuild20_corr']:+.5f}, "
-                  f"{r['rebuild20_n_missing']} cell(s) completed")
+            if "rebuild20_rms" in r:
+                print(f"      CONTROL: level-20 rebuild vs stored tile: RMS "
+                      f"{r['rebuild20_rms']:.3e} = "
+                      f"{100*r['rebuild20_rms_frac_of_std']:.2f}% of std, "
+                      f"corr {r['rebuild20_corr']:+.5f}, "
+                      f"{r['rebuild20_n_missing']} cell(s) completed")
     if not rows:
         for s, why in failures:
             print(f"  {s}: {why}")
@@ -363,7 +374,21 @@ def main(argv=None) -> int:
     # one region replaced two hours of work on forty.
     subset = bool(args.regions or args.limit)
     tag = "__subset" if subset else ""
-    df.to_csv(cfg.RESULTS_DIR / f"level19_direct{tag}.csv", index=False)
+    out_csv = cfg.RESULTS_DIR / f"level19_direct{tag}.csv"
+    # A full run replaces the file the paper's table is built from. Keep the
+    # previous one: a run that dies on region 30 of 40, or a script change that
+    # turns out to be wrong, should not cost the results already in hand.
+    if not subset and out_csv.exists():
+        from datetime import datetime
+        arch = cfg.RESULTS_DIR / "archive"
+        arch.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+        for suffix in (".csv", ".json"):
+            src = cfg.RESULTS_DIR / f"level19_direct{suffix}"
+            if src.exists():
+                shutil.copyfile(src, arch / f"level19_direct_{stamp}{suffix}")
+        print(f"previous full run archived to {arch} as level19_direct_{stamp}.*")
+    df.to_csv(out_csv, index=False)
     digest = summarize(df)
     (cfg.RESULTS_DIR / f"level19_direct{tag}.json").write_text(
         json.dumps(digest, indent=1))
