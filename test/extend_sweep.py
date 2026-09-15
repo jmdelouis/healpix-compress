@@ -154,7 +154,7 @@ def extend_part(path, codecs, dry=False):
         rows.append(r)
     if not rows:
         return 0, (kernel, cr_mode)
-    backup = path.with_suffix(".pre_extension.csv")
+    backup = path.with_suffix(".pre_extension.bak")
     if not backup.exists():
         shutil.copyfile(path, backup)
     new = pd.concat([df, pd.DataFrame(rows)], ignore_index=True)
@@ -174,8 +174,17 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     codecs = args.codecs or cfg.COMPRESSOR_CODECS
 
+    # Backups written by the first version of this script carried a .csv
+    # suffix and were swept into the CSVs by run_codec_bench.assemble; rename
+    # them out of the way before anything else (idempotent).
+    for b in cfg.PARTS_DIR.glob("*.pre_extension.csv"):
+        dest = b.with_suffix(".bak")
+        if dest.exists():
+            b.unlink()
+        else:
+            b.rename(dest)
+        print(f"backup moved out of the part glob: {dest.name}")
     parts = sorted(cfg.PARTS_DIR.glob("*.csv"))
-    parts = [p for p in parts if not p.name.endswith(".pre_extension.csv")]
     if args.regions:
         keep = set(args.regions)
         parts = [p for p in parts
@@ -197,8 +206,10 @@ def main(argv=None) -> int:
     print(f"\n{added} point(s) {'missing' if args.dry_run else 'added'} in "
           f"{touched} of {len(parts)} part file(s); sweep families: "
           + ", ".join(f"{k}/{m}" for k, m in sorted(families)))
-    if args.dry_run or args.no_assemble or not added:
+    if args.dry_run or args.no_assemble:
         return 0
+    if not added:
+        print("nothing to add; reassembling anyway so that the CSVs match the parts")
 
     stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
     archive = cfg.RESULTS_DIR / "archive" / f"pre_extension_{stamp}"

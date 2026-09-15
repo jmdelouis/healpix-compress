@@ -275,7 +275,7 @@ SZ3_SWEEP = ([dict(abs_error=float(v)) for v in np.logspace(-5, -1, 8)]
 # jpeg2000 "quality" is a compression-RATIO target: smaller = higher quality.
 JPEG2000_LOSSY_SWEEP = [dict(quality=q)
                         for q in (1, 2, 3, 5, 8, 12, 20, 35, 60, 100,
-                                  150, 250, 400, 700, 1000)]
+                                  150, 250, 400, 700, 1000, 2000, 4000)]
 JPEGXL_LOSSY_SWEEP = (
     [dict(level=lv) for lv in (10, 25, 40, 55, 68, 78, 86, 92, 96, 99)]
     # distance points extend the sweep past the level ladder's RMSE floor

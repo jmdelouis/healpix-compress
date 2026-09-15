@@ -221,6 +221,27 @@ def run_region(scene: str, site: dict, grids, codecs, common_ref=False,
     return all_rows, floor_row
 
 
+def family_parts(grid: str, tag: str):
+    """The part files of exactly one sweep family.
+
+    A glob such as ``hpx__*.csv`` also matches ``hpx__psf__*.csv`` and
+    ``hpx__bilinear__*.csv``, so assembling the default family used to sweep
+    the other transfers and the other reader into the published CSV whenever
+    their parts existed (revision 4). The remainder of the name after the
+    family prefix must therefore be a scene name and nothing else: it may not
+    begin with a kernel or reader token, and backups are not parts.
+    """
+    prefix = f"{grid}{tag}__"
+    foreign = set(build_tiles.KERNELS) | {"bilinear", "knn", "psf"}
+    out = []
+    for p in cfg.PARTS_DIR.glob(f"{prefix}*.csv"):
+        rest = p.name[len(prefix):-4]
+        if ".pre_extension" in p.name or rest.split("__")[0] in foreign:
+            continue
+        out.append(p)
+    return out
+
+
 def assemble(kernel: str = build_tiles.DEFAULT_KERNEL, cr_mode: str = "nearest"):
     """Concatenate the part files into the two CSVs the analysis reads.
 
@@ -231,7 +252,7 @@ def assemble(kernel: str = build_tiles.DEFAULT_KERNEL, cr_mode: str = "nearest")
     for grid, name in (("hpx", f"hpx_codec_bench{run_tag(kernel, cr_mode)}.csv"),
                        ("utm", f"utm_codec_bench{kernel_tag(kernel)}.csv")):
         tag = kernel_tag(kernel) if grid == "utm" else run_tag(kernel, cr_mode)
-        parts = sorted(cfg.PARTS_DIR.glob(f"{grid}{tag}__*.csv"))
+        parts = sorted(family_parts(grid, tag))
         if not parts:
             print(f"no {grid} parts found in {cfg.PARTS_DIR}")
             continue
