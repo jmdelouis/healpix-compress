@@ -138,6 +138,7 @@ def checks(tex: str):
     out += transfer_mechanism_checks()
     out += scoped_checks()
     out += level19_checks()
+    out += window_radiometry_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     return out, survivors
@@ -287,6 +288,10 @@ def level19_checks():
         (f"level-19 aggregate / level 20 {where}", f"${d['ratio_agg']:.2f}$", ""),
         (f"level-19 carriers within 5% {where}", f"{d['within_5pct']:d}",
          f"of {d['n']} regions"),
+        (f"level-19 eligible regions {where}", f"{d['n']:d}",
+         "regions the window audit keeps"),
+        (f"level-19 widest departure {where}",
+         f"${d['max_ratio_direct_over_agg']:.3f}$", "over the eligible regions"),
         (f"level-19 direct better on {where}", f"{d['direct_better_on']:d}",
          "regions"),
         (f"level-19 carrier difference, % of std {where}",
@@ -301,6 +306,46 @@ def level19_checks():
     mant, exp = f"{d['floor19_agg']:.2e}".split("e")
     out.append((f"level-19 aggregate floor {where}",
                 f"${mant}\\times10^{{{int(exp)}}}$", "median over the regions"))
+    return out
+
+
+def window_radiometry_checks():
+    """Appendix: the audit that decides which regions may be rebuilt.
+
+    The appendix argues from three numbers -- the median of the identity, the
+    interval the eligible regions occupy, and where the excluded one sits --
+    and the exclusion it licenses changes the level-19 table's n. If the audit
+    is re-run and any of them moves, the appendix is wrong and so is the
+    table's note, so they are checked against the CSV rather than the prose.
+    """
+    p = cfg.RESULTS_DIR / "window_radiometry.csv"
+    if not p.exists():
+        return [("window radiometry  [skipped: no audit]", "",
+                 "run window_radiometry.py")]
+    import pandas as pd
+    a = pd.read_csv(p)
+    if "slope_over_corr2" not in a.columns:
+        return [("window radiometry  [skipped: old audit format]", "",
+                 "re-run window_radiometry.py")]
+    ok, bad = a[a.status == "ok"], a[a.status != "ok"]
+    where = "[in sections/08_appendices.tex]"
+    out = [
+        (f"window audit, median identity {where}",
+         f"${a.slope_over_corr2.median():.4f}$", "slope / corr^2 over 40"),
+        # The prose writes the interval as one math group, so assert the
+        # interval and not its endpoints: two separate assertions would pass
+        # on a text that quoted the two numbers anywhere at all.
+        (f"window audit, eligible interval {where}",
+         f"[{ok.slope_over_corr2.min():.3f}, {ok.slope_over_corr2.max():.3f}]",
+         "slope / corr^2 over the eligible regions"),
+        (f"window audit, eligible correlation low {where}",
+         f"${ok['corr'].min():.3f}$", ""),
+        (f"window audit, eligible correlation high {where}",
+         f"${ok['corr'].max():.3f}$", ""),
+    ]
+    for _, r in bad.iterrows():
+        out.append((f"window audit, excluded {r['scene']} {where}",
+                    f"${r['slope_over_corr2']:.3f}$", "breaks the identity"))
     return out
 
 

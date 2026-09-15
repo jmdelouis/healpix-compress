@@ -172,6 +172,61 @@ def markdown(df):
     return "\n".join(lines) + "\n"
 
 
+def latex_table(df):
+    """The audit in one block: a tight cluster, and what falls out of it."""
+    ok, bad = df[df.status == "ok"], df[df.status != "ok"]
+    if not len(bad):
+        cols = "one column"
+        head = r"Quantity & All " + str(len(df)) + r" regions \\"
+        def cell(_r, c, fmt):
+            return format(df[c].min(), fmt) + "--" + format(df[c].max(), fmt)
+        rows = [f"Correlation & {cell(None,'corr','.3f')}" + r" \\",
+                f"Slope $/$ corr$^2$ & {cell(None,'slope_over_corr2','.3f')}" + r" \\",
+                f"RMS $/$ tile std & {cell(None,'rms_frac_of_std','.3f')}" + r" \\"]
+        note_tail = "No region fails the test."
+    else:
+        names = ", ".join(s.replace("region__", "").replace("__", "/")
+                          .replace("_", r"\_") for s in bad.scene)
+        head = (f"Quantity & {len(ok)} eligible & {names} " + r"\\")
+        def rng(c, fmt):
+            return format(ok[c].min(), fmt) + "--" + format(ok[c].max(), fmt)
+        def one(c, fmt):
+            return " / ".join(format(v, fmt) for v in bad[c])
+        rows = [
+            f"Correlation & {rng('corr', '.3f')} & {one('corr', '.3f')}" + r" \\",
+            f"Slope $/$ corr$^2$ & {rng('slope_over_corr2', '.3f')} & "
+            f"{one('slope_over_corr2', '.3f')}" + r" \\",
+            f"RMS $/$ tile std & {rng('rms_frac_of_std', '.3f')} & "
+            f"{one('rms_frac_of_std', '.3f')}" + r" \\"]
+        note_tail = (
+            f"{names} fails all three at once, and by a margin no interpolation "
+            "choice produces: a rebuild of its stored tile from its own window "
+            "reproduces neither the level-19 carrier nor the level-20 one. "
+            "Nothing read from a stored tile is affected; the measurements that "
+            "re-run a transfer from the window exclude it and say so.")
+    cols = "@{}lrr@{}" if len(bad) else "@{}lr@{}"
+    note = (
+        f"Each stored tile against its own native window, sampled at the tile's "
+        f"cell centres by nearest pixel, over the {len(df)} regions. Nearest-pixel "
+        "sampling is cruder than the Clough--Tocher transfer that built the "
+        "tile, so the two differ even when the window is the right product; "
+        "that difference is additive noise on the regressor, which attenuates "
+        "the regression slope by exactly the squared correlation. The ratio "
+        "slope$/$corr$^2$ is therefore one whatever the noise level and "
+        "whatever the scene's contrast, and it is the test: a window that is a "
+        "different acquisition carries a gain and an offset of its own and "
+        f"breaks the identity. The median over all {len(df)} regions is "
+        f"{df.slope_over_corr2.median():.4f}. " + note_tail)
+    return "\n".join([
+        r"\begin{table}[t]", r"\centering",
+        *cfg.tex_caption("Is each window still the product its tile came from?",
+                         "tab:window_radiometry"),
+        r"\footnotesize",
+        r"\begin{tabular}{" + cols + "}", r"\toprule", head,
+        r"\midrule", *rows, r"\bottomrule", r"\end{tabular}",
+        *cfg.tex_note(note), r"\end{table}"]) + "\n"
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -216,6 +271,11 @@ def main(argv=None) -> int:
     except Exception as exc:                                  # noqa: BLE001
         print(f"note: the markdown report failed ({type(exc).__name__}: {exc}); "
               "the CSV is written and the verdict below is unaffected")
+    if not tag:
+        cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
+        (cfg.TEX_TABLES / "table_window_radiometry.tex").write_text(
+            latex_table(df), encoding="utf-8")
+        print(f"wrote {cfg.TEX_TABLES / 'table_window_radiometry.tex'}")
     bad = df[df.status != "ok"]
     print(f"\n{len(df)} region(s) audited, {len(bad)} mismatched")
     for _, r in bad.iterrows():

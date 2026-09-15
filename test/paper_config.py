@@ -113,35 +113,45 @@ def resample_root() -> Path:
     )
 
 
+def window_mismatched_scenes(verbose: bool = False):
+    """Regions whose native window is no longer the product their tile holds.
+
+    Most of this study reads the stored tile and never reopens the window it
+    was transferred from. The measurements that re-run a transfer do reopen
+    it -- the kernel ablation, the resampling-error study and the level-19
+    comparison -- and for those the window has to be the same product, which
+    the geometric fit check in `build_tiles.tile_subwindow` does not
+    establish: it passes whenever the window covers the tile, whatever the
+    pixels contain. `window_radiometry.py` tests the radiometry and writes its
+    verdict to results/window_radiometry.csv; every script that rebuilds a
+    transfer reads it through this one function, so the three cannot drift
+    apart on which regions are eligible.
+
+    Returns an empty list when the audit has not been run, with a note rather
+    than an error: a first pass of the pipeline has no audit yet, and refusing
+    to proceed would be worse than proceeding with a stated caveat.
+    """
+    p = RESULTS_DIR / "window_radiometry.csv"
+    if not p.exists():
+        if verbose:
+            print(f"note: {p.name} not found, so no region is excluded. This "
+                  "measurement rebuilds a transfer from the native window and "
+                  "is only valid where that window is the product the tile "
+                  "came from; run window_radiometry.py.")
+        return []
+    import pandas as pd
+    a = pd.read_csv(p)
+    if "status" not in a.columns:
+        if verbose:
+            print(f"note: {p.name} predates the status column; re-run "
+                  "window_radiometry.py")
+        return []
+    return sorted(a.loc[a.status != "ok", "scene"].astype(str))
+
+
 def ensure_dirs() -> None:
     for d in (DATA_DIR, REGION_DIR, TILE_DIR, RESULTS_DIR, PARTS_DIR, FIGURES_DIR):
         d.mkdir(parents=True, exist_ok=True)
-
-
-# --- LaTeX table helpers ----------------------------------------------------
-# IEEEtran sets table captions in small caps, so a caption that explains the
-# columns becomes a block of capitals above the data and is read by nobody.
-# Every generated table therefore emits a short title as the caption and puts
-# what the columns mean in a note under the table, in normal case.
-
-def tex_caption(title: str, label: str) -> list[str]:
-    """The two caption lines of a table: a short title, then its label."""
-    title = " ".join(str(title).split())
-    return [f"\\caption{{{title}}}", f"\\label{{{label}}}"]
-
-
-def tex_note(text: str | None, wide: bool = False) -> list[str]:
-    """A justified note under a table, for what the columns mean.
-
-    Emitted as a minipage so the text is set as a paragraph rather than
-    inheriting the float's \\centering; `wide` matches a table* float.
-    """
-    if not text:
-        return []
-    text = " ".join(str(text).split())
-    width = "\\textwidth" if wide else "\\columnwidth"
-    return ["\\vspace{3pt}", f"\\begin{{minipage}}{{{width}}}",
-            "\\footnotesize", text, "\\end{minipage}"]
 
 
 def describe() -> str:

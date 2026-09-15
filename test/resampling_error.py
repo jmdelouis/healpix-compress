@@ -357,15 +357,18 @@ def latex_table(df, control=None):
                 f"the companion study's cell-average estimand"
                 if n_ch > 1 else
                 "the truth at each cell is a point sample at the cell centre")
-    note = (
-        "On a synthetic scene built per region from that region's own fitted "
-        f"spectral slope $\\beta$ and response width, over {n} regions. The "
-        "latent field is analytic, the observation is that field convolved "
-        "exactly with the fitted Gaussian response, sampled at the native "
-        "pixel positions and given additive noise at the level Immerkaer's "
-        f"estimator reads off the region's own imagery; {estimand}. "
-        "\\emph{Blur} is the RMSE between the observed and latent fields, i.e.\\ "
-        "what a non-deconvolving transfer leaves on the table by construction. "
+    return (
+        "\\begin{table*}[t]\n\\centering\n"
+        "\\caption{What each transfer costs against the reference it is "
+        "answerable to, on a synthetic scene built per region from that "
+        f"region's own fitted spectral slope $\\beta$ and response width, over "
+        f"{n} regions. The latent field is analytic, the observation is that "
+        "field convolved exactly with the fitted Gaussian response, sampled at "
+        "the native pixel positions and given additive noise at the level "
+        "Immerkaer's estimator reads off the region's own imagery; "
+        f"{estimand}. \\emph{{Blur}} is the RMSE "
+        "between the observed and latent fields, i.e.\\ what a non-deconvolving "
+        "transfer leaves on the table by construction. "
         "\\texttt{clough\\_tocher} is scored against the observed field it "
         "claims to represent, \\texttt{psf} against the latent field it claims "
         "to recover; the last two columns are the companion study's recovery "
@@ -374,12 +377,8 @@ def latex_table(df, control=None):
         + ("" if have_control else
            ", the latter left blank because no control at the same "
            "cell-average depth is available")
-        + ".")
-    return (
-        "\\begin{table*}[t]\n\\centering\n"
-        + "\n".join(cfg.tex_caption(
-            "What each transfer costs against the reference it answers to",
-            "tab:resampling_error")) + "\n\\footnotesize\n"
+        + ".}\n"
+        "\\label{tab:resampling_error}\n\\footnotesize\n"
         "\\begin{tabular}{@{}lrrr rrr rr@{}}\n\\toprule\n"
         " & \\multicolumn{3}{c}{Scene} & \\multicolumn{3}{c}{RMSE} & "
         "\\multicolumn{2}{c}{\\texttt{psf} recovery (\\%)} \\\\\n"
@@ -387,8 +386,7 @@ def latex_table(df, control=None):
         "Class & $\\beta$ & FWHM (m) & Noise (\\%) & Blur & "
         "\\texttt{clough\\_tocher} & \\texttt{psf} & measured & noiseless "
         "\\\\\n\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
-        + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:
@@ -411,6 +409,11 @@ def main(argv=None) -> int:
                          "estimand; 1 reverts to a point sample at the cell "
                          "centre, which understates every method")
     ap.add_argument("--seed", type=int, default=23)
+    ap.add_argument("--keep-mismatched-windows", action="store_true",
+                    help="keep the regions window_radiometry.py rejects; this "
+                         "measurement re-runs the transfer from the native "
+                         "window, so on those regions it prices a difference "
+                         "between two products, not a transfer error")
     args = ap.parse_args(argv)
 
     spec_path = cfg.RESULTS_DIR / "support_controls_spectrum.csv"
@@ -423,6 +426,13 @@ def main(argv=None) -> int:
     scenes = [s for s in scenes
               if (cfg.REGION_DIR / f"{s}_data.zarr").exists()
               and build_tiles.tile_path(s).exists()]
+    if not args.keep_mismatched_windows:
+        drop = set(cfg.window_mismatched_scenes(verbose=True))
+        excluded = [s for s in scenes if s in drop]
+        if excluded:
+            print(f"window audit excludes {len(excluded)} region(s): "
+                  + ", ".join(excluded))
+            scenes = [s for s in scenes if s not in drop]
     if not scenes:
         print(f"no region with both a window under {cfg.REGION_DIR} and a tile "
               f"under {cfg.TILE_DIR}")

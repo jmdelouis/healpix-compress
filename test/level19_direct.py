@@ -253,13 +253,8 @@ def excluded_scenes():
     mismatch from a measurement about levels; it is not trimming an
     inconvenient result, and the region is reported in its own right.
     """
-    p = cfg.RESULTS_DIR / "window_radiometry.csv"
-    if not p.exists():
-        return [], p
-    a = pd.read_csv(p)
-    if "status" not in a.columns:
-        return [], p
-    return sorted(a.loc[a.status != "ok", "scene"].astype(str)), p
+    return (cfg.window_mismatched_scenes(),
+            cfg.RESULTS_DIR / "window_radiometry.csv")
 
 
 def summarize(df, dropped=None):
