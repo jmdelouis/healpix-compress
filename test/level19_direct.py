@@ -47,6 +47,28 @@ Usage
 -----
     python level19_direct.py
     python level19_direct.py --regions region__water__lake_geneva --diagnose
+
+Diagnosing a region where the direct carrier fails
+--------------------------------------------------
+`--diagnose` adds the control that separates the two things that can go
+wrong. The direct level-19 carrier is built by re-running the transfer from
+the native sub-window; if that rebuild is faithful, the stored level-20 tile
+must come back out of it when the same operator is asked for level-20 cells.
+So `--diagnose` rebuilds at level 20 as well and reports the RMS difference
+against the tile on disk. Two outcomes, two different causes:
+
+  rebuild20 matches the stored tile   the sub-window and the samples are the
+                                      ones the tile came from, and whatever
+                                      fails is in evaluating the interpolant
+                                      at the coarser centres;
+  rebuild20 does not match            the rebuild itself is not reproducing
+                                      the tile for this region, and the
+                                      level-19 number measures that, not the
+                                      level.
+
+`--dump` additionally writes results/level19_diag__<scene>.npz with both
+level-19 carriers and the level-19 cell centres, so the difference can be
+mapped without re-running anything.
 """
 
 from __future__ import annotations
@@ -73,20 +95,28 @@ def rms(a):
     return float(np.sqrt(np.mean(a * a)))
 
 
-def build_level19(scene, store, verbose=False):
-    """The Clough--Tocher interpolant of the same samples, at level-19 centres."""
+def build_at_level(scene, sw, delta, verbose=False):
+    """The Clough--Tocher interpolant of the same samples, at one level's centres.
+
+    `delta` counts levels up from the carrier: 0 rebuilds the stored tile,
+    1 builds the level-19 object this section is about. Everything else --
+    sub-window, no-data handling, operator, missing-cell completion -- is what
+    `build_tiles.build_tile` does, so that the only difference between the two
+    calls is the output level.
+    """
     import healpix_resample as hr
 
-    sw = build_tiles.tile_subwindow(scene, store)
+    level = cfg.LEVEL - delta
+    n_cells = cfg.N_CHILDREN // (4 ** delta)
     r0, r1, c0, c1 = sw["bounds"]
     sub_val = np.asarray(sw["img"][r0:r1, c0:c1], dtype=np.float64).ravel()
     good = np.isfinite(sub_val)
     parent = int(sw["cand"]["parent"])
 
-    ids19 = parent * N19 + np.arange(N19, dtype=np.int64)
+    ids = parent * n_cells + np.arange(n_cells, dtype=np.int64)
     op = hr.CloughTocherResampler(lon_deg=sw["sub_lon"][good],
                                   lat_deg=sw["sub_lat"][good],
-                                  level=LEVEL19, out_cell_ids=ids19,
+                                  level=level, out_cell_ids=ids,
                                   verbose=verbose)
     # The constant check build_tiles runs on every tile, for the same reason:
     # a transfer that does not preserve a constant makes every error below an
@@ -94,18 +124,21 @@ def build_level19(scene, store, verbose=False):
     ones = op.resample(np.ones(int(good.sum()), dtype=np.float64))
     ones_med = float(np.nanmedian(np.asarray(ones.cell_data, dtype=np.float64)))
     if not np.isfinite(ones_med) or abs(ones_med - 1.0) > 0.05:
-        raise RuntimeError(f"{scene}: the level-19 transfer maps a constant to "
-                           f"{ones_med} instead of 1.0")
+        raise RuntimeError(f"{scene}: the level-{level} transfer maps a constant "
+                           f"to {ones_med} instead of 1.0")
 
     res = op.resample(sub_val[good])
     out_ids = np.asarray(res.cell_ids, dtype=np.int64).ravel()
     out_val = np.asarray(res.cell_data, dtype=np.float64).ravel()
-    filled, n_missing = build_tiles.complete_block(out_ids, out_val, ids19)
-    return (np.asarray(filled, dtype=np.float64), int(n_missing), ones_med,
-            int(good.sum()), int((~good).sum()))
+    n_out = len(np.unique(out_ids))
+    filled, n_missing = build_tiles.complete_block(out_ids, out_val, ids)
+    return dict(values=np.asarray(filled, dtype=np.float64), ids=ids,
+                n_missing=int(n_missing), ones_med=ones_med,
+                n_samples=int(good.sum()), n_dropped=int((~good).sum()),
+                n_returned=int(n_out))
 
 
-def region_row(scene, verbose=False, diagnose=False):
+def region_row(scene, verbose=False, diagnose=False, dump=False):
     store = cfg.REGION_DIR / f"{scene}_data.zarr"
     cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene)
     cr = common_reference.build_for_tile(npz, mode="nearest")
@@ -113,8 +146,10 @@ def region_row(scene, verbose=False, diagnose=False):
     flat20 = np.asarray(cell_data, dtype=np.float64).ravel()
     sd = float(flat20.std()) or np.nan
 
-    v19, n_missing, ones_med, n_used, n_dropped = build_level19(
-        scene, store, verbose=verbose)
+    sw = build_tiles.tile_subwindow(scene, store)
+    b = build_at_level(scene, sw, COARSE_DELTA, verbose=verbose)
+    v19, n_missing, ones_med = b["values"], b["n_missing"], b["ones_med"]
+    n_used, n_dropped = b["n_samples"], b["n_dropped"]
     agg19 = flat20.reshape(-1, 4 ** COARSE_DELTA).mean(axis=1)
 
     idx19 = np.clip(cr._safe_index // (4 ** COARSE_DELTA), 0, N19 - 1)
@@ -143,6 +178,45 @@ def region_row(scene, verbose=False, diagnose=False):
         worst = np.argsort(adiff)[::-1][:10]
         extras["worst_cells"] = json.dumps(
             [[int(i), float(v19[i]), float(agg19[i])] for i in worst])
+        # What kind of object is the direct carrier? A permutation of the right
+        # values, a shifted copy, an overshoot, or a different field entirely:
+        # the first two moments and the correlation separate those cases, and
+        # none of them can be read off an RMS.
+        extras.update(
+            direct_mean=float(v19.mean()), direct_std=float(v19.std()),
+            direct_min=float(v19.min()), direct_max=float(v19.max()),
+            agg_mean=float(agg19.mean()), agg_std=float(agg19.std()),
+            corr_direct_agg=float(np.corrcoef(v19, agg19)[0, 1]),
+            n_returned=b["n_returned"], n_cells=int(v19.size))
+        # The control: the same rebuild, asked for the level the tile is
+        # stored at. If it does not return the stored tile, the level-19
+        # number is measuring the rebuild and not the level.
+        c = build_at_level(scene, sw, 0, verbose=verbose)
+        r20 = c["values"]
+        extras.update(
+            rebuild20_rms=rms(r20 - flat20),
+            rebuild20_rms_frac_of_std=rms(r20 - flat20) / sd if sd == sd else np.nan,
+            rebuild20_corr=float(np.corrcoef(r20, flat20)[0, 1]),
+            rebuild20_n_missing=c["n_missing"])
+        if dump:
+            lon = lat = None
+            try:
+                import healpix_geo
+                lon, lat = healpix_geo.nested.healpix_to_lonlat(
+                    b["ids"], LEVEL19, ellipsoid="WGS84")
+            except Exception:                              # noqa: BLE001
+                pass
+            out = dict(direct=v19.astype(np.float32),
+                       aggregate=agg19.astype(np.float32),
+                       rebuild20=r20.astype(np.float32),
+                       stored20=flat20.astype(np.float32))
+            if lon is not None:
+                out["lon"] = np.asarray(lon, dtype=np.float32)
+                out["lat"] = np.asarray(lat, dtype=np.float32)
+            p = cfg.RESULTS_DIR / f"level19_diag__{scene}.npz"
+            cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+            np.savez_compressed(p, **out)
+            print(f"    dumped {p}")
     return dict(
         scene=scene, cls=scene.split("__")[1],
         n_missing=n_missing, constant_check=ones_med, tile_std=sd,
@@ -232,7 +306,11 @@ def main(argv=None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--regions", nargs="*", default=None)
     ap.add_argument("--diagnose", action="store_true",
-                    help="also record the ten most divergent cells per region")
+                    help="record the ten most divergent cells, the moments of "
+                         "both carriers, and the level-20 rebuild control")
+    ap.add_argument("--dump", action="store_true",
+                    help="with --diagnose, also write both carriers and the "
+                         "cell centres to results/level19_diag__<scene>.npz")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--verbose", action="store_true")
     ap.add_argument("--no-tex", action="store_true")
@@ -247,7 +325,8 @@ def main(argv=None) -> int:
             failures.append((scene, "no level-20 tile; run build_tiles.py"))
             continue
         try:
-            r = region_row(scene, verbose=args.verbose, diagnose=args.diagnose)
+            r = region_row(scene, verbose=args.verbose, diagnose=args.diagnose,
+                           dump=args.dump)
         except Exception as exc:                          # noqa: BLE001
             failures.append((scene, f"{type(exc).__name__}: {exc}"))
             continue
@@ -259,6 +338,19 @@ def main(argv=None) -> int:
               f"{100*r['carrier_rms_frac_of_std']:.2f}% of std"
               + (f"  [cells >5 std: {r['cells_over_5std']}]"
                  if r.get("cells_over_5std") else ""))
+        if args.diagnose:
+            print(f"      direct  mean {r['direct_mean']:+.5f} std "
+                  f"{r['direct_std']:.5f} range [{r['direct_min']:+.4f}, "
+                  f"{r['direct_max']:+.4f}]  cells returned "
+                  f"{r['n_returned']}/{r['n_cells']}")
+            print(f"      aggreg. mean {r['agg_mean']:+.5f} std "
+                  f"{r['agg_std']:.5f}  corr(direct, aggregate) = "
+                  f"{r['corr_direct_agg']:+.4f}")
+            print(f"      CONTROL: level-20 rebuild vs stored tile: RMS "
+                  f"{r['rebuild20_rms']:.3e} = "
+                  f"{100*r['rebuild20_rms_frac_of_std']:.2f}% of std, "
+                  f"corr {r['rebuild20_corr']:+.5f}, "
+                  f"{r['rebuild20_n_missing']} cell(s) completed")
     if not rows:
         for s, why in failures:
             print(f"  {s}: {why}")
