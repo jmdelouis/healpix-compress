@@ -241,8 +241,35 @@ def region_row(scene, verbose=False, diagnose=False, dump=False, control=True):
         mask_fraction=cr.mask_fraction)
 
 
-def summarize(df):
-    """Medians over regions, plus how often the two level-19 carriers agree."""
+def excluded_scenes():
+    """Regions whose window is not the product their stored tile came from.
+
+    This comparison rebuilds the transfer from the native window, so it is
+    only meaningful where the window still holds the acquisition the tile was
+    built from. `window_radiometry.py` tests that for all 40 regions, and one
+    fails: over Lake Geneva the window is related to the stored tile by a gain
+    and an offset of its own, so a rebuild from it reproduces neither the
+    level-19 carrier nor the level-20 one. Excluding it here removes an input
+    mismatch from a measurement about levels; it is not trimming an
+    inconvenient result, and the region is reported in its own right.
+    """
+    p = cfg.RESULTS_DIR / "window_radiometry.csv"
+    if not p.exists():
+        return [], p
+    a = pd.read_csv(p)
+    if "status" not in a.columns:
+        return [], p
+    return sorted(a.loc[a.status != "ok", "scene"].astype(str)), p
+
+
+def summarize(df, dropped=None):
+    """Medians over the regions the window audit keeps, plus what it dropped.
+
+    `dropped` is the rows for the excluded regions. They are reported, not
+    discarded: a region whose window is a different product is a fact about
+    the archive that the paper states, and the reader can see what it would
+    have contributed had it been kept.
+    """
     d = dict(n=int(len(df)))
     for c in ("floor20", "floor19_direct", "floor19_agg", "ratio_direct",
               "ratio_agg", "ratio_direct_over_agg", "carrier_rms",
@@ -253,12 +280,16 @@ def summarize(df):
     d["within_5pct"] = int(((q > 0.95) & (q < 1.05)).sum())
     d["max_ratio_direct_over_agg"] = float(np.nanmax(q))
     d["worst_scene"] = str(df.scene.iloc[int(np.nanargmax(q))])
-    # The median is robust to a region where the direct transfer fails; the
-    # paper should quote both, so the summary carries the trimmed value too.
-    keep = df[q < 1.5]
-    d["median_ratio_excluding_failures"] = float(
-        np.nanmedian(keep.ratio_direct_over_agg)) if len(keep) else np.nan
-    d["n_failures"] = int((q >= 1.5).sum())
+    d["n_excluded"] = 0 if dropped is None else int(len(dropped))
+    d["excluded_scenes"] = [] if dropped is None else list(dropped.scene)
+    if dropped is not None and len(dropped):
+        d["excluded"] = [
+            dict(scene=str(r["scene"]),
+                 ratio_direct_over_agg=float(r["ratio_direct_over_agg"]),
+                 ratio_direct=float(r["ratio_direct"]))
+            for _, r in dropped.iterrows()]
+        d["median_ratio_including_excluded"] = float(
+            np.nanmedian(pd.concat([df, dropped]).ratio_direct_over_agg))
     return d
 
 
@@ -293,10 +324,23 @@ def latex_table(df, digest):
         f"{100*abs(d['ratio_direct_over_agg'] - 1):.1f}\\% in median and to "
         f"within $5\\%$ on {d['within_5pct']} of the {d['n']} regions, so the "
         "level-19 penalty is a property of the level rather than of which "
-        f"object is called the carrier. The exception is {worst}, where the "
-        f"direct transfer fails outright ({d['max_ratio_direct_over_agg']:.0f} "
-        "times the aggregate's floor); excluding it the median ratio is "
-        f"{d['median_ratio_excluding_failures']:.3f}.")
+        f"object is called the carrier. The widest departure is {worst}, at "
+        f"{d['max_ratio_direct_over_agg']:.3f}.")
+    if d.get("n_excluded"):
+        names = ", ".join(
+            s.replace("region__", "").replace("__", "/").replace("_", r"\_")
+            for s in d["excluded_scenes"])
+        n_ex = d["n_excluded"]
+        one = n_ex == 1
+        note += (
+            f" {'One region is' if one else f'{n_ex} regions are'} excluded and "
+            f"reported separately ({names}): this comparison rebuilds the "
+            "transfer from the native window, and the audit of "
+            "Appendix~\\ref{app:window_radiometry} finds "
+            f"{'its' if one else 'their'} window is not the product "
+            f"{'its' if one else 'their'} stored tile was built from, so a "
+            f"rebuild reproduces neither level. Kept, the median ratio would "
+            f"be {d['median_ratio_including_excluded']:.3f}.")
     return "\n".join([
         r"\begin{table}[t]", r"\centering",
         *cfg.tex_caption("Two level-19 carriers, against the observation",
@@ -306,6 +350,57 @@ def latex_table(df, digest):
         r"Carrier & $n$ & Floor (RMSE) & $/$ level 20 & Lower floor on \\",
         r"\midrule", *body, r"\bottomrule", r"\end{tabular}",
         *cfg.tex_note(note), r"\end{table}"]) + "\n"
+
+
+def write_outputs(df, subset=False, no_tex=False, archive=True) -> int:
+    """Split the eligible regions from the excluded ones, then write."""
+    cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    tag = "__subset" if subset else ""
+    out_csv = cfg.RESULTS_DIR / f"level19_direct{tag}.csv"
+    # A full run replaces the file the paper's table is built from. Keep the
+    # previous one: a run that dies on region 30 of 40, or a script change that
+    # turns out to be wrong, should not cost the results already in hand.
+    if archive and not subset and out_csv.exists():
+        from datetime import datetime
+        arch = cfg.RESULTS_DIR / "archive"
+        arch.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+        for suffix in (".csv", ".json"):
+            src = cfg.RESULTS_DIR / f"level19_direct{suffix}"
+            if src.exists():
+                shutil.copyfile(src, arch / f"level19_direct_{stamp}{suffix}")
+        print(f"previous full run archived to {arch} as level19_direct_{stamp}.*")
+        df.to_csv(out_csv, index=False)
+    elif archive:
+        df.to_csv(out_csv, index=False)
+    # The CSV keeps every region that was measured; only the digest and the
+    # table apply the window audit, so nothing is lost and the exclusion is
+    # visible in one place.
+    drop_names, audit_path = excluded_scenes()
+    mask = df.scene.isin(drop_names)
+    kept, dropped = df[~mask], df[mask]
+    if not audit_path.exists():
+        print(f"note: {audit_path.name} not found; no region excluded. Run "
+              "window_radiometry.py -- this comparison rebuilds the transfer "
+              "from the native window and is only valid where that window is "
+              "the product the tile came from.")
+    elif len(dropped):
+        print(f"window audit excludes {len(dropped)} region(s): "
+              + ", ".join(dropped.scene))
+    digest = summarize(kept, dropped)
+    (cfg.RESULTS_DIR / f"level19_direct{tag}.json").write_text(
+        json.dumps(digest, indent=1))
+    if subset:
+        print(f"subset run: wrote level19_direct{tag}.csv; the full-run files "
+              f"are untouched")
+        no_tex = True                     # a table from a subset would mislead
+    if not no_tex:
+        cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
+        (cfg.TEX_TABLES / "table_level19_direct.tex").write_text(
+            latex_table(kept, digest), encoding="utf-8")
+        print(f"wrote {cfg.TEX_TABLES / 'table_level19_direct.tex'}")
+    print("\n" + json.dumps(digest, indent=1))
+    return 0
 
 
 def main(argv=None) -> int:
@@ -324,7 +419,19 @@ def main(argv=None) -> int:
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--verbose", action="store_true")
     ap.add_argument("--no-tex", action="store_true")
+    ap.add_argument("--tables-only", action="store_true",
+                    help="rebuild the digest and the table from the existing "
+                         "level19_direct.csv, without recomputing a carrier; "
+                         "use after the window audit changes which regions "
+                         "are eligible")
     args = ap.parse_args(argv)
+
+    if args.tables_only:
+        src = cfg.RESULTS_DIR / "level19_direct.csv"
+        if not src.exists():
+            raise SystemExit(f"{src} does not exist; run without --tables-only")
+        return write_outputs(pd.read_csv(src), subset=False,
+                             no_tex=args.no_tex, archive=False)
 
     sites = region_sites.select(region_sites.load_sites(), args.regions,
                                 None, args.limit)
@@ -367,43 +474,8 @@ def main(argv=None) -> int:
             print(f"  {s}: {why}")
         raise SystemExit("no region could be evaluated")
 
-    df = pd.DataFrame(rows)
-    cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    # A subset run writes beside the full one rather than over it. The first
-    # version of this script did overwrite it, and a two-minute diagnostic on
-    # one region replaced two hours of work on forty.
-    subset = bool(args.regions or args.limit)
-    tag = "__subset" if subset else ""
-    out_csv = cfg.RESULTS_DIR / f"level19_direct{tag}.csv"
-    # A full run replaces the file the paper's table is built from. Keep the
-    # previous one: a run that dies on region 30 of 40, or a script change that
-    # turns out to be wrong, should not cost the results already in hand.
-    if not subset and out_csv.exists():
-        from datetime import datetime
-        arch = cfg.RESULTS_DIR / "archive"
-        arch.mkdir(parents=True, exist_ok=True)
-        stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
-        for suffix in (".csv", ".json"):
-            src = cfg.RESULTS_DIR / f"level19_direct{suffix}"
-            if src.exists():
-                shutil.copyfile(src, arch / f"level19_direct_{stamp}{suffix}")
-        print(f"previous full run archived to {arch} as level19_direct_{stamp}.*")
-    df.to_csv(out_csv, index=False)
-    digest = summarize(df)
-    (cfg.RESULTS_DIR / f"level19_direct{tag}.json").write_text(
-        json.dumps(digest, indent=1))
-    if subset:
-        print(f"subset run: wrote level19_direct{tag}.csv; the full-run files "
-              f"are untouched")
-    if subset:
-        args.no_tex = True                # a table from a subset would mislead
-    if not args.no_tex:
-        cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
-        (cfg.TEX_TABLES / "table_level19_direct.tex").write_text(
-            latex_table(df, digest), encoding="utf-8")
-        print(f"wrote {cfg.TEX_TABLES / 'table_level19_direct.tex'}")
-
-    print("\n" + json.dumps(digest, indent=1))
+    write_outputs(pd.DataFrame(rows), subset=bool(args.regions or args.limit),
+                  no_tex=args.no_tex)
     if failures:
         print(f"\n{len(failures)} region(s) could not be evaluated:")
         for s, why in failures:

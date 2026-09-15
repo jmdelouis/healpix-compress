@@ -53,13 +53,34 @@ import build_tiles
 import paper_config as cfg
 import region_sites
 
-# A region passes when all three hold. The thresholds are deliberately loose:
-# the point is to separate "the same product, sampled more crudely" from "a
-# different product", and those two are orders of magnitude apart, not
-# percentage points.
-MIN_CORR = 0.95
-MAX_SLOPE_DEV = 0.15
-MAX_OFFSET_FRAC_OF_STD = 0.5
+# The test.
+#
+# If the window is the product the tile came from, the two differ only because
+# nearest-pixel sampling is cruder than the transfer that built the tile. That
+# is additive noise on the regressor, and additive noise on the regressor has
+# a closed-form consequence: regressing the tile on the samples attenuates the
+# slope by exactly the squared correlation,
+#
+#     slope = sigma_t^2 / (sigma_t^2 + sigma_noise^2) = corr^2
+#
+# so `slope / corr^2` is 1 whatever the noise level, and whatever the scene's
+# contrast. A window that is a different acquisition carries a gain and an
+# offset of its own, and breaks the identity.
+#
+# Measured on the 40 regions: 39 of them sit in [0.982, 1.011], median 1.003,
+# across correlations from 0.91 to 0.999 and contrasts from 0.001 to 0.18 in
+# reflectance. One sits at 1.88.
+#
+# An earlier version of this script tested the correlation, the slope and the
+# offset against fixed thresholds instead, with the offset expressed in units
+# of the scene's standard deviation. That flagged two more regions, both of
+# them the lowest-contrast lakes in the set, where a small absolute offset is
+# many standard deviations and the same fixed sampling noise takes a larger
+# share. Those are properties of the scene, not of the window. The identity
+# above has neither failure mode, and it is what the sampling model predicts
+# rather than a line drawn around an outcome.
+MAX_DILUTION_DEV = 0.10          # |slope / corr^2 - 1|
+MIN_CORR = 0.80                  # a backstop, an order of magnitude from the data
 
 
 def region_row(scene, halo_px=32, band=None):
@@ -82,14 +103,15 @@ def region_row(scene, halo_px=32, band=None):
     rms = float(np.sqrt(np.mean(diff * diff)))
     corr = float(np.corrcoef(s, m)[0, 1]) if len(s) > 2 else np.nan
 
-    ok = (corr > MIN_CORR and abs(slope - 1.0) < MAX_SLOPE_DEV
-          and abs(offset) < MAX_OFFSET_FRAC_OF_STD * sd)
+    dilution = float(slope / corr ** 2) if corr and corr == corr else np.nan
+    ok = (corr > MIN_CORR and abs(dilution - 1.0) < MAX_DILUTION_DEV)
     return dict(
         scene=scene, cls=scene.split("__")[1], n=int(good.sum()),
         n_nonfinite=int((~good).sum()),
         stored_mean=float(stored.mean()), stored_std=sd,
         window_mean=float(m.mean()), window_std=float(m.std()),
-        corr=corr, slope=float(slope), offset=float(offset),
+        corr=corr, slope=float(slope), slope_over_corr2=dilution,
+        offset=float(offset),
         offset_frac_of_std=float(offset / sd) if sd else np.nan,
         rms=rms, rms_frac_of_std=float(rms / sd) if sd else np.nan,
         status="ok" if ok else "MISMATCH")
@@ -101,9 +123,10 @@ def markdown(df):
         "# Window radiometry audit",
         "",
         "Stored tile against its own window, sampled at the tile's cell centres "
-        "by nearest pixel. A region passes when the correlation exceeds "
-        f"{MIN_CORR}, the slope is within {MAX_SLOPE_DEV} of one and the offset "
-        f"is under {MAX_OFFSET_FRAC_OF_STD} of the tile's standard deviation.",
+        "by nearest pixel. Under the sampling-noise model the regression slope "
+        "equals the squared correlation whatever the noise level, so a region "
+        f"passes when `slope / corr^2` is within {MAX_DILUTION_DEV} of one "
+        f"(and the correlation clears {MIN_CORR} as a backstop).",
         "",
         f"- regions audited: {len(df)}",
         f"- passing: {int((df.status == 'ok').sum())}",
@@ -118,7 +141,8 @@ def markdown(df):
         for _, r in bad.iterrows():
             lines.append(
                 f"- `{r['scene']}`: corr {r['corr']:.3f}, "
-                f"slope {r['slope']:.3f}, "
+                f"slope {r['slope']:.3f}, slope/corr^2 "
+                f"{r['slope_over_corr2']:.3f}, "
                 f"offset {r['offset']:+.5f} ({r['offset_frac_of_std']:+.2f} of "
                 f"the tile's std), RMS {r['rms']:.2e} "
                 f"({r['rms_frac_of_std']:.2f} of the tile's std)")
@@ -130,12 +154,20 @@ def markdown(df):
             "re-runs a transfer from the window.",
             "",
         ]
-    lines += ["", "Worst ten by RMS over the tile's standard deviation:", "",
-              "| scene | corr | slope | offset/std | RMS/std | status |",
-              "| --- | ---: | ---: | ---: | ---: | --- |"]
-    for _, r in df.sort_values("rms_frac_of_std", ascending=False).head(10).iterrows():
-        lines.append(f"| {r['scene']} | {r['corr']:.4f} | {r['slope']:.3f} | "
-                     f"{r['offset_frac_of_std']:+.3f} | "
+    d = df.slope_over_corr2
+    lines += [
+        "",
+        f"`slope / corr^2` over the {len(df)} regions: median {d.median():.4f}, "
+        f"range {d.min():.4f}--{d.max():.4f}.",
+        "",
+        "Worst ten by departure from the sampling-noise identity:", "",
+        "| scene | tile std | corr | slope | slope/corr^2 | RMS/std | status |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | --- |"]
+    order = (df.slope_over_corr2 - 1.0).abs().sort_values(ascending=False).index
+    for _, r in df.loc[order].head(10).iterrows():
+        lines.append(f"| {r['scene']} | {r['stored_std']:.4f} | "
+                     f"{r['corr']:.4f} | {r['slope']:.3f} | "
+                     f"{r['slope_over_corr2']:.3f} | "
                      f"{r['rms_frac_of_std']:.3f} | {r['status']} |")
     return "\n".join(lines) + "\n"
 
@@ -164,8 +196,8 @@ def main(argv=None) -> int:
             continue
         rows.append(r)
         print(f"[{i:>2}/{len(sites)}] {scene}: corr {r['corr']:.4f}  slope "
-              f"{r['slope']:.3f}  offset {r['offset']:+.5f} "
-              f"({r['offset_frac_of_std']:+.2f} std)  RMS "
+              f"{r['slope']:.3f}  slope/corr^2 {r['slope_over_corr2']:.3f}  "
+              f"offset {r['offset']:+.5f}  RMS "
               f"{r['rms_frac_of_std']:.3f} std  -> {r['status']}")
     if not rows:
         for s, why in failures:
@@ -188,7 +220,8 @@ def main(argv=None) -> int:
     print(f"\n{len(df)} region(s) audited, {len(bad)} mismatched")
     for _, r in bad.iterrows():
         print(f"  MISMATCH {r['scene']}: stored ~ {r['slope']:.3f} * window "
-              f"{r['offset']:+.5f}, corr {r['corr']:.3f}")
+              f"{r['offset']:+.5f}, corr {r['corr']:.3f}, "
+              f"slope/corr^2 {r['slope_over_corr2']:.3f}")
     print(f"wrote {cfg.RESULTS_DIR / f'window_radiometry{tag}.csv'}")
     if failures:
         print(f"\n{len(failures)} region(s) could not be audited:")
