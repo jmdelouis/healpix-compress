@@ -5,16 +5,15 @@
 
 | target | nearest n | nearest median | p_Holm | bilinear n | bilinear median | p_Holm | gamma* (bilinear) |
 |---|---|---|---|---|---|---|---|
-| budget 0.02 | 37 | 1.437 | 4.4e-11 | 40 | 1.119 | 4.5e-06 | 1.47 |
-| budget 0.05 | 37 | 3.882 | 4.4e-11 | 40 | 2.501 | 7.3e-12 | 5.16 |
-| budget 0.1 | 37 | 32.297 | 4.4e-11 | 40 | 19.309 | 7.3e-12 | 62.86 |
-| budget 0.2 | 37 | 1212.270 (censored) | nan | 40 | 698.804 (censored) | nan | --- |
-| budget 0.4 | 37 | 6088.537 (censored) | nan | 40 | 2961.469 (censored) | nan | --- |
+| budget 0.02 | 40 | 1.278 | 5.5e-12 | 40 | 1.119 | 2.2e-06 | 1.47 |
+| budget 0.05 | 39 | 3.172 | 7.3e-12 | 39 | 2.496 | 1.1e-11 | 5.12 |
+| budget 0.1 | 37 | 24.879 | 1.5e-11 | 37 | 19.000 | 2.9e-11 | 64.44 |
+| budget 0.2 | 26 | 806.865 (censored) | nan | 26 | 618.471 (censored) | nan | --- |
+| budget 0.4 | 0 | nan (censored) | nan | 0 | nan (censored) | nan | --- |
 | rmse 0.0001 | 0 | nan (censored) | nan | 0 | nan (censored) | nan | --- |
-| rmse 0.0003 | 3 | 2.082 (censored) | nan | 3 | 1.272 (censored) | nan | --- |
-| rmse 0.001 | 8 | 1.534 (censored) | nan | 12 | 1.377 (censored) | nan | --- |
-| rmse 0.003 | 15 | 1.324 (censored) | nan | 27 | 1.256 (censored) | nan | --- |
-| rmse 0.01 | 36 | 1.163 (censored) | nan | 40 | 1.015 | 0.55 | 1.32 |
+| rmse 0.0003 | 3 | 1.580 (censored) | nan | 3 | 1.272 (censored) | nan | --- |
+| rmse 0.001 | 10 | 1.670 (censored) | nan | 10 | 1.253 (censored) | nan | --- |
+| rmse 0.003 | 23 | 1.419 (censored) | nan | 24 | 1.129 (censored) | nan | --- |
+| rmse 0.01 | 29 | 1.024 (censored) | nan | 29 | 0.926 (censored) | nan | --- |
 
-- at the 2% budget the interpolating read moves the ratio from 1.44 to 1.12; native UTM still leads (p_Holm 4.5e-06)
-- at RMSE 0.01 the two grids reach parity under the interpolating read: 1.015, p_Holm 0.55, n=40; intrinsic ratio 1.32, so gamma* = 1.32 sits at the illustrative 1.30
+- at the 2% budget the interpolating read moves the ratio from 1.28 to 1.12; native UTM still leads (p_Holm 2.2e-06)

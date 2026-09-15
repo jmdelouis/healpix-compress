@@ -2,50 +2,46 @@
 
 - regions: **40**, codecs: zfp, sz3, jpeg2000_lossy, jpegxl_lossy, dwt_zstd
 - raw ratio HPX / (UTM x gamma=1.3): **1.988** (gamma=1: 2.584)
-- multiple-testing family: 4 targets
+- multiple-testing family: 3 targets
 - 16-bit requantization floor: HPX 5.79e-06, UTM 6.23e-06 (the image codecs are fed a 16-bit tile, so their `lossless` points are lossless after that step, not bit-exact)
 
 ## Ratios (oracle codec, per region)
 
 | protocol | target | n | median | range | p | p_Holm |
 |---|---|---|---|---|---|---|
-| rmse | 0.01 | 40 | 1.015 | [0.402, 2.582] | 0.5537 | 0.5537 |
-| budget | 0.1 | 40 | 19.309 | [12.993, 1862.679] | 0.0000 | 0.0000 |
-| budget | 0.05 | 40 | 2.501 | [1.797, 293.043] | 0.0000 | 0.0000 |
+| budget | 0.1 | 37 | 19.000 | [12.993, 106.614] | 0.0000 | 0.0000 |
+| budget | 0.05 | 39 | 2.496 | [1.797, 15.293] | 0.0000 | 0.0000 |
 | budget | 0.02 | 40 | 1.119 | [0.896, 15.142] | 0.0000 | 0.0000 |
 
 ## Censoring (fraction of regions where the target is bracketed
 on both grids; the rest are conservative bounds, not estimates)
 
 - rmse 0.0003: 8% bracketed
-- rmse 0.001: 30% bracketed
-- rmse 0.003: 57% bracketed
-- rmse 0.01: 82% bracketed
-- budget 0.4: 0% bracketed
-- budget 0.2: 18% bracketed
-- budget 0.1: 98% bracketed
-- budget 0.05: 100% bracketed
+- rmse 0.001: 25% bracketed
+- rmse 0.003: 60% bracketed
+- rmse 0.01: 72% bracketed
+- budget 0.2: 65% bracketed
+- budget 0.1: 92% bracketed
+- budget 0.05: 98% bracketed
 - budget 0.02: 100% bracketed
 
 ## Intrinsic gap (gamma=1) and critical overhead
 
-- RMSE 0.01: gap +32%, gamma* = 1.32
 
 ## HEALPix regime (latitude)
 
-- rmse:0.01: Spearman rho=0.350 (p=0.027, Holm=0.027), belt 1.259 vs cap 1.437 (p=0.006, Holm=0.007)
-- budget:0.1: Spearman rho=0.448 (p=0.004, Holm=0.007), belt 52.106 vs cap 73.176 (p=0.002, Holm=0.007)
-- budget:0.05: Spearman rho=0.518 (p=0.001, Holm=0.002), belt 4.461 vs cap 5.867 (p=0.002, Holm=0.007)
-- budget:0.02: Spearman rho=0.520 (p=0.001, Holm=0.002), belt 1.305 vs cap 1.602 (p=0.002, Holm=0.007)
+- budget:0.1: Spearman rho=0.468 (p=0.004, Holm=0.004), belt 52.106 vs cap 73.660 (p=0.001, Holm=0.002)
+- budget:0.05: Spearman rho=0.538 (p=0.000, Holm=0.001), belt 4.459 vs cap 5.867 (p=0.001, Holm=0.002)
+- budget:0.02: Spearman rho=0.520 (p=0.001, Holm=0.001), belt 1.305 vs cap 1.602 (p=0.002, Holm=0.002)
 
 ## Codec ranking (HEALPix side)
 
 - 282 operating points, wins sum to the same number
-- jpeg2000_lossy: 139 wins / 282 evaluable, mean rank 1.97
-- jpegxl_lossy: 61 wins / 282 evaluable, mean rank 2.82
-- sz3: 51 wins / 282 evaluable, mean rank 2.46
-- dwt_zstd: 17 wins / 282 evaluable, mean rank 3.29
-- zfp: 14 wins / 215 evaluable, mean rank 4.29
+- jpeg2000_lossy: 158 wins / 282 evaluable, mean rank 1.72
+- jpegxl_lossy: 48 wins / 282 evaluable, mean rank 2.95
+- sz3: 45 wins / 282 evaluable, mean rank 2.53
+- dwt_zstd: 17 wins / 282 evaluable, mean rank 3.33
+- zfp: 14 wins / 261 evaluable, mean rank 4.42
 
 ## HEALPix representation floor (common reference)
 

@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\caption{Same-codec ratios on bracketed regions only}
+\label{tab:fixed_codec_bracketed}
+\footnotesize
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Codec & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ & $3\times10^{-3}$ & $10^{-2}$ \\
+\midrule
+\texttt{zfp} & 1.92 (40) & 1.66 (40) & 1.61 (40) & 1.64 (39) & 1.75 (38) \\
+\texttt{sz3} & 1.85 (40) & 1.97 (40) & 1.43 (39) & 1.32 (36) & 1.30 (35) \\
+\texttt{jpeg2000\_lossy} & 1.86 (40) & 1.72 (40) & 1.70 (38) & 1.36 (36) & 1.17 (29) \\
+\texttt{jpegxl\_lossy} & 1.76 (40) & 1.69 (40) & 1.32 (38) & 1.36 (36) & 1.40 (27) \\
+\texttt{dwt\_zstd} & 1.89 (35) & 1.63 (40) & 1.57 (40) & 1.52 (39) & 1.17 (35) \\
+\bottomrule
+\end{tabular}
+\vspace{3pt}
+\begin{minipage}{\columnwidth}
+\footnotesize
+The same-codec ratios of Table~\ref{tab:fixed_codec} recomputed on the regions where that codec brackets the target on both grids, with the number of such regions in parentheses (out of 40). A cell whose count is small is a statement about a few scenes; a cell of Table~\ref{tab:fixed_codec} whose count here is small is a set of bounds rather than an estimate. UTM carries $\gamma_{\mathrm{tile}}=1.3$.
+\end{minipage}
+\end{table}

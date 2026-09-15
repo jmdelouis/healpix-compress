@@ -6,16 +6,16 @@
 \toprule
 Codec & Wins & Evaluable points & Mean rank \\
 \midrule
-\texttt{jpeg2000\_lossy} & 121 & 247 & 1.87 \\
-\texttt{jpegxl\_lossy} & 59 & 247 & 2.89 \\
-\texttt{sz3} & 40 & 247 & 2.46 \\
-\texttt{zfp} & 16 & 185 & 4.21 \\
-\texttt{dwt\_zstd} & 11 & 247 & 3.38 \\
+\texttt{jpeg2000\_lossy} & 164 & 282 & 1.68 \\
+\texttt{jpegxl\_lossy} & 49 & 282 & 3.00 \\
+\texttt{sz3} & 32 & 282 & 2.51 \\
+\texttt{zfp} & 21 & 261 & 4.36 \\
+\texttt{dwt\_zstd} & 16 & 282 & 3.40 \\
 \bottomrule
 \end{tabular}
 \vspace{3pt}
 \begin{minipage}{\columnwidth}
 \footnotesize
-An operating point is one (region, target) pair over the 40 regions and the 5 RMSE plus 5 budget targets (400 in total), retained when at least one codec is evaluable there, which leaves 247. Wins sum to the number of points by construction, each point having exactly one best codec; \emph{evaluable} counts the points where a codec produced a value at all.
+An operating point is one (region, target) pair over the 40 regions and the 5 RMSE plus 5 budget targets (400 in total), retained when at least one codec is evaluable there, which leaves 282. Wins sum to the number of points by construction, each point having exactly one best codec; \emph{evaluable} counts the points where a codec produced a value at all.
 \end{minipage}
 \end{table}
