@@ -101,7 +101,8 @@ def build_level19(scene, store, verbose=False):
     out_ids = np.asarray(res.cell_ids, dtype=np.int64).ravel()
     out_val = np.asarray(res.cell_data, dtype=np.float64).ravel()
     filled, n_missing = build_tiles.complete_block(out_ids, out_val, ids19)
-    return np.asarray(filled, dtype=np.float64), int(n_missing), ones_med
+    return (np.asarray(filled, dtype=np.float64), int(n_missing), ones_med,
+            int(good.sum()), int((~good).sum()))
 
 
 def region_row(scene, verbose=False, diagnose=False):
@@ -112,7 +113,8 @@ def region_row(scene, verbose=False, diagnose=False):
     flat20 = np.asarray(cell_data, dtype=np.float64).ravel()
     sd = float(flat20.std()) or np.nan
 
-    v19, n_missing, ones_med = build_level19(scene, store, verbose=verbose)
+    v19, n_missing, ones_med, n_used, n_dropped = build_level19(
+        scene, store, verbose=verbose)
     agg19 = flat20.reshape(-1, 4 ** COARSE_DELTA).mean(axis=1)
 
     idx19 = np.clip(cr._safe_index // (4 ** COARSE_DELTA), 0, N19 - 1)
@@ -129,7 +131,9 @@ def region_row(scene, verbose=False, diagnose=False):
     # comparison ran into exactly that on one region.
     diff = v19 - agg19
     adiff = np.abs(diff)
-    extras = {}
+    extras = dict(bias=float(diff.mean()),
+                  bias_over_rms=float(abs(diff.mean()) / rms(diff))
+                  if rms(diff) else np.nan)
     if sd == sd and sd > 0:
         for k in (1, 5, 20):
             extras[f"cells_over_{k}std"] = int((adiff > k * sd).sum())
@@ -141,7 +145,9 @@ def region_row(scene, verbose=False, diagnose=False):
             [[int(i), float(v19[i]), float(agg19[i])] for i in worst])
     return dict(
         scene=scene, cls=scene.split("__")[1],
-        n_missing=n_missing, constant_check=ones_med, tile_std=sd, **extras,
+        n_missing=n_missing, constant_check=ones_med, tile_std=sd,
+        n_samples=n_used, n_dropped=n_dropped,
+        dropped_fraction=n_dropped / max(1, n_used + n_dropped), **extras,
         floor20=floor20, floor19_direct=floor19_direct, floor19_agg=floor19_agg,
         ratio_direct=floor19_direct / floor20 if floor20 else np.nan,
         ratio_agg=floor19_agg / floor20 if floor20 else np.nan,
@@ -260,10 +266,20 @@ def main(argv=None) -> int:
 
     df = pd.DataFrame(rows)
     cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    df.to_csv(cfg.RESULTS_DIR / "level19_direct.csv", index=False)
+    # A subset run writes beside the full one rather than over it. The first
+    # version of this script did overwrite it, and a two-minute diagnostic on
+    # one region replaced two hours of work on forty.
+    subset = bool(args.regions or args.limit)
+    tag = "__subset" if subset else ""
+    df.to_csv(cfg.RESULTS_DIR / f"level19_direct{tag}.csv", index=False)
     digest = summarize(df)
-    (cfg.RESULTS_DIR / "level19_direct.json").write_text(
+    (cfg.RESULTS_DIR / f"level19_direct{tag}.json").write_text(
         json.dumps(digest, indent=1))
+    if subset:
+        print(f"subset run: wrote level19_direct{tag}.csv; the full-run files "
+              f"are untouched")
+    if subset:
+        args.no_tex = True                # a table from a subset would mislead
     if not args.no_tex:
         cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
         (cfg.TEX_TABLES / "table_level19_direct.tex").write_text(
