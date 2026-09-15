@@ -9,15 +9,15 @@
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
 Class & Target & HPX/UTM & HPX wins & $e_{\mathrm{resample}}$ & $\kappa$ & Infl.\ \% m.\ (o.) & $e_{\mathrm{resample}}$ & $\kappa$ & Infl.\ \% m.\ (o.) \\
 \midrule
-Agriculture & $0.01$ & 1.20 & no & 0.0019 & 5.14 & --- (423.9) & 0.0159 & 0.63 & --- (18.0) \\
-Forest & $0.01$ & 1.23 & no & 0.0013 & 7.60 & --- (666.5) & 0.0060 & 1.68 & --- (95.2) \\
-Urban & $0.01$ & 0.98 & yes & 0.0063 & 1.59 & 40.4 (87.7) & 0.0753 & 0.13 & 2.5 (0.9) \\
-Water & $0.01$ & 1.02 & no & 0.0007 & 14.46 & --- (1349.5) & 0.0044 & 2.26 & --- (146.7) \\
+Agriculture & $0.003$ & 0.88 & yes & 0.0019 & 1.54 & 37.2 (83.9) & 0.0159 & 0.19 & 5.1 (1.8) \\
+Forest & $0.003$ & 0.83 & yes & 0.0013 & 2.28 & 114.6 (148.9) & 0.0060 & 0.50 & 16.0 (11.9) \\
+Urban & $0.01$ & 0.70 & yes & 0.0063 & 1.59 & 40.4 (87.7) & 0.0753 & 0.13 & 2.5 (0.9) \\
+Water & $0.001$ & 0.98 & yes & 0.0007 & 1.45 & 30.8 (75.8) & 0.0044 & 0.23 & 6.8 (2.5) \\
 \bottomrule
 \end{tabular}
 \vspace{3pt}
 \begin{minipage}{\textwidth}
 \footnotesize
-The transfer is \texttt{clough\_tocher}, which does not deconvolve, over the 40 regions of Table~\ref{tab:benchmark_scenes}. \emph{Own estimand}: its RMSE against the observed field it claims to represent. \emph{Latent scene}: its RMSE against the unblurred scene, which for a non-deconvolving transfer is the instrument blur it does not remove, the yardstick that applies when the carrier grid is read as if it were the scene. $\kappa$ is the compression target as a fraction of that denominator. The two errors add in quadrature only if their cross term vanishes, and it does not (Appendix~\ref{app:cross_term}), so the inflation columns are the \emph{measured} growth of the product's total error, with the orthogonal value $\sqrt{1+\kappa^2}-1$ in parentheses; a dash marks a crossing beyond the range the cross-term run sampled. The target shown is the tightest reported one at which HEALPix is the smaller representation, or the loosest tested where there is none. The choice of denominator moves $\kappa$ at the crossing by a factor of 6 (2.26 against 14.46 at the most expensive class), which is why both are reported rather than one elected. Against the latent scene the crossing costs less than the transfer error itself in 2 of 4 classes; the exceptions are forest, water, whose inflation is given rather than glossed.
+The transfer is \texttt{clough\_tocher}, which does not deconvolve, over the 40 regions of Table~\ref{tab:benchmark_scenes}. \emph{Own estimand}: its RMSE against the observed field it claims to represent. \emph{Latent scene}: its RMSE against the unblurred scene, which for a non-deconvolving transfer is the instrument blur it does not remove, the yardstick that applies when the carrier grid is read as if it were the scene. $\kappa$ is the compression target as a fraction of that denominator. The two errors add in quadrature only if their cross term vanishes, and it does not (Appendix~\ref{app:cross_term}), so the inflation columns are the \emph{measured} growth of the product's total error, with the orthogonal value $\sqrt{1+\kappa^2}-1$ in parentheses; a dash marks a crossing beyond the range the cross-term run sampled. The target shown is the tightest reported one at which HEALPix is the smaller representation, or the loosest tested where there is none. The choice of denominator moves $\kappa$ at the crossing by a factor of 5 (0.50 against 2.28 at the most expensive class), which is why both are reported rather than one elected. Against the latent scene no crossing is obtained by compressing more finely than the transfer step is accurate.
 \end{minipage}
 \end{table*}
