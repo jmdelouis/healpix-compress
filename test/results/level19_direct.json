@@ -1,0 +1,28 @@
+{
+ "bilinear": {
+  "n": 40,
+  "floor20": 0.00403779056350298,
+  "floor19_direct": 0.00886528023332122,
+  "floor19_agg": 0.008564837923436189,
+  "ratio_direct": 2.2527937321411216,
+  "ratio_agg": 2.2315614565027175,
+  "ratio_direct_over_agg": 1.00225389943648,
+  "carrier_rms": 0.002163067594875638,
+  "carrier_rms_frac_of_std": 0.061646162812377385,
+  "carrier_rms_over_floor19": 0.2686007196504171,
+  "direct_better_on": 15
+ },
+ "nearest": {
+  "n": 40,
+  "floor20": 0.00403779056350298,
+  "floor19_direct": 0.00886528023332122,
+  "floor19_agg": 0.008564837923436189,
+  "ratio_direct": 2.2527937321411216,
+  "ratio_agg": 2.2315614565027175,
+  "ratio_direct_over_agg": 1.00225389943648,
+  "carrier_rms": 0.002163067594875638,
+  "carrier_rms_frac_of_std": 0.061646162812377385,
+  "carrier_rms_over_floor19": 0.2686007196504171,
+  "direct_better_on": 15
+ }
+}

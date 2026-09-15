@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\caption{Two level-19 carriers, against the observation}
+\label{tab:level19_direct}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+ & & Level 20 & \multicolumn{2}{c}{Direct} & \multicolumn{2}{c}{Aggregate} & Carrier \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Read & $n$ & floor & floor & $/$L20 & floor & $/$L20 & diff. \\
+\midrule
+nearest cell & 40 & 4.04e-03 & 8.87e-03 & 2.25 & 8.56e-03 & 2.23 & 0.27 \\
+interpolating & 40 & 4.04e-03 & 8.87e-03 & 2.25 & 8.56e-03 & 2.23 & 0.27 \\
+\bottomrule
+\end{tabular}
+\vspace{3pt}
+\begin{minipage}{\columnwidth}
+\footnotesize
+Median over the regions of the RMSE of each carrier against the same Sentinel-2 observation, on the intersection mask of Section~\ref{sec:common_reference}, read at the nearest containing cell of that carrier's own level. \emph{Direct} evaluates the Clough--Tocher interpolant of the same native samples at the level-19 cell centres; \emph{aggregate} averages the four level-20 children, which is the exact cell-average of the stored carrier and the object Section~\ref{sec:level_choice} measures. The last column is the RMS difference between the two level-19 carriers in units of the aggregate's own floor: it says how much of the level-19 error budget is decided by which of the two objects is called the level-19 carrier. Ratios are to the level-20 floor of the same read.
+\end{minipage}
+\end{table}
