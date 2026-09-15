@@ -136,6 +136,7 @@ def checks(tex: str):
     out += censoring_checks()
     out += same_codec_checks()
     out += transfer_mechanism_checks()
+    out += scoped_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     return out, survivors
@@ -213,6 +214,48 @@ def headline_checks():
                     f"${min(v['psf'] for v in vals)/gamma:.1f}$ to "
                     f"${max(v['psf'] for v in vals)/gamma:.1f}$",
                     "Section V-B, illustrative overhead"))
+    return out
+
+
+def scoped_checks():
+    """Figures asserted in ONE section rather than anywhere in the manuscript.
+
+    The default rule -- does this value appear somewhere in the text -- cannot
+    see a stale copy of a figure as long as the fresh value occurs somewhere
+    else. That is exactly how the headline subsection kept the pre-extension
+    ratios for a day while the checker passed: Section V-C quoted the new
+    loosest-target ratio, so the assertion was satisfied, and Section V-B
+    still said the old one. A claim that a given section must carry a given
+    number closes that hole, and the sections listed here are the ones a
+    reader meets first.
+
+    Labels carry ``[in <path>]``; main() restricts the search to that file.
+    """
+    out = []
+    try:
+        import headline as hl
+        per_target, raw, transfers, std, gamma = hl.load()
+    except Exception as exc:                              # noqa: BLE001
+        return [(f"scoped headline figures  [skipped: {type(exc).__name__}]",
+                 "", str(exc)[:60])]
+    ts = sorted(per_target)
+    loose, tight = per_target[ts[-1]], per_target[ts[0]]
+    hd = "[in sections/05a2_headline.tex]"
+    out.append((f"headline section: loosest ratio {hd}",
+                _fmt(loose["median"]), "gamma=1"))
+    out.append((f"headline section: tightest ratio {hd}",
+                _fmt(tight["median"]), "gamma=1"))
+    bc = loose["by_class"].values()
+    out.append((f"headline section: class range at the loosest target {hd}",
+                f"${min(bc):.2f}$--${max(bc):.2f}$", "four class medians"))
+    out.append((f"headline section: loosest ratio at gamma_tile {hd}",
+                _fmt(loose["median"] / gamma), f"gamma={gamma:g}"))
+    if transfers:
+        vals = [transfers[t] for t in sorted(transfers)]
+        for key, label in (("psf", "PSF-aware"), ("idw", "inverse-distance")):
+            lo, hi = min(v[key] for v in vals), max(v[key] for v in vals)
+            out.append((f"headline section: {label} range {hd}",
+                        f"${lo:.1f}$--${hi:.1f}$", "gamma=1"))
     return out
 
 
@@ -632,6 +675,13 @@ def main(argv=None) -> int:
                 bad.append((label, value, note))
             continue
         if "[count, not asserted]" in label:
+            continue
+        m = re.search(r"\[in ([^\]]+)\]", label)
+        if m:
+            sub = TEX.parent / m.group(1)
+            hay = sub.read_text(encoding="utf-8") if sub.exists() else ""
+            if value not in hay:
+                bad.append((label, value, note))
             continue
         if value not in tex:
             bad.append((label, value, note))

@@ -45,6 +45,10 @@ NEEDS = {
                                "python resampling_error.py"),
     "table_operator_tests": ("operator_tests.csv", "python operator_tests.py"),
     "table_byte_audit": ("codec_audit.csv", "python codec_audit.py"),
+    "table_level19_direct": ("level19_direct.csv",
+                             "python level19_direct.py  (needs the region "
+                             "windows: it rebuilds the transfer rather than "
+                             "reading the stored tiles)"),
 }
 
 
@@ -179,6 +183,14 @@ def rebuild(dry=False):
         hl.main([])
     step("headline -> table_headline, fig_headline", _headline,
          ["paper_numbers_self.json", "level_choice.csv"])
+
+    def _level19():
+        import level19_direct as l19
+        df = _csv("level19_direct.csv")
+        _write("table_level19_direct",
+               l19.latex_table(df, l19.summarize(df)))
+    step("level19_direct -> table_level19_direct", _level19,
+         ["level19_direct.csv"])
 
     def _censoring():
         import censoring_sensitivity as cs

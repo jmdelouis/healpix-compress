@@ -108,11 +108,15 @@ relative storage overhead of the two layouts. The
 critical-overhead formulation expresses this trade-off without privileging
 any storage architecture, and it is the form in which we consider the
 result should be used. The evidence is from Sentinel-2 B04 at \SI{10}{m},
-one acquisition per region, and should not be transferred to multispectral
-products, temporal cubes, model output or flux-conservative fields without
-being re-measured there. The most important next step is to decouple the
-three parts of the chain that this paper has shown to matter, namely the
-transfer, the carrier and the reading operator, and to evaluate the
+one acquisition per region, one dominant level-10 tile per region, 40
+regions in four land-cover classes. The ratios measured here should not be
+transferred to other bands or sensors, to multispectral cubes, to temporal
+stacks, to model output or to flux-conservative fields, nor to a
+full-sphere product, without being re-measured there; each of those is
+future work rather than an extrapolation this paper supports. The most
+important next step is to decouple the four parts of the chain that this
+paper has shown to matter, namely the transfer, the carrier, the codec and
+the reading operator, and to evaluate the
 complete chain with the operational PSF-aware transfer and a reader matched
 to it on the same sites, which is what the pipeline shared with the
 companion study~\cite{delouis2026resample} was built for.
