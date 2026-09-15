@@ -54,7 +54,8 @@ import shutil
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt           # noqa: E402
-import numpy as np                        # noqa: E402
+import numpy as np
+from scipy import stats                        # noqa: E402
 import pandas as pd                       # noqa: E402
 
 import paper_config as cfg                # noqa: E402
@@ -387,6 +388,15 @@ def _short(k):
     return SHORT.get(k, k.replace("_", chr(92) + "_"))
 
 
+def _pair_ratio(test, base, scene, target, codecs):
+    """Size of `test` over size of `base` for one region and target."""
+    a = ps.best_of_codecs_size(base, scene, codecs, target)
+    b = ps.best_of_codecs_size(test, scene, codecs, target)
+    if not (np.isfinite(a) and np.isfinite(b) and a > 0):
+        return np.nan
+    return b / a
+
+
 def lossless_size(df):
     """Smallest lossless size per region: that raster's entropy, model-free."""
     d = df[df.codec.isin(cfg.LOSSLESS_CODECS)]
@@ -492,6 +502,30 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
                 d[f"{k}_over_utm"] = m
         digest[f"{t:g}"] = d
         rows.append(f"${t:g}$ & {len(scenes)} & " + " & ".join(cells) + r" \\")
+
+    # Does a raster's total information content predict its surcharge? The
+    # question is whether the extra bytes of a transfer are the bytes of extra
+    # content. Correlating each region's own lossless size (its entropy, coder
+    # aside) with the size ratio it pays answers it region by region, and the
+    # answer belongs in the digest rather than in a notebook, because the
+    # paper quotes it.
+    lossless_rho = {}
+    for k in kn:
+        ll = lossless_size(have[k])
+        per = {}
+        for sc in ll.index:
+            v = [_pair_ratio(have[k], have[baseline], sc, t, codecs)
+                 for t in cfg.TARGET_RMSE]
+            v = [x for x in v if np.isfinite(x)]
+            if v:
+                per[sc] = float(np.median(v))
+        x = np.array([ll[sc] for sc in per], dtype=float)
+        y = np.array(list(per.values()), dtype=float)
+        if len(x) >= 5:
+            r = stats.spearmanr(x, y)
+            lossless_rho[k] = dict(rho=float(r.statistic), p=float(r.pvalue),
+                                   n=int(len(x)))
+    digest["lossless_size_vs_ratio"] = lossless_rho
 
     over = " & ".join(_short(k) for k in kn)
     if len(kn) == 2:

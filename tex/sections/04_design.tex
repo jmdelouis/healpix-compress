@@ -72,12 +72,14 @@ on both grids, so that every ratio tested is an interpolated estimate. This
 rule is stricter than requiring some codec to bracket the target, because
 the oracle takes the smallest admissible size, and a censored codec can be
 the smallest. To satisfy it, every ladder was extended at its coarse end
-(Appendix~\ref{app:censoring}) until the only pairs that failed were those
-whose scene has no contrast left to lose at the target: at $10^{-2}$ the
-eight excluded regions are exactly those whose standard deviation is at
-most $1.22$ times the target (six lakes and two smooth forests), and every
-included region has at least $1.36$ times it; a constant fill already meets
-such a target, and the comparison is void there. Excluded pairs are counted,
+(Appendix~\ref{app:censoring}) until the only pairs that failed were the
+lowest-contrast scenes, for which the target is a large fraction of, or
+exceeds, the standard deviation of the scene itself: at $10^{-2}$ the eight
+excluded regions are exactly those whose standard deviation is at most
+$1.22$ times the target (six lakes and two smooth forests), and every
+included region has at least $1.36$ times it; at the tighter targets the
+one to three exclusions are the smoothest lakes. A constant fill already
+meets such a target, and the comparison is void there. Excluded pairs are counted,
 never bounded, and the $n$ of every table is the number that remain. Third,
 a target for which fewer than $75\%$ of the regions qualify is withheld:
 the $40\%$ and $20\%$ storage budgets ($0\%$ and $65\%$) are excluded on

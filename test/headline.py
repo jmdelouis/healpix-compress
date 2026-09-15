@@ -59,7 +59,16 @@ def load():
     digest = json.loads(p.read_text()) if p.exists() else {}
     transfers = {}
     for k, v in digest.items():
-        transfers[float(k)] = dict(
+        # The digest also carries diagnostics that are not per-target blocks
+        # (superres_cost writes the lossless-size correlation there); only the
+        # numeric keys are RMSE targets.
+        try:
+            target = float(k)
+        except ValueError:
+            continue
+        if not isinstance(v, dict) or "n" not in v:
+            continue
+        transfers[target] = dict(
             n=int(v["n"]),
             ct=float(v["clough_tocher_over_utm"]) * gamma,
             psf=float(v["psf_over_utm"]) * gamma,

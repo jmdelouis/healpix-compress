@@ -49,11 +49,15 @@ $10^{-2}$ target the Clough--Tocher tile compresses to $0.8\%$ of its own
 lossless size, the deconvolved tile to $1.8\%$, the inverse-distance tile to
 $2.0\%$ and the native raster to $3.0\%$ of its own; this is the
 oversampling redundancy studied in this paper, which every transfer
-inherits. The lossless size does not predict the byte ratio across regions
-(Spearman $\rho=-0.47$ for the PSF transfer, $+0.06$ for the
-inverse-distance average), which excludes total information content as the
-mechanism. The observations are consistent with energy compaction being the
-dominant mechanism, reached by different routes. The deconvolution puts
+inherits. Across regions the surcharge is not explained by how much each
+raster carries: correlating each region's own lossless size with the
+surcharge it pays gives a Spearman $\rho$ of $-0.46$ for the PSF transfer
+($p=0.003$, $n=40$) and $-0.31$ for the inverse-distance average
+($p=0.05$, $n=39$), so the regions whose rasters hold the most information
+pay the \emph{smallest} surcharge. That is the opposite sign from what an
+added-content explanation predicts, and it excludes total information
+content as the mechanism. The observations are consistent with energy
+compaction being the dominant mechanism, reached by different routes. The deconvolution puts
 power back into the small scales directly, $2.80$ times the observation's
 in the top octave against $0.89$ for Clough--Tocher, and a coder asked for a
 given RMSE has to encode it; the inverse-distance average adds no such

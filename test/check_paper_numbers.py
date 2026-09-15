@@ -135,6 +135,7 @@ def checks(tex: str):
     out += headline_checks()
     out += censoring_checks()
     out += same_codec_checks()
+    out += transfer_mechanism_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     return out, survivors
@@ -212,6 +213,29 @@ def headline_checks():
                     f"${min(v['psf'] for v in vals)/gamma:.1f}$ to "
                     f"${max(v['psf'] for v in vals)/gamma:.1f}$",
                     "Section V-B, illustrative overhead"))
+    return out
+
+
+def transfer_mechanism_checks():
+    """The lossless-size correlation Section V-K quotes as evidence.
+
+    It is a rank correlation over regions between how much a raster carries
+    and the surcharge it pays, and it had drifted once already because no
+    script produced it; superres_cost.py now writes it into the digest.
+    """
+    p = cfg.RESULTS_DIR / "transfer_cost_digest.json"
+    if not p.exists():
+        return [("lossless-size correlation  [skipped: no digest]", "", str(p))]
+    d = json.loads(p.read_text()).get("lossless_size_vs_ratio")
+    if not d:
+        return [("lossless-size correlation  [skipped: not in digest]", "",
+                 "re-run superres_cost.py")]
+    out = []
+    for key, label in (("psf", "PSF"), ("linear", "inverse-distance")):
+        v = d.get(key)
+        if v:
+            out.append((f"lossless size vs surcharge, {label}",
+                        f"${v['rho']:.2f}$", f"n={v['n']}, p={v['p']:.3f}"))
     return out
 
 
