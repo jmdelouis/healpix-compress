@@ -1,28 +1,18 @@
 {
- "bilinear": {
-  "n": 40,
-  "floor20": 0.00403779056350298,
-  "floor19_direct": 0.00886528023332122,
-  "floor19_agg": 0.008564837923436189,
-  "ratio_direct": 2.2527937321411216,
-  "ratio_agg": 2.2315614565027175,
-  "ratio_direct_over_agg": 1.00225389943648,
-  "carrier_rms": 0.002163067594875638,
-  "carrier_rms_frac_of_std": 0.061646162812377385,
-  "carrier_rms_over_floor19": 0.2686007196504171,
-  "direct_better_on": 15
- },
- "nearest": {
-  "n": 40,
-  "floor20": 0.00403779056350298,
-  "floor19_direct": 0.00886528023332122,
-  "floor19_agg": 0.008564837923436189,
-  "ratio_direct": 2.2527937321411216,
-  "ratio_agg": 2.2315614565027175,
-  "ratio_direct_over_agg": 1.00225389943648,
-  "carrier_rms": 0.002163067594875638,
-  "carrier_rms_frac_of_std": 0.061646162812377385,
-  "carrier_rms_over_floor19": 0.2686007196504171,
-  "direct_better_on": 15
- }
+ "n": 40,
+ "floor20": 0.0040377905635029,
+ "floor19_direct": 0.00886528023332115,
+ "floor19_agg": 0.0085648379234361,
+ "ratio_direct": 2.2527937321411216,
+ "ratio_agg": 2.2315614565027175,
+ "ratio_direct_over_agg": 1.00225389943648,
+ "carrier_rms": 0.00216306759487555,
+ "carrier_rms_frac_of_std": 0.061646162812377295,
+ "carrier_rms_over_floor19": 0.2686007196504171,
+ "direct_better_on": 15,
+ "within_5pct": 38,
+ "max_ratio_direct_over_agg": 41.40206561902525,
+ "worst_scene": "region__water__lake_geneva",
+ "median_ratio_excluding_failures": 1.0020088465522643,
+ "n_failures": 1
 }

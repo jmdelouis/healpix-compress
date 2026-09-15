@@ -137,6 +137,7 @@ def checks(tex: str):
     out += same_codec_checks()
     out += transfer_mechanism_checks()
     out += scoped_checks()
+    out += level19_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     return out, survivors
@@ -256,6 +257,50 @@ def scoped_checks():
             lo, hi = min(v[key] for v in vals), max(v[key] for v in vals)
             out.append((f"headline section: {label} range {hd}",
                         f"${lo:.1f}$--${hi:.1f}$", "gamma=1"))
+    return out
+
+
+def level19_checks():
+    """Section V-J: the two level-19 carriers, from level19_direct.py's digest.
+
+    Both floors and the ratio between them are quoted in the prose, and the
+    whole point of the subsection is that the two agree, so a drift in either
+    would change the argument rather than only a figure.
+    """
+    p = cfg.RESULTS_DIR / "level19_direct.json"
+    if not p.exists():
+        return [("level-19 carriers  [skipped: no digest]", "",
+                 "run level19_direct.py")]
+    d = json.loads(p.read_text())
+    if "n" not in d:                       # older per-reader digest
+        d = d.get("nearest", {})
+    if not d:
+        return [("level-19 carriers  [skipped: unreadable digest]", "", str(p))]
+    where = "[in sections/05h2_level19_direct.tex]"
+    out = [
+        (f"level-19 direct floor {where}", f"${d['floor19_direct']:.2e}$"
+         .replace("e-0", r"\times10^{-").replace("$", "$", 1) + "",
+         "median over the regions"),
+        (f"level-19 direct / aggregate {where}",
+         f"${d['ratio_direct_over_agg']:.3f}$", "median ratio"),
+        (f"level-19 direct / level 20 {where}", f"${d['ratio_direct']:.2f}$", ""),
+        (f"level-19 aggregate / level 20 {where}", f"${d['ratio_agg']:.2f}$", ""),
+        (f"level-19 carriers within 5% {where}", f"{d['within_5pct']:d}",
+         f"of {d['n']} regions"),
+        (f"level-19 direct better on {where}", f"{d['direct_better_on']:d}",
+         "regions"),
+        (f"level-19 carrier difference, % of std {where}",
+         f"${100*d['carrier_rms_frac_of_std']:.1f}\\%$", "RMS"),
+        (f"level-19 carrier difference / floor {where}",
+         f"${d['carrier_rms_over_floor19']:.2f}$", "RMS over the L19 floor"),
+    ]
+    # the floor itself is quoted in scientific notation in the prose
+    mant, exp = f"{d['floor19_direct']:.2e}".split("e")
+    out[0] = (f"level-19 direct floor {where}",
+              f"${mant}\\times10^{{{int(exp)}}}$", "median over the regions")
+    mant, exp = f"{d['floor19_agg']:.2e}".split("e")
+    out.append((f"level-19 aggregate floor {where}",
+                f"${mant}\\times10^{{{int(exp)}}}$", "median over the regions"))
     return out
 
 

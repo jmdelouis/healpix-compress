@@ -14,10 +14,10 @@ Clough--Tocher interpolant at cell centres, and for a general interpolant
 the value at the parent centre is not the mean of the values at the four
 child centres. What follows therefore measures the four-child (quadtree
 Haar) aggregate, which is a level-19 carrier built by Clough--Tocher
-followed by a cell average, and it bounds rather than reproduces what a
-directly evaluated level-19 carrier would cost. Building that carrier, by evaluating the same interpolant at the level-19
-cell centres, is the open item this subsection leaves
-(Appendix~\ref{app:limitations}).
+followed by a cell average. Whether it also reproduces what a directly
+evaluated level-19 carrier would cost is a question the aggregate cannot
+answer about itself, so the other carrier was built and measured as well
+(Section~\ref{sec:level19_direct}).
 
 Two quantities are separated, because a coarser carrier is charged twice
 and only one of the charges concerns information. The first is what the
@@ -39,9 +39,7 @@ depends on how far the ladders reach, and is quoted for that sweep only).
 Two thirds of the useful operating range of this study therefore lies below
 the error that a cell-averaged level-19 carrier already carries, which is
 the sense in which level 19 is not a drop-in replacement here. Whether a
-directly evaluated level-19 carrier would do better is not settled by this
-experiment: a point evaluation is not a cell average, and the difference
-between the two is of the same order as the quantity being measured.
+directly evaluated level-19 carrier would do better is answered next.
 
 The result is also a caution regarding the spectral argument that made the
 question appear settled the other way. The observed field carries $0.21\%$
