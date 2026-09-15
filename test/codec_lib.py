@@ -261,18 +261,32 @@ def encode_hcc_zarr(flat_cells, *, name="hcc-dct", delta=2, top_k=64):
 
 
 # --- sweeps ------------------------------------------------------------------
-ZFP_SWEEP = [dict(tolerance=float(v)) for v in np.logspace(-5, -1, 8)]
-SZ3_SWEEP = [dict(abs_error=float(v)) for v in np.logspace(-5, -1, 8)]
+# Every sweep ends with points coarse enough for the loosest target of the
+# paper (RMSE 1e-2) to be *bracketed* on the smooth scenes rather than met at
+# the coarsest point: a target that the coarsest setting already satisfies
+# is a bound, not an estimate (paper_stats.FEASIBLE_CENSORING), and at 1e-2
+# the original ladders left 16 of 40 regions in that state (revision 4,
+# censoring_sensitivity.py). The added points are listed after the original
+# ladder so that extend_sweep.py can complete existing part files in place.
+ZFP_SWEEP = ([dict(tolerance=float(v)) for v in np.logspace(-5, -1, 8)]
+             + [dict(tolerance=v) for v in (0.3, 1.0, 3.0)])
+SZ3_SWEEP = ([dict(abs_error=float(v)) for v in np.logspace(-5, -1, 8)]
+             + [dict(abs_error=v) for v in (0.3, 1.0)])
 # jpeg2000 "quality" is a compression-RATIO target: smaller = higher quality.
-JPEG2000_LOSSY_SWEEP = [dict(quality=q) for q in (1, 2, 3, 5, 8, 12, 20, 35, 60, 100)]
+JPEG2000_LOSSY_SWEEP = [dict(quality=q)
+                        for q in (1, 2, 3, 5, 8, 12, 20, 35, 60, 100,
+                                  150, 250, 400, 700, 1000)]
 JPEGXL_LOSSY_SWEEP = (
     [dict(level=lv) for lv in (10, 25, 40, 55, 68, 78, 86, 92, 96, 99)]
     # distance points extend the sweep past the level ladder's RMSE floor
     # (~1e-3 on Sentinel-2 B04), so JPEG XL is actually evaluable at the
     # high-fidelity targets instead of dropping out of them.
     + [dict(distance=d) for d in (2.0, 1.0, 0.5, 0.25, 0.1, 0.05, 0.01)]
+    # ... and past its coarse end: level 10 still meets 1e-2 on smooth scenes.
+    + [dict(level=lv) for lv in (5, 1)]
+    + [dict(distance=d) for d in (15.0, 25.0)]
 )
-DWT_ZSTD_SWEEP = [dict(quantize_bits=b) for b in (4, 6, 8, 10, 12, 14, 16)]
+DWT_ZSTD_SWEEP = [dict(quantize_bits=b) for b in (4, 6, 8, 10, 12, 14, 16, 3, 2)]
 
 CODEC_RUNS = {
     "zfp": (encode_zfp, ZFP_SWEEP),

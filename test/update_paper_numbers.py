@@ -188,14 +188,26 @@ def _ratio_rows(hpx, utm, scenes, rmse_col, codecs):
     for r in rows:
         kind = r["kind"]
         tgt = r["target"] if kind == "rmse" else r["target"] * cfg.SHARED_RAW
-        br = [st.any_bracketed(hpx, s, codecs, tgt, kind, rmse_col)
-              and st.any_bracketed(utm, s, codecs, tgt, kind)
-              for s in scenes]
-        r["bracketed_fraction"] = float(np.mean(br)) if br else np.nan
+        # The UTM side is evaluated at budget / gamma (its share of the
+        # budget once the layout overhead is charged), so the bracketing check
+        # must ask the same question at the same abscissa.
+        tgt_utm = tgt if kind == "rmse" else tgt / cfg.GAMMA_UTM
+        if st.REQUIRE_ORACLE_BRACKETED:
+            br = {s: st.oracle_bracketed(hpx, s, codecs, tgt, kind, rmse_col)
+                  and st.oracle_bracketed(utm, s, codecs, tgt_utm, kind)
+                  for s in scenes}
+        else:
+            br = {s: st.any_bracketed(hpx, s, codecs, tgt, kind, rmse_col)
+                  and st.any_bracketed(utm, s, codecs, tgt_utm, kind)
+                  for s in scenes}
+        r["bracketed_fraction"] = float(np.mean(list(br.values()))) if br else np.nan
+        r["bracketed"] = [s for s in scenes if br[s]]
+        r["excluded"] = [s for s in scenes if not br[s]] if st.REQUIRE_ORACLE_BRACKETED else []
+        keep = (lambda s: br[s]) if st.REQUIRE_ORACLE_BRACKETED else (lambda s: True)
         r["ratios"] = {s: (h / u) for s, (h, u, _) in r["per_scene"].items()
-                       if np.isfinite(h) and np.isfinite(u) and u > 0}
+                       if keep(s) and np.isfinite(h) and np.isfinite(u) and u > 0}
         r["ratios_gamma1"] = {s: (h / u1) for s, (h, _, u1) in r["per_scene"].items()
-                              if np.isfinite(h) and np.isfinite(u1) and u1 > 0}
+                              if keep(s) and np.isfinite(h) and np.isfinite(u1) and u1 > 0}
         r["test"] = st.paired_ratio_test(list(r["ratios"].values()))
         r["test_gamma1"] = st.paired_ratio_test(list(r["ratios_gamma1"].values()))
     dropped = [r for r in rows
@@ -206,6 +218,11 @@ def _ratio_rows(hpx, utm, scenes, rmse_col, codecs):
               f"{100*r['bracketed_fraction']:.0f}% of regions bracket it "
               f"(threshold {100*cfg.MIN_BRACKETED:.0f}%); it would be a set of "
               f"bounds, not an estimate")
+    for r in rows:
+        if r.get("excluded"):
+            print(f"  target {r['kind']} {r['target']:g}: {len(r['excluded'])} "
+                  f"region(s) excluded, oracle codec censored on a grid: "
+                  + ", ".join(x.replace('region__', '') for x in r["excluded"]))
     reported = [r for r in rows
                 if r["test"]["n"] >= cfg.MIN_SCENES
                 and r["bracketed_fraction"] >= cfg.MIN_BRACKETED]
@@ -653,6 +670,7 @@ def main(argv=None) -> int:
         targets=[dict(kind=r["kind"], target=r["target"], test=r["test"],
                       test_gamma1=r["test_gamma1"], p_holm=r["p_holm"],
                       bracketed_fraction=r["bracketed_fraction"],
+                      excluded=r.get("excluded", []),
                       ratios={k: float(v) for k, v in r["ratios"].items()})
                  for r in rows],
     )

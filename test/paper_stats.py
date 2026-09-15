@@ -120,6 +120,30 @@ def any_bracketed(df, scene, codecs, target, kind, rmse_col="rmse") -> bool:
     return any(fn(sub[sub.codec == c], target, rmse_col) for c in codecs)
 
 
+# When True, a (region, target) pair enters the paired comparison only if the
+# codec the oracle selects brackets the target with two measured points on
+# BOTH grids, so that every ratio tested is an interpolated estimate rather
+# than the bound FEASIBLE_CENSORING returns. Pairs that fail are excluded from
+# that target and counted (see update_paper_numbers), not bounded. After the
+# coarse end of every sweep was extended (extend_sweep.py), the pairs that
+# still fail are those whose target exceeds the scene's own standard
+# deviation, for which a constant fill already meets the target and the
+# comparison is void.
+REQUIRE_ORACLE_BRACKETED = True
+
+
+def oracle_bracketed(df, scene, codecs, target, kind, rmse_col="rmse"):
+    """Does the codec the oracle picks bracket the target on this grid?"""
+    sub = df[df.scene == scene]
+    if kind == "rmse":
+        name, _ = argbest_codec_size(df, scene, codecs, target, rmse_col)
+        fn = bracketed_size_at_rmse
+    else:
+        name, _ = argbest_codec_rmse(df, scene, codecs, target, rmse_col)
+        fn = bracketed_rmse_at_size
+    return bool(name is not None and fn(sub[sub.codec == name], target, rmse_col))
+
+
 def best_of_codecs_size(df, scene, codecs, target, gamma=1.0, rmse_col="rmse"):
     sub = df[df.scene == scene]
     vals = [interp_size_at_rmse(sub[sub.codec == c], target, rmse_col) for c in codecs]

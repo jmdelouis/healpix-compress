@@ -180,6 +180,12 @@ def rebuild(dry=False):
     step("headline -> table_headline, fig_headline", _headline,
          ["paper_numbers_self.json", "level_choice.csv"])
 
+    def _censoring():
+        import censoring_sensitivity as cs
+        cs.main([])
+    step("censoring_sensitivity -> table_censoring, table_fixed_codec_bracketed",
+         _censoring, ["hpx_codec_bench.csv", "utm_codec_bench.csv"])
+
     return done, missing
 
 

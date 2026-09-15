@@ -37,6 +37,7 @@ MODULES = [
     ("gamma_analysis", "verdict over a continuous overhead ratio"),
     ("superres_cost", "storage surcharge of a deconvolving transfer"),
     ("headline", "the compressed HEALPix/UTM size in one table and one figure"),
+    ("censoring_sensitivity", "what the matched comparisons owe to censored sweep points"),
     ("cross_term", "is the compression error orthogonal to the transfer error"),
     ("level_choice", "is level 20 the right carrier level"),
     ("interscale", "does the link between scales pay"),
