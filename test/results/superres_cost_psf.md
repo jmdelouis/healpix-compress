@@ -15,12 +15,12 @@ The two denominators being within a few percent of each other is not an assumpti
 
 | target | n | bracketed | cens. base | cens. test | median size ratio | IQR | p |
 |---|---|---|---|---|---|---|---|
-| 0.1 (+0.5% total error) | 40 | 100% | 0% | 0% | 1.965 | [1.647, 2.531] | 1.8e-12 |
-| 0.2 (+2.0% total error) | 40 | 100% | 0% | 0% | 2.363 | [2.020, 2.763] | 1.8e-12 |
-| 0.5 (+11.8% total error) | 40 | 82% | 18% | 7% | 2.457 | [1.747, 2.909] | 5.7e-08 |
-| 1 (+41.4% total error) *(withheld)* | 40 | 65% | 35% | 32% | 1.642 | [1.220, 2.022] | 9.7e-07 |
+| 0.1 (+0.5% total error) | 40 | 100% | 0% | 0% | 2.005 | [1.679, 2.531] | 1.8e-12 |
+| 0.2 (+2.0% total error) | 40 | 100% | 0% | 0% | 2.435 | [2.114, 2.787] | 1.8e-12 |
+| 0.5 (+11.8% total error) | 40 | 100% | 0% | 0% | 2.540 | [1.751, 3.366] | 5.3e-08 |
+| 1 (+41.4% total error) | 40 | 95% | 5% | 5% | 2.026 | [1.149, 2.538] | 1.7e-07 |
 
-- The ratio falls from 2.46 at 0.5 to 1.64 at 1, where only 65% of regions are bracketed on both sides. Censoring inflates the smoother product's size more than the deconvolved one's, so it biases the ratio towards 1: the fall is a property of the sweep's reach, not a turn in the surcharge, and the affected values are floors.
+- The ratio falls from 2.54 at 0.5 to 2.03 at 1, where only 95% of regions are bracketed on both sides. Censoring inflates the smoother product's size more than the deconvolved one's, so it biases the ratio towards 1: the fall is a property of the sweep's reach, not a turn in the surcharge, and the affected values are floors.
 
 ## At equal absolute RMSE
 
@@ -28,9 +28,9 @@ The two denominators being within a few percent of each other is not an assumpti
 |---|---|---|---|---|---|---|---|
 | 0.0001 | 40 | 100% | 0% | 0% | 1.267 | [1.208, 1.330] | 1.8e-12 |
 | 0.0003 | 40 | 100% | 0% | 0% | 1.366 | [1.274, 1.517] | 1.8e-12 |
-| 0.001 | 40 | 100% | 0% | 0% | 1.676 | [1.426, 2.245] | 1.8e-12 |
-| 0.003 | 40 | 92% | 7% | 7% | 2.032 | [1.625, 2.689] | 6.6e-08 |
-| 0.01 | 40 | 82% | 15% | 18% | 2.110 | [1.454, 2.409] | 6.6e-08 |
+| 0.001 | 40 | 100% | 0% | 0% | 1.642 | [1.381, 2.262] | 1.8e-12 |
+| 0.003 | 40 | 98% | 3% | 3% | 2.078 | [1.661, 2.689] | 5.7e-08 |
+| 0.01 | 40 | 95% | 5% | 3% | 2.392 | [1.732, 2.642] | 1.2e-07 |
 
 ## Against native UTM (gamma = 1.3)
 
@@ -40,14 +40,15 @@ Each HEALPix product's compressed size over the equal-area native crop's, scaled
 |---|---|---|---|---|
 | kappa 0.1 | 40 | 1.05 | 2.05 | neither |
 | kappa 0.2 | 40 | 0.82 | 2.08 | baseline only |
-| kappa 0.5 | 33 | 0.81 | 2.03 | baseline only |
+| kappa 0.5 | 40 | 0.74 | 2.02 | baseline only |
+| kappa 1 | 38 | 0.86 | 1.68 | baseline only |
 | RMSE 0.0001 | 40 | 1.59 | 2.02 | neither |
 | RMSE 0.0003 | 40 | 1.49 | 2.03 | neither |
 | RMSE 0.001 | 40 | 1.23 | 2.03 | neither |
-| RMSE 0.003 | 37 | 0.94 | 2.00 | baseline only |
-| RMSE 0.01 | 33 | 0.78 | 1.74 | baseline only |
+| RMSE 0.003 | 39 | 0.92 | 2.00 | baseline only |
+| RMSE 0.01 | 38 | 0.73 | 1.71 | baseline only |
 
 - **At 0.003, 0.01 the non-deconvolving product is the cheaper representation and the deconvolved one is not**: the surcharge spends the whole margin. This is the storage price of super-resolution, stated as the thing a product designer has to trade away.
 
-- **At kappa = 0.1, the deconvolved product costs 1.96 times the bytes of the non-deconvolving one** for the same relative quality (+0.5% total error each).
-- Across the reportable kappa grid the surcharge runs 1.96 to 2.46.
+- **At kappa = 0.1, the deconvolved product costs 2.01 times the bytes of the non-deconvolving one** for the same relative quality (+0.5% total error each).
+- Across the reportable kappa grid the surcharge runs 2.01 to 2.54.
