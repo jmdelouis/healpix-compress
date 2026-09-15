@@ -7,15 +7,15 @@
 \toprule
 Carrier & $n$ & Floor (RMSE) & $/$ level 20 & Lower floor on \\
 \midrule
-level 20 & 40 & 4.04e-03 & 1.00 & -- \\
+level 20 & 1 & 2.29e-04 & 1.00 & -- \\
 \midrule
-level 19, direct & 40 & 8.87e-03 & 2.25 & 15 \\
-level 19, four-child aggregate & 40 & 8.56e-03 & 2.23 & 25 \\
+level 19, direct & 1 & 1.92e-02 & 83.89 & 0 \\
+level 19, four-child aggregate & 1 & 4.64e-04 & 2.03 & 1 \\
 \bottomrule
 \end{tabular}
 \vspace{3pt}
 \begin{minipage}{\columnwidth}
 \footnotesize
-Median over the 40 regions of the RMSE of each carrier against the same Sentinel-2 observation, on the intersection mask of Section~\ref{sec:common_reference}, each read at the nearest containing cell of its own level. \emph{Direct} evaluates the Clough--Tocher interpolant of the same native samples at the level-19 cell centres; \emph{aggregate} averages the four level-20 children, which is the exact cell-average of the stored carrier and the object Section~\ref{sec:level_choice} measures. The last column counts the regions on which that carrier has the lower floor. The two level-19 carriers are genuinely different objects, differing by 6.2\% of a scene's standard deviation in RMS, 0.27 times the level-19 floor itself, yet their floors agree to 0.2\% in median and to within $5\%$ on 38 of the 40 regions, so the level-19 penalty is a property of the level rather than of which object is called the carrier. The exception is water/lake\_geneva, where the direct transfer fails outright (41 times the aggregate's floor); excluding it the median ratio is 1.002.
+Median over the 1 regions of the RMSE of each carrier against the same Sentinel-2 observation, on the intersection mask of Section~\ref{sec:common_reference}, each read at the nearest containing cell of its own level. \emph{Direct} evaluates the Clough--Tocher interpolant of the same native samples at the level-19 cell centres; \emph{aggregate} averages the four level-20 children, which is the exact cell-average of the stored carrier and the object Section~\ref{sec:level_choice} measures. The last column counts the regions on which that carrier has the lower floor. The two level-19 carriers are genuinely different objects, differing by 196.4\% of a scene's standard deviation in RMS, 43.00 times the level-19 floor itself, yet their floors agree to 4040.2\% in median and to within $5\%$ on 0 of the 1 regions, so the level-19 penalty is a property of the level rather than of which object is called the carrier. The exception is water/lake\_geneva, where the direct transfer fails outright (41 times the aggregate's floor); excluding it the median ratio is nan.
 \end{minipage}
 \end{table}
