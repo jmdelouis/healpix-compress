@@ -1,18 +1,28 @@
 {
- "n": 40,
- "floor20": 0.0040377905635029,
- "floor19_direct": 0.00886528023332115,
- "floor19_agg": 0.0085648379234361,
- "ratio_direct": 2.2527937321411216,
- "ratio_agg": 2.2315614565027175,
- "ratio_direct_over_agg": 1.00225389943648,
- "carrier_rms": 0.00216306759487555,
- "carrier_rms_frac_of_std": 0.061646162812377295,
- "carrier_rms_over_floor19": 0.2686007196504171,
+ "n": 39,
+ "floor20": 0.0040904924605324,
+ "floor19_direct": 0.0087155000140424,
+ "floor19_agg": 0.0086932923111692,
+ "ratio_direct": 2.250726367365106,
+ "ratio_agg": 2.2379378593929027,
+ "ratio_direct_over_agg": 1.0020088465522643,
+ "carrier_rms": 0.0020750950359699,
+ "carrier_rms_frac_of_std": 0.0597803143805953,
+ "carrier_rms_over_floor19": 0.2674483600035684,
  "direct_better_on": 15,
  "within_5pct": 38,
- "max_ratio_direct_over_agg": 41.40206561902525,
- "worst_scene": "region__water__lake_geneva",
- "median_ratio_excluding_failures": 1.0020088465522643,
- "n_failures": 1
+ "max_ratio_direct_over_agg": 1.0507066684323376,
+ "worst_scene": "region__water__lake_baikal",
+ "n_excluded": 1,
+ "excluded_scenes": [
+  "region__water__lake_geneva"
+ ],
+ "excluded": [
+  {
+   "scene": "region__water__lake_geneva",
+   "ratio_direct_over_agg": 41.40206561902525,
+   "ratio_direct": 83.89162610969915
+  }
+ ],
+ "median_ratio_including_excluded": 1.00225389943648
 }

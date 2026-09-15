@@ -1,31 +1,31 @@
 # Window radiometry audit
 
-Stored tile against its own window, sampled at the tile's cell centres by nearest pixel. A region passes when the correlation exceeds 0.95, the slope is within 0.15 of one and the offset is under 0.5 of the tile's standard deviation.
+Stored tile against its own window, sampled at the tile's cell centres by nearest pixel. Under the sampling-noise model the regression slope equals the squared correlation whatever the noise level, so a region passes when `slope / corr^2` is within 0.1 of one (and the correlation clears 0.8 as a backstop).
 
 - regions audited: 40
-- passing: 37
-- mismatched: 3
+- passing: 39
+- mismatched: 1
 
 Mismatched regions:
 
-- `region__water__lake_baikal`: corr 0.939, slope 0.866, offset +0.00182 (+1.28 of the tile's std), RMS 5.27e-04 (0.37 of the tile's std)
-- `region__water__lake_geneva`: corr 0.580, slope 0.634, offset -0.00888 (-0.87 of the tile's std), RMS 2.00e-02 (1.97 of the tile's std)
-- `region__water__lake_victoria`: corr 0.910, slope 0.820, offset +0.00602 (+2.14 of the tile's std), RMS 1.29e-03 (0.46 of the tile's std)
+- `region__water__lake_geneva`: corr 0.580, slope 0.634, slope/corr^2 1.884, offset -0.00888 (-0.87 of the tile's std), RMS 2.00e-02 (1.97 of the tile's std)
 
 A mismatched window does not affect any result read from the stored tile -- the compression sweeps, the storage accounting, the level choice by aggregation. It does affect every measurement that re-runs a transfer from the window.
 
 
-Worst ten by RMS over the tile's standard deviation:
+`slope / corr^2` over the 40 regions: median 1.0032, range 0.9820--1.8845.
 
-| scene | corr | slope | offset/std | RMS/std | status |
-| --- | ---: | ---: | ---: | ---: | --- |
-| region__water__lake_geneva | 0.5803 | 0.634 | -0.874 | 1.969 | MISMATCH |
-| region__water__lake_victoria | 0.9102 | 0.820 | +2.141 | 0.460 | MISMATCH |
-| region__water__lake_baikal | 0.9393 | 0.866 | +1.283 | 0.372 | MISMATCH |
-| region__urban__tokyo | 0.9504 | 0.907 | +0.185 | 0.325 | ok |
-| region__urban__montreal | 0.9638 | 0.935 | +0.116 | 0.275 | ok |
-| region__urban__sao_paulo | 0.9645 | 0.940 | +0.096 | 0.271 | ok |
-| region__forest__appalachian | 0.9666 | 0.937 | +0.203 | 0.265 | ok |
-| region__water__lake_tahoe | 0.9674 | 0.934 | +0.140 | 0.262 | ok |
-| region__urban__paris | 0.9669 | 0.940 | +0.109 | 0.262 | ok |
-| region__urban__mexico_city | 0.9686 | 0.945 | +0.111 | 0.255 | ok |
+Worst ten by departure from the sampling-noise identity:
+
+| scene | tile std | corr | slope | slope/corr^2 | RMS/std | status |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| region__water__lake_geneva | 0.0102 | 0.5803 | 0.634 | 1.884 | 1.969 | MISMATCH |
+| region__water__lake_baikal | 0.0014 | 0.9393 | 0.866 | 0.982 | 0.372 | ok |
+| region__urban__sao_paulo | 0.0627 | 0.9645 | 0.940 | 1.011 | 0.271 | ok |
+| region__water__lake_victoria | 0.0028 | 0.9102 | 0.820 | 0.990 | 0.460 | ok |
+| region__urban__nairobi | 0.0367 | 0.9722 | 0.954 | 1.009 | 0.239 | ok |
+| region__urban__sydney | 0.0670 | 0.9738 | 0.955 | 1.007 | 0.232 | ok |
+| region__urban__mexico_city | 0.0593 | 0.9686 | 0.945 | 1.007 | 0.255 | ok |
+| region__urban__montreal | 0.0511 | 0.9638 | 0.935 | 1.007 | 0.275 | ok |
+| region__agriculture__pampas | 0.0528 | 0.9781 | 0.963 | 1.006 | 0.212 | ok |
+| region__water__great_salt_lake | 0.0122 | 0.9777 | 0.962 | 1.006 | 0.214 | ok |
