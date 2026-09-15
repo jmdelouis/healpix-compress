@@ -11,17 +11,31 @@ $10^{-3}$ and $3\times10^{-3}$ and nowhere else. A reader whose product
 carries a different overhead should read the curve at that value. The
 scenario is easy to state in sizes: if the native product is stored with
 $30\%$ of padding and metadata, the Clough--Tocher carrier is $1.59$
-times its size at the tightest tolerance and $0.81$ times at the loosest,
+times its size at the tightest tolerance and $0.72$ times at the loosest,
 so that HEALPix is the smaller archive only for users who accept an error
 of a quarter of the scene contrast.
 
 \input{tables/table_storage_at_constant_rmse}
 
-At matched reconstruction RMSE (Table~\ref{tab:storage_at_rmse}), the oracle-best per-region ratios show native UTM ahead at the three tightest targets: HEALPix requires $1.23$--$1.59\times$ the operational UTM size at RMSE targets from $10^{-3}$ to $10^{-4}$, with Holm-adjusted $p\le8\times10^{-3}$. The ordering reverses at the loosest target ($10^{-2}$), where HEALPix requires $0.81\times$ the operational UTM size (Holm-adjusted $p=2\times10^{-3}$). Between them, the $3\times10^{-3}$ target lies at parity (median $0.96$) and is the only reported target that does not survive correction ($p^{\mathrm{Holm}}=0.49$); it is reported as inconclusive rather than as demonstrated equivalence, since no equivalence margin has been defined. All eight reported targets are evaluated on all 40 regions.
+At matched reconstruction RMSE (Table~\ref{tab:storage_at_rmse}), the
+oracle-best per-region ratios show native UTM ahead at the three tightest
+targets: HEALPix requires $1.23$--$1.59\times$ the size of the native
+product under the illustrative overhead at RMSE targets from $10^{-3}$ to
+$10^{-4}$, with Holm-adjusted $p\le0.016$. The ordering reverses at the
+loosest target ($10^{-2}$), where HEALPix requires $0.72\times$ that size
+over the 32 regions whose contrast admits the target (Holm-adjusted
+$p<10^{-4}$). Between them, the $3\times10^{-3}$ target lies near parity
+(median $0.92$, $n=37$) and is the only reported target that does not
+survive correction ($p^{\mathrm{Holm}}=0.14$); it is reported as
+inconclusive rather than as demonstrated equivalence, since no equivalence
+margin has been defined. The excluded regions at the two loosest targets
+are those listed in Section~\ref{sec:rd_protocol}; they are not bounds in
+disguise, and Appendix~\ref{app:censoring} shows that treating them as
+such would not change any verdict.
 
 \input{tables/table_error_at_constant_size}
 
-At matched storage budget (Table~\ref{tab:error_at_size}) the same regime-dependent pattern holds, and every target survives correction. At the two more generous reportable budgets ($10\%$ and $5\%$), the reconstruction RMSE of HEALPix is $4.02\times$ and $1.33\times$ that of the operational UTM comparison, so that UTM is the better choice when storage is not tightly constrained. At the tightest budget ($2\%$) the ordering reverses and HEALPix achieves $0.83\times$ the UTM RMSE (Holm-adjusted $p=1\times10^{-4}$).
+At matched storage budget (Table~\ref{tab:error_at_size}) the same regime-dependent pattern holds, and every target survives correction. At the two more generous reportable budgets ($10\%$ and $5\%$), the reconstruction RMSE of HEALPix is $4.01\times$ and $1.33\times$ that of the native product under the illustrative overhead, so that UTM is the better choice when storage is not tightly constrained. At the tightest budget ($2\%$) the ordering reverses and HEALPix achieves $0.83\times$ the UTM RMSE over all 40 regions (Holm-adjusted $p<10^{-4}$).
 
 \begin{figure}[t]
 \centering
@@ -30,7 +44,7 @@ At matched storage budget (Table~\ref{tab:error_at_size}) the same regime-depend
 \label{fig:ratio_boxplots}
 \end{figure}
 
-Figure~\ref{fig:ratio_boxplots} shows this transition directly, together with the region-to-region dispersion behind each median. The spread is asymmetric across land-cover classes: urban regions are the most favourable to UTM at tight targets (median $1.67$ at $10^{-4}$) and among the most favourable to HEALPix at the loosest one ($0.70$ at $10^{-2}$), while water regions produce nearly all the extreme ratios in either direction. These extremes are a property of the scenes. Over near-constant water the compressed files fall below \SI{10}{kB}, where container overhead is a large share of the total and any resampling artefact constitutes most of the remaining signal. Medians rather than means are reported for this reason, and individual water-region ratios are treated as uninformative at the loosest targets. Figure~\ref{fig:rd_comparison} shows the corresponding absolute-value curves, aggregated by median across scenes at each target. The two views are complementary but not interchangeable, since aggregation in absolute bytes mixes scenes of different intrinsic difficulty, which the per-scene-ratio protocol was designed to avoid.
+Figure~\ref{fig:ratio_boxplots} shows this transition directly, together with the region-to-region dispersion behind each median. The spread is asymmetric across land-cover classes: urban regions are the most favourable to UTM at tight targets (median $1.67$ at $10^{-4}$) and, with agriculture, the most favourable to HEALPix at the loosest one ($0.70$ and $0.69$ at $10^{-2}$), while water regions produce nearly all the extreme ratios in either direction. These extremes are a property of the scenes. Over near-constant water the compressed files fall below \SI{10}{kB}, where container overhead is a large share of the total and any resampling artefact constitutes most of the remaining signal. Medians rather than means are reported for this reason, and individual water-region ratios are treated as uninformative at the loosest targets. Figure~\ref{fig:rd_comparison} shows the corresponding absolute-value curves, aggregated by median across scenes at each target. The two views are complementary but not interchangeable, since aggregation in absolute bytes mixes scenes of different intrinsic difficulty, which the per-scene-ratio protocol was designed to avoid.
 
 \begin{figure}[t]
 \centering

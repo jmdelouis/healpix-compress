@@ -2,43 +2,46 @@
 
 \subsection{A Regime-Dependent Trade-off, Conditional on an Assumed Overhead}
 The central result is a reformulation of the question rather than a verdict
-for either grid. The dyadic hierarchy of HEALPix imposes a real intrinsic
-cost: stored raw, the level-20 tile is essentially twice the UTM crop under
+for either grid. The dyadic hierarchy of HEALPix imposes a real cost: stored raw, the level-20 tile is essentially twice the UTM crop under
 the illustrative $\gamma_{\mathrm{tile}}=1.30$
 (Table~\ref{tab:storage_accounting}), and after compression native UTM
-remains the intrinsically more compressible representation at every quality
-tested. Compression narrows the gap steadily, from $+106\%$ to $+6\%$, but
-never reverses it. The operational verdict is therefore decided by whether
-the residual gap exceeds the overhead actually carried by a given native
-layout, i.e.\ by the critical overhead $\gamma_\star$ of
+remains the more compressible representation at every quality tested but
+the loosest. Compression narrows the gap steadily, from $+106\%$ to $-7\%$.
+The operational verdict is therefore decided by whether the residual gap
+exceeds the overhead actually carried by a given native layout, i.e.\ by
+the critical overhead $\gamma_\star$ of
 Table~\ref{tab:gamma_continuous}. At high fidelity $\gamma_\star$ is far
-larger than any plausible overhead. At the two loosest RMSE targets it falls
-to $1.25$ and $1.06$, below the illustrative $1.30$, which is why HEALPix is
-smaller in that scenario; a still plausible native layout with less
-overhead would remove the crossover. Seven of the eight per-target
+larger than any plausible overhead. At $3\times10^{-3}$ it falls to $1.19$,
+below the illustrative $1.30$, so the verdict there depends on the layout;
+at $10^{-2}$ it falls to $0.93$, so the carrier is smaller whatever the
+layout, and only the tolerated error decides. Seven of the eight per-target
 comparisons survive the Holm correction, so the pattern is unlikely to be a
 small-sample artefact. The practical interpretation is modest. A HEALPix
 carrier does not pay for its oversampling to the extent that raw byte
 counts suggest, but compression does not make it free either; it becomes
-competitive in the regime of highest storage pressure because it carries no
-tiling overhead, not because it compresses better.
+competitive in the regime of highest storage pressure, where the redundancy
+it carries is exactly what a rate-adaptive coder discards first, and where
+it also carries no tiling overhead.
 
 \subsection{What Is, and Is Not, a Property of the Grid}
 What this study attributes to HEALPix geometry should be distinguished from
 what it attributes to the rest of the chain, because the two are easily
 conflated. Three findings are properties of the sampling geometry: the raw
-$2.58\times$ oversampling and the $1.99\times$ operational factor that
-follows from it, which are exact; the monotone decrease of the intrinsic
-gap with the target, which an analytic field sampled on both lattices
-reproduces to within $8$--$19\%$ with no content and no support mismatch
-(Section~\ref{sec:support_controls}); and the latitude dependence of the
+$2.58\times$ oversampling, and the $1.99\times$ that follows from it under
+the illustrative $30\%$ native-layout overhead, both exact; the monotone decrease of the
+overhead-free carrier/native size ratio with the target, which an analytic field sampled on both lattices,
+with no content, no support mismatch and no transfer, reproduces in shape
+and to within $8$--$27\%$ in magnitude (Section~\ref{sec:support_controls}); and the latitude dependence of the
 belt-versus-cap contrast, which follows the cell anisotropy and is
 exploratory. Three findings are not. The crossover at a given overhead
 belongs to the transfer: it exists for a Clough--Tocher carrier and for no
 other transfer tested, by a factor of two in bytes
-(Section~\ref{sec:transfer_cost}). The transfer-and-read floor against the
-observation is attributable two thirds to the reader and one third to the
-transfer, and not at all to the grid (Section~\ref{sec:operator}). The
+(Section~\ref{sec:transfer_cost}), and to the codec: four of the five
+reproduce it and ZFP does not (Section~\ref{sec:same_codec}). The
+transfer-and-read floor against the
+observation is removable by two thirds, in mean squared error, by changing
+the reading operator alone, so a substantial part of it is caused by the
+read rather than by the grid (Section~\ref{sec:operator}). The
 codec ranking is a property of these codecs on this imagery, identical on
 both grids, with no demonstrated quadtree effect
 (Section~\ref{sec:why_quadtree}). A reader interested in HEALPix as such
@@ -63,8 +66,9 @@ Appendix~\ref{app:limitations}.
 
 \emph{Transfer.} The crossover is a result for a carrier populated by a
 transfer in the smoothness class of Clough--Tocher: the PSF-aware and
-inverse-distance transfers cost $1.2$ to $2.2$ times the bytes at equal
-accuracy and leave HEALPix ahead at no target
+inverse-distance transfers cost $1.2$ to $2.4$ times the bytes at the same
+coding RMSE against their own uncompressed carriers, and leave HEALPix
+ahead at no target
 (Section~\ref{sec:transfer_cost}). A non-deconvolving transfer of the same
 smoothness class has not been tested, and the mechanism is consistent with
 energy compaction rather than demonstrated to be it.
@@ -78,8 +82,9 @@ matched to the PSF transfer has not been swept.
 
 \emph{Footprint and geometry.} The equal-area crop and the rotated tile
 overlap over $74$--$83\%$ of their extent. One analytic control with no
-mismatch reproduces the intrinsic gap to within $8$--$19\%$; the two subset
-controls cover ten and four regions. The mismatch is bounded rather than
+mismatch reproduces the decline of the gap and its magnitude to within
+$8$--$27\%$, without attributing the residual; the two subset controls
+cover ten and four regions. The mismatch is bounded rather than
 eliminated, and its geometry is measured from cell centres.
 
 \emph{Dataset generality.} Sentinel-2 B04 at \SI{10}{m}, one acquisition per

@@ -417,32 +417,46 @@ def table_latitude(rows, index):
 
 
 def table_fixed_codec(hpx, utm, scenes, rmse_col, codecs):
-    """Same codec on both grids -- isolates the grid effect from codec selection."""
+    """Same codec on both grids -- isolates the grid effect from codec selection.
+
+    The same bracketing rule as the oracle tables applies, codec by codec:
+    a (region, target) pair enters only if that codec brackets the target on
+    both grids, and the number of such regions is printed with each median.
+    """
     body, out = [], {}
     for c in codecs:
         cells = []
         for target in cfg.TARGET_RMSE:
             ratios = []
             for s in scenes:
-                h = st.interp_size_at_rmse(hpx[(hpx.scene == s) & (hpx.codec == c)],
-                                           target, rmse_col)
-                u = st.interp_size_at_rmse(utm[(utm.scene == s) & (utm.codec == c)],
-                                           target)
-                if np.isfinite(h) and np.isfinite(u) and u > 0:
-                    ratios.append(h / (u * cfg.GAMMA_UTM))
+                dh = hpx[(hpx.scene == s) & (hpx.codec == c)]
+                du = utm[(utm.scene == s) & (utm.codec == c)]
+                h = st.interp_size_at_rmse(dh, target, rmse_col)
+                u = st.interp_size_at_rmse(du, target)
+                if not (np.isfinite(h) and np.isfinite(u) and u > 0):
+                    continue
+                if st.REQUIRE_ORACLE_BRACKETED and not (
+                        st.bracketed_size_at_rmse(dh, target, rmse_col)
+                        and st.bracketed_size_at_rmse(du, target)):
+                    continue
+                ratios.append(h / (u * cfg.GAMMA_UTM))
             t = st.paired_ratio_test(ratios)
             out.setdefault(c, {})[f"{target:g}"] = t
-            cells.append(f"{_fmt(t['median'])}" if t["n"] >= cfg.MIN_SCENES else "--")
+            cells.append(f"{_fmt(t['median'])} ({t['n']})"
+                         if t["n"] >= cfg.MIN_SCENES else "--")
         body.append(f"\\texttt{{{c.replace('_', chr(92)+'_')}}} & " + " & ".join(cells)
                     + r" \\")
     header = "Codec & " + " & ".join(RMSE_LABEL.get(t, f"${t:g}$")
                                      for t in cfg.TARGET_RMSE) + r" \\"
     tex = _table(
-        "Same-codec control",
+        "Same-codec comparison at constant reconstruction RMSE",
         "tab:fixed_codec", "l" + "r" * len(cfg.TARGET_RMSE), header, body,
         note=(r"Median per-region HPX/UTM compressed-size ratio at each target "
-              r"RMSE when the \emph{same} codec is used on both grids (the UTM "
-              r"side includes $\gamma_{\mathrm{tile}}$). It complements the "
+              r"RMSE when the \emph{same} codec is used on both grids, with "
+              r"the number of regions in parentheses; the UTM side includes "
+              r"$\gamma_{\mathrm{tile}}$. A region enters a cell only if that "
+              r"codec brackets the target with two measured points on both "
+              r"grids (Section~\ref{sec:rd_protocol}). Complements the "
               r"oracle-best comparison of Table~\ref{tab:storage_at_rmse}, "
               r"which lets codec selection differ between grids."))
     return tex, out

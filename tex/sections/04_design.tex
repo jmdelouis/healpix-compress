@@ -56,25 +56,36 @@ size.
 The comparisons interpolate $\log(\text{size})$ against $\log(\text{RMSE})$,
 and the inverse, directly on the sorted and de-duplicated sweep points.
 Interpolating through a dominated configuration would produce a target that
-no real configuration achieves. We verified that this does not occur:
+no real configuration achieves. We verified that this does not matter:
 restricting each of the 400 (region, codec) sweeps to its Pareto frontier
-removes two dominated points in total, both on the HEALPix side, and changes
-no reported median, range or $p$-value. Two further rules govern the
+removes 44 dominated points, almost all of them at the coarse end of the
+extended ladders described below, and changes no reported median; at the
+$10^{-3}$ target it admits one further region and moves the adjusted
+$p$-value from $0.016$ to $0.010$. Three further rules govern the
 evaluation of targets. First, the curve is treated as the constrained
 problem $R(D)=\min\{S(q): d(q)\le D\}$: when the coarsest setting of a codec
 is already more accurate than the target, that setting is admissible and its
-size is reported as a bound, rather than the region being dropped for lack
-of a bracketing pair. An earlier version of the analysis required bracketing
-and consequently discarded four to six regions at the two loosest RMSE
-targets, which were precisely the smoothest scenes and the targets at which
-the verdict changes sides. Second, the fraction of regions for which the
-target is bracketed on both grids is reported per target, and any target
-below $75\%$ is withheld: the $40\%$ and $20\%$ storage budgets ($0\%$ and
-$18\%$ bracketed) are excluded on this criterion, as they would be sets of
-bounds rather than estimates. Every target reported below is evaluated on
-all 40 regions, with $85$--$100\%$ bracketing. No extrapolation beyond the
-measured range of a codec is performed, and an interpolated point remains an
-estimate between two measured configurations.
+size is a bound on what the codec could achieve, not an estimate of it.
+Second, a (region, target) pair enters the paired comparison only when the
+codec that the oracle selects brackets the target with two measured points
+on both grids, so that every ratio tested is an interpolated estimate. This
+rule is stricter than requiring some codec to bracket the target, because
+the oracle takes the smallest admissible size, and a censored codec can be
+the smallest. To satisfy it, every ladder was extended at its coarse end
+(Appendix~\ref{app:censoring}) until the only pairs that failed were those
+whose scene has no contrast left to lose at the target: at $10^{-2}$ the
+eight excluded regions are exactly those whose standard deviation is at
+most $1.22$ times the target (six lakes and two smooth forests), and every
+included region has at least $1.36$ times it; a constant fill already meets
+such a target, and the comparison is void there. Excluded pairs are counted,
+never bounded, and the $n$ of every table is the number that remain. Third,
+a target for which fewer than $75\%$ of the regions qualify is withheld:
+the $40\%$ and $20\%$ storage budgets ($0\%$ and $65\%$) are excluded on
+this criterion. Every target reported below is evaluated on 32 to 40
+regions. Appendix~\ref{app:censoring} reports, for each target, how the
+verdict would change if the censored pairs were instead kept as bounds. No
+extrapolation beyond the measured range of a codec is performed, and an
+interpolated point remains an estimate between two measured configurations.
 
 Target RMSE values range from $10^{-4}$ to $10^{-2}$ (normalised reflectance
 units). Storage budgets range from $2\%$ to $40\%$ of a single shared
@@ -97,7 +108,7 @@ or Zarr archive need not carry it at all. We adopt a commonly used
 illustrative value, $\gamma_{\mathrm{tile}}=1.30$, as a stated modelling
 assumption for one layout rather than a value re-measured from complete
 product files (Section~\ref{sec:limitations}). The
-$\gamma_{\mathrm{tile}}=1$ comparison is the grid-intrinsic result, and
+$\gamma_{\mathrm{tile}}=1$ comparison is the overhead-free result, and
 $1.30$ is one scenario among others.
 
 For \emph{uncompressed} storage (Table~\ref{tab:storage_accounting}),

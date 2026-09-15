@@ -1,54 +1,52 @@
 \section{Conclusion}
 This paper asked whether Sentinel-2 imagery stored on the HEALPix level next
-finer than its native resolution, which is necessary to avoid loss of
-spatial detail but nominally oversamples the data by a factor of
-$\approx2.58$ in cell area, costs more to store once compression and the
-storage layout of the native product are both taken into account. Using
-only established, independently published compressors (ZFP, SZ3, JPEG~2000,
-JPEG~XL and a DWT+Zstandard baseline), no HEALPix-specific coding, and an
-equal-area protocol that crops the native UTM raster to a square of the same
-nominal ground area as each HEALPix tile, the answer on 40 regions spanning
-four land-cover classes and both HEALPix cell-shape regimes is that native
-UTM is intrinsically the more compressible representation throughout, and
-that whether the carrier becomes operationally competitive depends on the
-tolerated distortion and on the overhead of the native layout.
+finer than its native resolution, which avoids the nominal undersampling
+implied by the \SI{12.4}{m} level-19 cell but oversamples the data by a
+factor of $\approx2.58$ in cell area, costs more to store once compression
+and the storage layout of the native product are both taken into account.
+Using only established, independently published compressors (ZFP, SZ3,
+JPEG~2000, JPEG~XL and a DWT+Zstandard baseline), no HEALPix-specific
+coding, and an equal-area protocol that crops the native UTM raster to a
+square of the same nominal ground area as each HEALPix tile, the answer on
+40 regions spanning four land-cover classes and both HEALPix cell-shape
+regimes separates into four statements at four levels of the chain.
 
-The answer in sizes is this (Table~\ref{tab:headline}). Before
-compression, the carrier tile is by construction $2.584\times$ the
-equal-area UTM crop. After compression to the same reconstruction error,
-and with no overhead charged to either side, the Clough--Tocher tile is
-$2.06\times$ the native square at an RMSE of $10^{-4}$ and $1.06\times$ at
-$10^{-2}$, the class medians lying within $2.01$--$2.17$ and $0.91$--$1.24$
-respectively; the same tile filled by the PSF-aware transfer is
-$2.3$--$2.7\times$ the native square at every target, and the
-inverse-distance tile $2.3$--$2.5\times$. The intrinsic gap of the
-Clough--Tocher carrier thus decreases monotonically with looser targets,
-from $+106\%$ to $+6\%$, which corresponds to a critical overhead
-$\gamma_\star$ falling from $2.06$ to $1.06$. This decrease is a property of the sampling geometry
-rather than of scene content: an analytic field with the spectrum and
-instrument width fitted to the imagery, sampled by both lattices with no
-support mismatch and no content difference, reproduces the gap to within
-$8$--$19\%$ at every target. At the illustrative overhead
-$\gamma_{\mathrm{tile}}=1.30$, native UTM remains smaller at the three
-tightest RMSE targets and the two looser budgets (median ratios
-$1.23$--$1.59$ and $1.33$--$4.02$), HEALPix is smaller at the loosest RMSE
-target ($0.81$) and the tightest budget ($0.83$), and seven of the eight
-paired tests survive the Holm correction ($p\le8\times10^{-3}$, $n=40$). The
-compressed size of HEALPix falls below the operational comparison only where
-the real overhead of the native product exceeds $\gamma_\star$, which is a
-statement about product layout rather than about UTM as a coordinate
-system.
+\emph{Geometry.} Level 20 carries a fixed sampling-density penalty of
+$2.584\times$ relative to the native \SI{10}{m} raster, exact and identical
+for every region, which $30\%$ of native-layout overhead reduces to
+$1.99\times$ but does not remove.
 
-The crossover is a result for one transfer operator and does not survive
-the others tested. The carrier was populated with Clough--Tocher
+\emph{Compression.} That penalty is largely redundancy, and lossy coding
+removes most of it (Table~\ref{tab:headline}). With no overhead charged to
+either side, the Clough--Tocher tile is $2.06\times$ the native square at an
+RMSE of $10^{-4}$ and $0.93\times$ at $10^{-2}$, the class medians lying
+within $2.01$--$2.17$ and $0.89$--$1.10$; the gap therefore decreases
+monotonically from $+106\%$ to $-7\%$, which is a critical overhead
+$\gamma_\star$ falling from $2.06$ to $0.93$. The decrease is a property of
+the sampling geometry rather than of scene content: an analytic field with
+the spectrum and instrument width fitted to the imagery, sampled by both
+lattices with no support mismatch, no content difference and no transfer,
+reproduces its decline and its magnitude to within $8$--$27\%$, though the
+residual is not attributed to any one of the three. At the illustrative
+overhead $\gamma_{\mathrm{tile}}=1.30$, native UTM remains smaller at the
+three tightest RMSE targets and the two looser budgets (median ratios
+$1.23$--$1.59$ and $1.33$--$4.01$), HEALPix is smaller at the loosest RMSE
+target ($0.72$) and the tightest budget ($0.83$), and seven of the eight
+paired tests survive the Holm correction; the exception is the
+$3\times10^{-3}$ target, where the two grids are not separated.
+
+\emph{Processing chain.} The crossover is a result for one transfer
+operator and one class of codec, and does not survive the alternatives
+tested. The carrier was populated with Clough--Tocher
 interpolation, chosen before any storage figure was measured
 (Section~\ref{sec:resampler}); rebuilding the same tiles with a PSF-aware or
-an inverse-distance transfer costs $1.2$ to $2.2$ times the bytes at equal
-accuracy and leaves HEALPix ahead at no target
+an inverse-distance transfer costs $1.2$ to $2.4$ times the bytes at the
+same coding RMSE against their own uncompressed carriers, and leaves
+HEALPix ahead at no target
 (Section~\ref{sec:transfer_cost}). For an archive the distinction is
 concrete: a Clough--Tocher carrier compressed to a quarter of the scene
 contrast is about the size of the native product, whereas a PSF-aware
-carrier at the same error is about $2.3$ times it, and what the archive
+carrier at the same error is about $2.2$ times it, and what the archive
 buys for the difference is a sharper product rather than a smaller one.
 Only a few percent of this cost is the price of deconvolution; the remainder is the price of leaving a $C^1$
 curvature-minimising interpolant, whose output a lossy coder can discard far
@@ -56,10 +54,17 @@ more of at equal error, and the observations are consistent with energy
 compaction rather than total information content as the mechanism. The
 observed crossover is therefore a result for a carrier populated by a
 transfer in the smoothness class represented here by Clough--Tocher, and
-should not be read as a transfer-independent property of HEALPix. On the
+should not be read as a transfer-independent property of HEALPix: with no
+overhead charged to either side the PSF-aware tile stays at $2.2$--$2.7$
+times the native square over the whole error range and the
+inverse-distance tile at $2.1$--$2.5$, against $2.06$ falling to $0.93$ for
+Clough--Tocher. On the
 codec side, JPEG~2000 and JPEG~XL lead on both grids alike, which we
 interpret as a property of these codecs on this imagery rather than of the
-quadtree.
+quadtree; held fixed on both grids, four of the five reproduce the
+regime-dependent verdict and ZFP, whose fixed-accuracy block transform
+cannot decline to spend bits on redundancy, does not
+(Section~\ref{sec:same_codec}).
 
 The verdict also depends on which reconstruction reference is accepted, and
 both are reported. Against the same Sentinel-2 observation, the uncompressed
@@ -67,28 +72,39 @@ carrier already differs from the native product by $4.0\times10^{-3}$ in
 median under the nearest-cell read, about $10\%$ of the standard deviation
 of a scene, and no swept configuration reaches four of the five RMSE targets
 against it; the $2\%$-budget ratio changes from $0.83$ to $1.44$ in favour
-of native UTM. This floor belongs to the transfer-and-read pair rather than
-to the grid: a read that interpolates within the carrier lattice removes two
-thirds of its variance on the same tiles (Table~\ref{tab:reader_floor}), and
-when the sweep is re-scored through that read the lead of native UTM narrows
-to $1.12$ without reversing, the loosest RMSE target reaches parity ($1.02$,
-$n=40$), and the residual floor of $1.9\times10^{-3}$ is due to the
-transfer. Read against the latent scene instead, the reference that applies
-when the carrier is used as if it were the scene, HEALPix becomes the
-smaller representation while the compression error is still $0.13$ to
-$0.50$ of the error the product already carries, in three of the four scene
-classes (Appendix~\ref{app:error_budget}). The practical conclusion is
-conditional and should be stated as such: a HEALPix carrier is competitive
-at aggressive compression when the HEALPix cube is itself the reference
-product, and is not when the native product remains the ground truth and
-the transfer error is charged to it.
+of native UTM. Much of this floor belongs to the reading operator rather
+than to the grid: a read that interpolates within the carrier lattice
+removes $66\%$ of its mean squared error on the same tiles
+(Table~\ref{tab:reader_floor}), and when the sweep is re-scored through that
+read the lead of native UTM at the $2\%$ budget narrows to $1.12$ without
+reversing, while the loosest RMSE target, the only one that read makes
+reportable, turns in favour of HEALPix ($0.93$ at the illustrative overhead,
+$1.20$ overhead-free). The residual floor of $1.9\times10^{-3}$ is what the
+transfer and the interpolating read cost together. Read against the latent
+scene instead, the reference that applies when the carrier is used as if it
+were the scene, HEALPix becomes the smaller representation while the
+compression error is still $0.13$ to $0.50$ of the error the product already
+carries, in three of the four scene classes
+(Appendix~\ref{app:error_budget}). The practical conclusion is conditional
+and should be stated as such: a HEALPix carrier is competitive at aggressive
+compression when the HEALPix cube is itself the reference product, and is
+not, at any storage budget, when the native product remains the ground truth
+and the transfer error is charged to it.
 
-In summary, an oversampled HEALPix carrier does not intrinsically compress
-Sentinel-2 imagery more efficiently than its native UTM representation, but
-its oversampling penalty decreases under lossy compression, and whether it
-becomes operationally competitive is determined by the tolerated
-distortion, the relative storage overhead of the two layouts, the transfer
-used to build the carrier and the reference used to evaluate it. The
+\emph{Product architecture.} Whether the carrier is the smaller archive is
+therefore not a property of either grid but a comparison between two
+measured quantities: the overhead the native product actually carries, and
+$\gamma_\star(e)$ at the distortion the archive tolerates. At $10^{-2}$ that
+threshold has fallen below one, so the carrier is smaller before any
+overhead is charged; at $10^{-4}$ it stands at $2.06$, an overhead we are
+not aware of any measurement supporting.
+
+In summary, oversampling at HEALPix level 20 introduces a large raw storage
+penalty, but most of that penalty is redundancy that lossy compression
+removes, and whether the carrier becomes operationally competitive is
+determined jointly by the tolerated distortion, the transfer that populates
+it, the codec and reading operator through which it is used, and the
+relative storage overhead of the two layouts. The
 critical-overhead formulation expresses this trade-off without privileging
 any storage architecture, and it is the form in which we consider the
 result should be used. The evidence is from Sentinel-2 B04 at \SI{10}{m},

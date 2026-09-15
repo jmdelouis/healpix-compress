@@ -133,7 +133,10 @@ def checks(tex: str):
     out += level_and_reader_checks()
     out += gamma_continuous_checks()
     out += headline_checks()
+    out += censoring_checks()
+    out += same_codec_checks()
     out += consistency_checks(tex)
+    out += wording_checks(tex)
     return out, survivors
 
 
@@ -210,6 +213,92 @@ def headline_checks():
                     f"${max(v['psf'] for v in vals)/gamma:.1f}$",
                     "Section V-B, illustrative overhead"))
     return out
+
+
+def censoring_checks():
+    """Everything Section IV-B, Section V-C and Appendix B-D say about censoring.
+
+    The exclusion counts and the bracketed-only medians come from the same
+    two sweeps as the tables, through censoring_sensitivity.py, so a ladder
+    extended (or not) on one side cannot drift away from the prose.
+    """
+    out = []
+    try:
+        doc = json.loads((cfg.RESULTS_DIR / "paper_numbers_self.json").read_text())
+    except Exception as exc:                              # noqa: BLE001
+        return [(f"censoring counts  [skipped: {type(exc).__name__}]", "", str(exc)[:60])]
+    per = {}
+    for t in doc["targets"]:
+        if t["kind"] != "rmse":
+            continue
+        per[float(t["target"])] = len(t.get("excluded", []))
+    ts = sorted(per)
+    if ts:
+        out.append(("regions excluded at the loosest RMSE target",
+                    str(per[ts[-1]]), "oracle codec censored on a grid"))
+        out.append(("regions remaining at the loosest RMSE target",
+                    str(40 - per[ts[-1]]), "n of table_storage_at_rmse"))
+        if len(ts) >= 3:
+            out.append(("exclusion counts, three loosest, 'one/three/eight' form",
+                        f"one at $10^{{-3}}$, three at $3\\times10^{{-3}}$ and "
+                        f"{'eight' if per[ts[-1]] == 8 else per[ts[-1]]} at $10^{{-2}}$",
+                        f"{per[ts[-3]]}, {per[ts[-2]]}, {per[ts[-1]]} excluded"))
+    d = cfg.RESULTS_DIR / "censoring_digest.json"
+    if d.exists():
+        cz = json.loads(d.read_text())
+        loose = cz.get("rmse:0.01")
+        if loose:
+            lo, hi = loose.get("median_lo"), loose.get("median_hi")
+            if lo and hi:
+                out.append(("censoring interval at the loosest target",
+                            f"$[{lo:.2f}, {hi:.2f}]$",
+                            "median under any reading of the bounds"))
+    return out
+
+
+def same_codec_checks():
+    """The per-codec medians Section V-E quotes, from the same digest as its table."""
+    try:
+        doc = json.loads((cfg.RESULTS_DIR / "paper_numbers_self.json").read_text())
+        fc = doc["fixed_codec"]
+    except Exception as exc:                              # noqa: BLE001
+        return [(f"same-codec medians  [skipped: {type(exc).__name__}]", "", str(exc)[:60])]
+    loose = f"{max(cfg.TARGET_RMSE):g}"
+    out = []
+    for codec in ("jpegxl_lossy", "jpeg2000_lossy", "dwt_zstd", "sz3"):
+        t = fc.get(codec, {}).get(loose)
+        if t and np.isfinite(t.get("median", np.nan)):
+            out.append((f"same-codec median @ loosest, {codec}",
+                        _fmt(t["median"]), f"n={t['n']}"))
+    z = fc.get("zfp", {})
+    meds = [z[k]["median"] for k in z if np.isfinite(z[k].get("median", np.nan))]
+    if meds:
+        out.append(("same-codec range, zfp (no crossover)",
+                    f"${min(meds):.2f}$--${max(meds):.2f}$",
+                    "over the five RMSE targets"))
+    return out
+
+
+# Phrases the revision removed. They are checked rather than trusted because
+# each was a claim the results do not support: an exact level-19 carrier, a
+# variance decomposition of the floor, a bound on the support mismatch, and
+# a grid comparison that is really a carrier comparison.
+BANNED = [
+    ("drop-in carrier", "kept: say what the measurement shows"),
+    ("that the same transfer would have produced", "four-child averaging is not a level-19 transfer"),
+    ("two thirds of the variance", "use: removes 66% of the transfer-and-read MSE"),
+    ("grid-intrinsic", "use: overhead-free carrier/native"),
+    ("at equal accuracy", "use: at the same coding RMSE against each transfer's own carrier"),
+    ("at the same accuracy", "use: at the same coding RMSE against each transfer's own carrier"),
+    ("less than a fifth", "the control does not decompose the residual"),
+    ("operational UTM size", "use: the native product under the illustrative overhead"),
+]
+
+
+def wording_checks(tex):
+    """Report every retired phrase that has come back into the manuscript."""
+    return [(f"retired phrase: {phrase!r}", "ABSENT", why)
+            for phrase, why in BANNED if phrase in tex]
 
 
 def consistency_checks(tex):

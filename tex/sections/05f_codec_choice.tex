@@ -2,9 +2,25 @@
 \label{sec:codec_choice}
 \input{tables/table_codec_ranking}
 
-Table~\ref{tab:codec_ranking} aggregates every matched-quality and matched-size operating point on the HEALPix side and ranks the codecs by how often each is the best choice. The 400 operating points comprise the 40 regions at all ten swept targets, including the two storage budgets withheld from Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} for insufficient bracketing, since a per-point ranking does not require the target to be bracketed on both grids. JPEG~2000 is best at 166 points and JPEG~XL at 149, against 37 for SZ3, 35 for ZFP and 13 for the DWT+Zstandard baseline; the mean ranks are $1.85$, $2.25$, $2.71$, $4.48$ and $3.60$. Every codec is evaluable at almost every point, so the ordering is not an artefact of sweep coverage. The robust conclusion is that JPEG~2000 and JPEG~XL form the leading pair, rather than a strict ordering between the two: the counts are descriptive, the points are not independent (the same regions recur across targets), and no BD-rate summary, which would order the pair properly, has been computed.
+Table~\ref{tab:codec_ranking} aggregates every matched-quality and
+matched-size operating point on the HEALPix side and ranks the codecs by how
+often each is the best choice. The 400 operating points comprise the 40
+regions at all ten swept targets, including the two storage budgets withheld
+from Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} for
+insufficient bracketing, since a per-point ranking does not require the
+target to be bracketed on both grids. JPEG~2000 is best at 196 points and
+JPEG~XL at 131, against 35 for ZFP, 28 for SZ3 and 10 for the DWT+Zstandard
+baseline; the mean ranks are $1.63$, $2.35$, $4.55$, $2.78$ and $3.66$.
+Every codec is evaluable at almost every point, so the ordering is not an
+artefact of sweep coverage. The robust conclusion is that JPEG~2000 and
+JPEG~XL form the leading pair, rather than a strict ordering between the
+two: the counts are descriptive, the points are not independent (the same
+regions recur across targets), and no BD-rate summary, which would order the
+pair properly, has been computed. This ranking is a statement about codecs,
+not about grids: the same pair leads on the native UTM side, and
+Section~\ref{sec:same_codec} reports what each codec says about the grid
+comparison when it is held fixed on both sides.
 
-The fixed-codec view of the same comparison, the byte-level audit of every
-encoded point, and the meaning of ``lossless'' after the 16-bit
-requantisation required by the image codecs are given in
+The byte-level audit of every encoded point and the meaning of ``lossless''
+after the 16-bit requantisation required by the image codecs are given in
 Appendix~\ref{app:codec_audit}.

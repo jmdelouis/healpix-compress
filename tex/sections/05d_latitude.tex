@@ -9,22 +9,23 @@ polar caps. That equal-area pixelizations obtain their area guarantee at the
 cost of a latitude-dependent shape distortion is a general property of
 discrete global grids~\cite{kmoch2022distortions}; the narrower question
 here is whether this distortion reaches the storage result.
-Table~\ref{tab:latitude_effect} correlates the \emph{intrinsic}
+Table~\ref{tab:latitude_effect} correlates the overhead-free
 ($\gamma_{\mathrm{tile}}=1$) ratio of each region with $|\mathrm{latitude}|$
 and compares the two regimes directly.
 
 These tests form a second family and carry their own Holm correction across
-the eight reported targets. One association survives it: at the tightest
-storage budget the equatorial belt reaches a median intrinsic ratio of
-$0.95$ against $1.21$ in the caps ($\rho=0.50$,
-$p^{\mathrm{Holm}}_\rho=0.009$; belt-versus-cap $p^{\mathrm{Holm}}=0.008$).
-Two further contrasts fall just outside the threshold and are reported as
-such rather than as findings: the loosest RMSE target, $0.97$ against $1.20$
-($p^{\mathrm{Holm}}=0.077$), and the $5\%$ budget
-($p^{\mathrm{Holm}}=0.077$). Nothing at the three tightest RMSE targets
+the eight reported targets. Two associations survive it, both at a matched
+storage budget. At the tightest budget the equatorial belt reaches a median
+overhead-free ratio of $0.95$ against $1.21$ in the caps ($\rho=0.50$,
+$p^{\mathrm{Holm}}_\rho=0.009$; belt-versus-cap $p^{\mathrm{Holm}}=0.008$),
+and at the $5\%$ budget $2.67$ against $2.81$ (belt-versus-cap
+$p^{\mathrm{Holm}}=0.039$, with the rank correlation itself falling outside
+the threshold at $0.128$). One further contrast points the same way without
+reaching it: the loosest RMSE target, $0.90$ against $1.02$
+($p^{\mathrm{Holm}}=0.188$). Nothing at the three tightest RMSE targets
 approaches significance. This is not read as evidence of no influence, but
 as an indication that any influence is smaller than this sample can resolve
-where the intrinsic gap is large.
+where the gap is large.
 
 Taken at face value, the surviving association indicates that the regime in
 which HEALPix becomes competitive at a given overhead is reached in the belt

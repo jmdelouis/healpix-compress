@@ -72,9 +72,11 @@ $74$--$83\%$ of the crop ($81\%$ median), an intersection-over-union of
 about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}); the mismatch is not
 negligible. Section~\ref{sec:support_controls} bounds its contribution by
 replacing the scene with an analytic field that both geometries sample
-identically. That control reproduces the measured intrinsic gap to within
-$8$--$19\%$ at every target, so that mismatch and scene content together
-account for less than a fifth of the effect. The mismatch bears more
+identically. That control reproduces the monotonic decline of the measured
+gap and its approximate magnitude, to within $8$--$27\%$; the residual
+cannot be uniquely attributed to the mismatch, to scene content or to the
+transfer, but sampling geometry alone suffices to produce the effect. The
+mismatch bears more
 directly on cross-grid comparisons of reconstruction \emph{error}, which is
 why the common-reference evaluation of Section~\ref{sec:common_reference} is
 restricted to the intersection.
@@ -168,7 +170,13 @@ Each codec is swept over its own native quality parameter (tolerance for
 ZFP, absolute error bound for SZ3, quality/rate for JPEG~2000, distance/level
 for JPEG~XL, quantisation depth for DWT+Zstandard) to trace a full
 rate--distortion curve; JPEG~2000 and JPEG~XL contribute one lossless point
-each. Sweeping the parameter deliberately bypasses the rate control of each
+each. Each ladder runs from the near-lossless end to settings coarse enough
+that the loosest target of Section~\ref{sec:rd_protocol} is exceeded on
+every region whose contrast permits it (ZFP tolerance up to $3$, SZ3 error
+bound up to $1$, JPEG~2000 compression ratio up to $4000$, JPEG~XL down to
+its coarsest quality level and largest Butteraugli distance, DWT+Zstandard
+down to two quantisation bits), for a total of 71 operating points per
+region and grid. Sweeping the parameter deliberately bypasses the rate control of each
 codec, in JPEG~2000 the quality layers and the post-compression optimisation
 that populates them, which are a research subject in their own
 right~\cite{auli2008scalability}. A rate controller targets a budget,

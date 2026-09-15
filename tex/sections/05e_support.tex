@@ -44,31 +44,36 @@ from a product that does not represent it.
 \input{tables/table_support_controls}
 
 Table~\ref{tab:support_controls} reports the outcome. With no content
-difference between the two supports, the intrinsic ratio decreases
-monotonically from $2.22$ at the $10^{-4}$ target to $1.18$ at $10^{-2}$,
-against $2.06$ to $1.06$ measured on the imagery. The control thus tracks
-the intrinsic gap to within $8$--$19\%$ at the five targets and reproduces
-its decline with the target. Under the same $\gamma_{\mathrm{tile}}=1.30$ it
-also reproduces the change of sides, reaching $0.94$ at the loosest target
-where the imagery reaches $0.81$. The monotone decline of
-Section~\ref{sec:rd_main} is therefore a property of the sampling geometry
-rather than of the content of the scenes. The control does not decompose
-the contributions of support, transfer and scene statistics, and at the two
-intermediate targets it departs from the imagery by more than the effect
-under study, so it is corroboration rather than a bound. The synthetic
-ratio lies above the measured one at all five targets, by $8\%$ to $19\%$
-and always in the same direction, so that real imagery is slightly more
-favourable to HEALPix than a Gaussian field with the same spectrum. Scene
-structure and support mismatch both contribute to this residual; what the
-control establishes is that together they account for less than a fifth of
-the effect. For a reader without a signal-processing background, the
-finding can be put as follows: a made-up image with the same texture
-statistics as Sentinel-2, sampled by the two grids so that neither
-covers different ground from the other, shows the same size penalty for
-HEALPix and the same decline of that penalty with the tolerated error, so
-the penalty comes from sampling the same field $2.58$ times more densely
-than necessary, not from the scenes chosen or from the imperfect overlap
-of the two footprints. Two further controls on subsets, reported in
+difference between the two supports, the ratio decreases monotonically
+from $2.22$ at the $10^{-4}$ target to $1.18$ at $10^{-2}$, against $2.06$
+to $0.93$ measured on the imagery. The control thus reproduces the
+monotonic decline of the gap and its approximate magnitude: it tracks the
+measured ratio to within $8$--$27\%$ at the five targets, closely at the
+tight end and less so at the loose end, where its own sweep, run with the
+original ladders rather than the extended ones of
+Section~\ref{sec:codecs}, is partly censored ($n=37$ and $36$). Under the
+same $\gamma_{\mathrm{tile}}=1.30$ it also reproduces the change of sides,
+reaching $0.91$ at the loosest target where the imagery reaches $0.72$.
+Sampling geometry alone is therefore sufficient to produce a gap of this
+size and this dependence on the target. What the control does not do is
+decompose the residual. The synthetic field is evaluated directly at the
+cell centres, so the transfer step of the real chain is absent from it, as
+are the content difference and the support mismatch; the synthetic ratio
+lies above the measured one at all five targets, by $8\%$ to $27\%$ and
+always in the same direction, so that real imagery passed through the
+Clough--Tocher transfer is more favourable to HEALPix than a Gaussian field
+with the same spectrum sampled without one, but that residual cannot be
+uniquely attributed to support mismatch, scene statistics or the transfer
+operator, and at the two intermediate targets it exceeds the effect under
+study, so the control is corroboration rather than a bound. For a reader
+without a signal-processing background, the finding can be put as follows:
+a made-up image with the same texture statistics as Sentinel-2, sampled by
+the two grids so that neither covers different ground from the other,
+shows the same size penalty for HEALPix and the same decline of that
+penalty with the tolerated error, so the penalty comes from sampling the
+same field $2.58$ times more densely than necessary, not primarily from the
+scenes chosen or from the imperfect overlap of the two footprints.
+Two further controls on subsets, reported in
 Appendix~\ref{app:support}, agree from different directions: a
 common-support comparison on ten regions, and re-cutting the UTM crop at
 shifted positions on four regions, which moves the ratio by about $1\%$ of

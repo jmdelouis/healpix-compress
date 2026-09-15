@@ -1,21 +1,21 @@
 \begin{table}[t]
 \centering
-\caption{Same-codec control}
+\caption{Same-codec comparison at constant reconstruction RMSE}
 \label{tab:fixed_codec}
 \begin{tabular}{lrrrrr}
 \toprule
 Codec & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ & $3\times10^{-3}$ & $10^{-2}$ \\
 \midrule
-\texttt{zfp} & 1.72 & 1.64 & 1.55 & 1.54 & 1.63 \\
-\texttt{sz3} & 1.59 & 1.46 & 1.27 & 1.17 & 0.97 \\
-\texttt{jpeg2000\_lossy} & 1.59 & 1.50 & 1.24 & 1.01 & 0.82 \\
-\texttt{jpegxl\_lossy} & 1.57 & 1.44 & 1.17 & 0.87 & 0.78 \\
-\texttt{dwt\_zstd} & 1.59 & 1.46 & 1.23 & 0.94 & 0.83 \\
+\texttt{zfp} & 1.72 (40) & 1.64 (40) & 1.55 (40) & 1.54 (39) & 1.63 (38) \\
+\texttt{sz3} & 1.59 (40) & 1.46 (40) & 1.26 (39) & 1.16 (36) & 0.93 (34) \\
+\texttt{jpeg2000\_lossy} & 1.59 (40) & 1.50 (40) & 1.23 (39) & 0.95 (35) & 0.77 (30) \\
+\texttt{jpegxl\_lossy} & 1.57 (40) & 1.44 (40) & 1.16 (38) & 0.82 (35) & 0.71 (26) \\
+\texttt{dwt\_zstd} & 1.59 (35) & 1.46 (40) & 1.23 (40) & 0.96 (38) & 0.81 (35) \\
 \bottomrule
 \end{tabular}
 \vspace{3pt}
 \begin{minipage}{\columnwidth}
 \footnotesize
-Median per-region HPX/UTM compressed-size ratio at each target RMSE when the \emph{same} codec is used on both grids (the UTM side includes $\gamma_{\mathrm{tile}}$). It complements the oracle-best comparison of Table~\ref{tab:storage_at_rmse}, which lets codec selection differ between grids.
+Median per-region HPX/UTM compressed-size ratio at each target RMSE when the \emph{same} codec is used on both grids, with the number of regions in parentheses; the UTM side includes $\gamma_{\mathrm{tile}}$. A region enters a cell only if that codec brackets the target with two measured points on both grids (Section~\ref{sec:rd_protocol}). Complements the oracle-best comparison of Table~\ref{tab:storage_at_rmse}, which lets codec selection differ between grids.
 \end{minipage}
 \end{table}
