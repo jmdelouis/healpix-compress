@@ -19,8 +19,18 @@ $3\times10^{-3}$. At $10^{-2}$ the sign changes: the Clough--Tocher tile is
 $7\%$ smaller than the native square with no overhead on either side
 (median $0.93$ over the 32 regions whose contrast admits the target,
 $95\%$ confidence interval $0.89$--$0.99$, $p=0.03$ before correction;
-10 of the 32 regions lie above parity). The $2.58$ of the uncompressed tile is never
-seen again once a codec is involved.
+10 of the 32 regions lie above parity). The advantage is thus real but
+narrow, and it rests on the reference used here, which scores the carrier
+against its own smooth tile: the Clough--Tocher transfer has already
+removed high-frequency noise a codec would otherwise spend bits on, while
+the native side is scored against its raw product.
+Section~\ref{sec:common_reference} charges that smoothing to the carrier,
+and the sign reverses. A smaller confound runs the other way at the tight
+targets: the native product is distributed as integers and already sits on
+the coding lattice, while the interpolated carrier does not, which costs
+the carrier a quantisation the native side never pays
+(Appendix~\ref{app:codec_audit}). The $2.58$ of the uncompressed tile is
+never seen again once a codec is involved.
 
 Writing this gap as
 $\gamma_\star(e)=S_{\mathrm{HPX}}(e)/S_{\mathrm{UTM,crop}}(e)$ is an

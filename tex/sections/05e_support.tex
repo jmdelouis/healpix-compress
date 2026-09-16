@@ -53,29 +53,26 @@ within $8$--$27\%$ at the five targets, closely at the tight end and less
 so at the loose end, where its own sweep, run with the original ladders,
 is partly censored ($n=37$ and $36$). Under $\gamma_{\mathrm{tile}}=1.30$
 it also reproduces the change of sides, reaching $0.91$ at the loosest
-target where the imagery reaches $0.72$. Sampling geometry alone is
-therefore sufficient to produce a gap of this size and this dependence on
-the target. The control does not decompose the residual: the synthetic
-field is evaluated directly at the cell centres, so the transfer step,
-the content difference and the support mismatch are all absent, and the
-synthetic ratio lies above the measured one at all five targets, by
-$8\%$ to $27\%$ and always in the same direction. One term in that
-direction is built into the control: the field carries modes up to the
-level-20 Nyquist frequency, attenuated by the fitted response, so the
-native lattice aliases the small power beyond its own Nyquist while the
-carrier lattice represents it, which charges the carrier a little content
-the real chain's transfer never gives it. Real imagery passed
-through the Clough--Tocher transfer is thus more favourable to HEALPix
-than a Gaussian field with the same spectrum sampled without one; that
-residual cannot be assigned to support mismatch, scene statistics or the
-transfer, and at the two intermediate targets it exceeds the effect under
-study, so the control corroborates and does not bound. In plain words: a
+target where the imagery reaches $0.72$. Sampling geometry alone
+therefore reproduces the trend and the order of magnitude of the gap,
+though not its exact size. It does not decompose the residual, and the
+residual is not small: the synthetic ratio lies above the measured one at
+all five targets, by $8\%$ to $27\%$ and in the same direction, exceeding
+the effect under study at the two intermediate targets. Three omissions
+push that way. The transfer step is absent, so the smoothing that makes the
+real carrier compressible is not counted; the scene content is absent; and
+the field carries modes up to the level-20 Nyquist frequency, which the
+native lattice aliases and the carrier represents, a term built into the
+control that charges the carrier a little content the real chain never
+gives it. The control therefore corroborates the geometric origin of the
+trend without bounding the magnitude. In plain words: a
 made-up image with the same texture statistics as Sentinel-2, sampled by
 the two grids over exactly the same ground, shows the same size penalty
 for HEALPix and the same decline of that penalty with the tolerated
 error. The geometry-only control thus shows that sampling the same field
-at the $2.58\times$ higher level-20 density is sufficient to reproduce
-most of the observed storage penalty and its dependence on distortion. Two controls on subsets
+at the $2.58\times$ higher level-20 density reproduces the trend of the
+storage penalty and its approximate magnitude; it does not, on its own,
+account for the penalty in full. Two controls on subsets
 (Appendix~\ref{app:support}) agree from different directions: a
 common-support comparison on ten regions, and re-cutting the UTM crop at
 shifted positions on four regions, which moves the ratio by about $1\%$

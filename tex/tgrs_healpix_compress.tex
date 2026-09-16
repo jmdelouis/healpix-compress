@@ -72,32 +72,36 @@ Email: vincent.dumoulin@esa.int. ORCID: 0009-0005-1217-1143.}%
 Storing Sentinel-2 imagery on a HEALPix grid forces a choice between level
 19, whose \SI{12.4}{m} cells are coarser than the \SI{10}{m} product, and
 level 20, whose \SI{6.2}{m} cells hold about $2.58$ times as many samples
-per unit area. This paper measures what the finer choice costs in storage
-once both representations are compressed. On 40 Sentinel-2 L2A B04 regions,
+per unit area. This paper asks what the finer choice costs in storage once
+both representations are compressed, and answers it as a decision framework
+rather than a verdict for either grid. On 40 Sentinel-2 L2A B04 regions,
 four land-cover classes and both HEALPix cell-shape regimes, five
 established codecs (ZFP, SZ3, JPEG~2000, JPEG~XL and a wavelet baseline)
 are applied to level-20 tiles reshaped into ordinary rasters and to native
-UTM squares of equal nominal projected area. Sizes are compared at equal
-reconstruction
-error. The result is one ratio: the compressed size of the HEALPix tile
-divided by that of the UTM square, with no storage overhead charged to
-either side. Uncompressed it is $2.58$. At an RMSE of $10^{-4}$ in
-reflectance, a quarter of a percent of a typical scene's contrast, it is
-$2.06$ in median. At $10^{-2}$, a quarter of that contrast, it falls to
-$0.93$. Land-cover class moves it within $2.01$--$2.17$ and $0.89$--$1.10$.
-Read as a distortion-dependent critical overhead $\gamma_\star(e)$ --- the
-native-product overhead above which the carrier is the smaller
-representation --- this is a decision curve, and the illustrative $30\%$
-overhead scenario is one point on it. Three measured conditions
-qualify the curve. The transfer matters most: a PSF-aware or an
-inverse-distance transfer gives a tile that stays at $2.1$--$2.6$ over the
-whole error range, $1.2$ to $2.4$ times the bytes of the Clough--Tocher tile
-at the same coding RMSE. The codec matters next: four of the five reproduce
-the crossover and ZFP does not. The reference matters too: scored against
-the native observation, the transfer and the read already cost an RMSE of
-$4.0\times10^{-3}$ before any compression, and native UTM leads at every
-storage budget under either read. The contribution is a quantified decision
-framework.
+UTM squares of equal nominal projected area, and their compressed sizes are
+compared at equal reconstruction error. The result is expressed as a
+distortion-dependent critical overhead $\gamma_\star(e)$: the layout
+overhead a native product must carry for the carrier to be the smaller
+representation at error $e$. This separates the measurement from any assumed
+overhead, and the illustrative $30\%$ scenario is one point on the curve.
+
+Three measured conditions govern that curve, and the paper's central
+finding is how strongly they do. The transfer that fills the carrier
+matters most: a smooth Clough--Tocher interpolant gives a tile that falls
+from $2.06$ to $0.93$ times the native square as the tolerated RMSE grows
+from $10^{-4}$ to $10^{-2}$, while a PSF-aware or inverse-distance transfer
+keeps it at $2.1$--$2.6$ throughout, $1.2$ to $2.4$ times the
+Clough--Tocher bytes at equal coding RMSE. The codec matters next: four of
+the five reproduce the crossover and ZFP does not. The reconstruction
+reference decides the sign of the verdict: scored within each
+representation the carrier can reach parity at the loosest target, but
+scored against the native observation --- which charges the carrier the
+transfer and the read it was given for free --- native UTM leads at every
+storage budget, the carrier starting from a floor of $4.0\times10^{-3}$
+before any compression. The carrier is competitive only at aggressive
+compression, only for a smooth transfer, and only when the HEALPix product
+is itself the reference; the contribution is the framework that makes those
+conditions explicit.
 \end{abstract}
 
 \begin{IEEEkeywords}

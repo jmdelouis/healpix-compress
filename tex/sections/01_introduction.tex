@@ -35,13 +35,17 @@ Fig.~\ref{fig:headline}. Before compression, a level-20 tile takes $2.58$
 times the bytes of the area-matched native raster. After
 compression to the same reconstruction error, it takes $2.06$ times as
 many when the tolerated error is a quarter of a percent of a typical
-scene's contrast, and $0.93$ times as many when it is a quarter of that
-contrast. This holds for a tile filled by Clough--Tocher interpolation,
+scene's contrast, and $0.93$ times as many --- a bare crossing, marginal
+in significance (Section~\ref{sec:rd_main}) --- when it is a quarter of
+that contrast. This holds for a tile filled by Clough--Tocher
+interpolation,
 which passes a smooth surface through the observed pixels and reads it at
 the HEALPix cell centres. The PSF-aware transfer of the companion
 study~\cite{delouis2026resample}, which also undoes part of the instrument
 blur, aims at a sharper latent-field estimand; its tile stays at
-$2.3$--$2.6$ times the native raster at every error. The choice of
+$2.3$--$2.6$ times the native raster at every error --- bytes whose
+reconstruction benefit is established by that study, not by this one. The
+choice of
 transfer is therefore the largest single factor in the storage cost of a
 HEALPix carrier, above the codec, the scene and the tolerated error, and
 the paper gives it the space this implies. Table~\ref{tab:glossary}

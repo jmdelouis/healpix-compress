@@ -753,8 +753,23 @@ def consistency_checks(tex):
         # grid beta = 3, 4, 5 writes the same CSV and must not be mistaken for
         # them. Keep only the beta nearest the fitted median, and say so when
         # that beta is not in the file at all.
+        # The instrument response must sit in the ESA MSI B04 MTF-at-Nyquist
+        # window (0.15-0.30). A run that band-limited the field with the
+        # library scale s (about twice the standard deviation) records an MTF
+        # near 0.006 and its ratios are meaningless; reject it by the recorded
+        # MTF rather than by trusting a number that survived the doubling.
+        if "mtf_utm_nyquist" in syn.columns and len(syn):
+            mtf = float(syn.mtf_utm_nyquist.median())
+            if not (0.12 <= mtf <= 0.33):
+                out.append((f"synthetic control  [skipped: MTF at the native "
+                            f"Nyquist is {mtf:.3f}, outside the ESA B04 window "
+                            "0.15-0.30 -- the PSF width was doubled (library "
+                            "scale used as sigma); rerun support_controls.py "
+                            "--control synthetic --fitted with the hardened "
+                            "psf_sigma_from_fwhm]", "", ""))
+                syn = syn.iloc[0:0]
         spec = _csv("support_controls_spectrum.csv")
-        if spec is not None and "beta" in syn.columns:
+        if len(syn) and spec is not None and "beta" in syn.columns:
             b_fit = round(float(spec.beta_fit.median()), 1)
             near = syn.beta.sub(b_fit).abs()
             if near.min() > 0.15:

@@ -50,6 +50,19 @@ scene. Full-sphere behaviour has not been measured; a global product would
 need a multi-chunk hierarchy and boundary handling across the 12 base
 faces, an open problem outlined in Appendix~\ref{app:global_sphere}.
 
+\subsection{Reproducibility}
+Every figure quoted in the text is produced by a script from the stored
+results, and an assertion harness recomputes each one and refuses to let
+the manuscript state a value the current run does not support; the sizes
+reported are those of files written, closed and re-read by an independent
+decoder (Appendix~\ref{app:codec_audit}). Each sweep records the codec
+library versions and the checkout of the shared resampling
+package~\cite{delouis2026resample} it ran against, pinned to a tagged
+release, so a results folder can be matched to the code that wrote it. The
+discipline is not decoration: it caught, during preparation, a run whose
+synthetic control had silently doubled its point-spread width, before its
+numbers reached these pages.
+
 \subsection{Current Limitations}
 \label{sec:limitations}
 Five groups, detailed in Appendix~\ref{app:limitations}. \emph{Transfer}:

@@ -363,19 +363,33 @@ def control_common(scene, codecs, targets, verbose=True):
 
 # --- control C: one analytic field on both geometries ------------------------
 def psf_sigma_from_fwhm(fwhm_m: float) -> float:
-    """Gaussian sigma of the instrument response, in metres.
+    """Gaussian standard deviation of the instrument response, in metres.
 
-    Uses healpix-resample's own conversion when it is importable, so the
-    control and the common-reference operator of common_reference.py describe
-    the same instrument rather than two slightly different Gaussians.
+    Defined here, not asked from the library. `healpix_resample.fwhm_to_scale`
+    returns the operator *scale* s (FWHM/sqrt(2 ln 2)), not the standard
+    deviation: the companion study writes its Gaussian as exp(-2 d^2 / s^2),
+    whose standard deviation is s/2 = FWHM/(2 sqrt(2 ln 2)). The library's
+    convention also flipped mid-project (it once returned s/2 and now returns
+    s, exactly twice), which is what silently doubled this control's PSF on
+    16 September: the field was band-limited at sigma = 10.1 m, an MTF of
+    0.006 at the native Nyquist against the ESA B04 spec of 0.15-0.30, and
+    the synthetic ratios fell to 1.8-1.1 instead of 2.2-1.2. So sigma is
+    computed here and common_reference.py's reader uses the same formula; the
+    library value is kept only as a recorded cross-check.
     """
     if not fwhm_m:
         return 0.0
+    sigma = float(fwhm_m) / (2.0 * math.sqrt(2.0 * math.log(2.0)))
     try:
         from healpix_resample.psf_geometry import fwhm_to_scale
-        return float(fwhm_to_scale(float(fwhm_m)))
+        lib = float(fwhm_to_scale(float(fwhm_m)))
+        # s/2 within 5%: the library returns a standard deviation, so trust it.
+        # ~s (about twice): the new scale convention, ignore it.
+        if abs(lib - sigma) / sigma < 0.05:
+            return lib
     except Exception:                                      # noqa: BLE001
-        return float(fwhm_m) / (2.0 * math.sqrt(2.0 * math.log(2.0)))
+        pass
+    return sigma
 
 
 def synthetic_field(px, py, *, beta=2.0, k_min, k_max, n_modes=512, seed=0,
@@ -470,6 +484,21 @@ def control_synthetic(scene, codecs, targets, betas=(3.0, 4.0, 5.0),
               f"MTF {mtf_utm:.3f} at the UTM Nyquist, {mtf_hpx:.3f} at the "
               f"HEALPix Nyquist"
               if sigma else "    no PSF: the field is hard to the band limit")
+    # Refuse to run with an out-of-band PSF rather than write silently wrong
+    # ratios. A doubled sigma (the library scale used as a standard deviation,
+    # see psf_sigma_from_fwhm) puts the MTF at 0.006 and drops the synthetic
+    # ratios from 2.2-1.2 to 1.8-1.1; the Sentinel-2 B04 MTF at the native
+    # Nyquist is 0.15-0.30. On 16 September a stale module produced exactly
+    # that, and the numbers looked plausible enough to nearly reach the paper.
+    if sigma and not (0.10 <= mtf_utm <= 0.40):
+        raise ValueError(
+            f"synthetic PSF out of band: FWHM {psf_fwhm_m:g} m gives sigma "
+            f"{sigma:.2f} m and MTF {mtf_utm:.3f} at the native Nyquist, "
+            f"outside the Sentinel-2 B04 window 0.15-0.30. The library's "
+            f"fwhm_to_scale most likely returned a scale, not a standard "
+            f"deviation, and it was used as sigma. psf_sigma_from_fwhm should "
+            f"have caught this; check that the running module is the current "
+            f"one (no stale .pyc, no shadowing copy on PYTHONPATH).")
 
     target_mean = float(np.mean(reg["cell_data"]))
     target_std = float(np.std(reg["cell_data"]))
