@@ -184,17 +184,23 @@ def tex_caption(title: str, label: str) -> list[str]:
 
 
 def tex_note(text: str | None, wide: bool = False) -> list[str]:
-    """A justified note under a table, for what the columns mean.
+    """What the columns mean -- which no longer goes under the table.
 
-    Emitted as a minipage so the text is set as a paragraph rather than
-    inheriting the float's \\centering; `wide` matches a table* float.
+    These notes were set as a minipage under each table. IEEE's style manual
+    asks for a short title above the table, centred and in small caps, set as
+    an inverted pyramid; it does not provide for a paragraph of prose below
+    one, and 42 such paragraphs made the paper hard to size and harder to
+    read. The explanation belongs in the running text that introduces the
+    table.
+
+    The signature and the call sites are kept: each script still composes its
+    note, which documents in one place what that table's columns are, and
+    keeping it means the text is available to whoever rewrites the prose and
+    the table generators need not be touched. Nothing is emitted.
+
+    `text` and `wide` are accepted and ignored.
     """
-    if not text:
-        return []
-    text = " ".join(str(text).split())
-    width = "\\textwidth" if wide else "\\columnwidth"
-    return ["\\vspace{3pt}", f"\\begin{{minipage}}{{{width}}}",
-            "\\footnotesize", text, "\\end{minipage}"]
+    return []
 
 
 def describe() -> str:

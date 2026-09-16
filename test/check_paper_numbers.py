@@ -388,6 +388,13 @@ def window_radiometry_checks():
     if "slope_over_corr2" not in a.columns:
         return [("window radiometry  [skipped: old audit format]", "",
                  "re-run window_radiometry.py")]
+    # The audit now covers one tile per transfer. The appendix reports the
+    # carrier's, which is what every published number rests on; the other
+    # transfers' tiles are a separate question (the identity assumes a
+    # transfer that does not systematically alter the field, which a
+    # deconvolving one does by design).
+    if "kernel" in a.columns:
+        a = a[a.kernel == getattr(cfg, "CARRIER_KERNEL", "clough_tocher")]
     ok, bad = a[a.status == "ok"], a[a.status != "ok"]
     where = "[in sections/08_appendices.tex]"
     out = [
