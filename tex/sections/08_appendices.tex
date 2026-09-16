@@ -404,8 +404,12 @@ where there is none.
 product, latent-scene denominator. Left: median HPX/UTM compressed size against
 $\kappa=e_{\mathrm{comp}}/e_{\mathrm{resample}}$, the compression error as a
 fraction of the error the product already carries. Right: the same curves
-against the resulting growth of the product's total error,
-$\sqrt{1+\kappa^2}-1$. The dashed line marks parity; points below it favour
+against the \emph{measured} growth of the product's total error, interpolated
+log--log over the cross-term run of Appendix~\ref{app:cross_term} at the same
+reference, not the orthogonal $\sqrt{1+\kappa^2}-1$, which holds only at
+$\rho=0$. A point whose $\kappa$ falls outside the range that run sampled has
+no measurement and is dropped rather than extrapolated, so a curve may start
+later on the right than on the left. The dashed line marks parity; points below it favour
 HEALPix. The own-estimand denominator leaves the curves unchanged in shape and
 shifts them right, by the ratio of the two denominators in
 Table~\ref{tab:alpha_budget}.}
@@ -426,17 +430,20 @@ common to both denominators; what the denominator changes is what reaching it
 costs. Against the latent scene, HEALPix becomes the smaller representation at
 $\kappa=0.13$ over urban scenes and $\kappa=0.19$ over agriculture (total
 error inflated by a measured $2.5\%$ and $5.1\%$ for a $30\%$ and a $12\%$
-saving in bytes) and at $\kappa=0.50$ over forest, for $16.0\%$ inflation
-and a $17\%$ saving. Each of those is about twice what the orthogonal formula
-would give ($0.9\%$, $1.8\%$, $11.9\%$), for the reason
-Appendix~\ref{app:cross_term} sets out. Water is the exception in both readings: its crossing arrives only at
-the loosest tested target, where the compression error is more than twice the
-transfer error, and the $6\%$ saving there is too small to be meaningful. Against the
-own estimand the same three crossings cost $\kappa=1.54$, $1.59$ and $2.28$,
-i.e.\ measured inflations of $37\%$, $40\%$ and $115\%$ ($84\%$, $88\%$ and
-$149\%$ under the orthogonal formula, which overstates them here for the
-reason Appendix~\ref{app:cross_term} sets out): on that yardstick no
-crossing is cheap.
+saving in bytes), at $\kappa=0.50$ over forest, for $16.0\%$ inflation
+and a $17\%$ saving, and at $\kappa=0.23$ over water, for $6.8\%$
+inflation, though only a $2\%$ saving. Each of those is about twice what the
+orthogonal formula would give ($0.9\%$, $1.8\%$, $11.9\%$, $2.5\%$), for the
+reason Appendix~\ref{app:cross_term} sets out. All four classes therefore cross
+while the compression error is a fraction of the error the product already
+carries; what separates them is what the crossing buys, from $30\%$ of the
+bytes over urban scenes down to $2\%$ over water, where the margin is too
+narrow to act on. Against the own estimand the same four crossings cost
+$\kappa=1.54$, $2.28$, $1.59$ and $1.45$, i.e.\ measured inflations of
+$37\%$, $115\%$, $40\%$ and $31\%$ ($84\%$, $149\%$, $88\%$ and $76\%$
+under the orthogonal formula, which overstates them here for the reason
+Appendix~\ref{app:cross_term} sets out): on that yardstick no crossing is
+cheap.
 
 That asymmetry is the substantive finding of this section, and it sharpens the
 conditional conclusion of Section~\ref{sec:common_reference} rather than
@@ -452,10 +459,12 @@ the grid.
 
 The deconvolving transfer does not yet support the same accounting, and we
 report the reason rather than the number we hoped for. In this harness the
-PSF-aware reconstruction recovers essentially none of the blur at the measured
-noise level ($-7.7\%$ to $-1.2\%$ by class, positive in only 16 of 40
-regions) and a small but systematic $+3.0\%$ to $+6.5\%$ in a
-noiseless control at the same averaging depth, positive in 39 of 40 regions.
+PSF-aware reconstruction recovers no blur consistently at the measured noise
+level: by class the recovery runs from $-5.9\%$ over forest to $+6.0\%$ over
+water (Table~\ref{tab:resampling_error}), and it is positive on 16 of the 39
+regions, so the sign depends on the scene rather than on the method. In a
+noiseless control at the same averaging depth it is a small but systematic
+$+3.0\%$ to $+6.5\%$, positive on 38 of the 39.
 The companion study reports $15.4\%$ to
 $19.6\%$, noise-free, under the same recovery definition and the same damping.
 The gap is not explained by an easier inverse problem on their side: their
@@ -560,10 +569,10 @@ errors being high-frequency deficits, or from one being noise the other
 removes, and neither depends on the details of the synthetic field; its
 \emph{magnitude} does, because the blur here is an exact Gaussian attenuation
 of a power law rather than whatever a real instrument response leaves behind.
-And the sampled range of $\kappa$ against the latent scene stops short of the
-water class's crossing at $\kappa=2.26$, which is why
-Table~\ref{tab:alpha_budget} reports no measured inflation there rather than an
-extrapolation. Neither limit affects the practical conclusion, which is that
+The sampled range of $\kappa$ now covers every class's crossing against both
+denominators, so Table~\ref{tab:alpha_budget} reports a measured inflation in
+each cell rather than an extrapolation. Neither limit affects the practical
+conclusion, which is that
 the inflation figures of Appendix~\ref{app:error_budget} must be measured rather
 than computed, and that the direction of the error one makes by computing them
 depends on the reference the product answers to.
@@ -575,7 +584,7 @@ depends on the reference the product answers to.
     \item \textbf{The verdict is conditional on the transfer, by about a factor of two, and the transfer this paper uses is the most favourable of those tested.} Section~\ref{sec:transfer_cost} measures this rather than leaving it open: rebuilding the carrier with a PSF-aware or an
 inverse-distance transfer costs $1.2$ to $2.4$ times the bytes at the same coding RMSE relative to each transfer's own uncompressed carrier, which is more than the margin by which HEALPix leads at the loosest targets, so under either of them it leads at none. Clough--Tocher is also the most accurate of the transfers tested against an analytic field, and we argue the two properties share a cause, but the argument does not extend the result to transfers we have not swept (the original inverse-distance weighting among them) and it does not make the reported ratios properties of the grid. One residual gap remains in this ablation (the accuracy column of Table~\ref{tab:kernel_ablation} now covers the 40 regions, and the inverse-distance resampler that Section~\ref{sec:resampler} replaced is the \texttt{linear} row of that table and the IDW control of Section~\ref{sec:transfer_cost}): we have not tested a non-deconvolving transfer of Clough--Tocher's smoothness class, which is what would isolate deconvolution from smoothness properly rather than bounding it as we do;
     \item \textbf{An earlier out-of-range figure for the inverse-distance transfer was a diagnostic artefact.} A previous version of Section~\ref{sec:transfer_cost} reported that the inverse-distance average placed $0.95\%$ of cells outside the range of its input and read this as overshoot. The range had been taken over the observation restricted to the two footprints' intersection while the values were taken over the whole tile, about a fifth of which lies outside that mask, so a cell could sit outside the range with no overshoot at all, and a transfer whose kernel reaches further collected more such cells. The diagnostic now takes both over the same ground; the argument of Section~\ref{sec:transfer_cost} rests on the transfer error of Table~\ref{tab:kernel_ablation}, which is unaffected.
-    \item \textbf{The equal-area UTM square is not pixel-for-pixel identical to the HEALPix footprint.} As noted in Section~\ref{sec:utm_crop}, the axis-aligned $637\times637$ UTM square extends slightly beyond the rotated HEALPix diamond along its edges and falls slightly short of it at the north/south/east/west corners. It matches the HEALPix tile's ground \emph{area} exactly (both grids being fixed-size representations, Table~\ref{tab:storage_accounting}), but not its exact shape; a polygon-masked, footprint-exact crop remains a possible further refinement, though we do not expect it to materially change the fixed $2.58\times$ oversampling relationship, which follows from HEALPix's equal-area property rather than from the crop shape;
+    \item \textbf{The equal-area UTM square is not pixel-for-pixel identical to the HEALPix footprint.} As noted in Section~\ref{sec:utm_crop}, the axis-aligned $637\times637$ UTM square extends slightly beyond the rotated HEALPix diamond along its edges and falls slightly short of it at the north/south/east/west corners. It matches the tile's \emph{nominal projected} area by construction, and the storage relation between the two is exact because both grids are fixed-size representations (Table~\ref{tab:storage_accounting}); what it does not match is the exact geodesic footprint area, since UTM is conformal rather than equivalent and $636.7$ pixels were rounded to $637$ (Section~\ref{sec:utm_crop}), nor the footprint's shape; a polygon-masked, footprint-exact crop remains a possible further refinement, though we do not expect it to materially change the fixed $2.58\times$ oversampling relationship, which follows from HEALPix's equal-area property rather than from the crop shape;
     \item \textbf{The overhead is reported as a parameter because only its container component is measured.} Section~\ref{sec:results} now reports the verdict over a continuous range of the overhead \emph{ratio} $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$ rather than at one value, so no conclusion here depends on choosing $1.30$, and the container cost of each side is measured at under half a percent. What remains assumed is granule geometry, which we have not measured on complete Sentinel-2 products. The following remains true of that assumption:
      UTM is a coordinate reference system; padding, overlap, and per-tile metadata are properties of a particular product organisation (here, Sentinel-2's MGRS granule layout), and a native UTM COG or Zarr archive need not carry this overhead at all. We report the $\gamma_{\mathrm{tile}}=1$ result as the overhead-free carrier/native comparison, which still includes the transfer, and the $\gamma_{\mathrm{tile}}=1.30$ result as one illustrative operational scenario (Table~\ref{tab:gamma_continuous} reports the critical overhead $\gamma_\star$ directly, so the conclusion at any other assumed overhead can be read off without rerunning the analysis). We have not measured $\gamma_{\mathrm{tile}}$ from real, complete tiled product files in this study, nor swept it continuously over $[1.0,1.5]$ for the matched-budget protocol (Table~\ref{tab:error_at_size}); both are left for future work. For compressed storage (Section~\ref{sec:overhead}), we further assume the overhead applies proportionally to the compressed byte count, i.e.\ that the padded/overlapping fraction of a native tile compresses at roughly the same ratio as the tile itself; this is a simplifying assumption, not a measurement of real, complete tiled product files;
     \item \textbf{The level-19 comparison was made on a cell-averaged carrier; the directly evaluated one has since been measured and agrees.} Section~\ref{sec:level_choice} aggregates the stored level-20 tile in groups of four, which is the exact quadtree Haar transform and therefore the cell-average of the carrier over each level-19 cell, not the carrier the same transfer would have built at that level. Section~\ref{sec:level19_direct} builds that carrier and finds the two within $0.2\%$ of each other in floor against the observation, with the widest departure over the eligible regions at $1.051$, so the level-19 figures are not an artefact of which object is measured. That comparison runs on 39 regions rather than 40: rebuilding a carrier reopens the native window, and for Lake Geneva the window is no longer the product the stored tile was built from, so the rebuild returns neither the level-19 carrier nor the level-20 one (Appendix~\ref{app:window_radiometry}). Including it moves the median ratio by less than $0.001$. The mismatch reaches every measurement that re-runs a transfer, and the other two --- the kernel ablation and the resampling-error study --- have been re-run without that region, so all three now rest on the same 39; no measurement read from a stored tile is affected;

@@ -56,7 +56,8 @@ Table~\ref{tab:gamma_continuous} maps that assumption to its consequence.
 Each region's critical overhead $\gamma_\star$ is the value at which the
 two representations reach equal compressed size for that region, so
 HEALPix is the smaller of the two exactly where $\gamma \ge \gamma_\star$;
-the win columns give the fraction of the 40 regions satisfying that at
+the win columns give the fraction of the $n$ regions that qualify at that
+target --- 40, 40, 39, 37 and 32 as the target loosens --- satisfying that at
 three illustrative values, and \emph{inconclusive} the range of $\gamma$
 over which the paired signed-rank test does not separate the grids at the
 $5\%$ level. No value of $\gamma$ is privileged here.
@@ -68,8 +69,10 @@ $5\%$ level. No value of $\gamma$ is privileged here.
 \includegraphics[width=\columnwidth]{figures/fig_verdict_vs_gamma}
 \caption{The verdict over a continuous range of the overhead ratio
 $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$, rather than at one assumed
-value. Top: the fraction of the 40 regions for which HEALPix is the smaller
-representation, per RMSE target; the thickened stretch of each curve is where
+value. Top: the fraction of the qualifying regions for which HEALPix is the
+smaller representation, per RMSE target; the number that qualifies falls from
+40 to 32 as the target loosens (Table~\ref{tab:gamma_continuous}), so each
+curve is a share of its own target's population; the thickened stretch of each curve is where
 the paired signed-rank test does not separate the two grids at the $5\%$ level.
 Bottom: the per-region critical overhead $\gamma_\star$ behind those curves, one
 point per region, the bar marking the median. The dashed line marks the

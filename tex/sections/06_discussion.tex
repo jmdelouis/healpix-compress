@@ -26,14 +26,18 @@ it also carries no tiling overhead.
 \subsection{What Is, and Is Not, a Property of the Grid}
 What this study attributes to HEALPix geometry should be distinguished from
 what it attributes to the rest of the chain, because the two are easily
-conflated. Three findings are properties of the sampling geometry: the raw
+conflated. Two findings are properties of the sampling geometry outright: the raw
 $2.58\times$ oversampling, and the $1.99\times$ that follows from it under
-the illustrative $30\%$ native-layout overhead, both exact; the monotone decrease of the
-overhead-free carrier/native size ratio with the target, which an analytic field sampled on both lattices,
-with no content, no support mismatch and no transfer, reproduces in shape
-and to within $8$--$27\%$ in magnitude (Section~\ref{sec:support_controls}); and the latitude dependence of the
-belt-versus-cap contrast, which follows the cell anisotropy and is
-exploratory. Three findings are not. The crossover at a given overhead
+the illustrative $30\%$ native-layout overhead, both exact. A third is
+consistent with geometry without being attributable to it alone: the monotone
+decrease of the overhead-free carrier/native size ratio with the target, which
+an analytic field sampled on both lattices, with no content, no support
+mismatch and no transfer, reproduces in shape and to within $8$--$27\%$ in
+magnitude (Section~\ref{sec:support_controls}) --- geometry suffices to
+produce it, which does not establish that nothing else contributes. So is the
+latitude dependence of the belt-versus-cap contrast, which is compatible with
+the expected variation of cell-shape anisotropy but does not isolate it, and
+which we report as exploratory. Three findings are not. The crossover at a given overhead
 belongs to the transfer: it exists for a Clough--Tocher carrier and for no
 other transfer tested, by a factor of two in bytes
 (Section~\ref{sec:transfer_cost}), and to the codec: four of the five

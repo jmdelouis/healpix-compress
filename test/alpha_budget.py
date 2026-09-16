@@ -280,20 +280,37 @@ def summarize(df, e_res, provenance, gamma, kernel):
     return "\n".join(out)
 
 
-def figure(df, e_res, kernel, publish=True, name="fig_alpha_budget"):
+def figure(df, e_res, kernel, publish=True, name="fig_alpha_budget",
+           reference="latent"):
+    """Left: the ratio against kappa. Right: against the MEASURED inflation.
+
+    The right panel used to place each point at the orthogonal inflation
+    sqrt(1 + kappa^2) - 1, which is the rho = 0 special case. cross_term.py
+    measures rho and finds it neither zero nor of one sign, so that axis
+    disagreed with Appendix D and with the table this figure accompanies.
+    It now uses `measured_inflation`, the same log--log interpolation over the
+    cross-term run that feeds the table; a point whose kappa falls outside the
+    range that run sampled has no measurement and is dropped rather than
+    extrapolated, which is why a curve can start later on the right than on
+    the left.
+    """
     rep = df[df.reported]
     if not len(rep):
         return
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.1, 2.9))
+    src = None
     for cls, g in rep.groupby("cls"):
         med = g.groupby(["target", "alpha"]).ratio.median().reset_index()
         med = med.sort_values("alpha")
         c = CLASS_COLOR.get(cls, "0.4")
         ax1.plot(med.alpha, med.ratio, "o-", ms=4, lw=1.6, color=c, label=cls)
-        ax2.plot(100 * inflation(med.alpha), med.ratio, "o-", ms=4, lw=1.6,
-                 color=c)
+        infl, src = measured_inflation(med.alpha.to_numpy(), reference=reference)
+        ok = np.isfinite(infl)
+        if ok.any():
+            ax2.plot(100 * infl[ok], med.ratio.to_numpy()[ok], "o-", ms=4,
+                     lw=1.6, color=c)
     for ax, xlab in ((ax1, r"$\kappa=e_{\rm comp}/e_{\rm resample}$"),
-                     (ax2, "total-error inflation (%)")):
+                     (ax2, "measured total-error inflation (%)")):
         ax.axhline(1.0, color="0.6", ls="--", lw=1.0)
         ax.set_xscale("log")
         ax.set_yscale("log")
@@ -386,30 +403,31 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
                     f"the exception{'s are' if len(over_blur) > 1 else ' is'} "
                     + ", ".join(sorted(over_blur))
                     + ", whose inflation is given rather than glossed.")
-    note = (
-        "The transfer is "
-        f"\\texttt{{{kernel.replace('_', chr(92)+'_')}}}, which does not "
-        f"deconvolve, over the {n_reg} regions of "
+    return (
+        "\\begin{table*}[t]\n\\centering\n"
+        "\\caption{The storage verdict expressed against the error each "
+        "product already carries, under both defensible denominators. The "
+        f"transfer is \\texttt{{{kernel.replace('_', chr(92)+'_')}}}, which does "
+        f"not deconvolve, measured on the {n_reg} regions of "
         "Table~\\ref{tab:benchmark_scenes}. \\emph{Own estimand}: its RMSE "
         "against the observed field it claims to represent. "
         "\\emph{Latent scene}: its RMSE against the unblurred scene, which for "
-        "a non-deconvolving transfer is the instrument blur it does not "
-        "remove, the yardstick that applies when the carrier grid is read as "
-        "if it were the scene. $\\kappa$ is the compression target as a "
-        "fraction of that denominator. The two errors add in quadrature only "
-        "if their cross term vanishes, and it does not "
-        "(Appendix~\\ref{app:cross_term}), so the inflation columns are the "
-        "\\emph{measured} growth of the product's total error, with the "
-        "orthogonal value $\\sqrt{1+\\kappa^2}-1$ in parentheses; a dash marks "
-        "a crossing beyond the range the cross-term run sampled. The target "
-        "shown is the tightest reported one at which HEALPix is the smaller "
-        "representation, or the loosest tested where there is none. "
-        + verdict)
-    return (
-        "\\begin{table*}[t]\n\\centering\n"
-        + "\n".join(cfg.tex_caption(
-            "The storage verdict against the error the product already carries",
-            "tab:alpha_budget")) + "\n\\footnotesize\n"
+        "a non-deconvolving transfer is the instrument blur it does not remove "
+        "-- the yardstick that applies when the carrier grid is read as if it "
+        "were the scene. $\\kappa$ is the compression target as a fraction of "
+        "the denominator; the two errors being independent, they add in "
+        "quadrature only if their cross term vanishes, and it does not: "
+        "Appendix~\\ref{app:cross_term} measures it negative against the "
+        "observed field and positive against the latent scene. The inflation "
+        "columns are therefore the \\emph{measured} growth of the product's "
+        "total error, with the orthogonal value $\\sqrt{1+\\kappa^2}-1$ in "
+        "parentheses; a dash marks a crossing beyond the range the cross-term "
+        "run sampled. The target shown is "
+        "the tightest reported one at which HEALPix is the smaller "
+        "representation, or the loosest tested where there is none; it is set "
+        "by the ratios alone and so is common to both denominators. "
+        + verdict + "}\n"
+        "\\label{tab:alpha_budget}\n\\footnotesize\n"
         "\\begin{tabular}{@{}lrrc rrr rrr@{}}\n\\toprule\n"
         " & \\multicolumn{3}{c}{Crossover} & "
         "\\multicolumn{3}{c}{Own estimand} & "
@@ -419,8 +437,7 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
         "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% m.\\ (o.) & "
         "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% m.\\ (o.) \\\\\n"
         "\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
-        + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 
 
 def main(argv=None) -> int:
@@ -452,8 +469,13 @@ def main(argv=None) -> int:
     print("\n" + md)
     print(f"wrote {csv}")
 
+    # The measured inflation is reference-dependent -- cross_term.py finds rho
+    # of one sign against the observed field and the other against the latent
+    # one -- so the figure's right panel must be told which denominator this
+    # run is plotting.
     figure(df, e_res, args.kernel, publish=not args.no_publish,
-           name="fig_alpha_budget" + tag)
+           name="fig_alpha_budget" + tag,
+           reference=("latent" if args.denominator == "blur" else "observed"))
     if not args.no_tex and args.reference == "measured":
         # The published table carries both denominators, so it is identical
         # whichever one was asked for on the command line and neither run can

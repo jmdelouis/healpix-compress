@@ -419,12 +419,12 @@ def table_latitude(rows, index):
             for ln, a, b in zip(body, adj_rho, adj_mw)]
 
     tex = _table(
-        r"Does the intrinsic ratio depend on latitude?",
+        r"Does the overhead-free ratio depend on latitude?",
         "tab:latitude_effect", "lrrrrrrrr",
         r"Target & $n$ & $\rho$ & $p_\rho$ & $p_\rho^{\mathrm{Holm}}$ & "
         r"Median (belt) & Median (cap) & $p$ & $p^{\mathrm{Holm}}$ \\",
         body, wide=True,
-        note=(r"Ratios are intrinsic, i.e.\ $\gamma_{\mathrm{tile}}=1$. HEALPix "
+        note=(r"Ratios are overhead-free, i.e.\ $\gamma_{\mathrm{tile}}=1$. HEALPix "
               r"cells are equal in area but not in shape, and their local "
               r"elongation differs between the equatorial belt "
               r"($|\mathrm{lat}| < 41.81^\circ$) and the polar caps. Spearman "

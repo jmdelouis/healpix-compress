@@ -141,6 +141,7 @@ def checks(tex: str):
     out += window_radiometry_checks()
     out += resampling_error_checks()
     out += tile_crop_checks()
+    out += appendix_table_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     return out, survivors
@@ -308,6 +309,71 @@ def level19_checks():
     mant, exp = f"{d['floor19_agg']:.2e}".split("e")
     out.append((f"level-19 aggregate floor {where}",
                 f"${mant}\\times10^{{{int(exp)}}}$", "median over the regions"))
+    return out
+
+
+def _table_rows(name):
+    """Data rows of a generated table, split on & with the \\ stripped."""
+    q = cfg.TEX_TABLES / f"{name}.tex"
+    if not q.exists():
+        return []
+    rows = []
+    body = q.read_text(encoding="utf-8")
+    body = body.split("\\midrule")[-1].split("\\bottomrule")[0]
+    for line in body.splitlines():
+        line = line.strip()
+        if not line or line.startswith("\\") or "&" not in line:
+            continue
+        rows.append([c.strip() for c in line.rstrip("\\").split("&")])
+    return rows
+
+
+def appendix_table_checks():
+    """Appendix C and D quote their own tables; make the prose answer to them.
+
+    This is the pass that was missing when the water class's crossover moved
+    from the loosest target to 1e-3 and the text kept the old reading for two
+    revisions. The source of truth here is the generated table itself rather
+    than a results file, because that is what the reader sees beside the
+    paragraph, and a paragraph that disagrees with the table on the same page
+    is the failure this is for.
+    """
+    out = []
+    where = "[in sections/08_appendices.tex]"
+
+    # Table XXVI: class, crossover target, HPX/UTM, wins, own e/kappa/infl,
+    # latent e/kappa/infl.
+    for r in _table_rows("table_alpha_budget"):
+        if len(r) < 10:
+            continue
+        cls = r[0].lower()
+        own_k, latent_k = r[5], r[8]
+        own_i = r[6].split("(")[0].strip()
+        latent_i = r[9].split("(")[0].strip()
+        # The prose writes these as $\\kappa=0.19$ and, in a list, as a bare
+        # $2.28$, so the assertion is on the decimal itself; the section scope
+        # is what keeps it from matching an unrelated number elsewhere.
+        out += [
+            (f"alpha budget, {cls}: latent kappa {where}", latent_k,
+             "crossover kappa against the latent scene"),
+            (f"alpha budget, {cls}: latent inflation {where}",
+             f"{latent_i}\\%", "measured, not orthogonal"),
+            (f"alpha budget, {cls}: own-estimand kappa {where}", own_k,
+             "crossover kappa against the own estimand"),
+        ]
+        del own_i
+
+    # Table XXV: the psf recovery columns, whose class range the prose quotes.
+    rec = [(r[0].lower(), r[-2], r[-1]) for r in _table_rows("table_resampling_error")
+           if len(r) >= 9]
+    if rec:
+        meas = sorted(float(m.replace("+", "")) for _c, m, _n in rec)
+        out += [
+            (f"psf recovery, worst class {where}",
+             f"${meas[0]:+.1f}\\%$".replace("+-", "-"), "measured noise"),
+            (f"psf recovery, best class {where}",
+             f"${meas[-1]:+.1f}\\%$", "measured noise"),
+        ]
     return out
 
 

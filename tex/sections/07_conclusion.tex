@@ -22,12 +22,14 @@ either side, the Clough--Tocher tile is $2.06\times$ the native square at an
 RMSE of $10^{-4}$ and $0.93\times$ at $10^{-2}$, the class medians lying
 within $2.01$--$2.17$ and $0.89$--$1.10$; the gap therefore decreases
 monotonically from $+106\%$ to $-7\%$, which is a critical overhead
-$\gamma_\star$ falling from $2.06$ to $0.93$. The decrease is a property of
-the sampling geometry rather than of scene content: an analytic field with
-the spectrum and instrument width fitted to the imagery, sampled by both
-lattices with no support mismatch, no content difference and no transfer,
-reproduces its decline and its magnitude to within $8$--$27\%$, though the
-residual is not attributed to any one of the three. At the illustrative
+$\gamma_\star$ falling from $2.06$ to $0.93$. A geometry-only control reproduces that
+decrease and its approximate magnitude: an analytic field with the spectrum
+and instrument width fitted to the imagery, sampled by both lattices with no
+support mismatch, no content difference and no transfer, follows its decline
+to within $8$--$27\%$. Sampling geometry is therefore sufficient to generate
+rate--distortion behaviour of this form and magnitude, which is not the same
+as showing that the measured effect is caused by geometry alone; the residual
+is not attributed to the support, the content or the transfer. At the illustrative
 overhead $\gamma_{\mathrm{tile}}=1.30$, native UTM remains smaller at the
 three tightest RMSE targets and the two looser budgets (median ratios
 $1.23$--$1.59$ and $1.33$--$4.01$), HEALPix is smaller at the loosest RMSE
@@ -46,12 +48,16 @@ HEALPix ahead at no target
 (Section~\ref{sec:transfer_cost}). For an archive the distinction is
 concrete: a Clough--Tocher carrier compressed to a quarter of the scene
 contrast is about the size of the native product, whereas a PSF-aware
-carrier at the same error is about $2.2$ times it, and what the archive
-buys for the difference is a sharper product rather than a smaller one.
-Only a few percent of this cost is the price of deconvolution; the remainder is the price of leaving a $C^1$
-curvature-minimising interpolant, whose output a lossy coder can discard far
-more of at equal error, and the observations are consistent with energy
-compaction rather than total information content as the mechanism. The
+carrier at the same error is about $2.2$ times it. The additional bytes are
+associated with a transfer designed to recover a sharper latent-field
+estimand; what that transfer buys in reconstruction quality is established by
+the companion study under its own conditions, and this paper measures its
+storage cost. The PSF/IDW differential is only $4$--$9\%$, which suggests
+that deconvolution alone is unlikely to explain the roughly two-fold
+surcharge; because the two transfers are not matched in smoothness or
+interpolation class, the experiment does not isolate the deconvolution
+contribution. The observations are consistent with energy compaction rather
+than total information content as the mechanism. The
 observed crossover is therefore a result for a carrier populated by a
 transfer in the smoothness class represented here by Clough--Tocher, and
 should not be read as a transfer-independent property of HEALPix: with no
