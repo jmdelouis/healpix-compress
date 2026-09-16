@@ -80,7 +80,15 @@ def region_rows(scene, kernels, verbose=True):
                 obs_std_on_mask=sd, mask_fraction=cr.mask_fraction,
                 support_fraction=float(cr.read_support().mean()),
                 constant_field=cr.support_median,
-                offset_q99=getattr(cr, "offset_q99", np.nan), error=""))
+                offset_q99=getattr(cr, "offset_q99", np.nan),
+                # The psf reader's width is the one thing that can silently
+                # change between environments: healpix_resample's helper for
+                # it has moved module once, and common_reference falls back to
+                # computing it. A floor two orders of magnitude below the
+                # others means the operator is nearly a delta, so the width it
+                # actually used belongs in the results.
+                scale_m=getattr(cr, "scale_m", np.nan),
+                npt=getattr(cr, "npt", None), error=""))
             if verbose:
                 print(f"    {kernel:14s} {reader:9s} floor {floor:.3e} "
                       f"({100*floor/sd:5.1f}% of std)  support "
