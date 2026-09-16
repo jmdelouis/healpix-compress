@@ -1,6 +1,6 @@
 # The verdict in units of the product's own error
 
-- transfer: `clough_tocher`; reconstruction error measured here on 40 regions in 4 class(es), clough_tocher against its own estimand, the observed field
+- transfer: `clough_tocher`; reconstruction error measured here on 39 regions in 4 class(es), clough_tocher against its own estimand, the observed field
 - operational overhead applied to the ratios: $\gamma$ = 1.3
 
 | class | e_resample |
@@ -8,7 +8,7 @@
 | agriculture | 1.9444e-03 |
 | forest | 1.3159e-03 |
 | urban | 6.2967e-03 |
-| water | 6.9155e-04 |
+| water | 8.2038e-04 |
 
 ## What each target costs, per class
 
@@ -31,11 +31,11 @@ alpha is the compression error as a fraction of the reconstruction error; inflat
 | urban | 0.001 | 0.16 | +1.3% | 1.48 | 10 |
 | urban | 0.003 | 0.48 | +10.8% | 1.21 | 10 |
 | urban | 0.01 | 1.59 | +87.7% | 0.70 | 10 |
-| water | 0.0001 | 0.14 | +1.0% | 1.55 | 10 |
-| water | 0.0003 | 0.43 | +9.0% | 1.12 | 10 |
-| water | 0.001 | 1.45 | +75.8% | 0.98 | 9 |
-| water | 0.003 | 4.34 | +345.2% | 1.03 | 7 |
-| water | 0.01 | 14.46 | +1349.5% | 0.75 | 4 |
+| water | 0.0001 | 0.12 | +0.7% | 1.55 | 10 |
+| water | 0.0003 | 0.37 | +6.5% | 1.12 | 10 |
+| water | 0.001 | 1.22 | +57.7% | 0.98 | 9 |
+| water | 0.003 | 3.66 | +279.1% | 1.03 | 7 |
+| water | 0.01 | 12.19 | +1123.0% | 0.75 | 4 |
 
 ## Where HEALPix becomes the cheaper representation
 
@@ -44,8 +44,8 @@ alpha is the compression error as a fraction of the reconstruction error; inflat
 | agriculture | 0.003 | 1.54 | +83.9% | 0.88 |
 | forest | 0.003 | 2.28 | +148.9% | 0.83 |
 | urban | 0.01 | 1.59 | +87.7% | 0.70 |
-| water | 0.001 | 1.45 | +75.8% | 0.98 |
+| water | 0.001 | 1.22 | +57.7% | 0.98 |
 
-- **Over water scenes, HEALPix becomes 2% cheaper to store at a compression error that inflates the product's total error by 75.8%** (target 0.001, alpha 1.45).
+- **Over water scenes, HEALPix becomes 2% cheaper to store at a compression error that inflates the product's total error by 57.7%** (target 0.001, alpha 1.22).
 
 - **8 of 20 (class, target) pairs have alpha > 1**, i.e. the compression error there exceeds the reconstruction error itself: agriculture at 0.003, agriculture at 0.01, forest at 0.003, forest at 0.01, urban at 0.01, water at 0.001, water at 0.003, water at 0.01. Under this denominator those targets are not conservative, and the inflation figures beside them say by how much.
