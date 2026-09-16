@@ -93,15 +93,15 @@ the regions that qualify.
 \subsection{Operational UTM Storage}
 \label{sec:overhead}
 Sentinel-2 and comparable products are distributed as fixed geographic
-tiles (MGRS $\SI{110}{km}\times\SI{110}{km}$ granules with a \SI{9.8}{km}
-overlap band), whose padding, overlap and per-tile metadata add storage
-beyond the area needed \emph{under that granule layout}. This overhead
-belongs to the Sentinel-2/MGRS product organisation; UTM as a coordinate
-reference system carries none of it, and a native UTM COG or Zarr archive
-need not either. We adopt a commonly used illustrative value,
-$\gamma_{\mathrm{tile}}=1.30$, as a stated modelling assumption for one
-layout (Section~\ref{sec:limitations}); $\gamma_{\mathrm{tile}}=1$ is the
-overhead-free result.
+tiles (MGRS granules with overlap bands), whose padding, overlap and
+per-tile metadata add storage beyond the area needed \emph{under that
+granule layout}. This overhead belongs to the product organisation; UTM
+as a coordinate reference system carries none of it, and a native UTM COG
+or Zarr archive need not either. We use $\gamma_{\mathrm{tile}}=1.30$ as
+an illustrative point on the decision curve of
+Section~\ref{sec:rd_main}; it is not an estimate of the Sentinel-2 product
+overhead, which we have not measured (Section~\ref{sec:limitations}), and
+$\gamma_{\mathrm{tile}}=1$ is the overhead-free result.
 
 For \emph{uncompressed} storage (Table~\ref{tab:storage_accounting}),
 $\gamma_{\mathrm{tile}}$ multiplies the raw equal-area UTM byte count

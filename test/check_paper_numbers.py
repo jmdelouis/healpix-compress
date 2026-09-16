@@ -748,8 +748,25 @@ def consistency_checks(tex):
         out.append(("synthetic control  [skipped: support_controls_synthetic.csv "
                     "absent]", "", ""))
     else:
-        syn = syn[syn.both_bracketed]
-        med = syn.groupby("target").ratio.median()
+        # The paper's rows are the field with the slope fitted to the imagery
+        # (support_controls.py --fitted, beta = 1.9); a run on the exploratory
+        # grid beta = 3, 4, 5 writes the same CSV and must not be mistaken for
+        # them. Keep only the beta nearest the fitted median, and say so when
+        # that beta is not in the file at all.
+        spec = _csv("support_controls_spectrum.csv")
+        if spec is not None and "beta" in syn.columns:
+            b_fit = round(float(spec.beta_fit.median()), 1)
+            near = syn.beta.sub(b_fit).abs()
+            if near.min() > 0.15:
+                out.append((f"synthetic control  [skipped: no rows at the fitted "
+                            f"beta {b_fit:g}; file holds beta = "
+                            f"{sorted(syn.beta.unique())} -- run "
+                            "support_controls.py --control synthetic --fitted]", "", ""))
+                syn = syn.iloc[0:0]
+            else:
+                syn = syn[near <= 0.15]
+        syn = syn[syn.both_bracketed] if len(syn) else syn
+        med = syn.groupby("target").ratio.median() if len(syn) else pd.Series(dtype=float)
         gs = {float(k): float(v) for k, v in load("self").get("gamma_star", {}).items()}
         agree = []
         ts = sorted(med.index)

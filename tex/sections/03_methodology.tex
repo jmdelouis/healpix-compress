@@ -43,10 +43,10 @@ edges and falls short at its corners; ``equal-area'' is shorthand for equal
 do not enclose exactly the geodesic area of the tile, and rounding $636.7$
 to $637$ alone adds about $0.1\%$ of area before the zone's scale factor.
 These terms are small next to the $2.58\times$ oversampling under study and
-have not been computed scene by scene. What both sides share by
-construction is the raw size, $637^2\times\SI{4}{B}\approx\SI{1.62}{MB}$,
-constant over the 40 regions like the HEALPix tile, with no fill value on
-either side.
+have not been computed scene by scene. Both representations have a fixed raw size across regions by
+construction, \SI{1.623}{MB} for the $637\times637$ native crop
+($637^2\times\SI{4}{B}$) and \SI{4.194}{MB} for the $1024\times1024$
+HEALPix tile, with no fill value on either side.
 
 Matching by area means each grid is compressed in the frame it is stored
 in, with no resampling of the native side --- the comparison a

@@ -34,7 +34,7 @@ one class of codec. Rebuilding the same tiles with a PSF-aware or an
 inverse-distance transfer costs $1.2$ to $2.4$ times the bytes at the same
 coding RMSE against their own uncompressed carriers and leaves HEALPix
 ahead at no target (Section~\ref{sec:transfer_cost}): with no overhead
-charged, the PSF-aware tile stays at $2.2$--$2.7$ times the native square
+charged, the PSF-aware tile stays at $2.3$--$2.6$ times the native square
 over the whole error range and the inverse-distance tile at $2.1$--$2.5$,
 against $2.06$ falling to $0.93$ for Clough--Tocher. The extra bytes go
 with a transfer designed to recover a sharper latent-field estimand; what
@@ -44,9 +44,8 @@ PSF/IDW differential is only $4$--$9\%$, so deconvolution alone is
 unlikely to explain the two-fold surcharge, and the observations are
 consistent with energy compaction as the mechanism. On the codec side,
 JPEG~2000 and JPEG~XL lead on both grids alike; held fixed on both grids,
-four of the five codecs reproduce the regime-dependent verdict, and ZFP,
-whose fixed-accuracy block transform cannot decline to spend bits on
-redundancy, does not (Section~\ref{sec:same_codec}).
+four of the five codecs reproduce the regime-dependent verdict, while ZFP
+does not (Section~\ref{sec:same_codec}).
 
 The verdict also depends on which reconstruction reference is accepted.
 Against the same Sentinel-2 observation, the uncompressed carrier already
@@ -62,7 +61,8 @@ without reversing, and the loosest RMSE target turns in favour of HEALPix
 latent scene, the reference that applies when the carrier is used as if
 it were the scene, HEALPix becomes the smaller representation while the
 compression error is still $0.13$ to $0.50$ of the error the product
-already carries, in three of the four scene classes
+already carries, in all four scene classes, with a storage gain that is
+substantial in three of them and about $2\%$ over water
 (Appendix~\ref{app:error_budget}). The practical conclusion is
 conditional: a HEALPix carrier is competitive at aggressive compression
 when the HEALPix cube is itself the reference product, and at no storage

@@ -37,10 +37,19 @@ cleanest isolation:
 
 Usage
 -----
-    python support_controls.py --control synthetic            # cheapest, ~2 min/region
+    python support_controls.py --control synthetic --fitted   # the paper's control
     python support_controls.py --control common --limit 10
     python support_controls.py --control shift --limit 5      # the expensive one
     python support_controls.py --control all --limit 5
+
+The paper's synthetic rows (Table XI) use --fitted: one field with the slope
+and response width read off the imagery (the medians of
+results/support_controls_spectrum.csv, beta = 1.9 and 11.9 m FWHM). Without
+it the defaults below are the exploratory grid beta = 3, 4, 5 at 12.5 m,
+which is a different experiment; on 16 September that run silently replaced
+the paper's rows, which is why an existing CSV is now archived before it is
+overwritten, and why controls that are not re-run are reloaded from their
+CSVs so that the table keeps every control it had.
 
 Writes results/support_controls_<control>.csv, results/support_controls.md and
 ../tex/tables/table_support_controls.tex.
@@ -767,11 +776,39 @@ def main(argv=None) -> int:
                          "Pass 0 for an unconvolved field, which is a much "
                          "harder object than the instrument ever delivers")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--fitted", action="store_true",
+                    help="use the slope and response width fitted to the "
+                         "imagery (medians of support_controls_spectrum.csv, "
+                         "rounded to 0.1) instead of --betas/--psf-fwhm; this "
+                         "is the paper's synthetic control")
     ap.add_argument("--no-tex", action="store_true")
     args = ap.parse_args(argv)
 
     controls = (["spectrum", "shift", "common", "synthetic"]
                 if "all" in args.control else list(dict.fromkeys(args.control)))
+    if args.fitted:
+        spec = cfg.RESULTS_DIR / "support_controls_spectrum.csv"
+        if not spec.exists():
+            print(f"--fitted needs {spec.name}; run --control spectrum first")
+            return 1
+        sp = pd.read_csv(spec)
+        args.betas = [round(float(sp.beta_fit.median()), 1)]
+        args.psf_fwhm = round(float(sp.psf_fwhm_m.median()), 1)
+        print(f"--fitted: beta = {args.betas[0]:g}, PSF {args.psf_fwhm:g} m FWHM "
+              f"(medians over {len(sp)} regions)")
+    # Any CSV about to be replaced is archived first, with a timestamp, so a
+    # run with the wrong parameters can never again erase the paper's rows.
+    import shutil, datetime
+    stamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    for control in controls:
+        for name in (f"support_controls_{control}.csv",
+                     f"support_controls_sweeps_{control}.csv"):
+            src = cfg.RESULTS_DIR / name
+            if src.exists():
+                dst = cfg.RESULTS_DIR / "archive" / f"{src.stem}.{stamp}.csv"
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+                print(f"  archived {name} -> archive/{dst.name}")
 
     scenes = args.regions or list(region_sites.load_sites()["scene"])
     scenes = [s for s in scenes if (cfg.TILE_DIR / f"{s}.npz").exists()]
@@ -814,6 +851,14 @@ def main(argv=None) -> int:
     if not frames:
         print("no control produced any row")
         return 1
+    # The table reports every control that has results, not only the ones
+    # this invocation ran: a synthetic-only re-run must not drop the
+    # common-support and shifted-crop rows from Table XI.
+    for control in ("synthetic", "common", "shift"):
+        path = cfg.RESULTS_DIR / f"support_controls_{control}.csv"
+        if control not in frames and path.exists():
+            frames[control] = pd.read_csv(path)
+            print(f"  reloaded {path.name} ({len(frames[control])} rows) for the table")
 
     md = summarize(frames)
     (cfg.RESULTS_DIR / "support_controls.md").write_text(md, encoding="utf-8")

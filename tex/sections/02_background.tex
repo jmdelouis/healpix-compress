@@ -69,7 +69,7 @@ verdicts.
 Term & Meaning in this paper \\
 \midrule
 Carrier grid, tile & The HEALPix level-20 grid on which the imagery is stored, and the unit of storage on it: the $1024\times1024$ cells descending from one level-10 cell, about \SI{6.4}{km} across. \\
-Native UTM square & The $637\times637$-pixel square of the original Sentinel-2 raster that covers the same ground area as one tile; the native side is never resampled. \\
+Native UTM square & The $637\times637$-pixel square of the original Sentinel-2 raster with the same nominal projected area as one tile (Section~\ref{sec:utm_crop}); the native side is never resampled. \\
 Transfer & The operation that fills the tile from the native pixels. Three are compared. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it adds nothing to the image and is the carrier used throughout. \emph{PSF-aware} also undoes part of the instrument blur, so the tile is sharper than the product it came from. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
 Read & The operation that returns a value on a native pixel from a decoded tile, needed only when the tile is compared with the observation; nearest cell, or interpolation within the tile. \\
 Size ratio & Compressed bytes of the HEALPix tile divided by compressed bytes of the native square, at the same reconstruction error. Above one, the HEALPix representation is larger. Uncompressed, the ratio is $2.58$ by geometry. \\

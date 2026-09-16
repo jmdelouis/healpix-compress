@@ -77,7 +77,8 @@ once both representations are compressed. On 40 Sentinel-2 L2A B04 regions,
 four land-cover classes and both HEALPix cell-shape regimes, five
 established codecs (ZFP, SZ3, JPEG~2000, JPEG~XL and a wavelet baseline)
 are applied to level-20 tiles reshaped into ordinary rasters and to native
-UTM squares of equal ground area. Sizes are compared at equal reconstruction
+UTM squares of equal nominal projected area. Sizes are compared at equal
+reconstruction
 error. The result is one ratio: the compressed size of the HEALPix tile
 divided by that of the UTM square, with no storage overhead charged to
 either side. Uncompressed it is $2.58$. At an RMSE of $10^{-4}$ in
@@ -87,9 +88,9 @@ $0.93$. Land-cover class moves it within $2.01$--$2.17$ and $0.89$--$1.10$.
 Read as a distortion-dependent critical overhead $\gamma_\star(e)$ --- the
 native-product overhead above which the carrier is the smaller
 representation --- this is a decision curve, and the illustrative $30\%$
-granule-overhead scenario is one point on it. Three measured conditions
+overhead scenario is one point on it. Three measured conditions
 qualify the curve. The transfer matters most: a PSF-aware or an
-inverse-distance transfer gives a tile that stays at $2.1$--$2.7$ over the
+inverse-distance transfer gives a tile that stays at $2.1$--$2.6$ over the
 whole error range, $1.2$ to $2.4$ times the bytes of the Clough--Tocher tile
 at the same coding RMSE. The codec matters next: four of the five reproduce
 the crossover and ZFP does not. The reference matters too: scored against

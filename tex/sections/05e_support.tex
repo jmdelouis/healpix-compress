@@ -59,7 +59,12 @@ the target. The control does not decompose the residual: the synthetic
 field is evaluated directly at the cell centres, so the transfer step,
 the content difference and the support mismatch are all absent, and the
 synthetic ratio lies above the measured one at all five targets, by
-$8\%$ to $27\%$ and always in the same direction. Real imagery passed
+$8\%$ to $27\%$ and always in the same direction. One term in that
+direction is built into the control: the field carries modes up to the
+level-20 Nyquist frequency, attenuated by the fitted response, so the
+native lattice aliases the small power beyond its own Nyquist while the
+carrier lattice represents it, which charges the carrier a little content
+the real chain's transfer never gives it. Real imagery passed
 through the Clough--Tocher transfer is thus more favourable to HEALPix
 than a Gaussian field with the same spectrum sampled without one; that
 residual cannot be assigned to support mismatch, scene statistics or the
@@ -68,8 +73,9 @@ study, so the control corroborates and does not bound. In plain words: a
 made-up image with the same texture statistics as Sentinel-2, sampled by
 the two grids over exactly the same ground, shows the same size penalty
 for HEALPix and the same decline of that penalty with the tolerated
-error, so the penalty comes mainly from sampling the same field $2.58$
-times more densely than necessary. Two controls on subsets
+error. The geometry-only control thus shows that sampling the same field
+at the $2.58\times$ higher level-20 density is sufficient to reproduce
+most of the observed storage penalty and its dependence on distortion. Two controls on subsets
 (Appendix~\ref{app:support}) agree from different directions: a
 common-support comparison on ten regions, and re-cutting the UTM crop at
 shifted positions on four regions, which moves the ratio by about $1\%$

@@ -34,11 +34,10 @@ five codecs reproduce it, JPEG~XL and JPEG~2000 most strongly ($0.71$ and
 $0.77$ at $10^{-2}$, $p<10^{-7}$), then DWT+Zstandard ($0.81$) and SZ3
 ($0.93$, $p=0.02$). ZFP does not: under ZFP the HEALPix tile costs
 $1.54$--$1.72$ times the native product at every target, with no decline
-as the target loosens. ZFP is a fixed-accuracy coder whose block
-transform spends bits according to the tolerance it is given; a
-rate-adaptive coder can decline to spend bits on the redundancy of an
-oversampled tile, and a fixed-accuracy coder cannot. This is an
-interpretation; SZ3, which also reproduces the crossover, is
+as the target loosens. This behaviour is consistent with ZFP's
+fixed-accuracy block coding and its different rate-allocation strategy,
+and the experiment does not isolate the codec mechanism responsible for
+the difference; SZ3, which also reproduces the crossover, is
 prediction-based, so the successful family cannot be defined by the
 transform alone. An archive that standardised on ZFP would see no regime
 in which the carrier is the smaller representation; one that

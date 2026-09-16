@@ -4,7 +4,7 @@
 The rest of this section builds the comparison one factor at a time; its
 outcome is in Table~\ref{tab:headline} and Fig.~\ref{fig:headline}. Both
 report one quantity: the compressed size of the HEALPix tile divided by
-the compressed size of the native UTM square of the same ground area, at
+the compressed size of the area-matched native UTM square, at
 the same reconstruction error, with no storage overhead charged to either
 side. A value of $2$ means the HEALPix representation takes twice the
 bytes; $1$ means the two are the same size. The second column gives each
@@ -18,7 +18,7 @@ populations and each carries its own $n$: the Clough--Tocher column is the
 median over every region its own sweep brackets, the population of
 Table~\ref{tab:gamma_continuous}, so the two agree entry by entry; the
 PSF and IDW columns cover the regions all three sweeps bracket, on which
-the Clough--Tocher median would read $2.07$ down to $0.95$. Under an
+the Clough--Tocher median would read $2.07$ down to $0.93$. Under an
 operational overhead $\gamma$ on the native product every entry divides by
 $\gamma$.
 
@@ -51,11 +51,12 @@ four classes the medians span $2.01$--$2.17$ at the tightest target and
 $0.89$--$1.10$ at the loosest, and no class changes the picture. Third,
 the way the tile was filled matters as much as everything else combined.
 The Clough--Tocher transfer adds nothing that was not in the image. The
-PSF-aware transfer of the companion study~\cite{delouis2026resample} also
-undoes part of the instrument blur, so the tile holds sharper content than
-the product it came from; that content is real, and a codec asked to
-preserve it must spend bytes on it. The result is a tile that compresses
-to $2.2$--$2.7$ times the UTM square at every target, close to the
+PSF-aware transfer of the companion study~\cite{delouis2026resample} is
+designed to undo part of the instrument blur and estimate a sharper
+latent field; its reconstruction gain is established in that study under
+its experimental conditions, and a codec asked to preserve the content it
+places on the tile must spend bytes on it. The result is a tile that compresses
+to $2.3$--$2.6$ times the UTM square at every target, close to the
 uncompressed ratio. The inverse-distance average, which restores no detail
 at all, costs nearly as much ($2.1$--$2.5$), so the extra bytes are mainly
 the price of leaving the smooth interpolant
@@ -74,4 +75,4 @@ reconstruction quality is established by the companion study under its own
 conditions, and this paper measures its storage cost. A reader whose
 product carries $30\%$ of padding and metadata reads the Clough--Tocher
 column as $1.59$ down to $0.72$, and the PSF-aware column as
-$1.7$ to $2.0$.
+$1.8$ to $2.0$.

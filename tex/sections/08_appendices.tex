@@ -396,8 +396,10 @@ sharpens the conditional conclusion of Section~\ref{sec:common_reference}.
 For a product used as an information-preserving copy of the scene, the
 regime where HEALPix becomes the cheaper representation is reached while
 the compression error is still a small fraction of the error the product
-carries anyway, in three of the four classes; for a product held to the
-observation it was made from, it is not. The choice between the two
+carries anyway. All four classes cross under the latent-scene reference,
+although the storage gain is substantial in only three of them; over water
+the crossover yields only about a $2\%$ saving. For a product held to the
+observation it was made from, no crossing is cheap. The choice between the two
 readings is a statement about the intended use of the archive.
 
 The deconvolving transfer does not yet support the same accounting. In
@@ -487,9 +489,11 @@ against the latent scene at the crossing values of $\kappa$), while ZFP,
 whose block-floating-point quantisation does not sort by spatial
 frequency, stays orthogonal under both references ($|\rho| \le 0.03$) and
 reproduces $\sqrt{1+\kappa^2}-1$ to a few tenths of a percentage point.
-The cross term is thus a property of coders that discard by frequency,
-which is what the transfer error of a non-deconvolving transfer is made of
-at either reference. Two limits apply: the sign of $\rho$ follows from
+This behaviour is consistent with the frequency-selective nature of the
+wavelet coder, whose error shares the spectral shape of a non-deconvolving
+transfer's error at either reference, whereas ZFP remains close to
+orthogonal in this experiment; two codecs do not establish a rule for
+coders in general. Two limits apply: the sign of $\rho$ follows from
 both errors being high-frequency deficits, or from one being noise the
 other removes, and does not depend on the synthetic field; its magnitude
 does, because the blur here is an exact Gaussian attenuation of a power
