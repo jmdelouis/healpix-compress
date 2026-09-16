@@ -393,7 +393,10 @@ growth of the product's total error with the orthogonal value
 $\sqrt{1+\kappa^2}-1$ in parentheses, a dash marking a crossing beyond the
 range the cross-term run sampled. The target shown is the tightest reported
 one at which HEALPix is the smaller representation, or the loosest tested
-where there is none.
+where there is none; it is set by the ratios alone and so is common to both
+denominators. Which denominator is chosen moves $\kappa$ at the crossing by a
+factor of five at the most expensive class ($0.50$ against $2.28$), which is
+why both are reported rather than one elected.
 
 \input{tables/table_alpha_budget}
 
@@ -431,16 +434,16 @@ costs. Against the latent scene, HEALPix becomes the smaller representation at
 $\kappa=0.13$ over urban scenes and $\kappa=0.19$ over agriculture (total
 error inflated by a measured $2.5\%$ and $5.1\%$ for a $30\%$ and a $12\%$
 saving in bytes), at $\kappa=0.50$ over forest, for $16.0\%$ inflation
-and a $17\%$ saving, and at $\kappa=0.23$ over water, for $6.8\%$
+and a $17\%$ saving, and at $\kappa=0.14$ over water, for $3.0\%$
 inflation, though only a $2\%$ saving. Each of those is about twice what the
-orthogonal formula would give ($0.9\%$, $1.8\%$, $11.9\%$, $2.5\%$), for the
+orthogonal formula would give ($0.9\%$, $1.8\%$, $11.9\%$, $1.0\%$), for the
 reason Appendix~\ref{app:cross_term} sets out. All four classes therefore cross
 while the compression error is a fraction of the error the product already
 carries; what separates them is what the crossing buys, from $30\%$ of the
 bytes over urban scenes down to $2\%$ over water, where the margin is too
 narrow to act on. Against the own estimand the same four crossings cost
-$\kappa=1.54$, $2.28$, $1.59$ and $1.45$, i.e.\ measured inflations of
-$37\%$, $115\%$, $40\%$ and $31\%$ ($84\%$, $149\%$, $88\%$ and $76\%$
+$\kappa=1.54$, $2.28$, $1.59$ and $1.22$, i.e.\ measured inflations of
+$37\%$, $115\%$, $40\%$ and $19\%$ ($84\%$, $149\%$, $88\%$ and $58\%$
 under the orthogonal formula, which overstates them here for the reason
 Appendix~\ref{app:cross_term} sets out): on that yardstick no crossing is
 cheap.
