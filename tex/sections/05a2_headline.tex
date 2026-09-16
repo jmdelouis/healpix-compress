@@ -17,8 +17,13 @@ contrast and $10^{-4}$ a quarter of a percent. The C--T column is the
 Clough--Tocher carrier the paper uses, with the range of the four
 land-cover class medians in brackets; the PSF and IDW columns are the same
 tile rebuilt with the PSF-aware and inverse-distance transfers of
-Section~\ref{sec:transfer_cost}, on the $n$ regions all three sweeps
-bracket. Under an operational overhead $\gamma$ charged to the native
+Section~\ref{sec:transfer_cost}. The two blocks rest on different
+populations and each carries its own $n$: the Clough--Tocher column is the
+median over every region its own sweep brackets --- the same population as
+Table~\ref{tab:gamma_continuous}, so that the two agree entry by entry ---
+and the PSF and IDW columns are restricted to the regions all three sweeps
+bracket, where the Clough--Tocher median would instead read $2.07$ down to
+$0.95$. Under an operational overhead $\gamma$ charged to the native
 product every entry divides by $\gamma$.
 
 \input{tables/table_headline}
@@ -30,7 +35,9 @@ product every entry divides by $\gamma$.
 HEALPix tile relative to the native UTM square, at equal reconstruction
 error and with no overhead on either side, for the three transfers that
 were used to fill the tile. The shaded band is the range of the four
-land-cover class medians for the Clough--Tocher carrier. The dashed line is
+land-cover class medians for the Clough--Tocher carrier. The three curves
+have the populations of Table~\ref{tab:headline} and are not on a common
+set of regions. The dashed line is
 the uncompressed ratio and the two dotted lines mark parity, with no
 overhead and with the illustrative $30\%$ overhead on the native product.}
 \label{fig:headline}
@@ -70,12 +77,15 @@ not the price of sharpness as such but of leaving the smooth interpolant
 The columns are therefore not interchangeable. If the archive stores a
 Clough--Tocher carrier, the storage question is a question of the
 tolerated error, and Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative}
-show where the answer changes sign, at $10^{-2}$ with no overhead at all
-and one target earlier once a $30\%$ overhead is charged to the native
-product. If it stores a PSF-aware carrier, the tile costs about the
+show where the answer changes sign, at $10^{-2}$ at equal layout overhead
+--- and, more exactly, for any relative overhead $\gamma\ge0.93$ --- and one
+target earlier once a $30\%$ overhead is charged to the native product. If it stores a PSF-aware carrier, the tile costs about the
 uncompressed factor of $2.58$ at any error a reflectance user would accept,
-and no plausible overhead on the native product closes that gap; what the
-archive buys for it is a sharper product, and that is a different trade.
+and no plausible overhead on the native product closes that gap. Those bytes
+go with a transfer aimed at a sharper latent-field estimand; what such a
+transfer buys in reconstruction quality is established by the companion
+study under its own conditions, and what this paper measures is its storage
+cost.
 Every number in the table divides by the overhead $\gamma$ of the native
 layout, so a reader whose product carries $30\%$ of padding and metadata
 reads the Clough--Tocher column as $1.59$ down to $0.72$, and the PSF-aware

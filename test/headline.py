@@ -82,19 +82,26 @@ def latex_table(per_target, raw, transfers, std, gamma):
     targets = sorted(per_target)
     rows = []
     rows.append("uncompressed & -- & "
-                + " & ".join([f"{raw:.2f}"] * 3) + r" & -- \\")
+                + f"{raw:.2f} & -- & {raw:.2f} & {raw:.2f} & -- " + r"\\")
     rows.append(r"\midrule")
     for t in targets:
         d = per_target[t]
         bc = d["by_class"]
         lo, hi = min(bc.values()), max(bc.values())
+        # The two blocks rest on different populations and each carries its
+        # own n. The C--T column is the median over every region the
+        # Clough--Tocher sweep brackets -- the population of gamma_analysis,
+        # and therefore the number quoted throughout the paper; the PSF and
+        # IDW columns come from the transfer-cost digest and are restricted
+        # to the regions all three sweeps bracket. The two differ (up to
+        # 0.02 on the C--T median), so they are not merged behind one n.
         tr = transfers.get(t)
         psf = f"{tr['psf']:.2f}" if tr else "--"
         idw = f"{tr['idw']:.2f}" if tr else "--"
         n_tr = f"{tr['n']}" if tr else "--"
         rows.append(f"{RMSE_LABEL.get(t, f'${t:g}$')} & {100*t/std:.2g} & "
-                    f"{d['median']:.2f} [{lo:.2f}--{hi:.2f}] & {psf} & {idw} & "
-                    f"{n_tr} \\\\")
+                    f"{d['median']:.2f} [{lo:.2f}--{hi:.2f}] & {d['n']} & "
+                    f"{psf} & {idw} & {n_tr} \\\\")
     note = (
         "Median over the 40 regions of the compressed size of the HEALPix "
         "tile divided by that of the native UTM crop of the same nominal "
@@ -109,8 +116,11 @@ def latex_table(per_target, raw, transfers, std, gamma):
         "class medians in brackets; the PSF (PSF-aware) and IDW "
         "(inverse-distance) columns are the same tile rebuilt with the other "
         "two transfers of "
-        "Section~\\ref{sec:transfer_cost}, on the $n$ regions all three "
-        "sweeps bracket. Under an operational overhead $\\gamma$ on the native "
+        "Section~\\ref{sec:transfer_cost}. The two blocks have different "
+        "populations and each carries its own $n$: the C--T column is the "
+        "median over every region its own sweep brackets, the PSF and IDW "
+        "columns over the regions all three sweeps bracket. Under an "
+        "operational overhead $\\gamma$ on the native "
         f"product every entry divides by $\\gamma$ ({gamma:g} in the "
         "illustrative scenario of Section~\\ref{sec:rd_illustrative}).")
     return "\n".join([
@@ -118,10 +128,10 @@ def latex_table(per_target, raw, transfers, std, gamma):
         *cfg.tex_caption("How much larger is the HEALPix tile, once compressed?",
                          "tab:headline"),
         r"\scriptsize", r"\setlength{\tabcolsep}{4pt}",
-        r"\begin{tabular}{@{}lrlrrr@{}}", r"\toprule",
-        r"Target & Error & \multicolumn{3}{c}{HEALPix / UTM size, by transfer} & \\",
-        r"\cmidrule(lr){3-5}",
-        r"RMSE & (\% contrast) & C--T [class range] & PSF & IDW & $n$ \\",
+        r"\begin{tabular}{@{}lrlrrrr@{}}", r"\toprule",
+        r"Target & Error & \multicolumn{5}{c}{HEALPix / UTM size, by transfer} \\",
+        r"\cmidrule(lr){3-7}",
+        r"RMSE & (\% contrast) & C--T [class range] & $n$ & PSF & IDW & $n$ \\",
         r"\midrule", *rows, r"\bottomrule", r"\end{tabular}",
         *cfg.tex_note(note), r"\end{table}"]) + "\n"
 

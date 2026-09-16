@@ -414,9 +414,10 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
         "\\multicolumn{3}{c}{Own estimand} & "
         "\\multicolumn{3}{c}{Latent scene} \\\\\n"
         "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}\\cmidrule(lr){8-10}\n"
-        "Class & Target & HPX/UTM & HPX wins & "
-        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% m.\\ (o.) & "
-        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% m.\\ (o.) \\\\\n"
+        "Class & Target & HPX/UTM at "
+        f"$\\gamma_{{\\mathrm{{tile}}}}{{=}}{cfg.GAMMA_UTM}$ & HPX wins & "
+        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% meas.\\ (orth.) & "
+        "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% meas.\\ (orth.) \\\\\n"
         "\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 

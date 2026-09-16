@@ -69,13 +69,18 @@ lossless size, the deconvolved tile to $1.8\%$, the inverse-distance tile to
 $2.0\%$ and the native raster to $3.0\%$ of its own; this is the
 oversampling redundancy studied in this paper, which every transfer
 inherits. Across regions the surcharge is not explained by how much each
-raster carries: correlating each region's own lossless size with the
-surcharge it pays gives a Spearman $\rho$ of $-0.46$ for the PSF transfer
-($p=0.003$, $n=40$) and $-0.31$ for the inverse-distance average
-($p=0.05$, $n=39$), so the regions whose rasters hold the most information
-pay the \emph{smallest} surcharge. That is the opposite sign from what an
-added-content explanation predicts, and it excludes total information
-content as the mechanism. The observations are consistent with energy
+raster carries: correlating each region's own lossless size on the
+Clough--Tocher raster with the surcharge it pays --- the median over the
+targets both sweeps bracket of that region's entry in the left block of
+Table~\ref{tab:transfer_cost} --- gives a Spearman $\rho$ of $-0.38$ for the
+PSF transfer ($p=0.017$, $n=40$) and $-0.27$ for the inverse-distance
+average ($p=0.100$, $n=39$), so the regions whose rasters hold the most
+information pay, if anything, the \emph{smallest} surcharge. That is the
+opposite sign from what an added-content explanation predicts. It is
+evidence against total information content as the mechanism rather than a
+refutation of it: one of the two correlations does not reach the
+conventional threshold, and a null correlation would already have been
+awkward for that explanation. The observations are consistent with energy
 compaction being the dominant mechanism, reached by different routes. The deconvolution puts
 power back into the small scales directly, $2.80$ times the observation's
 in the top octave against $0.89$ for Clough--Tocher, and a coder asked for a

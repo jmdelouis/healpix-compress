@@ -279,7 +279,11 @@ def latex_table(summary, gamma):
                          "tab:censoring"),
         r"\footnotesize",
         r"\begin{tabular}{@{}lrrrrlrr@{}}", r"\toprule",
-        r"Target & Bracketed & \multicolumn{3}{c}{Median ratio} & Median & Sure & Sign $p$ \\",
+        # These medians are the ones Tables VII and VIII report, which carry
+        # the illustrative overhead on the UTM side; a reader meeting this
+        # table in the appendix has no other way to know that.
+        r"Target & Bracketed & \multicolumn{3}{c}{Median ratio at "
+        r"$\gamma_{\mathrm{tile}}{=}" + f"{gamma:g}" + r"$} & Median & Sure & Sign $p$ \\",
         r"\cmidrule(lr){3-5}",
         r" & regions & reported & bracketed & $p^{\mathrm{Holm}}$ & interval & HPX / UTM / ? & (worst case) \\",
         r"\midrule", *body, r"\bottomrule", r"\end{tabular}",

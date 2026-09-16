@@ -82,7 +82,12 @@ def latex_table(df, floors):
             "floor row is the uncompressed carrier's RMSE against the "
             "observation.")
     lines = ["\\begin{table}[t]", "\\centering",
-             *cfg.tex_caption("The common-reference verdict under the two readers",
+             # The two median columns are at the illustrative overhead and the
+             # last column at gamma=1; a reader who meets the table before the
+             # prose has no other way to know which.
+             *cfg.tex_caption("The common-reference verdict under the two "
+                              f"readers, at $\\gamma_{{\\mathrm{{tile}}}}"
+                              f"={cfg.GAMMA_UTM}$",
                               "tab:common_two_readers"),
              # Eight columns, two of them $p$-values, do not fit a column at
              # the body font; one step below \\footnotesize and two thirds of
@@ -92,7 +97,9 @@ def latex_table(df, floors):
              " & \\multicolumn{3}{c}{nearest} & \\multicolumn{3}{c}{bilinear} & \\\\",
              "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}",
              "Target & $n$ & median & $p_{\\mathrm{Holm}}$ & $n$ & median & "
-             "$p_{\\mathrm{Holm}}$ & $\\gamma_\\star$ \\\\", "\\midrule"]
+             "$p_{\\mathrm{Holm}}$ & $\\gamma_\\star$ \\\\",
+             " & & \\multicolumn{2}{c}{} & & \\multicolumn{2}{c}{} & "
+             "($\\gamma{=}1$) \\\\", "\\midrule"]
     for kind, t in targets:
         cells = [_fmt_target(kind, t)]
         for reader in ("nearest", "bilinear"):

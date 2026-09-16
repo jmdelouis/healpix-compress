@@ -404,7 +404,8 @@ why both are reported rather than one elected.
 \centering
 \includegraphics[width=\textwidth]{figures/fig_alpha_budget_blur.pdf}
 \caption{The storage verdict as a function of what compressing costs the
-product, latent-scene denominator. Left: median HPX/UTM compressed size against
+product, latent-scene denominator. Left: median HPX/UTM compressed size at the
+illustrative $\gamma_{\mathrm{tile}}=1.30$, against
 $\kappa=e_{\mathrm{comp}}/e_{\mathrm{resample}}$, the compression error as a
 fraction of the error the product already carries. Right: the same curves
 against the \emph{measured} growth of the product's total error, interpolated
@@ -482,7 +483,7 @@ extrapolated to the level-20 Nyquist places $2.3\%$ (forest) to $31.1\%$
 (urban) of the latent variance above the \emph{native} Nyquist, in a band the
 fitted response attenuates to a few percent of its amplitude, so most of the
 blur we charge is not recoverable by any damping, which is also why the blur
-is $18$ to $67\%$ of the latent standard deviation here, and why urban scenes,
+is $22$ to $74\%$ of the latent standard deviation here, and why urban scenes,
 with the shallowest fitted slope, recover least. A third candidate, the depth
 of the cell average, we tested and can exclude: matching the companion's
 sixteen level-22 children rather than four at level 21 moves the recovery
@@ -513,13 +514,12 @@ the synthetic scene of Appendix~\ref{app:error_budget} so that both errors are
 available exactly, with both taken on the same level-20 cells and in the same
 norm, which a comparison made after projecting to UTM would not give either.
 
-Both errors are taken on the level-20 cells and in the same norm, and
-$\rho$ is their normalised inner product, so that the exact relation is
-$D_{\mathrm{total}}/D_0 = \sqrt{1 + \kappa^2 + 2\rho\kappa}$ and the
-quadrature form of Appendix~\ref{app:error_budget} is its $\rho = 0$ case.
 Operating points are grouped around each reported $\kappa$ within a factor
-of $1.5$, and the last two columns give the growth of the product's total
-error as measured and as quadrature predicts it.
+of $1.5$, and the last two columns of Table~\ref{tab:cross_term} give the
+growth of the product's total error as measured and as quadrature predicts
+it. Its $n$ counts the operating points that fall in each window --- region,
+codec and coding setting together, over the same 40 regions throughout ---
+and not the regions; a window holding fewer than five is not reported.
 
 \input{tables/table_cross_term}
 

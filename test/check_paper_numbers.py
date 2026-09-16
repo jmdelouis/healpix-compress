@@ -261,6 +261,16 @@ def scoped_checks():
             lo, hi = min(v[key] for v in vals), max(v[key] for v in vals)
             out.append((f"headline section: {label} range {hd}",
                         f"${lo:.1f}$--${hi:.1f}$", "gamma=1"))
+        # Table V's C--T column and its PSF/IDW columns do not share a
+        # population: the first is every region its own sweep brackets, the
+        # second the regions all three bracket. The prose states what the
+        # C--T median would be on the narrower set, so that the reader can
+        # see the two blocks are not interchangeable; lock those two ends.
+        tt = sorted(transfers)
+        out.append((f"headline section: C--T median on the three-way set, tightest {hd}",
+                    _fmt(transfers[tt[0]]["ct"]), "transfer_cost_digest population"))
+        out.append((f"headline section: C--T median on the three-way set, loosest {hd}",
+                    _fmt(transfers[tt[-1]]["ct"]), "transfer_cost_digest population"))
     return out
 
 
@@ -455,6 +465,11 @@ def resampling_error_checks():
             if c in b.index:
                 out.append((f"blur / latent std, {c} {where}",
                             f"${b[c]:.1f}\\%$", "PSF rows: truth_std is latent"))
+        # The same quantity is also quoted as a range, rounded, further down;
+        # it had drifted there independently of the two class values above.
+        out.append((f"blur / latent std, class range {where}",
+                    f"${b.min():.0f}$ to ${b.max():.0f}\\%$",
+                    "same quantity, rounded, as a range"))
     q = cfg.RESULTS_DIR / "resampling_error_noise0.csv"
     if q.exists():
         n = pd.read_csv(q)
@@ -537,6 +552,13 @@ def transfer_mechanism_checks():
         if v:
             out.append((f"lossless size vs surcharge, {label}",
                         f"${v['rho']:.2f}$", f"n={v['n']}, p={v['p']:.3f}"))
+            # The prose leans on the p-values as much as on the sign -- one of
+            # the two does not reach 0.05 and the sentence says so -- and a
+            # rho that moved without its p would leave that reading stale.
+            out.append((f"lossless size vs surcharge, {label}, p",
+                        f"$p={v['p']:.3f}$", f"n={v['n']}"))
+            out.append((f"lossless size vs surcharge, {label}, n",
+                        f"$n={v['n']}$", "regions"))
     return out
 
 

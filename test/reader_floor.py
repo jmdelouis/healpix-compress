@@ -173,11 +173,18 @@ def latex_table(df, path):
     lines = ["\\begin{table}[t]", "\\centering",
              *cfg.tex_caption("The transfer-and-read floor under three readers",
                               "tab:reader_floor"), "\\footnotesize",
-             "\\begin{tabular}{@{}llrrr@{}}", "\\toprule",
-             "Tiles & Reader & Floor & \\% of std & Cells read \\\\", "\\midrule"]
+             # The n column pushed the six columns 3pt past the text width.
+             "\\setlength{\\tabcolsep}{4pt}",
+             # Every row of the upper block is a median over the same
+             # regions, and a reader who scans tables rather than prose has
+             # no way to see how many. Carry n in the table itself.
+             "\\begin{tabular}{@{}llrrrr@{}}", "\\toprule",
+             "Tiles & Reader & $n$ & Floor & \\% of std & Cells read \\\\",
+             "\\midrule"]
     for (k, r), g in ok.groupby(["kernel", "reader"], sort=False):
         kname = {"clough_tocher": "Clough--Tocher", "psf": "PSF"}.get(k, k)
-        lines.append(f"{kname} & {r} & {g.floor.median():.2e} & "
+        lines.append(f"{kname} & {r} & {g.scene.nunique()} & "
+                     f"{g.floor.median():.2e} & "
                      f"{100*g.floor_frac_of_std.median():.1f} & "
                      f"{100*g.support_fraction.median():.1f}\\% \\\\")
     lines += ["\\midrule"]
@@ -188,7 +195,7 @@ def latex_table(df, path):
             r = (piv.bilinear / piv.nearest).dropna()
             kname = {"clough_tocher": "Clough--Tocher", "psf": "PSF"}.get(k, k)
             lines.append(f"\\multicolumn{{2}}{{@{{}}l}}{{{kname}: bilinear / "
-                         f"nearest}} & {r.median():.3f} & "
+                         f"nearest}} & {len(r)} & {r.median():.3f} & "
                          # Not a variance decomposition: it is the measured
                          # drop in mean squared error between two complete
                          # chains that differ only in the read.

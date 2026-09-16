@@ -585,7 +585,13 @@ def latex_table(df, targets, do_rd):
                                     "tab:kernel_ablation"))
         + "\n\\footnotesize\n"
         f"\\begin{{tabular}}{{@{{}}{spec}@{{}}}}\n\\toprule\n"
-        "Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct." + extra_h
+        # A bare "$0.001$" in a header row does not say what the number under
+        # it is; the three rate columns get a group header of their own.
+        + ((" & " * 7
+            + f"\\multicolumn{{{len(targets[:3])}}}{{c}}"
+              "{Size / \\texttt{clough\\_tocher} at target RMSE} \\\\\n"
+            + f"\\cmidrule(lr){{8-{7 + len(targets[:3])}}}\n") if do_rd else "")
+        + "Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct." + extra_h
         + " \\\\\n\\midrule\n" + "\n".join(rows)
         + "\n\\bottomrule\n\\end{tabular}\n"
         + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")
@@ -613,11 +619,6 @@ def main(argv=None) -> int:
                     help="rebuild tiles even when they exist")
     ap.add_argument("--no-publish", action="store_true")
     ap.add_argument("--no-tex", action="store_true")
-    ap.add_argument("--keep-mismatched-windows", action="store_true",
-                    help="keep the regions window_radiometry.py rejects; this "
-                         "ablation re-runs the transfer from the native "
-                         "window, so on those regions it measures a difference "
-                         "between two products, not between two kernels")
     args = ap.parse_args(argv)
 
     sites = region_sites.load_sites()
@@ -625,13 +626,6 @@ def main(argv=None) -> int:
     scenes = [s for s in scenes
               if (cfg.REGION_DIR / f"{s}_data.zarr").exists()
               or build_tiles.tile_path(s).exists()]
-    if not args.keep_mismatched_windows:
-        drop = set(cfg.window_mismatched_scenes(verbose=True))
-        excluded = [s for s in scenes if s in drop]
-        if excluded:
-            print(f"window audit excludes {len(excluded)} region(s): "
-                  + ", ".join(excluded))
-            scenes = [s for s in scenes if s not in drop]
     if not scenes:
         print(f"no region windows under {cfg.REGION_DIR} and no tiles under "
               f"{cfg.TILE_DIR}")

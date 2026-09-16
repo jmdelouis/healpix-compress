@@ -54,9 +54,9 @@ import shutil
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt           # noqa: E402
-import numpy as np
-from scipy import stats                        # noqa: E402
+import numpy as np                        # noqa: E402
 import pandas as pd                       # noqa: E402
+from scipy.stats import spearmanr         # noqa: E402
 
 import paper_config as cfg                # noqa: E402
 import paper_stats as ps                  # noqa: E402
@@ -388,15 +388,6 @@ def _short(k):
     return SHORT.get(k, k.replace("_", chr(92) + "_"))
 
 
-def _pair_ratio(test, base, scene, target, codecs):
-    """Size of `test` over size of `base` for one region and target."""
-    a = ps.best_of_codecs_size(base, scene, codecs, target)
-    b = ps.best_of_codecs_size(test, scene, codecs, target)
-    if not (np.isfinite(a) and np.isfinite(b) and a > 0):
-        return np.nan
-    return b / a
-
-
 def lossless_size(df):
     """Smallest lossless size per region: that raster's entropy, model-free."""
     d = df[df.codec.isin(cfg.LOSSLESS_CODECS)]
@@ -460,6 +451,50 @@ def _median_ratio(num_df, den_df, scenes, target, codecs, scale=1.0):
     return st["median"], st["p"]
 
 
+def lossless_vs_surcharge(base_df, tested, codecs=None):
+    """Spearman rho between a region's own entropy and the surcharge it pays.
+
+    Section V-K uses this to exclude "the tile simply carries more
+    information" as the mechanism behind the roughly two-fold surcharge: if
+    that were it, the regions whose rasters hold the most would pay the most,
+    and the correlation would be positive. It is negative instead.
+
+    The quantity was quoted in the paper before any script produced it, which
+    is how it could drift; this function fixes the definition so the prose can
+    be checked against a run. Per region the surcharge is the median, over the
+    RMSE targets where both sweeps bracket that region, of the tested
+    transfer's oracle-best compressed size divided by the baseline's at the
+    same absolute target -- the same per-region quantity the left block of
+    Table XVIII medians across regions. The entropy is the region's smallest
+    lossless size on the baseline raster, so that one raster ranks the regions
+    for every transfer. Regions are those where at least one target is
+    bracketed on both sweeps.
+    """
+    codecs = codecs or cfg.COMPRESSOR_CODECS
+    ll = lossless_size(base_df)
+    out = {}
+    for name, df in tested.items():
+        per = {}
+        for sc in sorted(set(df.scene) & set(base_df.scene) & set(ll.index)):
+            v = []
+            for t in cfg.TARGET_RMSE:
+                if not (ps.any_bracketed(df, sc, codecs, t, "rmse")
+                        and ps.any_bracketed(base_df, sc, codecs, t, "rmse")):
+                    continue
+                a = ps.best_of_codecs_size(base_df, sc, codecs, t)
+                b = ps.best_of_codecs_size(df, sc, codecs, t)
+                if np.isfinite(a) and np.isfinite(b) and a > 0:
+                    v.append(b / a)
+            if v:
+                per[sc] = float(np.median(v))
+        if len(per) < 5:
+            continue
+        s = pd.Series(per)
+        rho, p = spearmanr(ll[s.index], s)
+        out[name] = dict(rho=float(rho), p=float(p), n=int(len(s)))
+    return out
+
+
 def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
                  codecs=None, publish=True):
     """The two tables Section V-I needs, plus a digest of what the prose quotes."""
@@ -503,30 +538,6 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
         digest[f"{t:g}"] = d
         rows.append(f"${t:g}$ & {len(scenes)} & " + " & ".join(cells) + r" \\")
 
-    # Does a raster's total information content predict its surcharge? The
-    # question is whether the extra bytes of a transfer are the bytes of extra
-    # content. Correlating each region's own lossless size (its entropy, coder
-    # aside) with the size ratio it pays answers it region by region, and the
-    # answer belongs in the digest rather than in a notebook, because the
-    # paper quotes it.
-    lossless_rho = {}
-    for k in kn:
-        ll = lossless_size(have[k])
-        per = {}
-        for sc in ll.index:
-            v = [_pair_ratio(have[k], have[baseline], sc, t, codecs)
-                 for t in cfg.TARGET_RMSE]
-            v = [x for x in v if np.isfinite(x)]
-            if v:
-                per[sc] = float(np.median(v))
-        x = np.array([ll[sc] for sc in per], dtype=float)
-        y = np.array(list(per.values()), dtype=float)
-        if len(x) >= 5:
-            r = stats.spearmanr(x, y)
-            lossless_rho[k] = dict(rho=float(r.statistic), p=float(r.pvalue),
-                                   n=int(len(x)))
-    digest["lossless_size_vs_ratio"] = lossless_rho
-
     over = " & ".join(_short(k) for k in kn)
     if len(kn) == 2:
         over += f" & {_short(kn[0])}/{_short(kn[1])}"
@@ -557,8 +568,9 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
         + "\n\\footnotesize\n"
         f"\\begin{{tabular}}{{@{{}}lr{'r'*(ncol-2)}@{{}}}}\n\\toprule\n"
         f" & & \\multicolumn{{{n_over}}}{{c}}{{Relative to {_short(baseline)}}}"
-        + (f" & \\multicolumn{{{n_utm}}}{{c}}{{HPX/UTM}}" if utm is not None
-           else "") + " \\\\\n"
+        + (f" & \\multicolumn{{{n_utm}}}{{c}}"
+           f"{{HPX/UTM at $\\gamma_{{\\mathrm{{tile}}}}{{=}}{cfg.GAMMA_UTM}$}}"
+           if utm is not None else "") + " \\\\\n"
         f"\\cmidrule(lr){{3-{2+n_over}}}"
         + (f"\\cmidrule(lr){{{3+n_over}-{ncol}}}" if utm is not None else "")
         + "\n"
@@ -611,6 +623,8 @@ def latex_tables(baseline="clough_tocher", tested=("psf", "linear"),
         print(f"wrote {(cfg.TEX_TABLES/'table_transfer_cost.tex').name}, "
               f"{(cfg.TEX_TABLES/'table_compactability.tex').name}")
     comp.to_csv(cfg.RESULTS_DIR / "compactability.csv", index=False)
+    digest["lossless_size_vs_ratio"] = lossless_vs_surcharge(
+        have[baseline], {k: have[k] for k in kn}, codecs)
     # Everything the prose quotes, so a number in the text can be checked
     # against the run that produced the table rather than against a memory.
     (cfg.RESULTS_DIR / "transfer_cost_digest.json").write_text(
