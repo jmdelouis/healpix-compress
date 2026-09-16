@@ -163,7 +163,10 @@ def window_mismatched_scenes(kernel: str | None = None, verbose: bool = False):
         print(f"note: {p.name} has no kernel column, so the verdict for "
               f"{kernel!r} is the carrier kernel's; re-run "
               "window_radiometry.py to audit every tile.")
-    return sorted(a.loc[a.status != "ok", "scene"].astype(str))
+    # "not applicable" marks a tile the audit measured but did not judge --
+    # the identity it rests on assumes a transfer that does not alter the
+    # field. Only an explicit MISMATCH excludes a region.
+    return sorted(a.loc[a.status == "MISMATCH", "scene"].astype(str))
 
 
 def ensure_dirs() -> None:

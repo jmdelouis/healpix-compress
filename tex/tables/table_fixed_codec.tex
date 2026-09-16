@@ -2,15 +2,17 @@
 \centering
 \caption{Same-codec comparison at constant reconstruction RMSE}
 \label{tab:fixed_codec}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lrrrrr}
 \toprule
 Codec & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ & $3\times10^{-3}$ & $10^{-2}$ \\
 \midrule
-\texttt{zfp} & 1.72 (40) & 1.64 (40) & 1.55 (40) & 1.54 (39) & 1.63 (38) \\
-\texttt{sz3} & 1.59 (40) & 1.46 (40) & 1.26 (39) & 1.16 (36) & 0.93 (34) \\
-\texttt{jpeg2000\_lossy} & 1.59 (40) & 1.50 (40) & 1.23 (39) & 0.95 (35) & 0.77 (30) \\
-\texttt{jpegxl\_lossy} & 1.57 (40) & 1.44 (40) & 1.16 (38) & 0.82 (35) & 0.71 (26) \\
-\texttt{dwt\_zstd} & 1.59 (35) & 1.46 (40) & 1.23 (40) & 0.96 (38) & 0.81 (35) \\
+ZFP & 1.72 (40) & 1.64 (40) & 1.55 (40) & 1.54 (39) & 1.63 (38) \\
+SZ3 & 1.59 (40) & 1.46 (40) & 1.26 (39) & 1.16 (36) & 0.93 (34) \\
+JPEG 2000 & 1.59 (40) & 1.50 (40) & 1.23 (39) & 0.95 (35) & 0.77 (30) \\
+JPEG XL & 1.57 (40) & 1.44 (40) & 1.16 (38) & 0.82 (35) & 0.71 (26) \\
+DWT + zstd & 1.59 (35) & 1.46 (40) & 1.23 (40) & 0.96 (38) & 0.81 (35) \\
 \bottomrule
 \end{tabular}
 \end{table}

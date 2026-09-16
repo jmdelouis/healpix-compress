@@ -275,6 +275,21 @@ $[0.982, 1.011]$ over correlations from $0.910$ to $0.999$ and scene
 contrasts spanning more than two orders of magnitude. Lake Geneva lies at
 $1.884$.
 
+A second test, exact rather than statistical, confirms it and carries a
+warning of its own. Each tile's file also holds the equal-area UTM crop it
+is compared against, written in the same call, so that crop and the window's
+own pixels over the same ground must agree to the bit. Over the 198 stored
+tiles --- five transfers on each region, three on one --- 197 do, and the
+one that does not is the Clough--Tocher tile of Lake Geneva, where
+$405\,764$ of the $405\,769$ pixels differ. The warning is in how the
+comparison has to be made: the crop box recorded in each file is a pair of
+pixel indices into the window the tile was built from, and 39 of the 40
+windows have since been re-acquired at a smaller size, hence with a
+different pixel origin. Comparing at the recorded indices reports 39
+mismatches that are an artefact of the indexing and say nothing about the
+imagery. Recomputing the box from the tile's centroid, which is a position
+on the Earth and survives any re-cutting of the window, leaves one.
+
 A first version of this audit tested the correlation, the slope and the
 offset against fixed thresholds instead, with the offset expressed in units
 of the scene's standard deviation. It flagged two further regions, both of
@@ -391,10 +406,8 @@ $\kappa=e_{\mathrm{comp}}/e_{\mathrm{resample}}$, the compression error as a
 fraction of the error the product already carries. Right: the same curves
 against the resulting growth of the product's total error,
 $\sqrt{1+\kappa^2}-1$. The dashed line marks parity; points below it favour
-HEALPix. Three of the four classes cross parity while the compression error is
-still a fraction of the transfer error. Under the own-estimand denominator the
-curves are unchanged in shape and shifted right by a class-dependent factor of
-$4.7$ to $12.3$, which is the ratio of the two denominators in
+HEALPix. The own-estimand denominator leaves the curves unchanged in shape and
+shifts them right, by the ratio of the two denominators in
 Table~\ref{tab:alpha_budget}.}
 \label{fig:error_budget}
 \end{figure*}

@@ -140,6 +140,7 @@ def checks(tex: str):
     out += level19_checks()
     out += window_radiometry_checks()
     out += resampling_error_checks()
+    out += tile_crop_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     return out, survivors
@@ -310,6 +311,39 @@ def level19_checks():
     return out
 
 
+def tile_crop_checks():
+    """The exact crop test the window appendix quotes as its confirmation.
+
+    Two numbers carry the argument -- how many stored tiles agree with their
+    window to the bit, and how many pixels differ on the one that does not --
+    plus the count of stale recorded boxes, which is the trap the passage
+    warns about. All three come from the CSV rather than from the prose.
+    """
+    p = cfg.RESULTS_DIR / "tile_crop_consistency.csv"
+    if not p.exists():
+        return [("tile/crop audit  [skipped: no CSV]", "",
+                 "run tile_crop_consistency.py")]
+    import pandas as pd
+    d = pd.read_csv(p)
+    where = "[in sections/08_appendices.tex]"
+    out = [(f"tile/crop audit, tiles checked {where}", f"{len(d):d}",
+            "one row per (region, transfer)"),
+           (f"tile/crop audit, agreeing {where}", f"{int(d.identical.sum()):d}",
+            "agree with the window to the bit")]
+    bad = d[~d.identical]
+    for _, r in bad.iterrows():
+        n = int(r["n_differ"])
+        out.append((f"tile/crop audit, pixels differing on {r['scene']} {where}",
+                    f"{n // 1000}\\,{n % 1000:03d}", "of the crop"))
+    if "box_shifted" in d.columns:
+        # Per region, not per tile: the recorded box is stale because the
+        # window was re-acquired, which is a property of the region.
+        n_shift = int(d[d.box_shifted].scene.nunique())
+        out.append((f"tile/crop audit, stale recorded boxes {where}",
+                    f"{n_shift:d}", "regions re-acquired at another size"))
+    return out
+
+
 def resampling_error_checks():
     """The appendix figures on each transfer's error against its own estimand.
 
@@ -395,7 +429,7 @@ def window_radiometry_checks():
     # deconvolving one does by design).
     if "kernel" in a.columns:
         a = a[a.kernel == getattr(cfg, "CARRIER_KERNEL", "clough_tocher")]
-    ok, bad = a[a.status == "ok"], a[a.status != "ok"]
+    ok, bad = a[a.status == "ok"], a[a.status == "MISMATCH"]
     where = "[in sections/08_appendices.tex]"
     out = [
         (f"window audit, median identity {where}",

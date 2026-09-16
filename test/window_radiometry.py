@@ -79,8 +79,27 @@ import region_sites
 # share. Those are properties of the scene, not of the window. The identity
 # above has neither failure mode, and it is what the sampling model predicts
 # rather than a line drawn around an outcome.
-MAX_DILUTION_DEV = 0.10          # |slope / corr^2 - 1|
-MIN_CORR = 0.80                  # a backstop, an order of magnitude from the data
+#
+# The identity holds for a transfer that does not systematically alter the
+# field. Not every transfer here is one: the PSF-aware transfer deconvolves,
+# adding gain at high frequency by construction, and sits at 1.09 in median
+# with a spread from 1.00 to 1.70; Keys' bicubic rings, its correlation with a
+# nearest-pixel sample collapses to 0.16, and its ratio has no useful scale.
+#
+# Two ways of judging those were tried and both fail. Against 1 they are
+# flagged wholesale, which reports a design decision as a defect. Against
+# their own cohort with a Tukey rule they are worse still: the carrier's
+# cohort has an interquartile range of 0.003, so three of them is a band of
+# 0.008, and the two lowest-contrast lakes fall outside it although
+# `tile_crop_consistency.py` shows their tiles to be exact. A tight cohort
+# turns ordinary scene-driven variation into an outlier.
+#
+# So this test is scoped to where its assumption holds: the carrier. Other
+# transfers are measured and reported, never judged. The test that does judge
+# every transfer is `tile_crop_consistency.py`, which compares each stored crop
+# with the window's own pixels over the same ground -- exact, geolocated, and
+# free of any model of what the transfer does.
+MAX_DILUTION_DEV = 0.10          # |slope / corr^2 - 1|, on the carrier's tiles
 
 
 def region_row(scene, halo_px=32, band=None, kernel=None):
@@ -116,8 +135,8 @@ def region_row(scene, halo_px=32, band=None, kernel=None):
     rms = float(np.sqrt(np.mean(diff * diff)))
     corr = float(np.corrcoef(s, m)[0, 1]) if len(s) > 2 else np.nan
 
+    # The verdict needs the whole cohort, so it is taken in add_status.
     dilution = float(slope / corr ** 2) if corr and corr == corr else np.nan
-    ok = (corr > MIN_CORR and abs(dilution - 1.0) < MAX_DILUTION_DEV)
     return dict(
         scene=scene, cls=scene.split("__")[1],
         kernel=kernel or build_tiles.DEFAULT_KERNEL, n=int(good.sum()),
@@ -127,8 +146,26 @@ def region_row(scene, halo_px=32, band=None, kernel=None):
         corr=corr, slope=float(slope), slope_over_corr2=dilution,
         offset=float(offset),
         offset_frac_of_std=float(offset / sd) if sd else np.nan,
-        rms=rms, rms_frac_of_std=float(rms / sd) if sd else np.nan,
-        status="ok" if ok else "MISMATCH")
+        rms=rms, rms_frac_of_std=float(rms / sd) if sd else np.nan)
+
+
+def add_status(df):
+    """Judge the carrier's tiles; measure the others without judging them.
+
+    `status` is "ok" or "MISMATCH" on the carrier kernel and "not applicable"
+    elsewhere, because the identity this test rests on assumes a transfer that
+    does not systematically alter the field. `departure` is |ratio - 1| on
+    every row, so the other transfers stay inspectable.
+    """
+    df = df.copy()
+    df["departure"] = (df.slope_over_corr2.astype(float) - 1.0).abs()
+    carrier = getattr(cfg, "CARRIER_KERNEL", "clough_tocher")
+    is_carrier = (df.kernel == carrier if "kernel" in df.columns
+                  else pd.Series(True, index=df.index))
+    df["status"] = np.where(
+        ~is_carrier, "not applicable",
+        np.where(df.departure > MAX_DILUTION_DEV, "MISMATCH", "ok"))
+    return df
 
 
 def carrier_rows(df):
@@ -142,9 +179,14 @@ def markdown(df):
     per_kernel = []
     if "kernel" in df.columns and df.kernel.nunique() > 1:
         for k, g in df.groupby("kernel"):
-            n_bad = int((g.status != "ok").sum())
-            names = ", ".join(g.loc[g.status != "ok", "scene"])
-            per_kernel.append(f"| `{k}` | {len(g)} | {n_bad} | {names or '--'} |")
+            judged = g[g.status.isin(("ok", "MISMATCH"))]
+            n_bad = int((g.status == "MISMATCH").sum())
+            verdict = (f"{n_bad}" if len(judged)
+                       else "not judged (see tile\\_crop\\_consistency)")
+            names = ", ".join(g.loc[g.status == "MISMATCH", "scene"])
+            per_kernel.append(
+                f"| `{k}` | {len(g)} | {g.departure.median():.3f} | "
+                f"{verdict} | {names or '--'} |")
     df = carrier_rows(df)
     bad = df[df.status != "ok"]
     lines = [
@@ -152,9 +194,13 @@ def markdown(df):
         "",
         "Stored tile against its own window, sampled at the tile's cell centres "
         "by nearest pixel. Under the sampling-noise model the regression slope "
-        "equals the squared correlation whatever the noise level, so a region "
-        f"passes when `slope / corr^2` is within {MAX_DILUTION_DEV} of one "
-        f"(and the correlation clears {MIN_CORR} as a backstop).",
+        "equals the squared correlation whatever the noise level, so the ratio "
+        "`slope / corr^2` is one for a transfer that does not systematically "
+        "alter the field. A deconvolving transfer does, so the verdict is taken "
+        "on the carrier's tiles alone, where the assumption holds: flagged "
+        f"when the ratio departs from one by more than {MAX_DILUTION_DEV}. "
+        "The other transfers are measured and reported, never judged; "
+        "`tile_crop_consistency.py` is the test that covers them.",
         "",
         f"- regions audited: {len(df)}",
         f"- passing: {int((df.status == 'ok').sum())}",
@@ -205,8 +251,8 @@ def markdown(df):
             "another. Section V-L sets two of these tiles against each other, "
             "which is only meaningful where both came from the same "
             "acquisition.", "",
-            "| kernel | tiles audited | mismatched | which |",
-            "| --- | ---: | ---: | --- |", *per_kernel]
+            "| kernel | tiles | median \\|ratio-1\\| | mismatched | which |",
+            "| --- | ---: | ---: | ---: | --- |", *per_kernel]
     return "\n".join(lines) + "\n"
 
 
@@ -324,7 +370,7 @@ def main(argv=None) -> int:
             print(f"  {s}: {why}")
         raise SystemExit("no region could be audited")
 
-    df = pd.DataFrame(rows)
+    df = add_status(pd.DataFrame(rows))
     cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     tag = "__subset" if (args.regions or args.classes or args.limit) else ""
     df.to_csv(cfg.RESULTS_DIR / f"window_radiometry{tag}.csv", index=False)
