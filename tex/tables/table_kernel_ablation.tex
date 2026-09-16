@@ -3,20 +3,20 @@
 \caption{Transfer-kernel ablation}
 \label{tab:kernel_ablation}
 \footnotesize
-\begin{tabular}{@{}lrrrrrr@{}}
+\begin{tabular}{@{}lrrrrrrrrr@{}}
 \toprule
-Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct. \\
+Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct. & $0.0001$ & $0.0003$ & $0.001$ \\
 \midrule
-\texttt{bicubic} & 392.28 & 2.45 & 11.9 & 0.96 & 0.16 & 1.51 \\
-\texttt{clough\_tocher} & 1.20 & 0.00 & 10.0 & 1.00 & 0.05 & 0.89 \\
-\texttt{linear} & 11.43 & 0.85 & 6.9 & 0.74 & 0.03 & 0.92 \\
-\texttt{nearest} & 10.04 & 0.00 & 0.7 & 0.12 & 0.00 & 1.00 \\
-\texttt{psf} & 8.16 & 0.19 & 23.6 & 2.55 & 0.44 & 2.80 \\
+\texttt{bicubic} & 392.34 & 2.56 & 11.7 & 0.95 & 0.16 & 1.51 & 1.65 & 1.92 & 2.84 \\
+\texttt{clough\_tocher} & 1.20 & 0.00 & 10.0 & 1.00 & 0.05 & 0.89 & 1.00 & 1.00 & 1.00 \\
+\texttt{linear} & 11.48 & 0.86 & 7.0 & 0.74 & 0.03 & 0.92 & 1.20 & 1.31 & 1.60 \\
+\texttt{nearest} & 10.04 & 0.00 & 0.8 & 0.11 & 0.00 & 1.00 & 1.21 & 1.31 & 1.50 \\
+\texttt{psf} & 8.15 & 0.18 & 24.0 & 2.54 & 0.44 & 2.80 & 1.27 & 1.36 & 1.64 \\
 \bottomrule
 \end{tabular}
 \vspace{3pt}
 \begin{minipage}{\textwidth}
 \footnotesize
-Medians over the 40 regions of the study (\texttt{bicubic} on 39, \texttt{linear} on 39, the rest on all). Each row rebuilds the carrier tile from the same native window with a different kernel and the same reading operator, so differences between rows are the transfer alone. Two library names mislead: \texttt{linear} is an inverse-distance-weighted average over four neighbours, not a linear interpolant, and \texttt{bicubic} is Keys' cubic convolution, whose signed kernel rings outside the local sample range by design; its row is reported for completeness, not as a finding. \emph{Transfer} is the error against an analytic field known at every position, as a percentage of the field's standard deviation; it is the only column that gives a transfer no credit for copying its input samples. \emph{Over} is the percentage of cells placed outside the range of the data the transfer was given, which detects a diverging interpolant that the constant-field check passes. \emph{Floor} is the RMSE of the uncompressed tile read on the native pixels over the two footprints' intersection, as a fraction of the scene's standard deviation, and \emph{rel.} its per-region ratio to \texttt{clough\_tocher}; both reward a transfer for staying close to the identity on the native lattice and are reported for that reason, not as a ranking. \emph{log-PSD} is the RMS distance in $\log_{10}$ between the projected tile's radial power spectrum and the observation's up to the native Nyquist, and \emph{top oct.} the ratio of their power in the highest octave alone: above 1 the transfer leaves more high-frequency power than the observation carries.
+Medians over the 39 regions swept, which is fewer than the 40 the rest of the paper uses (\texttt{bicubic} on 38, \texttt{linear} on 38, the rest on all). Each row rebuilds the carrier tile from the same native window with a different kernel and the same reading operator, so differences between rows are the transfer alone. Two library names mislead: \texttt{linear} is an inverse-distance-weighted average over four neighbours, not a linear interpolant, and \texttt{bicubic} is Keys' cubic convolution, whose signed kernel rings outside the local sample range by design; its row is reported for completeness, not as a finding. \emph{Transfer} is the error against an analytic field known at every position, as a percentage of the field's standard deviation; it is the only column that gives a transfer no credit for copying its input samples. \emph{Over} is the percentage of cells placed outside the range of the data the transfer was given, which detects a diverging interpolant that the constant-field check passes. \emph{Floor} is the RMSE of the uncompressed tile read on the native pixels over the two footprints' intersection, as a fraction of the scene's standard deviation, and \emph{rel.} its per-region ratio to \texttt{clough\_tocher}; both reward a transfer for staying close to the identity on the native lattice and are reported for that reason, not as a ranking. \emph{log-PSD} is the RMS distance in $\log_{10}$ between the projected tile's radial power spectrum and the observation's up to the native Nyquist, and \emph{top oct.} the ratio of their power in the highest octave alone: above 1 the transfer leaves more high-frequency power than the observation carries. The last columns are per-region compressed-size ratios to the same reference at three RMSE targets.
 \end{minipage}
 \end{table*}
