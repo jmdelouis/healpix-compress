@@ -20,6 +20,18 @@ built at the damping at which the reconstruction error was measured
 Coverage is 40 regions for the PSF transfer and 39 for the inverse-distance
 average.
 
+Table~\ref{tab:transfer_cost} reports the three carriers under the short
+names used from here on: C--T for Clough--Tocher, PSF for the PSF-aware
+transfer, IDW for the inverse-distance average. Every ratio at a given
+target is a paired median over the same regions, those bracketed on all
+three sweeps there, so that the columns may be read against one another.
+The left block gives the compressed size relative to the Clough--Tocher
+tile of the same region at the same absolute RMSE, its last column setting
+the deconvolving transfer against the non-deconvolving one; the right block
+gives each product against the equal-area native crop at
+$\gamma_{\mathrm{tile}}=1.3$, composed per region rather than as a ratio of
+medians, so that a value below one favours HEALPix.
+
 \input{tables/table_transfer_cost}
 
 The control is informative (Table~\ref{tab:transfer_cost}). At the same
@@ -38,6 +50,12 @@ bound, it indicates that this surcharge is small compared with the
 surcharge of leaving Clough--Tocher. Isolating it would require a
 non-deconvolving transfer of the same smoothness class, which is not
 available.
+
+Table~\ref{tab:compactability} isolates that question. Its second column is
+each raster's own lossless size; the remaining columns give the compressed
+size at each target as a fraction of that same lossless size, so that the
+entropy difference between the rasters divides out and what is left is how
+much of the content a lossy coder can discard.
 
 \input{tables/table_compactability}
 
@@ -85,6 +103,28 @@ The two latter columns barely move with the tolerated error, which is
 another way of saying that their content resists lossy coding, whereas
 the content of the Clough--Tocher tile is mostly the smooth redundancy
 that a codec is built to remove.
+
+Table~\ref{tab:kernel_ablation} rebuilds the carrier with five kernels from
+the same native window, reading each with the same operator, so that any
+difference between its rows is the transfer alone. Two of the library's
+names mislead and are worth fixing here: \texttt{linear} is the
+inverse-distance-weighted average over four neighbours, not a linear
+interpolant, and \texttt{bicubic} is Keys' cubic convolution. Its columns
+answer four different questions. \emph{Transfer} is the error against the
+analytic field, as a percentage of that field's standard deviation.
+\emph{Over} counts the cells a transfer places outside the range of the data
+it was given, which is how a diverging interpolant shows itself to a check
+that a constant field passes. \emph{Floor} is the error of the uncompressed
+tile read back on the native pixels, as a fraction of the scene's standard
+deviation, with \emph{rel.} its per-region ratio to Clough--Tocher; both
+reward a transfer for staying close to the identity on the native lattice,
+which is why they are reported and not ranked. \emph{log-PSD} is the RMS
+distance in $\log_{10}$ between the tile's radial power spectrum and the
+observation's up to the native Nyquist frequency, and \emph{top oct.} the
+ratio of their power in the highest octave alone, where a value above one
+means the transfer leaves more high-frequency power than the observation
+carries. The last three columns are compressed-size ratios to the same
+reference at three targets.
 
 \input{tables/table_kernel_ablation}
 

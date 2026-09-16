@@ -83,12 +83,16 @@ def latex_table(df, floors):
             "observation.")
     lines = ["\\begin{table}[t]", "\\centering",
              *cfg.tex_caption("The common-reference verdict under the two readers",
-                              "tab:common_two_readers"), "\\footnotesize",
+                              "tab:common_two_readers"),
+             # Eight columns, two of them $p$-values, do not fit a column at
+             # the body font; one step below \\footnotesize and two thirds of
+             # the default padding do.
+             "\\scriptsize", "\\setlength{\\tabcolsep}{4pt}",
              "\\begin{tabular}{@{}lrrlrrlr@{}}", "\\toprule",
              " & \\multicolumn{3}{c}{nearest} & \\multicolumn{3}{c}{bilinear} & \\\\",
              "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}",
              "Target & $n$ & median & $p_{\\mathrm{Holm}}$ & $n$ & median & "
-             "$p_{\\mathrm{Holm}}$ & at $\\gamma=1$ \\\\", "\\midrule"]
+             "$p_{\\mathrm{Holm}}$ & $\\gamma_\\star$ \\\\", "\\midrule"]
     for kind, t in targets:
         cells = [_fmt_target(kind, t)]
         for reader in ("nearest", "bilinear"):

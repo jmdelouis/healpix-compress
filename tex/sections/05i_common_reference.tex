@@ -25,6 +25,18 @@ is made on the $73$--$81\%$ that survives a three-pixel erosion of its
 boundary. Projecting a constant field returns exactly one everywhere on this
 area, which is the check required before any region is accepted.
 
+
+Table~\ref{tab:representation_floor} reports that floor: the RMSE of the
+\emph{uncompressed} level-20 carrier, read on the native pixels of the
+intersection with the nearest read, against the Sentinel-2 observation
+itself. No codec setting on the HEALPix side can go below it, so any target
+tighter than it is unreachable under this reference. It is the error of the
+transfer and the read together, and Section~\ref{sec:operator} shows the
+read alone accounts for an error of that size, so it is an upper bound on
+what the representation costs under the present reading operator rather
+than the grid's own representation error. It scales with the scene's
+high-frequency content.
+
 \input{tables/table_representation_floor}
 
 The first consequence is a floor, attributable to the transfer-and-read pair
@@ -45,7 +57,23 @@ floor halves, to $1.9\times10^{-3}$, and $10^{-2}$ becomes reportable
 and remain withheld. The regions that would remain at the withheld targets are the
 smoothest ones, so that reporting them would describe a selected subsample.
 
+Its budgets are read as in Table~\ref{tab:error_at_size} --- a fraction of
+the raw HEALPix tile, with the UTM side receiving that budget divided by
+$\gamma_{\mathrm{tile}}$ --- but here $p^{\mathrm{Holm}}$ corrects across
+the three targets this reference admits rather than across eight.
+
 \input{tables/table_error_at_constant_size_common}
+
+Table~\ref{tab:common_two_readers} puts the two reads side by side: the
+median per-region ratio of the HEALPix side to the operational UTM side at
+each target the sweep brackets for at least three quarters of the regions
+under that reader, with the Holm-adjusted paired signed-rank $p$, and in
+the last column the same ratio at $\gamma=1$ under the interpolating read,
+which for an RMSE target is the critical overhead $\gamma_\star$. The UTM
+side is identical under both reads, since it depends on the intersection
+mask alone; the floor row is the uncompressed carrier's RMSE against the
+observation.
+
 \input{tables/table_common_two_readers}
 
 The second consequence is a reversal, which is the most important caveat of

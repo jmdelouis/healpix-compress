@@ -45,6 +45,20 @@ def _p(v):
     return f"{v:.3f}"
 
 
+# The same-codec table sets five codec names against five targets in one
+# column. The library identifiers are long enough to push it past
+# \columnwidth, and they are not what the prose calls them anyway, so the
+# rows carry the display names and the identifiers stay in the text.
+CODEC_LABEL = {"zfp": "ZFP", "sz3": "SZ3", "jpeg2000_lossy": "JPEG 2000",
+               "jpegxl_lossy": "JPEG XL", "dwt_zstd": "DWT + zstd",
+               "jpeg2000_lossless": "JPEG 2000 (lossless)",
+               "jpegxl_lossless": "JPEG XL (lossless)"}
+
+
+def _codec_label(c):
+    return CODEC_LABEL.get(c, "\\texttt{" + c.replace("_", "\\_") + "}")
+
+
 def _fmt(v, nd=2):
     return "--" if not np.isfinite(v) else f"{v:.{nd}f}"
 
@@ -66,6 +80,13 @@ def _table(title, label, colspec, header, body_lines, note=None, wide=False):
     out = [f"\\begin{{{env}}}[t]", r"\centering", *cfg.tex_caption(title, label)]
     if wide:
         out.append(r"\footnotesize")
+    else:
+        # A single-column table here carries up to seven columns, two of them
+        # $p$-values and one a [min, max] range, and at the body font it runs
+        # past \columnwidth. Under nonstopmode pdflatex sets the overfull box
+        # without stopping, so the size is decided here rather than found in
+        # the proof: one step down, and half the default column padding.
+        out += [r"\footnotesize", r"\setlength{\tabcolsep}{3pt}"]
     out += [f"\\begin{{tabular}}{{{colspec}}}", r"\toprule",
             header, r"\midrule", *body_lines, r"\bottomrule", r"\end{tabular}"]
     out += cfg.tex_note(note, wide=wide)
@@ -444,8 +465,7 @@ def table_fixed_codec(hpx, utm, scenes, rmse_col, codecs):
             out.setdefault(c, {})[f"{target:g}"] = t
             cells.append(f"{_fmt(t['median'])} ({t['n']})"
                          if t["n"] >= cfg.MIN_SCENES else "--")
-        body.append(f"\\texttt{{{c.replace('_', chr(92)+'_')}}} & " + " & ".join(cells)
-                    + r" \\")
+        body.append(f"{_codec_label(c)} & " + " & ".join(cells) + r" \\")
     header = "Codec & " + " & ".join(RMSE_LABEL.get(t, f"${t:g}$")
                                      for t in cfg.TARGET_RMSE) + r" \\"
     tex = _table(

@@ -41,6 +41,21 @@ observed spectrum falls steeply towards the native Nyquist frequency; it
 does not follow that the added octave is empty, and this cannot be observed
 from a product that does not represent it.
 
+Table~\ref{tab:support_controls} collects the three controls. The synthetic
+rows evaluate one analytic random field --- a power law of slope $\beta$
+times a Gaussian instrument response of \SI{11.9}{m} FWHM, both fitted to
+the imagery itself --- at the sample positions of both lattices; neither
+side is resampled and both see the same function, so no content difference
+remains and the ratio is the sampling geometry alone. The common-support
+rows compress the largest common-ground region on each native lattice and
+normalise by the ground area each covers. The shifted-crop rows report how
+far the ratio moves when the UTM crop is re-cut at eight offsets of up to
+sixteen native pixels with the HEALPix side held fixed, which bounds the
+mismatch's contribution without removing it; for those rows the
+\emph{Median} column is that spread and not a ratio. All ratios are
+overhead-free ($\gamma_{\mathrm{tile}}=1$), and $n$ counts the regions where
+the target is bracketed on both grids.
+
 \input{tables/table_support_controls}
 
 Table~\ref{tab:support_controls} reports the outcome. With no content

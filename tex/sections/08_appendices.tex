@@ -88,6 +88,15 @@ discretisation of reading a cell centre, and nothing else.
 Fig.~\ref{fig:operator_response} shows the amplitude and phase of that
 response directly, and Table~\ref{tab:operator_tests} the error it leaves.
 
+Each row of Table~\ref{tab:operator_tests} is a single-frequency wave placed
+analytically on the level-20 cell centres, read on the native UTM pixels and
+regressed against the same wave evaluated at those pixels. The columns give
+the recovered amplitude response by wave direction in the projected frame,
+and the largest phase shift converted to metres. Nothing is resampled: the
+ground truth is the same analytic function throughout, so the residual is
+the operator together with the unavoidable discretisation of reading a cell
+centre.
+
 \input{tables/table_operator_tests}
 
 \begin{figure}[t]
@@ -133,6 +142,13 @@ drop a stored cell entirely.
 \subsection{Codec Audit}
 \label{app:codec_audit}
 Two caveats matter for the codec ranking of Section~\ref{sec:codec_choice} and the same-codec comparison of Section~\ref{sec:same_codec}. Reaching them required extending the JPEG~XL sweep beyond its quality-level ladder, which saturates near RMSE $10^{-3}$ on Sentinel-2 B04: without additional Butteraugli-distance operating points, JPEG~XL is simply absent from the high-fidelity targets and would appear to win or lose them by default. The same shift towards JPEG~2000 and JPEG~XL at aggressive compression is observed on the \emph{native UTM} side, a grid with no HEALPix quadtree structure at all, so we read it as a general property of these codecs on natural imagery (Section~\ref{sec:why_quadtree}) rather than as evidence for a HEALPix-specific advantage.
+
+\emph{Self-contained} asks whether the file alone suffices to decode it;
+\emph{sidecar} counts the bytes a decoder needs that the reported size does
+not charge, namely the float32 minimum and span of the 16-bit
+renormalisation. The 16-bit floor is the RMSE that renormalisation costs
+before any compression, which is why points through it are reported as
+lossless \emph{after requantisation} rather than lossless.
 
 \input{tables/table_byte_audit}
 
@@ -210,6 +226,19 @@ $3\times10^{-3}$. The regions that remain censored at $10^{-2}$ after the
 extension are those whose contrast does not exceed the target: no codec
 setting can be coarser than a constant, and for those regions the
 comparison has no content.
+
+Its columns run, per target: the number of regions whose oracle-best codec
+brackets the target with two measured points on both grids, against all
+regions; the median HPX/UTM ratio as the main tables report it; the same
+median and its Holm-adjusted signed-rank $p$ on the bracketed regions
+alone; the interval bounding the median of all regions once every censored
+value is taken as the bound it is, a censored HEALPix value being only able
+to fall and a censored UTM value only to rise; the number of regions whose
+side of parity holds under any reading of those bounds, for HEALPix, for
+UTM, and undetermined; and the sign-test $p$ with every undetermined region
+assigned to the side least favourable to the reported verdict. The UTM side
+carries $\gamma_{\mathrm{tile}}=1.3$; RMSE targets compare sizes, budget
+targets compare errors.
 
 \input{tables/table_censoring}
 
@@ -306,6 +335,15 @@ than to scene structure; the level is $6.2$--$13.4\%$ of the field's standard
 deviation by class. The damping is $\lambda=10^{-3}$, the value the companion
 study reports its results at.
 
+\emph{Blur} is the RMSE between the observed and latent fields, that is,
+what a non-deconvolving transfer leaves on the table by construction.
+Clough--Tocher is scored against the observed field it claims to represent
+and the PSF-aware transfer against the latent field it claims to recover;
+the truth at each cell is the average over its sixteen level-22 children,
+matching the companion study's cell-average estimand. The last two columns
+give the recovery fraction $1 - e_{\mathrm{psf}}/e_{\mathrm{blur}}$ at the
+measured noise level and in the noiseless control.
+
 \input{tables/table_resampling_error}
 
 Table~\ref{tab:resampling_error} gives the result. Clough--Tocher's error
@@ -326,6 +364,21 @@ field and delivered it to $1.9\times10^{-3}$. The operative reading for a DGGS
 archive is often the second, because a reader who treats the HEALPix cube as
 ``the data'' is comparing it to the scene, not to the observation, and is
 already carrying the blur whether or not anyone accounts for it.
+
+Table~\ref{tab:alpha_budget} reports both readings over the 40 regions, for
+the Clough--Tocher transfer, which does not deconvolve. \emph{Own estimand}
+is its RMSE against the observed field it claims to represent;
+\emph{latent scene} its RMSE against the unblurred scene, which for a
+non-deconvolving transfer is the instrument blur it does not remove, and is
+the yardstick that applies when the carrier is read as if it were the scene
+itself. $\kappa$ is the compression target as a fraction of that
+denominator. The two errors add in quadrature only if their cross term
+vanishes, and it does not, so the inflation columns give the \emph{measured}
+growth of the product's total error with the orthogonal value
+$\sqrt{1+\kappa^2}-1$ in parentheses, a dash marking a crossing beyond the
+range the cross-term run sampled. The target shown is the tightest reported
+one at which HEALPix is the smaller representation, or the loosest tested
+where there is none.
 
 \input{tables/table_alpha_budget}
 
@@ -434,6 +487,14 @@ would grow it by half. We therefore measure $\rho$ rather than assume it, on
 the synthetic scene of Appendix~\ref{app:error_budget} so that both errors are
 available exactly, with both taken on the same level-20 cells and in the same
 norm, which a comparison made after projecting to UTM would not give either.
+
+Both errors are taken on the level-20 cells and in the same norm, and
+$\rho$ is their normalised inner product, so that the exact relation is
+$D_{\mathrm{total}}/D_0 = \sqrt{1 + \kappa^2 + 2\rho\kappa}$ and the
+quadrature form of Appendix~\ref{app:error_budget} is its $\rho = 0$ case.
+Operating points are grouped around each reported $\kappa$ within a factor
+of $1.5$, and the last two columns give the growth of the product's total
+error as measured and as quadrature predicts it.
 
 \input{tables/table_cross_term}
 

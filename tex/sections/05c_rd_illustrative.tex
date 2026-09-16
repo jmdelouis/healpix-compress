@@ -15,6 +15,15 @@ times its size at the tightest tolerance and $0.72$ times at the loosest,
 so that HEALPix is the smaller archive only for users who accept an error
 of a quarter of the scene contrast.
 
+In Table~\ref{tab:storage_at_rmse} and in Table~\ref{tab:error_at_size}
+below, each entry is a per-region HPX/UTM ratio with the oracle-best codec
+chosen independently per region and per grid, the UTM side already carrying
+$\gamma_{\mathrm{tile}}=1.3$, so that a value below one favours HEALPix.
+The median is taken over the $n$ evaluable regions of 40, with the range in
+brackets, and the reported $p$ is an exact or asymptotic two-sided Wilcoxon
+test on the log ratio; $p^{\mathrm{Holm}}$ corrects across the whole family
+of eight targets the two tables report together.
+
 \input{tables/table_storage_at_constant_rmse}
 
 At matched reconstruction RMSE (Table~\ref{tab:storage_at_rmse}), the
@@ -32,6 +41,11 @@ margin has been defined. The excluded regions at the two loosest targets
 are those listed in Section~\ref{sec:rd_protocol}; they are not bounds in
 disguise, and Appendix~\ref{app:censoring} shows that treating them as
 such would not change any verdict.
+
+There the budget is expressed as a fraction of the shared raw HEALPix tile
+size, \SI{4194304}{\byte}, and the UTM side receives that budget divided by
+$\gamma_{\mathrm{tile}}$; the ratio compared is of reconstruction errors,
+so a value below one again favours HEALPix.
 
 \input{tables/table_error_at_constant_size}
 

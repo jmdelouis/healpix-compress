@@ -51,6 +51,16 @@ has not been recomputed for the matched-budget protocol, which would
 require repeating the budget interpolation at $\gamma=1$
 (Section~\ref{sec:limitations}).
 
+
+Table~\ref{tab:gamma_continuous} maps that assumption to its consequence.
+Each region's critical overhead $\gamma_\star$ is the value at which the
+two representations reach equal compressed size for that region, so
+HEALPix is the smaller of the two exactly where $\gamma \ge \gamma_\star$;
+the win columns give the fraction of the 40 regions satisfying that at
+three illustrative values, and \emph{inconclusive} the range of $\gamma$
+over which the paired signed-rank test does not separate the grids at the
+$5\%$ level. No value of $\gamma$ is privileged here.
+
 \input{tables/table_gamma_continuous}
 
 \begin{figure}[t]

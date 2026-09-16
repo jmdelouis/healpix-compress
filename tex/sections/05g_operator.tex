@@ -31,6 +31,15 @@ the variance, but a reconstructor that interpolates within the carrier
 lattice instead of reading the containing cell. Such a reconstructor was
 implemented, and Table~\ref{tab:reader_floor} reports what it removes.
 
+
+Its columns are three reads of the same uncompressed carrier, scored on the
+native pixels of the intersection against the observation: \emph{nearest}
+is the containing cell, the read used throughout the paper; \emph{bilinear}
+interpolates within the carrier's own lattice at sub-cell position; and
+\emph{psf} is the companion study's forward operator, reported only on the
+tiles it is matched to. Ratios are paired per region before the median is
+taken.
+
 \input{tables/table_reader_floor}
 
 The interpolating read places each native pixel in the lattice of the

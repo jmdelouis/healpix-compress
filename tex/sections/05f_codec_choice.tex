@@ -1,5 +1,12 @@
 \subsection{Which Codec to Use on a HEALPix Chunk}
 \label{sec:codec_choice}
+
+An operating point here is one (region, target) pair over the 40 regions
+and the five RMSE plus five budget targets, four hundred in all, retained
+when at least one codec is evaluable there. Wins sum to the number of
+points by construction, since each point has exactly one best codec, while
+\emph{evaluable} counts the points where a codec produced a value at all.
+
 \input{tables/table_codec_ranking}
 
 Table~\ref{tab:codec_ranking} aggregates every matched-quality and

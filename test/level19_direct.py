@@ -297,7 +297,7 @@ def latex_table(df, digest):
         r"\midrule",
         f"level 19, direct & {d['n']:d} & {d['floor19_direct']:.2e} & "
         f"{d['ratio_direct']:.2f} & {d['direct_better_on']:d}" + nl,
-        f"level 19, four-child aggregate & {d['n']:d} & {d['floor19_agg']:.2e} & "
+        f"level 19, aggregate & {d['n']:d} & {d['floor19_agg']:.2e} & "
         f"{d['ratio_agg']:.2f} & {d['n'] - d['direct_better_on']:d}" + nl,
     ]
     worst = d["worst_scene"].replace("region__", "").replace("__", "/")
@@ -340,9 +340,9 @@ def latex_table(df, digest):
         r"\begin{table}[t]", r"\centering",
         *cfg.tex_caption("Two level-19 carriers, against the observation",
                          "tab:level19_direct"),
-        r"\footnotesize",
+        r"\footnotesize", r"\setlength{\tabcolsep}{4pt}",
         r"\begin{tabular}{@{}lrrrr@{}}", r"\toprule",
-        r"Carrier & $n$ & Floor (RMSE) & $/$ level 20 & Lower floor on \\",
+        r"Carrier & $n$ & Floor (RMSE) & $/$ level 20 & Lower on \\",
         r"\midrule", *body, r"\bottomrule", r"\end{tabular}",
         *cfg.tex_note(note), r"\end{table}"]) + "\n"
 
