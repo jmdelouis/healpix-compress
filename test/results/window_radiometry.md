@@ -29,3 +29,15 @@ Worst ten by departure from the sampling-noise identity:
 | region__urban__montreal | 0.0511 | 0.9638 | 0.935 | 1.007 | 0.275 | ok |
 | region__agriculture__pampas | 0.0528 | 0.9781 | 0.963 | 1.006 | 0.212 | ok |
 | region__water__great_salt_lake | 0.0122 | 0.9777 | 0.962 | 1.006 | 0.214 | ok |
+
+## Every transfer's tile, not only the carrier's
+
+A region has one window and one tile per transfer, and they were not built on the same day, so a window can match one tile and not another. Section V-L sets two of these tiles against each other, which is only meaningful where both came from the same acquisition.
+
+| kernel | tiles audited | mismatched | which |
+| --- | ---: | ---: | --- |
+| `bicubic` | 39 | 39 | region__agriculture__beauce, region__agriculture__canterbury, region__agriculture__iowa, region__agriculture__mato_grosso, region__agriculture__nile_delta, region__agriculture__pampas, region__agriculture__po_valley, region__agriculture__punjab, region__agriculture__ukraine, region__agriculture__western_australia, region__forest__amazon, region__forest__appalachian, region__forest__black_forest, region__forest__borneo, region__forest__canadian_rockies, region__forest__congo, region__forest__finland_boreal, region__forest__new_zealand, region__forest__patagonia, region__forest__tasmania, region__urban__cape_town, region__urban__mexico_city, region__urban__montreal, region__urban__nairobi, region__urban__paris, region__urban__reykjavik, region__urban__sao_paulo, region__urban__singapore, region__urban__sydney, region__urban__tokyo, region__water__caspian_sea, region__water__great_salt_lake, region__water__lake_baikal, region__water__lake_constance, region__water__lake_geneva, region__water__lake_michigan, region__water__lake_tahoe, region__water__lake_titicaca, region__water__lake_victoria |
+| `clough_tocher` | 40 | 1 | region__water__lake_geneva |
+| `linear` | 39 | 6 | region__agriculture__mato_grosso, region__forest__congo, region__water__great_salt_lake, region__water__lake_baikal, region__water__lake_titicaca, region__water__lake_victoria |
+| `nearest` | 40 | 0 | -- |
+| `psf` | 40 | 19 | region__agriculture__iowa, region__agriculture__nile_delta, region__agriculture__pampas, region__forest__amazon, region__forest__appalachian, region__forest__tasmania, region__urban__mexico_city, region__urban__montreal, region__urban__nairobi, region__urban__paris, region__urban__reykjavik, region__urban__sao_paulo, region__urban__sydney, region__urban__tokyo, region__water__great_salt_lake, region__water__lake_baikal, region__water__lake_tahoe, region__water__lake_titicaca, region__water__lake_victoria |
