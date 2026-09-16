@@ -83,9 +83,22 @@ MAX_DILUTION_DEV = 0.10          # |slope / corr^2 - 1|
 MIN_CORR = 0.80                  # a backstop, an order of magnitude from the data
 
 
-def region_row(scene, halo_px=32, band=None):
+def region_row(scene, halo_px=32, band=None, kernel=None):
+    """One (region, kernel) row. `kernel=None` is the tile the paper uses.
+
+    A region has one window and up to five tiles, one per transfer, and they
+    were not all built on the same day. The window can therefore match the
+    published Clough--Tocher tile and not the PSF-aware one, or the reverse,
+    so the audit is per tile rather than per region; the comparison of
+    Section~\\ref{sec:transfer_cost} sets two of those tiles against each
+    other and is only meaningful where both came from the same acquisition.
+    """
     store = cfg.REGION_DIR / f"{scene}_data.zarr"
-    cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene)
+    if kernel is None:
+        cell_ids, cell_data, utm_crop, meta, npz = build_tiles.load_tile(scene)
+    else:
+        z = np.load(build_tiles.tile_path(scene, kernel), allow_pickle=False)
+        cell_data = z["cell_data"]
     stored = np.asarray(cell_data, dtype=np.float64).ravel()
 
     sw = build_tiles.tile_subwindow(scene, store, halo_px=halo_px, band=band)
@@ -106,7 +119,8 @@ def region_row(scene, halo_px=32, band=None):
     dilution = float(slope / corr ** 2) if corr and corr == corr else np.nan
     ok = (corr > MIN_CORR and abs(dilution - 1.0) < MAX_DILUTION_DEV)
     return dict(
-        scene=scene, cls=scene.split("__")[1], n=int(good.sum()),
+        scene=scene, cls=scene.split("__")[1],
+        kernel=kernel or build_tiles.DEFAULT_KERNEL, n=int(good.sum()),
         n_nonfinite=int((~good).sum()),
         stored_mean=float(stored.mean()), stored_std=sd,
         window_mean=float(m.mean()), window_std=float(m.std()),
@@ -117,7 +131,21 @@ def region_row(scene, halo_px=32, band=None):
         status="ok" if ok else "MISMATCH")
 
 
+def carrier_rows(df):
+    """The rows for the tile the paper's results are built on."""
+    if "kernel" in df.columns:
+        return df[df.kernel == cfg.CARRIER_KERNEL]
+    return df
+
+
 def markdown(df):
+    per_kernel = []
+    if "kernel" in df.columns and df.kernel.nunique() > 1:
+        for k, g in df.groupby("kernel"):
+            n_bad = int((g.status != "ok").sum())
+            names = ", ".join(g.loc[g.status != "ok", "scene"])
+            per_kernel.append(f"| `{k}` | {len(g)} | {n_bad} | {names or '--'} |")
+    df = carrier_rows(df)
     bad = df[df.status != "ok"]
     lines = [
         "# Window radiometry audit",
@@ -169,11 +197,27 @@ def markdown(df):
                      f"{r['corr']:.4f} | {r['slope']:.3f} | "
                      f"{r['slope_over_corr2']:.3f} | "
                      f"{r['rms_frac_of_std']:.3f} | {r['status']} |")
+    if per_kernel:
+        lines += [
+            "", "## Every transfer's tile, not only the carrier's", "",
+            "A region has one window and one tile per transfer, and they were "
+            "not built on the same day, so a window can match one tile and not "
+            "another. Section V-L sets two of these tiles against each other, "
+            "which is only meaningful where both came from the same "
+            "acquisition.", "",
+            "| kernel | tiles audited | mismatched | which |",
+            "| --- | ---: | ---: | --- |", *per_kernel]
     return "\n".join(lines) + "\n"
 
 
 def latex_table(df):
-    """The audit in one block: a tight cluster, and what falls out of it."""
+    """The audit in one block: a tight cluster, and what falls out of it.
+
+    Built on the carrier's tiles alone. The other transfers' tiles are audited
+    too and reported in the markdown; the appendix states the carrier's result,
+    which is what every published number depends on.
+    """
+    df = carrier_rows(df)
     ok, bad = df[df.status == "ok"], df[df.status != "ok"]
     if not len(bad):
         cols = "one column"
@@ -235,7 +279,20 @@ def main(argv=None) -> int:
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--band", default=None)
     ap.add_argument("--halo", type=int, default=32)
+    ap.add_argument("--kernels", nargs="*", default=None,
+                    help="audit these transfers' tiles as well as the "
+                         "carrier's; default: every kernel whose tile exists")
     args = ap.parse_args(argv)
+
+    if build_tiles.DEFAULT_KERNEL != cfg.CARRIER_KERNEL:
+        raise SystemExit(
+            f"build_tiles.DEFAULT_KERNEL is {build_tiles.DEFAULT_KERNEL!r} but "
+            f"paper_config.CARRIER_KERNEL is {cfg.CARRIER_KERNEL!r}; every "
+            "script that reads the audit filters on the second, so they must "
+            "agree.")
+    kernels = list(args.kernels) if args.kernels else list(build_tiles.KERNELS)
+    if cfg.CARRIER_KERNEL not in kernels:
+        kernels.insert(0, cfg.CARRIER_KERNEL)
 
     sites = region_sites.select(region_sites.load_sites(), args.regions,
                                 args.classes, args.limit)
@@ -244,16 +301,24 @@ def main(argv=None) -> int:
         if not build_tiles.tile_path(scene).exists():
             failures.append((scene, "no tile; run build_tiles.py"))
             continue
-        try:
-            r = region_row(scene, halo_px=args.halo, band=args.band)
-        except Exception as exc:                              # noqa: BLE001
-            failures.append((scene, f"{type(exc).__name__}: {exc}"))
-            continue
-        rows.append(r)
-        print(f"[{i:>2}/{len(sites)}] {scene}: corr {r['corr']:.4f}  slope "
-              f"{r['slope']:.3f}  slope/corr^2 {r['slope_over_corr2']:.3f}  "
-              f"offset {r['offset']:+.5f}  RMS "
-              f"{r['rms_frac_of_std']:.3f} std  -> {r['status']}")
+        for kernel in kernels:
+            # Only the tiles that exist: a kernel nobody built is not a
+            # failure, and reporting it as one would bury the real ones.
+            if not build_tiles.tile_path(scene, kernel).exists():
+                continue
+            try:
+                r = region_row(scene, halo_px=args.halo, band=args.band,
+                               kernel=kernel)
+            except Exception as exc:                          # noqa: BLE001
+                failures.append((f"{scene} [{kernel}]",
+                                 f"{type(exc).__name__}: {exc}"))
+                continue
+            rows.append(r)
+            print(f"[{i:>2}/{len(sites)}] {scene} [{kernel}]: "
+                  f"corr {r['corr']:.4f}  slope {r['slope']:.3f}  "
+                  f"slope/corr^2 {r['slope_over_corr2']:.3f}  "
+                  f"offset {r['offset']:+.5f}  RMS "
+                  f"{r['rms_frac_of_std']:.3f} std  -> {r['status']}")
     if not rows:
         for s, why in failures:
             print(f"  {s}: {why}")
@@ -276,8 +341,14 @@ def main(argv=None) -> int:
         (cfg.TEX_TABLES / "table_window_radiometry.tex").write_text(
             latex_table(df), encoding="utf-8")
         print(f"wrote {cfg.TEX_TABLES / 'table_window_radiometry.tex'}")
+    if "kernel" in df.columns and df.kernel.nunique() > 1:
+        print("\nby transfer:")
+        for k, g in df.groupby("kernel"):
+            print(f"  {k:16s} {len(g):3d} tile(s), "
+                  f"{int((g.status != 'ok').sum())} mismatched")
+    df = carrier_rows(df)
     bad = df[df.status != "ok"]
-    print(f"\n{len(df)} region(s) audited, {len(bad)} mismatched")
+    print(f"\n{len(df)} carrier tile(s) audited, {len(bad)} mismatched")
     for _, r in bad.iterrows():
         print(f"  MISMATCH {r['scene']}: stored ~ {r['slope']:.3f} * window "
               f"{r['offset']:+.5f}, corr {r['corr']:.3f}, "

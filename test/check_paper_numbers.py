@@ -342,6 +342,19 @@ def resampling_error_checks():
          f"${noise.min():.1f}$--${noise.max():.1f}\\%$",
          "Immerkaer estimate, by class"),
     ]
+    # The blur the non-deconvolving transfer leaves, as a share of the latent
+    # field's contrast. Normalised on the PSF rows, whose estimand IS the
+    # latent field, so that truth_std is the latent standard deviation: taken
+    # from the Clough--Tocher rows it would divide by the observed field's
+    # contrast instead and read 23.4% and 141.1%.
+    psf = d[d.kernel == "psf"].copy()
+    if len(psf):
+        psf["blur_frac"] = 100 * psf.blur_error / psf.truth_std
+        b = psf.groupby("cls").blur_frac.median()
+        for c in ("forest", "urban"):
+            if c in b.index:
+                out.append((f"blur / latent std, {c} {where}",
+                            f"${b[c]:.1f}\\%$", "PSF rows: truth_std is latent"))
     q = cfg.RESULTS_DIR / "resampling_error_noise0.csv"
     if q.exists():
         n = pd.read_csv(q)

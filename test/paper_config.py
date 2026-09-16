@@ -113,7 +113,13 @@ def resample_root() -> Path:
     )
 
 
-def window_mismatched_scenes(verbose: bool = False):
+# The transfer the paper's carrier is built with. `build_tiles.DEFAULT_KERNEL`
+# is the same string; window_radiometry.py checks the two agree at startup,
+# because this module must not import build_tiles (build_tiles imports it).
+CARRIER_KERNEL = "clough_tocher"
+
+
+def window_mismatched_scenes(kernel: str | None = None, verbose: bool = False):
     """Regions whose native window is no longer the product their tile holds.
 
     Most of this study reads the stored tile and never reopens the window it
@@ -146,6 +152,17 @@ def window_mismatched_scenes(verbose: bool = False):
             print(f"note: {p.name} predates the status column; re-run "
                   "window_radiometry.py")
         return []
+    # A region has one window and one tile per transfer, built on different
+    # days, so the audit is per (region, kernel): a window can match the
+    # published Clough--Tocher tile and not the PSF-aware one. Each caller
+    # asks about the kernel it actually rebuilds, and the default is the
+    # carrier the paper uses.
+    if "kernel" in a.columns:
+        a = a[a.kernel == (kernel or CARRIER_KERNEL)]
+    elif kernel not in (None, CARRIER_KERNEL) and verbose:
+        print(f"note: {p.name} has no kernel column, so the verdict for "
+              f"{kernel!r} is the carrier kernel's; re-run "
+              "window_radiometry.py to audit every tile.")
     return sorted(a.loc[a.status != "ok", "scene"].astype(str))
 
 
