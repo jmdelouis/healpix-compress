@@ -1,0 +1,64 @@
+\subsection{The Comparison Under a Fixed Codec}
+\label{sec:same_codec}
+
+Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} let the codec be
+chosen independently for each region, each grid and each target. That
+protocol answers a definite question, namely what the best of the tested
+codec family can do on each representation, and the answer is an envelope,
+since no archive selects its codec region by region after the fact. The
+same question with the codec held fixed on both grids is the controlled,
+operational form of the comparison, and it separates two things that the
+envelope combines: whether a grid compresses better, and whether the codecs
+that suit it best happen to differ from those that suit the other.
+Table~\ref{tab:fixed_codec} reports it, under the same bracketing rule as
+the oracle tables and with the number of qualifying regions in every cell.
+
+One reporting rule differs here, deliberately. Elsewhere a target is reported
+only when at least three quarters of the regions bracket it, because those
+tables carry the paper's paired grid-level inference and a target established
+on a selected minority would not support it. Table~\ref{tab:fixed_codec} is a
+codec-by-codec sensitivity table rather than an inference, so every cell is
+shown with its own $n$ and none is withheld: at the loosest target JPEG~XL
+qualifies on 26 regions and JPEG~2000 on 30, below the three-quarter mark, and
+those cells are descriptive. The verdicts of
+Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative} rest on the withheld
+rule; this table is read beside them, not in place of them.
+
+
+Each cell is the median per-region HPX/UTM compressed-size ratio at that
+target when the \emph{same} codec is used on both grids, the UTM side
+carrying $\gamma_{\mathrm{tile}}$, with the number of qualifying regions in
+parentheses. A region enters a cell only if that codec brackets the target
+with two measured points on both grids.
+
+\input{tables/table_fixed_codec}
+
+Two observations follow. The codec ranking and the grid comparison are
+different results. JPEG~2000 and JPEG~XL lead on both grids alike
+(Section~\ref{sec:codec_choice}), and at $10^{-2}$ the oracle selects one of
+the two on 30 of the 32 qualifying regions on the HEALPix side and on 31 of
+them on the native side, so the oracle ratios of
+Table~\ref{tab:storage_at_rmse} are close to what either codec gives on its
+own: $0.77$ and $0.71$ against $0.72$ for the envelope. The crossover is therefore not an artefact of codec selection.
+It is, however, codec-dependent in a way that the envelope hides. Four of
+the five codecs reproduce it, JPEG~XL and JPEG~2000 most strongly
+($0.71$ and $0.77$ at $10^{-2}$, $p<10^{-7}$), then DWT+Zstandard
+($0.81$) and SZ3 ($0.93$, $p=0.02$); ZFP does not reproduce it at all.
+Under ZFP the HEALPix tile costs $1.54$--$1.72$ times the native product
+at every target, with no decline as the target loosens. ZFP is a
+fixed-accuracy coder whose block transform spends bits according to the
+tolerance it is given rather than to the content it finds, and the
+redundancy of an oversampled tile is precisely content that a
+rate-adaptive coder can decline to spend bits on and a fixed-accuracy coder
+cannot. That is an interpretation of a measured result, not a mechanism this
+experiment establishes; SZ3, which also reproduces the crossover, is
+prediction-based rather than a transform coder, so the successful family
+cannot be defined by the transform alone. What is measured is that the
+crossover is codec-dependent, reproduced by four of the five codecs tested
+and not by ZFP. An archive that standardised on ZFP would see no regime in
+which the carrier is the smaller representation; one that standardised on any
+of the other four would see the regime of
+Table~\ref{tab:storage_at_rmse}. The scope of the crossover is thus a carrier
+populated by a transfer in the smoothness class of Clough--Tocher
+(Section~\ref{sec:transfer_cost}) \emph{and} coded by one of the four, and the
+second condition is as binding as the first.

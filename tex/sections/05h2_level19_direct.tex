@@ -1,0 +1,78 @@
+\subsection{The Two Level-19 Carriers Cost the Same}
+\label{sec:level19_direct}
+
+The objection to the previous subsection is concrete and was worth
+answering rather than conceding. A carrier built by Clough--Tocher at level
+19 holds the interpolant evaluated at the level-19 cell centres; the
+aggregate holds the mean of the interpolant at the four level-20 centres
+inside each of those cells. The two coincide only for a function that is
+affine over a cell, so the gap between them is the curvature of the
+interpolant at the \SI{12.4}{m} scale, which is not obviously negligible
+compared with the quantity the level choice turns on.
+
+Both objects were therefore built. The direct carrier uses the same native
+sub-window each stored tile was transferred from, the same parent, the same
+Clough--Tocher operator and the same constant-field check and missing-cell
+completion; only the output level differs. The two are then read
+identically, at the nearest containing cell of their own level, against the
+same observation over the same intersection mask, so that nothing but the
+cell values can separate them.
+
+Rebuilding from the window makes this the one measurement in the paper that
+depends on the window still holding the product its tile was built from.
+Appendix~\ref{app:window_radiometry} tests that for all 40 regions and finds
+39 of them sound and one not, so the comparison runs on 39.
+
+Table~\ref{tab:level19_direct} sets the three carriers against the same
+Sentinel-2 observation, on the intersection mask of
+Section~\ref{sec:common_reference} and each read at the nearest containing
+cell of its own level. \emph{Direct} evaluates the Clough--Tocher
+interpolant of the native samples at the level-19 cell centres;
+\emph{aggregate} averages the four level-20 children, which is the exact
+cell-average of the stored carrier and the object
+Section~\ref{sec:level_choice} measures. The last column counts the regions
+on which that carrier has the lower floor.
+
+\input{tables/table_level19_direct}
+
+The two carriers are genuinely different arrays. They differ by $6.0\%$ of
+a scene's standard deviation in RMS, which is $0.27$ times the level-19
+floor itself, so the curvature term the objection identifies is real and of
+the order it predicted. Their floors against the observation are
+nevertheless the same: $8.72\times10^{-3}$ for the direct carrier against
+$8.69\times10^{-3}$ for the aggregate, a median ratio of $1.002$, within
+$5\%$ on 38 of the 39 regions, and the direct carrier has the lower floor
+on 15 of them. The widest departure anywhere is $1.051$. The difference
+between the two carriers therefore has no material effect on the floor: it
+moves cell values without moving the error against the scene. We have not
+measured an inner product between that difference and the observation, so we
+do not call it orthogonal. Against the level-20 floor the two coarser carriers cost
+$2.25$ and $2.24$, so the conclusion of Section~\ref{sec:level_choice}
+holds for either reading of ``the level-19 carrier'', and the figure quoted
+there is the aggregate's.
+
+The excluded region is Lake Geneva, and what it turned out to be is worth
+stating, because our first reading of it was wrong. Rebuilt at level 19 its
+carrier missed the aggregate by twice the standard deviation of the scene,
+which we took for a failure of the transfer at the coarser level. It is
+not. Asked for level 20 --- the level the tile is stored at, where the
+rebuild must return the stored tile ---
+the same operator on the same samples misses it by the same amount, an RMS
+of $1.97$ standard deviations at a correlation of $0.585$. Nothing at
+level 19 produced the discrepancy; level 19 inherited it. The window and
+the tile are related by a gain and an offset of their own, which is a
+radiometric difference between two products and not a resampling error,
+and the audit that establishes this for all 40 regions is
+Appendix~\ref{app:window_radiometry}. Kept, the region would move the
+median ratio from $1.002$ to $1.002$; it is excluded because its input is
+not the input the comparison assumes, not because its result is
+inconvenient.
+
+Two things follow for anyone rebuilding a carrier at a new level. A tile and
+the window it came from are separate files that can drift apart, and a
+geometric check that the window still covers the tile does not catch a
+window that has been re-acquired --- ours passed on all 40 regions,
+including this one. And the cheap control is the one this section needed: a
+transfer asked for the level its tile is already stored at must return that
+tile, and if it does not, no number built on it means what it appears to
+mean.

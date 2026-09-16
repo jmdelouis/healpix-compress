@@ -1,0 +1,82 @@
+\subsection{The Compressed Size in One Table}
+\label{sec:headline}
+
+The rest of this section establishes the comparison one factor at a time,
+and a reader who wants only its outcome can find it in
+Table~\ref{tab:headline} and Fig.~\ref{fig:headline}. Both report a single
+quantity: the compressed size of the HEALPix tile divided by the compressed
+size of the native UTM square of the same ground area, at the same
+reconstruction error, with no storage overhead charged to either side. A
+value of $2$ means that the HEALPix representation takes twice the bytes; a
+value of $1$ means the two are the same size.
+
+The table's second column expresses each target as a fraction of a typical
+scene's contrast --- the median standard deviation of the 40 tiles, $0.04$
+in reflectance --- so that $10^{-2}$ is an error of about a quarter of the
+contrast and $10^{-4}$ a quarter of a percent. The C--T column is the
+Clough--Tocher carrier the paper uses, with the range of the four
+land-cover class medians in brackets; the PSF and IDW columns are the same
+tile rebuilt with the PSF-aware and inverse-distance transfers of
+Section~\ref{sec:transfer_cost}, on the $n$ regions all three sweeps
+bracket. Under an operational overhead $\gamma$ charged to the native
+product every entry divides by $\gamma$.
+
+\input{tables/table_headline}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_headline}
+\caption{The quantity of Table~\ref{tab:headline}: compressed size of the
+HEALPix tile relative to the native UTM square, at equal reconstruction
+error and with no overhead on either side, for the three transfers that
+were used to fill the tile. The shaded band is the range of the four
+land-cover class medians for the Clough--Tocher carrier. The dashed line is
+the uncompressed ratio and the two dotted lines mark parity, with no
+overhead and with the illustrative $30\%$ overhead on the native product.}
+\label{fig:headline}
+\end{figure}
+
+Three things are read directly from the table. First, the tolerated error
+sets the ratio. Uncompressed, the tile is $2.58$ times the square. Once
+compressed, the ratio is $2.06$ when the reconstruction is required to stay
+within $10^{-4}$ of the stored values (an error of a quarter of a percent
+of the contrast of a typical scene), and it falls steadily to $0.93$ at
+$10^{-2}$ (a quarter of the contrast), where the HEALPix tile is the
+smaller of the two before any overhead is charged to the native product.
+The oversampling penalty is therefore not merely reduced by the codec but
+more than recovered, though only when the user accepts an error that is
+large by the standards of a reflectance product. Second, the kind of scene
+moves the ratio less than the tolerated error does. Across the four
+land-cover classes the medians span $2.01$--$2.17$ at the tightest target
+and $0.89$--$1.10$ at the loosest; urban and agricultural scenes lie at the
+top of the range at tight targets and at the bottom at the loosest one, and
+no class changes the picture. Third, and this is the point a reader might
+otherwise miss, the way the tile was filled from the native pixels matters
+as much as everything else combined. The Clough--Tocher column is the
+carrier used throughout the paper; the transfer passes a smooth surface
+through the observed pixels and reads it at the cell centres, adding
+nothing that was not in the image. The PSF-aware transfer of the companion
+study~\cite{delouis2026resample} does more: it also undoes part of the blur
+of the instrument, so that the tile contains sharper content than the
+product it came from. That content is real, but it is content, and a codec
+asked to preserve it to a given error must spend bytes on it. The result is
+a tile that compresses to $2.2$--$2.7$ times the UTM square at every
+target, essentially the uncompressed ratio, whereas the Clough--Tocher tile
+falls below one. The inverse-distance average, a transfer that restores no
+detail at all, costs nearly as much ($2.1$--$2.5$), so the extra bytes are
+not the price of sharpness as such but of leaving the smooth interpolant
+(Section~\ref{sec:transfer_cost} takes this apart).
+
+The columns are therefore not interchangeable. If the archive stores a
+Clough--Tocher carrier, the storage question is a question of the
+tolerated error, and Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative}
+show where the answer changes sign, at $10^{-2}$ with no overhead at all
+and one target earlier once a $30\%$ overhead is charged to the native
+product. If it stores a PSF-aware carrier, the tile costs about the
+uncompressed factor of $2.58$ at any error a reflectance user would accept,
+and no plausible overhead on the native product closes that gap; what the
+archive buys for it is a sharper product, and that is a different trade.
+Every number in the table divides by the overhead $\gamma$ of the native
+layout, so a reader whose product carries $30\%$ of padding and metadata
+reads the Clough--Tocher column as $1.59$ down to $0.72$, and the PSF-aware
+column as $1.7$ to $2.0$.
