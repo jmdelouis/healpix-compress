@@ -136,7 +136,8 @@ def sizes(df, scenes, codecs, targets_by_scene):
             continue
         out[s] = dict(
             size=ps.best_of_codecs_size(df, s, codecs, t),
-            bracketed=ps.any_bracketed(df, s, codecs, t, "rmse"),
+            # Same rule as everywhere else in the paper (see _common_regions).
+            bracketed=ps.oracle_bracketed(df, s, codecs, t, "rmse"),
             target=float(t))
     return out
 
@@ -413,7 +414,7 @@ def compactability(sources, codecs=None):
         for t in cfg.TARGET_RMSE:
             v = []
             for sc in ll.index:
-                if not ps.any_bracketed(df, sc, codecs, t, "rmse"):
+                if not ps.oracle_bracketed(df, sc, codecs, t, "rmse"):
                     continue
                 sz = ps.best_of_codecs_size(df, sc, codecs, t)
                 if np.isfinite(sz):
@@ -424,11 +425,22 @@ def compactability(sources, codecs=None):
 
 
 def _common_regions(sources, target, codecs):
-    """Regions bracketed on every sweep at this target."""
+    """Regions whose oracle codec brackets the target on every sweep.
+
+    The main protocol (paper_stats.REQUIRE_ORACLE_BRACKETED) admits a
+    (region, target) pair only when the codec the oracle selects brackets
+    the target with two measured points, so that the size tested is an
+    interpolated estimate and never the bound a censored ladder returns.
+    Until revision 5 this function asked the weaker question -- does *some*
+    codec bracket the target -- which at the loosest target admitted six
+    regions (four lakes, two smooth forests) whose oracle codec is censored
+    on every sweep, and Table XVIII's last row mixed bounds with estimates
+    while Table VI's did not. Both now use the same rule, on every sweep.
+    """
     sets = []
     for df in sources.values():
         sets.append({sc for sc in df.scene.unique()
-                     if ps.any_bracketed(df, sc, codecs, target, "rmse")
+                     if ps.oracle_bracketed(df, sc, codecs, target, "rmse")
                      and np.isfinite(ps.best_of_codecs_size(df, sc, codecs,
                                                             target))})
     out = sets[0]
@@ -478,8 +490,8 @@ def lossless_vs_surcharge(base_df, tested, codecs=None):
         for sc in sorted(set(df.scene) & set(base_df.scene) & set(ll.index)):
             v = []
             for t in cfg.TARGET_RMSE:
-                if not (ps.any_bracketed(df, sc, codecs, t, "rmse")
-                        and ps.any_bracketed(base_df, sc, codecs, t, "rmse")):
+                if not (ps.oracle_bracketed(df, sc, codecs, t, "rmse")
+                        and ps.oracle_bracketed(base_df, sc, codecs, t, "rmse")):
                     continue
                 a = ps.best_of_codecs_size(base_df, sc, codecs, t)
                 b = ps.best_of_codecs_size(df, sc, codecs, t)

@@ -96,10 +96,14 @@ def latex_table(df, floors):
              "\\begin{tabular}{@{}lrrlrrlr@{}}", "\\toprule",
              " & \\multicolumn{3}{c}{nearest} & \\multicolumn{3}{c}{bilinear} & \\\\",
              "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}",
+             # The column holds budget rows as well as RMSE rows, and only
+             # for an RMSE row is the ratio at gamma = 1 the critical
+             # overhead; the header names the quantity, and the prose says
+             # when it coincides with gamma_star.
              "Target & $n$ & median & $p_{\\mathrm{Holm}}$ & $n$ & median & "
-             "$p_{\\mathrm{Holm}}$ & $\\gamma_\\star$ \\\\",
+             "$p_{\\mathrm{Holm}}$ & ratio \\\\",
              " & & \\multicolumn{2}{c}{} & & \\multicolumn{2}{c}{} & "
-             "($\\gamma{=}1$) \\\\", "\\midrule"]
+             "at $\\gamma{=}1$ \\\\", "\\midrule"]
     for kind, t in targets:
         cells = [_fmt_target(kind, t)]
         for reader in ("nearest", "bilinear"):

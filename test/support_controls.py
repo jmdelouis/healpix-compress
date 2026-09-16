@@ -95,7 +95,15 @@ def _save_sweeps(control: str, scene: str, frames):
     cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     path = cfg.RESULTS_DIR / f"support_controls_sweeps_{control}.csv"
     df = pd.concat(frames, ignore_index=True)
-    df.to_csv(path, mode="a", header=not path.exists(), index=False)
+    # Appending across runs left the file holding several sweeps of the same
+    # region under one label, which cannot be re-analysed: 8000 rows for 40
+    # regions where one run writes 5680. One run, one file.
+    first = control not in _save_sweeps.started
+    df.to_csv(path, mode="w" if first else "a", header=first, index=False)
+    _save_sweeps.started.add(control)
+
+
+_save_sweeps.started = set()
 
 
 def oracle_size(df, scene, codecs, target):
@@ -118,12 +126,17 @@ def ratio_at_targets(hpx_df, utm_df, scene, codecs, targets, gamma=1.0):
             ratio=(float(h / (u * gamma)) if (np.isfinite(h) and np.isfinite(u)
                                               and u > 0) else np.nan),
             hpx_bytes=float(h), utm_bytes=float(u),
-            bracketed_hpx=st.any_bracketed(hpx_df, scene, codecs, t, "rmse"),
-            bracketed_utm=st.any_bracketed(utm_df, scene, codecs, t, "rmse"))
+            bracketed_hpx=st.oracle_bracketed(hpx_df, scene, codecs, t, "rmse"),
+            bracketed_utm=st.oracle_bracketed(utm_df, scene, codecs, t, "rmse"))
     return out
 
 
 def _both_bracketed(d):
+    """Both grids under the paper's rule: the codec the oracle selects must
+    bracket the target with two measured points (paper_stats.oracle_bracketed).
+    Until revision 5 this control asked only whether *some* codec did, the
+    weaker rule Section IV-B rejects; the synthetic rows of Table XI therefore
+    have to be regenerated before their loose-target entries are quoted."""
     return bool(d["bracketed_hpx"] and d["bracketed_utm"])
 
 
@@ -323,10 +336,10 @@ def control_common(scene, codecs, targets, verbose=True):
         u = st.best_of_codecs_size(utm, scene, codecs, t)
         rows.append(dict(
             scene=scene, control="common", target=t,
-            bracketed_hpx=st.any_bracketed(hpx, scene, codecs, t, "rmse"),
-            bracketed_utm=st.any_bracketed(utm, scene, codecs, t, "rmse"),
-            both_bracketed=bool(st.any_bracketed(hpx, scene, codecs, t, "rmse")
-                                and st.any_bracketed(utm, scene, codecs, t,
+            bracketed_hpx=st.oracle_bracketed(hpx, scene, codecs, t, "rmse"),
+            bracketed_utm=st.oracle_bracketed(utm, scene, codecs, t, "rmse"),
+            both_bracketed=bool(st.oracle_bracketed(hpx, scene, codecs, t, "rmse")
+                                and st.oracle_bracketed(utm, scene, codecs, t,
                                                      "rmse")),
             hpx_bytes=h, utm_bytes=u, hpx_km2=hpx_km2, utm_km2=utm_km2,
             hpx_bytes_per_km2=h / hpx_km2 if np.isfinite(h) else np.nan,

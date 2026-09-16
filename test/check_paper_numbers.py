@@ -95,6 +95,18 @@ def checks(tex: str):
                     + ("  [range interior, not asserted]" if interior else ""),
                     _fmt(m), f"median over {n} regions"))
 
+    # --- the gamma = 1 verdict at the loosest target rests on one paired
+    # test at p = 0.03 uncorrected; the prose gives its confidence interval
+    # so that a reader sees how close to parity the upper bound sits.
+    for t in self_["targets"]:
+        if t["kind"] == "rmse" and abs(float(t["target"]) - cfg.TARGET_RMSE[-1]) < 1e-12:
+            g1 = t.get("test_gamma1") or {}
+            if "ci_lo" in g1 and "ci_hi" in g1:
+                out.append(("gamma=1 CI at the loosest target [in sections/05b_rd_main.tex]",
+                            f"$0.89$--$0.99$".replace("0.89", f"{g1['ci_lo']:.2f}").replace("0.99", f"{g1['ci_hi']:.2f}"),
+                            "95% CI of the median ratio, from paper_numbers_self"))
+                out.append(("gamma=1 p at the loosest target [in sections/05b_rd_main.tex]",
+                            f"$p={g1['p']:.2f}$", "paired signed-rank, uncorrected"))
     # --- the two the abstract and conclusion quote by name ------------------
     m_loose, _ = target_median(self_, "rmse", cfg.TARGET_RMSE[-1])
     out.append(("loosest-target ratio quoted in abstract/conclusion",
@@ -136,6 +148,7 @@ def checks(tex: str):
     out += censoring_checks()
     out += same_codec_checks()
     out += transfer_mechanism_checks()
+    out += transfer_cost_prose_checks()
     out += scoped_checks()
     out += level19_checks()
     out += window_radiometry_checks()
@@ -567,6 +580,59 @@ def transfer_mechanism_checks():
                         f"$p={v['p']:.3f}$", f"n={v['n']}"))
             out.append((f"lossless size vs surcharge, {label}, n",
                         f"$n={v['n']}$", "regions"))
+    return out
+
+
+def transfer_cost_prose_checks():
+    """Every figure Section V-M quotes from Table XVIII and Table XIX.
+
+    Until revision 5 none of these was asserted, and the two tables were
+    built under a weaker eligibility rule than the rest of the paper; when
+    the rule was harmonised, eight prose figures moved and only the two the
+    headline check happened to cover were caught. Everything here is read
+    from the digest superres_cost.py writes beside the tables.
+    """
+    p = cfg.RESULTS_DIR / "transfer_cost_digest.json"
+    if not p.exists():
+        return [("transfer-cost prose  [skipped: no digest]", "", str(p))]
+    d = json.loads(p.read_text())
+    rows = {float(k): v for k, v in d.items()
+            if isinstance(v, dict) and "n" in v}
+    if not rows:
+        return [("transfer-cost prose  [skipped: digest has no targets]", "", "")]
+    ts = sorted(rows)
+    where = "[in sections/05l_transfer_cost.tex]"
+    out = []
+    for key, label in (("psf_over_base", "PSF / C-T"),
+                       ("linear_over_base", "IDW / C-T"),
+                       ("deconv_over_control", "PSF / IDW")):
+        v = [rows[t][key] for t in ts]
+        out.append((f"transfer cost, {label} range {where}",
+                    f"${min(v):.2f}$ to ${max(v):.2f}$", "paired medians over targets"))
+    both = [rows[t][k] for t in ts for k in ("psf_over_base", "linear_over_base")]
+    out.append(("transfer cost, either transfer / C-T, one-decimal range (abstract, intro, conclusion)",
+                f"${min(both):.1f}$ to ${max(both):.1f}$",
+                "min and max over both transfers and all targets"))
+    v = [rows[t]["deconv_over_control"] for t in ts]
+    out.append((f"transfer cost, PSF/IDW differential as percent {where}",
+                f"${100*(min(v)-1):.0f}$--${100*(max(v)-1):.0f}\\%$",
+                "(ratio - 1), min and max over targets"))
+    for key, label in (("clough_tocher_over_utm", "C-T"), ("psf_over_utm", "PSF"),
+                       ("linear_over_utm", "IDW")):
+        a, b = rows[ts[-2]][key], rows[ts[-1]][key]
+        out.append((f"transfer cost, {label} / UTM at the two loosest targets {where}",
+                    f"${a:.2f}$ and ${b:.2f}$", "gamma_tile on the UTM side"))
+    out.append((f"transfer cost, n at the loosest target {where}",
+                f"falls to {rows[ts[-1]]['n']}", "oracle-bracketed on all four sweeps"))
+    comp = _csv("compactability.csv")
+    if comp is not None:
+        col = f"t{ts[-1]:g}"
+        names = {"clough_tocher": "C-T", "psf": "PSF", "linear": "IDW",
+                 "native UTM": "native"}
+        for _, r in comp.iterrows():
+            if col in r and np.isfinite(r[col]):
+                out.append((f"compactability at loosest, {names.get(r.transfer, r.transfer)} {where}",
+                            f"${100*r[col]:.1f}\\%$", "size / own lossless size"))
     return out
 
 
