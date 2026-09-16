@@ -58,15 +58,37 @@ def region_row(scene, kernel, band=None):
     store = cfg.REGION_DIR / f"{scene}_data.zarr"
     _ds, img, _lon, _lat, _x, _y, _crs = build_tiles._open_window(
         store, band or cfg.BAND)
+    H, W = img.shape
     win = np.asarray(img[y1:y2, x1:x2], dtype=np.float64)
 
     row = dict(scene=scene, kernel=kernel,
                crop_box=f"{y1}:{y2},{x1}:{x2}",
+               crop_shape=f"{crop.shape[0]}x{crop.shape[1]}",
+               slice_shape=f"{win.shape[0]}x{win.shape[1]}",
+               window_shape=f"{H}x{W}",
+               window_px_meta=int(meta.get("window_px", -1)),
+               utm_side_meta=int(meta.get("utm_side_px", -1)),
+               utm_side_now=int(cfg.UTM_SIDE_PX),
+               box_inside_window=bool(0 <= y1 and y2 <= H and 0 <= x1 and x2 <= W),
                nodata_filled=int(meta.get("utm_nodata_filled", 0)),
                shape_match=bool(win.shape == crop.shape))
     if not row["shape_match"]:
+        # Two different failures look alike here and must not be confused.
+        # Either the crop was cut at a side this pipeline no longer uses, or
+        # the box is valid but falls outside the window now on disk, which
+        # numpy silently clips -- and that means the window was re-acquired
+        # smaller than the one the tile was built from.
+        if not row["box_inside_window"]:
+            why = (f"the recorded crop box falls outside the {H}x{W} window "
+                   f"now on disk (the tile was built from a larger one, "
+                   f"{meta.get('window_px', '?')} px)")
+        elif crop.shape[0] != cfg.UTM_SIDE_PX:
+            why = (f"the stored crop is {crop.shape[0]} px a side, not the "
+                   f"{cfg.UTM_SIDE_PX} px this pipeline cuts")
+        else:
+            why = "shapes disagree for a reason neither test explains"
         row.update(identical=False, n_differ=-1, max_abs_diff=np.nan,
-                   verdict="SHAPE MISMATCH")
+                   verdict=f"SHAPE MISMATCH: {why}")
         return row
     good = np.isfinite(win) & np.isfinite(crop)
     diff = np.abs(win[good] - crop[good])
@@ -107,8 +129,14 @@ def main(argv=None) -> int:
                 continue
             rows.append(r)
             flag = "ok " if r["identical"] else "NO "
-            print(f"  {flag} {scene} [{kernel}]: {r['n_differ']} pixel(s) "
-                  f"differ, max {r['max_abs_diff']:.2e}  -> {r['verdict']}")
+            if r["shape_match"]:
+                print(f"  {flag} {scene} [{kernel}]: {r['n_differ']} pixel(s) "
+                      f"differ, max {r['max_abs_diff']:.2e}  -> {r['verdict']}")
+            else:
+                print(f"  {flag} {scene} [{kernel}]: stored crop "
+                      f"{r['crop_shape']}, window slice {r['slice_shape']} at "
+                      f"box {r['crop_box']} of a {r['window_shape']} window\n"
+                      f"      -> {r['verdict']}")
     if not rows:
         for s, why in failures:
             print(f"  {s}: {why}")
