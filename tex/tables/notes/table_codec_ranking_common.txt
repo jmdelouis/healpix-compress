@@ -1,0 +1,1 @@
+An operating point is one (region, target) pair over the 40 regions and the 5 RMSE plus 5 budget targets (400 in total), retained when at least one codec is evaluable there, which leaves 247. Wins sum to the number of points by construction, each point having exactly one best codec; \emph{evaluable} counts the points where a codec produced a value at all.

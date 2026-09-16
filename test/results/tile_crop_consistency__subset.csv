@@ -1,0 +1,6 @@
+scene,kernel,crop_box,crop_shape,slice_shape,window_shape,window_px_meta,utm_side_meta,utm_side_now,box_inside_window,nodata_filled,shape_match,identical,n_differ,max_abs_diff,frac_differ,verdict
+region__water__lake_geneva,nearest,"270:907,270:907",637x637,637x637,1176x1176,1176,637,637,True,0,True,True,0,0.0,0.0,crop comes from THIS window
+region__water__lake_geneva,linear,"270:907,270:907",637x637,637x637,1176x1176,1176,637,637,True,0,True,True,0,0.0,0.0,crop comes from THIS window
+region__water__lake_geneva,bicubic,"270:907,270:907",637x637,637x637,1176x1176,1176,637,637,True,0,True,True,0,0.0,0.0,crop comes from THIS window
+region__water__lake_geneva,clough_tocher,"618:1255,663:1300",637x637,558x513,1176x1176,1512,637,637,False,0,False,False,-1,,,"SHAPE MISMATCH: the recorded crop box falls outside the 1176x1176 window now on disk (the tile was built from a larger one, 1512 px)"
+region__water__lake_geneva,psf,"270:907,270:907",637x637,637x637,1176x1176,1176,637,637,True,0,True,True,0,0.0,0.0,crop comes from THIS window

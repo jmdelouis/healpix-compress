@@ -1,0 +1,1 @@
+Shared with the companion \texttt{healpix-resample} study: one Sentinel-2 L2A B04 tile per region, 1920$\times$1920 native pixels, re-extracted at the same anchors and from the same products as its published 256$\times$256 patches.
