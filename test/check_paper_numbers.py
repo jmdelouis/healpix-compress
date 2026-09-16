@@ -139,6 +139,7 @@ def checks(tex: str):
     out += scoped_checks()
     out += level19_checks()
     out += window_radiometry_checks()
+    out += resampling_error_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     return out, survivors
@@ -306,6 +307,53 @@ def level19_checks():
     mant, exp = f"{d['floor19_agg']:.2e}".split("e")
     out.append((f"level-19 aggregate floor {where}",
                 f"${mant}\\times10^{{{int(exp)}}}$", "median over the regions"))
+    return out
+
+
+def resampling_error_checks():
+    """The appendix figures on each transfer's error against its own estimand.
+
+    These were quoted in the prose and produced by resampling_error.py, but
+    nothing tied the two together, so the region count could change under them
+    without anything complaining -- which is what happened when the window
+    audit removed a region. Every figure the passage states and this script
+    produces is asserted here.
+    """
+    p = cfg.RESULTS_DIR / "resampling_error.csv"
+    if not p.exists():
+        return [("resampling error  [skipped: no CSV]", "",
+                 "run resampling_error.py")]
+    import pandas as pd
+    d = pd.read_csv(p)
+    d["cls"] = d.scene.str.split("__").str[1]
+    ct = d[d.kernel == "clough_tocher"]
+    where = "[in sections/08_appendices.tex]"
+    by_cls = 100 * ct.groupby("cls").e_resample_frac_of_std.median()
+    noise = 100 * ct.groupby("cls").noise_frac_of_std.median()
+    out = [
+        (f"C-T error vs observed, median {where}",
+         f"${ct.e_resample.median()*1e3:.1f}\\times10^{{-3}}$", ""),
+        (f"C-T error vs latent, median {where}",
+         f"${ct.e_against_other_estimand.median()*1e2:.1f}\\times10^{{-2}}$", ""),
+        (f"C-T error, class range low {where}", f"${by_cls.min():.1f}\\%$", ""),
+        (f"C-T error, class range high {where}", f"${by_cls.max():.1f}\\%$", ""),
+        # Written as one range in the prose, so asserted as one range.
+        (f"noise level, class range {where}",
+         f"${noise.min():.1f}$--${noise.max():.1f}\\%$",
+         "Immerkaer estimate, by class"),
+    ]
+    q = cfg.RESULTS_DIR / "resampling_error_noise0.csv"
+    if q.exists():
+        n = pd.read_csv(q)
+        n["cls"] = n.scene.str.split("__").str[1]
+        nc = 100 * n[n.kernel == "clough_tocher"].groupby("cls") \
+            .e_resample_frac_of_std.median()
+        out += [
+            (f"noiseless C-T error, class range low {where}",
+             f"${nc.min():.1f}\\%$", ""),
+            (f"noiseless C-T error, class range high {where}",
+             f"${nc.max():.1f}\\%$", ""),
+        ]
     return out
 
 
