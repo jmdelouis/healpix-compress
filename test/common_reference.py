@@ -155,20 +155,33 @@ class CommonReference:
         import inspect
 
         import healpix_resample as hr
-        # The companion package is under active development and its helper
-        # module has already moved once between two runs of the same day. The
-        # width conversion is the plain Gaussian one (checked against the
-        # companion's own values: 11.921 m FWHM -> 5.0625 m, ratio 2.3548), so
-        # it is computed here when neither import resolves, rather than
-        # letting the reader disappear from a run.
-        fwhm_to_scale = getattr(hr, "fwhm_to_scale", None)
-        if fwhm_to_scale is None:
+        # The width is defined here, not asked for.
+        #
+        # `healpix_resample.fwhm_to_scale` returned sigma when this study was
+        # calibrated against the companion's own numbers (11.921 m FWHM ->
+        # 5.0625 m); on the present install it returns 10.1248 m for the same
+        # input, exactly twice that. The convention moved. `PSFResampler` takes
+        # `sigma_m`, so feeding it the helper's value builds an operator twice
+        # as wide as the one this study means, and nothing downstream notices:
+        # any normalised kernel preserves a constant, so the check below passes
+        # either way.
+        #
+        # The conversion is elementary and the companion's value confirms it,
+        # so it is computed here and the helper is kept only as a recorded
+        # cross-check. A dependency whose convention changes between two runs
+        # of the same day cannot be the definition of a quantity the results
+        # are scored against.
+        self.scale_m = float(fwhm_m) / (2.0 * np.sqrt(2.0 * np.log(2.0)))
+        lib = getattr(hr, "fwhm_to_scale", None)
+        if lib is None:
             try:
-                from healpix_resample.psf_geometry import fwhm_to_scale
+                from healpix_resample.psf_geometry import fwhm_to_scale as lib
             except ImportError:
-                def fwhm_to_scale(f):
-                    return float(f) / (2.0 * np.sqrt(2.0 * np.log(2.0)))
-        self.scale_m = float(fwhm_to_scale(fwhm_m))
+                lib = None
+        self.scale_m_library = float(lib(fwhm_m)) if lib is not None else np.nan
+        self.scale_ratio_library = (self.scale_m_library / self.scale_m
+                                    if np.isfinite(self.scale_m_library)
+                                    else np.nan)
         cls = hr.PSFResampler if self.mode == "psf" else hr.KNeighborsResampler
         accepted = set(inspect.signature(cls.__init__).parameters)
         kw = dict(lon_deg=np.asarray(utm_lon, dtype=np.float64).ravel(),

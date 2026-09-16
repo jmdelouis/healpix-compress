@@ -88,6 +88,8 @@ def region_rows(scene, kernels, verbose=True):
                 # others means the operator is nearly a delta, so the width it
                 # actually used belongs in the results.
                 scale_m=getattr(cr, "scale_m", np.nan),
+                scale_m_library=getattr(cr, "scale_m_library", np.nan),
+                scale_ratio_library=getattr(cr, "scale_ratio_library", np.nan),
                 npt=getattr(cr, "npt", None), error=""))
             if verbose:
                 print(f"    {kernel:14s} {reader:9s} floor {floor:.3e} "
