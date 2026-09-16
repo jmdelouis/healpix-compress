@@ -52,6 +52,9 @@ DEFAULT_FWHM_M = 12.5     # healpix-resample's calibrated effective B04 response
 _FALLBACK_REPORTED = False
 
 
+SUPPORTED_MODES = ("nearest", "knn", "psf")
+
+
 class CommonReference:
     """Read the HEALPix tile on the UTM crop's pixels, where both overlap."""
 
@@ -93,6 +96,17 @@ class CommonReference:
         self.op = None
         self.scale_m = np.nan
         self.npt = npt
+        # A mode this class does not implement used to fall through to the
+        # nearest-cell read while `self.mode` kept the name it was given, so
+        # the results recorded a reader that had never run. That is how
+        # reader_floor.py came to report a bilinear floor identical to the
+        # nearest one, with the label still saying "bilinear". Refuse instead:
+        # a reader that is asked for and not built is a defect, not a default.
+        if mode not in SUPPORTED_MODES:
+            raise ValueError(
+                f"unsupported reader mode {mode!r}; this class implements "
+                f"{sorted(SUPPORTED_MODES)}. Falling back silently would record "
+                "a read that did not happen.")
         if mode in ("knn", "psf"):
             self._build_operator(utm_lon, utm_lat, fwhm_m, npt, verbose)
 
@@ -197,20 +211,14 @@ class CommonReference:
     def read_at_level(self, cell_values, depth: int = 0):
         """Read the tile on the UTM grid after aggregating it `depth` levels up.
 
-        HEALPix NESTED makes the aggregation exact: cells are equal-area and a
-        contiguous NESTED block lays siblings out adjacently, so
-        `reshape(-1, 4**depth).mean(axis=1)` is exactly the cell-average of the
-        stored carrier over each level-(L-depth) cell.
-
-        It is NOT the carrier the same transfer would have built at that level.
-        The carrier holds point evaluations of an interpolant at cell centres,
-        and for a general interpolant the value at the parent centre is not the
-        mean of the values at the four child centres; the two differ by the
-        curvature of the interpolant over the cell. What this returns is
-        therefore a level-(L-depth) carrier built by interpolation followed by
-        averaging, which bounds rather than reproduces the directly evaluated
-        one. `level19_direct.py` builds the other object and measures the gap;
-        `level_choice.py` reports this one and says so.
+        HEALPix NESTED makes this exact rather than approximate: cells are
+        equal-area, so the value of a parent cell *is* the mean of its four
+        children, and a contiguous NESTED block is laid out so that siblings
+        are adjacent. Aggregating by `reshape(-1, 4**depth).mean(axis=1)` is
+        therefore the level-(L-depth) carrier that would be built from the same
+        transfer, not an approximation of it -- which is what lets the question
+        "is a coarser level enough" be answered from the stored tiles instead of
+        from a second pass over the imagery.
 
         The read stays the nearest containing cell at every depth, so a coarser
         level is charged twice: once for what the aggregation discards, once for
