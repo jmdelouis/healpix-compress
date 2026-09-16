@@ -1,66 +1,57 @@
 \subsection{Rate--Distortion Comparison: the Overhead-Free Ratio and the Critical Overhead}
 \label{sec:rd_main}
 
-Three quantities carry the result of this paper. They are reported in an
-order such that no assumption is introduced before it is needed. The first
-is the overhead-free HEALPix/UTM size ratio at equal reconstruction error, with
-no overhead assigned to either product ($\gamma=1$); it is a property of the
-two grids and of the transfer that populated one of them. The second is the
-same ratio read as a decision threshold, the distortion-dependent
-\emph{critical overhead} $\gamma_\star(e)$, defined as the native-product
-overhead above which the carrier becomes the smaller representation at error
-$e$. This is the general result, and it is a curve rather than a verdict.
-The third is one point on that curve, an illustrative $30\%$ granule
-overhead ($\gamma_{\mathrm{tile}}=1.30$), reported in
-Section~\ref{sec:rd_illustrative} because a concrete operating point is
-useful, and reported after the curve because it is not the result.
+Three quantities carry the result, in an order that introduces no
+assumption before it is needed. The first is the overhead-free HEALPix/UTM
+size ratio at equal reconstruction error ($\gamma=1$), a property of the
+two grids and of the transfer that filled one of them. The second is the
+same ratio read as a decision threshold: the distortion-dependent
+\emph{critical overhead} $\gamma_\star(e)$, the native-product overhead
+above which the carrier becomes the smaller representation at error $e$.
+This is the general result, and it is a curve. The third is one point on
+that curve, the illustrative $30\%$ overhead ($\gamma_{\mathrm{tile}}=1.30$)
+of Section~\ref{sec:rd_illustrative}.
 
 At $\gamma=1$, native UTM is the more compressible representation at four
-of the five RMSE targets, by a margin that decreases monotonically as the
+of the five RMSE targets, by a margin that falls monotonically as the
 target loosens: $+106\%$, $+94\%$, $+59\%$ and $+19\%$ from $10^{-4}$ to
-$3\times10^{-3}$. At $10^{-2}$ the sign changes: the Clough--Tocher tile
-is $7\%$ smaller than the native square with no overhead charged to either
-side (median $0.93$ over the 32 regions whose contrast admits the target,
-$p=0.03$ before correction). In plain terms, the compressed HEALPix tile is
-twice the size of the compressed native square when almost no error is
-tolerated, and slightly smaller than it when a quarter of the scene
-contrast is; the $2.58$ of the uncompressed tile is never reached again
-once a codec is involved, and at the loosest target the oversampling
-penalty is more than recovered.
+$3\times10^{-3}$. At $10^{-2}$ the sign changes: the Clough--Tocher tile is
+$7\%$ smaller than the native square with no overhead on either side
+(median $0.93$ over the 32 regions whose contrast admits the target,
+$p=0.03$ before correction). The $2.58$ of the uncompressed tile is never
+seen again once a codec is involved.
 
-Restating this gap as
+Writing this gap as
 $\gamma_\star(e)=S_{\mathrm{HPX}}(e)/S_{\mathrm{UTM,crop}}(e)$ is an
-accounting identity rather than an explanation. The change of sign at
-$\gamma=\gamma_\star$ is tautological and says nothing about why the gap
-narrows with distortion; what the identity provides is a threshold that a
-product designer can compare with a measured overhead.
-Table~\ref{tab:gamma_continuous} reports $\gamma_\star$ at every target. It
-decreases from $2.06$ to $0.93$ and reaches $1.19$ at $3\times10^{-3}$,
-below the illustrative $1.30$, which is why the measured ratio at that
-target is $0.92$ and the paired test does not separate the grids there. At
-the three tightest targets $\gamma_\star$ ranges from $1.59$ to $2.06$,
-overheads that we are not aware of any measurement supporting, and at the
-tightest target native UTM remains ahead for three quarters of the regions
-even at $\gamma=2$. At the two loosest targets $\gamma_\star$ falls to
-$1.19$ and $0.93$: at $3\times10^{-3}$ a native product organised with
-less than $19\%$ of overhead would restore the advantage of UTM, and at
-$10^{-2}$ the carrier is the smaller representation before any overhead is
-charged to the native product, so that no layout assumption is needed for
-the verdict there, only the tolerated error. The value of $\gamma_\star$
-has not been recomputed for the matched-budget protocol, which would
-require repeating the budget interpolation at $\gamma=1$
+accounting identity; the change of sign at $\gamma=\gamma_\star$ explains
+nothing about why the gap narrows with distortion, and what the identity
+gives is a threshold a product designer can compare with a measured
+overhead. Table~\ref{tab:gamma_continuous} reports $\gamma_\star$ at every
+target. It falls from $2.06$ to $0.93$ and reaches $1.19$ at
+$3\times10^{-3}$, below the illustrative $1.30$, which is why the measured
+ratio at that target is $0.92$ and the paired test does not separate the
+grids there. At the three tightest targets $\gamma_\star$ runs from $1.59$
+to $2.06$, overheads we know of no measurement supporting, and at the
+tightest target native UTM stays ahead for three quarters of the regions
+even at $\gamma=2$. At $3\times10^{-3}$ a native product organised with
+less than $19\%$ of overhead would restore the advantage of UTM. At
+$10^{-2}$, $\gamma_\star=0.93$ lies below one, so the carrier is already
+the smaller representation at equal layout overhead ($\gamma=1$) and stays
+so for any relative overhead $\gamma\ge0.93$; a native product organised
+more compactly than the carrier by more than $7\%$ would still be the
+smaller of the two. What the result removes at that target is the need to
+assume an overhead in the carrier's favour. $\gamma_\star$ has not been
+recomputed for the matched-budget protocol
 (Section~\ref{sec:limitations}).
 
-
-Table~\ref{tab:gamma_continuous} maps that assumption to its consequence.
-Each region's critical overhead $\gamma_\star$ is the value at which the
-two representations reach equal compressed size for that region, so
-HEALPix is the smaller of the two exactly where $\gamma \ge \gamma_\star$;
-the win columns give the fraction of the $n$ regions that qualify at that
-target --- 40, 40, 39, 37 and 32 as the target loosens --- satisfying that at
-three illustrative values, and \emph{inconclusive} the range of $\gamma$
-over which the paired signed-rank test does not separate the grids at the
-$5\%$ level. No value of $\gamma$ is privileged here.
+In Table~\ref{tab:gamma_continuous}, each region's $\gamma_\star$ is the
+value at which the two representations reach equal compressed size for
+that region, so HEALPix is the smaller one exactly where
+$\gamma \ge \gamma_\star$. The win columns give the fraction of the $n$
+regions that qualify at that target --- 40, 40, 39, 37 and 32 as the
+target loosens --- satisfying that at three illustrative values, and
+\emph{inconclusive} the range of $\gamma$ over which the paired
+signed-rank test does not separate the grids at the $5\%$ level.
 
 \input{tables/table_gamma_continuous}
 
@@ -68,52 +59,47 @@ $5\%$ level. No value of $\gamma$ is privileged here.
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_verdict_vs_gamma}
 \caption{The verdict over a continuous range of the overhead ratio
-$\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$, rather than at one assumed
-value. Top: the fraction of the qualifying regions for which HEALPix is the
-smaller representation, per RMSE target; the number that qualifies falls from
-40 to 32 as the target loosens (Table~\ref{tab:gamma_continuous}), so each
-curve is a share of its own target's population; the thickened stretch of each curve is where
-the paired signed-rank test does not separate the two grids at the $5\%$ level.
-Bottom: the per-region critical overhead $\gamma_\star$ behind those curves, one
-point per region, the bar marking the median. The dashed line marks the
-illustrative $\gamma_{\mathrm{tile}}=1.30$ used elsewhere in this paper; it is
-marked, not privileged.}
+$\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$. Top: the fraction of
+the qualifying regions for which HEALPix is the smaller representation, per
+RMSE target; the number that qualifies falls from 40 to 32 as the target
+loosens (Table~\ref{tab:gamma_continuous}), so each curve is a share of its
+own target's population; the thickened stretch is where the paired
+signed-rank test does not separate the two grids at the $5\%$ level.
+Bottom: the per-region critical overhead $\gamma_\star$ behind those
+curves, one point per region, the bar marking the median. The dashed line
+marks the illustrative $\gamma_{\mathrm{tile}}=1.30$; it carries no
+privilege.}
 \label{fig:verdict_vs_gamma}
 \end{figure}
 
-Because the overhead enters as a single multiplicative factor, every
-statement about it is a function of one per-region quantity. The
-overhead-free ratio of a region is its $\gamma_\star$; HEALPix is the smaller
-representation exactly where $\gamma\ge\gamma_\star$, and the paired test at
-overhead $\gamma$ is the signed-rank test on $\log(\gamma_\star/\gamma)$.
-Verdict, significance and spread are therefore all read from the empirical
-distribution of $\gamma_\star$ (Fig.~\ref{fig:verdict_vs_gamma}). Reading
-$\gamma$ in this way also removes an asymmetry. With an overhead
+Because the overhead enters as one multiplicative factor, every statement
+about it is a function of one per-region quantity: HEALPix is smaller
+exactly where $\gamma\ge\gamma_\star$, and the paired test at overhead
+$\gamma$ is the signed-rank test on $\log(\gamma_\star/\gamma)$. Verdict,
+significance and spread are all read from the empirical distribution of
+$\gamma_\star$ (Fig.~\ref{fig:verdict_vs_gamma}). With an overhead
 $\gamma_{\mathrm{HPX}}$ on the carrier and $\gamma_{\mathrm{UTM}}$ on the
-native product, the only parameter that matters is the ratio
-$\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$, which is why the figure
-extends below $1$: there the carrier carries the heavier container, and a
-fifth to a third of the regions already have their critical overhead in
-that range at the looser targets. One component of $\gamma$ is measurable,
-and Appendix~\ref{app:container} measures it: the container format accounts
-for at most half a percent on either side, so that a $30\%$ overhead
-describes granule geometry (padding, overlap, per-granule metadata), a
-property of a product layout, which is why it is carried as a parameter.
+native product, only the ratio $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$
+matters, which is why the figure extends below $1$: there the carrier
+carries the heavier container, and at the looser targets a fifth to a
+third of the regions already have their critical overhead in that range.
+One component of $\gamma$ is measurable: the container format accounts for
+at most half a percent on either side (Appendix~\ref{app:container}). A
+$30\%$ overhead therefore describes granule geometry (padding, overlap,
+per-granule metadata), a property of a product layout, which is why it is
+carried as a parameter.
 
-The table shows that no single summary statement is available. A reader
-who assumes no overhead ($\gamma=1$) finds HEALPix smaller for
-$2\%$ to $69\%$ of the regions depending on the target; one who accepts
-the illustrative $1.30$ finds $2\%$ to $94\%$; one who assumes that the
-native layout costs twice what the carrier does finds $28\%$ to $100\%$.
-Only at the tightest target is the answer robust over the whole plausible
-range in favour of UTM, and only at the loosest is it robust in favour of
-HEALPix. Each target also has a band of $\gamma$, narrow at the extremes
-and $1.35$--$1.73$ at $10^{-3}$, within which the two grids cannot be
-separated at all; a reader whose product falls in that band should draw no
-conclusion from this comparison rather than read off a ratio. The $n$
-column of the table records that the loosest targets are established on
-fewer regions than the tightest: the eight regions absent at $10^{-2}$ are
-those whose scene contrast does not exceed the target
-(Section~\ref{sec:rd_protocol}), and Appendix~\ref{app:censoring} shows
-that keeping them as bounds would leave the ratio at the illustrative
-overhead within $[0.69, 0.74]$.
+No single summary statement is available. A reader who assumes no
+overhead ($\gamma=1$) finds HEALPix smaller for $2\%$ to $69\%$ of the
+regions depending on the target; one who accepts the illustrative $1.30$
+finds $2\%$ to $94\%$; one who assumes the native layout costs twice what
+the carrier does finds $28\%$ to $100\%$. Only at the tightest target is
+the answer robust over the whole plausible range in favour of UTM, and
+only at the loosest in favour of HEALPix. Each target also has a band of
+$\gamma$, narrow at the extremes and $1.35$--$1.73$ at $10^{-3}$, within
+which the two grids cannot be separated; a reader whose product falls in
+that band should draw no conclusion from this comparison. The eight
+regions absent at $10^{-2}$ are those whose scene contrast does not exceed
+the target (Section~\ref{sec:rd_protocol}); keeping them as bounds would
+leave the ratio at the illustrative overhead within $[0.69, 0.74]$
+(Appendix~\ref{app:censoring}).

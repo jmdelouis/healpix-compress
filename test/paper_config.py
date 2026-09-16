@@ -54,6 +54,15 @@ MIN_WINDOW_PX = SAFE_WINDOW_PX
 # resampling halo on both sides.
 WINDOW_PX = int(os.environ.get("HPXC_WINDOW_PX", 1920))
 
+# --- companion package ------------------------------------------------------
+# The healpix-resample checkout this study is synchronised with is the one
+# the companion paper (JSTARS submission) describes, tagged in its repository.
+# `run_codec_bench.environment()` records what the checkout actually reports
+# and compares it with this, because the package's `fwhm_to_scale` changed
+# meaning once between versions and cost two orders of magnitude on the PSF
+# reader floor before anyone noticed.
+HEALPIX_RESAMPLE_TAG = "jstars-submission"
+
 # --- storage accounting ------------------------------------------------------
 GAMMA_UTM = 1.30              # assumed Sentinel-2/MGRS granule overhead
 SHARED_RAW = N_CHILDREN * 4   # 4_194_304 B, fixed HEALPix tile raw size
@@ -111,6 +120,46 @@ def resample_root() -> Path:
         f"or place it next to this repository. Tried: "
         + ", ".join(str(c) for c in candidates)
     )
+
+
+def resample_version() -> dict:
+    """What the healpix-resample checkout reports about itself.
+
+    Returns the git description of the checkout (tag, or tag-N-gSHA when
+    commits follow it), the module's __version__ if it has one, and whether
+    the checkout sits on HEALPIX_RESAMPLE_TAG. Missing pieces are reported as
+    such rather than raised: this is a record, and a record with holes is
+    better than no record.
+    """
+    import subprocess
+    out = {"expected_tag": HEALPIX_RESAMPLE_TAG, "git": "unknown",
+           "module": "unknown", "on_expected_tag": None}
+    try:
+        import healpix_resample as hr
+        out["module"] = str(getattr(hr, "__version__", "unknown"))
+    except Exception:                                     # noqa: BLE001
+        out["module"] = "absent"
+    try:
+        root = resample_root()
+    except FileNotFoundError:
+        return out
+    try:
+        desc = subprocess.run(
+            ["git", "-C", str(root), "describe", "--tags", "--always", "--dirty"],
+            capture_output=True, text=True, timeout=10)
+        if desc.returncode == 0:
+            out["git"] = desc.stdout.strip()
+        # A checkout can sit on the tagged commit without `describe` naming
+        # that tag first when several tags share it; ask directly.
+        at = subprocess.run(
+            ["git", "-C", str(root), "tag", "--points-at", "HEAD"],
+            capture_output=True, text=True, timeout=10)
+        if at.returncode == 0:
+            tags = at.stdout.split()
+            out["on_expected_tag"] = HEALPIX_RESAMPLE_TAG in tags
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return out
 
 
 # The transfer the paper's carrier is built with. `build_tiles.DEFAULT_KERNEL`

@@ -1,95 +1,76 @@
 \subsection{The Support Mismatch Does Not Drive the Result}
 \label{sec:support_controls}
 
-Section~\ref{sec:utm_crop} left an objection open. The rotated tile and the
-axis-aligned crop enclose equal areas but overlap over only $81\%$ of them,
-so that every ratio above is measured between rasters that cover partly
-different ground, and compressed size depends on content. The protocol
-itself cannot settle this point, because it never compresses the same
-ground twice. We therefore remove the content rather than the mismatch.
+Section~\ref{sec:utm_crop} left an objection open: the rotated tile and
+the axis-aligned crop overlap over only $81\%$ of their equal areas, so
+every ratio above is measured between rasters that cover partly different
+ground. The protocol cannot settle this, because it never compresses the
+same ground twice, so we remove the content instead of the mismatch. The
+control is an analytic random field, a sum of plane waves with power
+spectrum $P(k)\propto k^{-\beta}$ multiplied by a Gaussian instrument
+response of width $\sigma$; it lives on the plane, its instrument
+convolution is exact, and it can be evaluated anywhere. It is evaluated
+at the level-20 cell centres and at the native pixel centres of the same
+region, and both samplings are compressed. Neither side is resampled and
+both see the same function, so whatever ratio survives comes from the
+sampling geometry alone.
 
-The control is an analytic random field: a sum of plane waves whose
-amplitudes produce a power spectrum $P(k)\propto k^{-\beta}$, multiplied by
-a Gaussian instrument response of width $\sigma$. As a sum of plane waves,
-the field is defined on the plane rather than on any grid, the instrument
-convolution is exact (each mode is scaled by $\exp(-k^2\sigma^2/2)$), and
-the field can be evaluated at arbitrary positions. It is evaluated at the
-level-20 cell centres and at the native pixel centres of the same region,
-and both samplings are compressed. Neither side is resampled and both see
-the same function, so that whatever ratio survives is due to the sampling
-geometry alone.
-
-The two parameters of the field are measured rather than assumed. Fitting
+Both parameters are measured. Fitting
 $\log P(k)=c-\beta\log k-k^2\sigma^2$ to the radially averaged spectrum of
 each of the 40 crops, from four fundamental wavenumbers to the native
-Nyquist frequency, returns a median slope of $1.9$ and a median response of
+Nyquist frequency, gives a median slope of $1.9$ and a median response of
 \SI{11.9}{m} FWHM, against a nominal Sentinel-2 B04 response near
-\SI{12.5}{m}. Natural images have power-law spectra with exponents near two,
-a regularity that is robust to the choice of image
-ensemble~\cite{tolhurst1992amplitude,vanderschaaf1996powerspectra}, so the
-fitted slope lies within the documented range; and recovering the width of
-the instrument from the imagery, without prior knowledge of it, is what
-qualifies the synthetic field as the appropriate object rather than merely
-a plausible one. The same fit provides the spectral evidence that a
-level-20 carrier is affordable at all: a median of $0.21\%$ of the variance
-of each crop lies above half the native Nyquist frequency. The inference
-must be stated with care. That band is $0.025$--$\SI{0.05}{m^{-1}}$, whereas
-the octave that level~20 adds over level~19 is
-$0.040$--$\SI{0.080}{m^{-1}}$, most of which lies above the
-\SI{0.05}{m^{-1}} Nyquist frequency of the product being measured. The
-observed spectrum falls steeply towards the native Nyquist frequency; it
-does not follow that the added octave is empty, and this cannot be observed
-from a product that does not represent it.
+\SI{12.5}{m}. Natural images have power-law spectra with exponents near
+two~\cite{tolhurst1992amplitude,vanderschaaf1996powerspectra}, and
+recovering the instrument width from the imagery with no prior knowledge
+of it is what makes the synthetic field the right object. The same fit
+gives the spectral evidence that a level-20 carrier is affordable at all:
+a median of $0.21\%$ of each crop's variance lies above half the native
+Nyquist frequency. That band, $0.025$--$\SI{0.05}{m^{-1}}$, differs from
+the octave level~20 adds over level~19, $0.040$--$\SI{0.080}{m^{-1}}$,
+most of it above the \SI{0.05}{m^{-1}} Nyquist frequency of the product
+measured; the added octave may still hold content, which a product that
+does not represent it cannot show.
 
-Table~\ref{tab:support_controls} collects the three controls. The synthetic
-rows evaluate one analytic random field --- a power law of slope $\beta$
-times a Gaussian instrument response of \SI{11.9}{m} FWHM, both fitted to
-the imagery itself --- at the sample positions of both lattices; neither
-side is resampled and both see the same function, so no content difference
-remains and the ratio is the sampling geometry alone. The common-support
+Table~\ref{tab:support_controls} collects three controls. The synthetic
+rows evaluate the analytic field at the sample positions of both
+lattices, so the ratio is the sampling geometry alone. The common-support
 rows compress the largest common-ground region on each native lattice and
-normalise by the ground area each covers. The shifted-crop rows report how
-far the ratio moves when the UTM crop is re-cut at eight offsets of up to
-sixteen native pixels with the HEALPix side held fixed, which bounds the
-mismatch's contribution without removing it; for those rows the
-\emph{Median} column is that spread and not a ratio. All ratios are
-overhead-free ($\gamma_{\mathrm{tile}}=1$), and $n$ counts the regions where
-the target is bracketed on both grids.
+normalise by the ground area each covers. The shifted-crop rows report
+how far the ratio moves when the UTM crop is re-cut at eight offsets of
+up to sixteen native pixels with the HEALPix side fixed; for those rows
+the \emph{Median} column is that spread. All ratios are overhead-free
+($\gamma_{\mathrm{tile}}=1$), and $n$ counts the regions where the target
+is bracketed on both grids.
 
 \input{tables/table_support_controls}
 
-Table~\ref{tab:support_controls} reports the outcome. With no content
-difference between the two supports, the ratio decreases monotonically
-from $2.22$ at the $10^{-4}$ target to $1.18$ at $10^{-2}$, against $2.06$
-to $0.93$ measured on the imagery. The control thus reproduces the
-monotonic decline of the gap and its approximate magnitude: it tracks the
-measured ratio to within $8$--$27\%$ at the five targets, closely at the
-tight end and less so at the loose end, where its own sweep, run with the
-original ladders rather than the extended ones of
-Section~\ref{sec:codecs}, is partly censored ($n=37$ and $36$). Under the
-same $\gamma_{\mathrm{tile}}=1.30$ it also reproduces the change of sides,
-reaching $0.91$ at the loosest target where the imagery reaches $0.72$.
-Sampling geometry alone is therefore sufficient to produce a gap of this
-size and this dependence on the target. What the control does not do is
-decompose the residual. The synthetic field is evaluated directly at the
-cell centres, so the transfer step of the real chain is absent from it, as
-are the content difference and the support mismatch; the synthetic ratio
-lies above the measured one at all five targets, by $8\%$ to $27\%$ and
-always in the same direction, so that real imagery passed through the
-Clough--Tocher transfer is more favourable to HEALPix than a Gaussian field
-with the same spectrum sampled without one, but that residual cannot be
-uniquely attributed to support mismatch, scene statistics or the transfer
-operator, and at the two intermediate targets it exceeds the effect under
-study, so the control is corroboration rather than a bound. For a reader
-without a signal-processing background, the finding can be put as follows:
-a made-up image with the same texture statistics as Sentinel-2, sampled by
-the two grids so that neither covers different ground from the other,
-shows the same size penalty for HEALPix and the same decline of that
-penalty with the tolerated error, so the penalty comes from sampling the
-same field $2.58$ times more densely than necessary, not primarily from the
-scenes chosen or from the imperfect overlap of the two footprints.
-Two further controls on subsets, reported in
-Appendix~\ref{app:support}, agree from different directions: a
+With no content difference between the two supports, the ratio falls
+monotonically from $2.22$ at $10^{-4}$ to $1.18$ at $10^{-2}$, against
+$2.06$ to $0.93$ on the imagery. The control thus reproduces the decline
+of the gap and its approximate magnitude, tracking the measured ratio to
+within $8$--$27\%$ at the five targets, closely at the tight end and less
+so at the loose end, where its own sweep, run with the original ladders,
+is partly censored ($n=37$ and $36$). Under $\gamma_{\mathrm{tile}}=1.30$
+it also reproduces the change of sides, reaching $0.91$ at the loosest
+target where the imagery reaches $0.72$. Sampling geometry alone is
+therefore sufficient to produce a gap of this size and this dependence on
+the target. The control does not decompose the residual: the synthetic
+field is evaluated directly at the cell centres, so the transfer step,
+the content difference and the support mismatch are all absent, and the
+synthetic ratio lies above the measured one at all five targets, by
+$8\%$ to $27\%$ and always in the same direction. Real imagery passed
+through the Clough--Tocher transfer is thus more favourable to HEALPix
+than a Gaussian field with the same spectrum sampled without one; that
+residual cannot be assigned to support mismatch, scene statistics or the
+transfer, and at the two intermediate targets it exceeds the effect under
+study, so the control corroborates and does not bound. In plain words: a
+made-up image with the same texture statistics as Sentinel-2, sampled by
+the two grids over exactly the same ground, shows the same size penalty
+for HEALPix and the same decline of that penalty with the tolerated
+error, so the penalty comes mainly from sampling the same field $2.58$
+times more densely than necessary. Two controls on subsets
+(Appendix~\ref{app:support}) agree from different directions: a
 common-support comparison on ten regions, and re-cutting the UTM crop at
-shifted positions on four regions, which moves the ratio by about $1\%$ of
-the effect.
+shifted positions on four regions, which moves the ratio by about $1\%$
+of the effect.

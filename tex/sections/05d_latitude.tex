@@ -1,48 +1,34 @@
 \subsection{Where on the Sphere the Advantage Lives}
 \label{sec:latitude}
-HEALPix cells are equal in area but not in shape, and their local
-elongation differs between the equatorial belt, $|\mathrm{lat}| <
-41.81^\circ$, and the polar caps. Table~\ref{tab:latitude_effect} therefore
-reports Spearman's $\rho$ against $|\mathrm{latitude}|$ and, in its last
-four columns, a two-sided Mann--Whitney comparison of the two regimes. Its
-ratios are overhead-free ($\gamma_{\mathrm{tile}}=1$).
+HEALPix cells are equal in area and differ in shape: their local
+elongation is smallest in the equatorial belt ($|\mathrm{lat}|<41.81^\circ$)
+and grows through the polar caps, the latitude-dependent shape distortion
+with which equal-area grids buy their area
+guarantee~\cite{kmoch2022distortions}. Table~\ref{tab:latitude_effect}
+asks whether that distortion reaches the storage result: it correlates
+the overhead-free ($\gamma_{\mathrm{tile}}=1$) ratio of each region with
+$|\mathrm{latitude}|$ (Spearman's $\rho$) and, in its last four columns,
+compares the two regimes with a two-sided Mann--Whitney test.
 
 \input{tables/table_latitude_effect}
 
-HEALPix cells are equal in area but not in shape. Their local elongation is
-smallest in the equatorial belt ($|\mathrm{lat}|<41.81^\circ$, where the
-pixelization is a simple cylindrical arrangement) and grows through the
-polar caps. That equal-area pixelizations obtain their area guarantee at the
-cost of a latitude-dependent shape distortion is a general property of
-discrete global grids~\cite{kmoch2022distortions}; the narrower question
-here is whether this distortion reaches the storage result.
-Table~\ref{tab:latitude_effect} correlates the overhead-free
-($\gamma_{\mathrm{tile}}=1$) ratio of each region with $|\mathrm{latitude}|$
-and compares the two regimes directly.
-
-These tests form a second family and carry their own Holm correction across
-the eight reported targets. Two associations survive it, both at a matched
-storage budget. At the tightest budget the equatorial belt reaches a median
-overhead-free ratio of $0.95$ against $1.21$ in the caps ($\rho=0.50$,
-$p^{\mathrm{Holm}}_\rho=0.009$; belt-versus-cap $p^{\mathrm{Holm}}=0.008$),
-and at the $5\%$ budget $2.67$ against $2.81$ (belt-versus-cap
-$p^{\mathrm{Holm}}=0.039$, with the rank correlation itself falling outside
-the threshold at $0.128$). One further contrast points the same way without
-reaching it: the loosest RMSE target, $0.90$ against $1.02$
-($p^{\mathrm{Holm}}=0.188$). Nothing at the three tightest RMSE targets
-approaches significance. This is not read as evidence of no influence, but
-as an indication that any influence is smaller than this sample can resolve
-where the gap is large.
-
-Taken at face value, the surviving association indicates that the regime in
-which HEALPix becomes competitive at a given overhead is reached in the belt
-before the caps, and the two near-threshold contrasts point in the same
-direction. The result is presented as exploratory. Latitude is confounded
-with scene class, spatial spectrum, orientation relative to UTM and cell
-anisotropy, and none of the last three has been measured, so a correlation
-with a coordinate is not a correlation with the geometric quantity suspected
-of causing it. The measurement that would settle the question, the local
-Jacobian of the UTM-to-HEALPix map with its singular-value ratio and
-orientation per tile, entered as covariates alongside scene class and a
-spectral-slope proxy, is available in principle. Until it is made, this
-subsection is kept out of the abstract.
+These tests form a second family with their own Holm correction over the
+eight reported targets. Two associations survive it, both at a matched
+storage budget. At the tightest budget the equatorial belt reaches a
+median overhead-free ratio of $0.95$ against $1.21$ in the caps
+($\rho=0.50$, $p^{\mathrm{Holm}}_\rho=0.009$; belt-versus-cap
+$p^{\mathrm{Holm}}=0.008$), and at the $5\%$ budget $2.67$ against $2.81$
+(belt-versus-cap $p^{\mathrm{Holm}}=0.039$, the rank correlation itself
+outside the threshold at $0.128$). The loosest RMSE target points the
+same way without reaching it, $0.90$ against $1.02$
+($p^{\mathrm{Holm}}=0.188$), and nothing at the three tightest RMSE
+targets approaches significance, which we read as an influence smaller
+than this sample can resolve where the gap is large. Taken at face value,
+the surviving association says that the regime in which HEALPix becomes
+competitive at a given overhead is reached in the belt before the caps.
+The result is exploratory: latitude is confounded with scene class,
+spatial spectrum, orientation relative to UTM and cell anisotropy, none of
+the last three has been measured, and the measurement that would settle
+it --- the local Jacobian of the UTM-to-HEALPix map per tile, entered as
+a covariate with scene class and a spectral-slope proxy --- has not been
+made. This subsection therefore stays out of the abstract.

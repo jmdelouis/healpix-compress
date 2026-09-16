@@ -78,6 +78,14 @@ def environment() -> dict:
             env[mod] = str(getattr(m, "__version__", "unknown"))
         except Exception:                                 # noqa: BLE001
             env[mod] = "absent"
+    # healpix-resample has no __version__ that survives an editable install,
+    # so the module line above reads "unknown" and says nothing. Its checkout
+    # is what the paper cites, so record the checkout's own description and
+    # whether it sits on the tag the companion paper was submitted from.
+    rv = cfg.resample_version()
+    env["healpix_resample_git"] = rv["git"]
+    env["healpix_resample_expected_tag"] = rv["expected_tag"]
+    env["healpix_resample_on_expected_tag"] = rv["on_expected_tag"]
     return env
 
 
@@ -313,6 +321,10 @@ def main(argv=None) -> int:
                          "overwritten, and reuses the UTM side, which does not "
                          "depend on the reader")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--env-only", action="store_true",
+                    help="only rewrite results/bench_environment.json, so the "
+                         "record can be refreshed after a library is pinned "
+                         "without rerunning a sweep")
     ap.add_argument("--assemble", action="store_true", help="only rebuild the CSVs")
     ap.add_argument("--legacy", action="store_true",
                     help="run on the seven original scenes instead of the 40 regions")
@@ -329,6 +341,16 @@ def main(argv=None) -> int:
     print("[env] " + ", ".join(f"{k} {env[k]}" for k in
                                 ("python", "numpy", "pywt", "zfpy", "pysz",
                                  "imagecodecs", "zstandard") if k in env))
+    print(f"[env] healpix-resample checkout: {env['healpix_resample_git']} "
+          f"(expected tag {env['healpix_resample_expected_tag']})")
+    if env["healpix_resample_on_expected_tag"] is False:
+        print("[env] WARNING: the healpix-resample checkout is not on the tag "
+              "the paper cites. Its PSF operator width has changed between "
+              "versions before; check out the tag or update "
+              "paper_config.HEALPIX_RESAMPLE_TAG on purpose.")
+    if args.env_only:
+        print(f"wrote {cfg.RESULTS_DIR / 'bench_environment.json'}")
+        return 0
 
     grids = ["hpx", "utm"] if args.grid == "both" else [args.grid]
     if args.legacy:

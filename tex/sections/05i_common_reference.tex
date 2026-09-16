@@ -1,152 +1,124 @@
 \subsection{The Verdict Depends on Which Reference Is Accepted}
 \label{sec:common_reference}
 
-Every ratio reported above compares each grid with its own raw
-representation: the HEALPix side with its resampled carrier tile, the native
-side with the raw UTM crop. This is the natural measure for an archive whose
-reference product \emph{is} the HEALPix cube, but it charges the carrier
-nothing for the transfer that placed the data on it. This section reports
-the complementary measure, in which both grids are scored against the same
-Sentinel-2 observation. Everything in it depends on how the decoded carrier
-is read on the native pixels, and Section~\ref{sec:operator} has shown that
-changing the read alone removes two thirds of the floor's mean squared
-error. The sweep was therefore
-scored twice, through the nearest-cell read used throughout the paper and
-through the interpolating read of Table~\ref{tab:reader_floor}. The UTM side
-is identical under both, since it depends only on the intersection mask.
+Every ratio above compares each grid with its own raw representation,
+which charges the carrier nothing for the transfer. This section scores
+both grids against the same Sentinel-2 observation. The decoded HEALPix
+field is read on the native UTM pixels and compared with the observed
+crop over the intersection of the two footprints, which is necessary
+because the two enclose the same area without covering the same ground:
+over the 40 regions the intersection is $74$--$83\%$ of the crop ($81\%$
+median), and the comparison is made on the $73$--$81\%$ that survives a
+three-pixel erosion of its boundary. Projecting a constant field returns
+exactly one everywhere on this area, the check required before any region
+is accepted. Everything here depends on how the decoded carrier is read
+on the native pixels, and Section~\ref{sec:operator} shows that changing
+the read alone removes two thirds of the floor's mean squared error, so
+the sweep was scored twice, through the nearest-cell read used throughout
+the paper and through the interpolating read of that section; the UTM
+side is identical under both.
 
-The decoded HEALPix field is read on the native UTM pixels and compared
-with the observed crop over the intersection of the two footprints. This
-restriction is necessary: the carrier tile is a square rotated with respect
-to UTM, the equal-area crop is axis-aligned, and although the two enclose
-the same area they do not cover the same ground. Over the 40 regions the
-intersection is $74$--$83\%$ of the crop ($81\%$ median), and the comparison
-is made on the $73$--$81\%$ that survives a three-pixel erosion of its
-boundary. Projecting a constant field returns exactly one everywhere on this
-area, which is the check required before any region is accepted.
-
-
-Table~\ref{tab:representation_floor} reports that floor: the RMSE of the
+The first consequence is a floor, which belongs to the transfer-and-read
+pair. Table~\ref{tab:representation_floor} reports the RMSE of the
 \emph{uncompressed} level-20 carrier, read on the native pixels of the
-intersection with the nearest read, against the Sentinel-2 observation
-itself. No codec setting on the HEALPix side can go below it, so any target
-tighter than it is unreachable under this reference. It is the error of the
-transfer and the read together, and Section~\ref{sec:operator} shows the
-read alone accounts for an error of that size, so it is an upper bound on
-what the representation costs under the present reading operator rather
-than the grid's own representation error. It scales with the scene's
-high-frequency content.
+intersection with the nearest read, against the observation:
+$4.0\times10^{-3}$ in median, about $10\%$ of the standard deviation of
+the scene, rising to $7.9\times10^{-3}$ over urban scenes and falling to
+$8.1\times10^{-4}$ over water, following the high-frequency content as a
+transfer step should. No codec setting on the HEALPix side can go below
+it, and Section~\ref{sec:operator} shows that the read alone accounts for
+an error of that size, so the floor is an upper bound on what the
+representation costs under the present reading operator.
 
 \input{tables/table_representation_floor}
 
-The first consequence is a floor, attributable to the transfer-and-read pair
-rather than to the grid alone. Table~\ref{tab:representation_floor} reports
-the RMSE of the \emph{uncompressed} carrier against the observation:
-$4.0\times10^{-3}$ in median under the nearest read, about $10\%$ of the
-standard deviation of the scene, rising to $7.9\times10^{-3}$ over urban
-scenes and falling to $8.1\times10^{-4}$ over water, i.e.\ following the
-high-frequency content as a transfer step should. No codec setting can fall
-below this floor, and under the nearest read four of the five RMSE targets
-lie beneath it. The consequence is censoring: no RMSE target qualifies on
-the $75\%$ of regions required by the criterion of
-Section~\ref{sec:rd_protocol}. The $10^{-2}$ target reaches $70\%$;
+Under the nearest read four of the five RMSE targets lie beneath this
+floor, and no RMSE target qualifies on the $75\%$ of regions required by
+Section~\ref{sec:rd_protocol}: $10^{-2}$ reaches $70\%$;
 $3\times10^{-3}$, $10^{-3}$ and $3\times10^{-4}$ reach $30\%$, $15\%$ and
 $7\%$; $10^{-4}$ is reachable nowhere. Under the interpolating read the
 floor halves, to $1.9\times10^{-3}$, and $10^{-2}$ becomes reportable
 ($80\%$), while $3\times10^{-3}$ and $10^{-3}$ rise to $60\%$ and $25\%$
-and remain withheld. The regions that would remain at the withheld targets are the
-smoothest ones, so that reporting them would describe a selected subsample.
-
-Its budgets are read as in Table~\ref{tab:error_at_size} --- a fraction of
-the raw HEALPix tile, with the UTM side receiving that budget divided by
-$\gamma_{\mathrm{tile}}$ --- but here $p^{\mathrm{Holm}}$ corrects across
-the three targets this reference admits rather than across eight.
+and stay withheld, since the regions that would remain are the smoothest.
+The budgets of Table~\ref{tab:error_at_size_common} are read as in
+Table~\ref{tab:error_at_size}, with $p^{\mathrm{Holm}}$ corrected over the
+three targets this reference admits.
 
 \input{tables/table_error_at_constant_size_common}
 
 Table~\ref{tab:common_two_readers} puts the two reads side by side: the
 median per-region ratio of the HEALPix side to the native side under the
-illustrative $30\%$ layout overhead, at each target the sweep brackets for
-at least three quarters of the regions
-under that reader, with the Holm-adjusted paired signed-rank $p$, and in
-the last column the same ratio at $\gamma=1$ under the interpolating read,
-which for an RMSE target is the critical overhead $\gamma_\star$. The UTM
-side is identical under both reads, since it depends on the intersection
-mask alone; the floor row is the uncompressed carrier's RMSE against the
-observation.
+illustrative $30\%$ overhead, at each target the sweep brackets for at
+least three quarters of the regions under that reader, with the
+Holm-adjusted paired signed-rank $p$; the last column is the same ratio at
+$\gamma=1$ under the interpolating read, which for an RMSE target is
+$\gamma_\star$; the floor row is the uncompressed carrier's RMSE against
+the observation.
 
 \input{tables/table_common_two_readers}
 
-The second consequence is a reversal, which is the most important caveat of
-this paper. Under the common reference and the nearest read, native UTM is
-ahead at \emph{every} evaluable target, matched-budget included: the median
-RMSE ratios are $1.44$, $3.86$ and $32.2$ at the $2\%$, $5\%$ and $10\%$
-budgets, over the 37, 36 and 34 regions that qualify at each
+The second consequence is a reversal, the most important caveat of this
+paper. Under the common reference and the nearest read, native UTM is
+ahead at \emph{every} evaluable target, matched-budget included: the
+median RMSE ratios are $1.44$, $3.86$ and $32.2$ at the $2\%$, $5\%$ and
+$10\%$ budgets, over the 37, 36 and 34 regions that qualify
 (Holm-adjusted $p<10^{-4}$ throughout), against $0.83$, $1.33$ and $4.01$
-under the within-representation measure. The one clear HEALPix advantage of
-Section~\ref{sec:rd_illustrative} does not survive the change of reference,
-for an arithmetic reason: at a $2\%$ budget the compression error and the
-transfer error are of the same order, so that a measure charging the second
-to HEALPix moves the balance by more than the codec does.
+under the within-representation measure. The one clear HEALPix advantage
+of Section~\ref{sec:rd_illustrative} does not survive the change of
+reference, for an arithmetic reason: at a $2\%$ budget the compression
+error and the transfer error are of the same order, so a measure that
+charges the second to HEALPix moves the balance by more than the codec
+does. The interpolating read changes the size of this reversal, and at
+one target its sign. The ratio at the $2\%$ budget falls from $1.44$ to
+$1.12$ over all 40 regions, still in favour of native UTM (Holm-adjusted
+$p<10^{-4}$), and the $5\%$ and $10\%$ ratios fall from $3.86$ and $32.2$
+to $2.50$ and $19.0$. At the one RMSE target this read makes reportable,
+$10^{-2}$, HEALPix is the smaller representation under the illustrative
+overhead: a median ratio of $0.93$ over the 32 qualifying regions
+(Holm-adjusted $p=1\times10^{-3}$), with an overhead-free ratio of
+$1.20$, a critical overhead below the illustrative $1.30$. The
+within-representation ratio at this target ($0.72$) is never recovered,
+and the three budgets stay with native UTM; of the gap between the two
+references at the $2\%$ budget ($1.44$ against $0.83$ under the nearest
+read, $1.12$ against $0.83$ under the interpolating one), about half was
+the reader.
 
-The interpolating read changes the magnitude of this reversal, and at one
-target its sign (Table~\ref{tab:common_two_readers}). The ratio at the
-$2\%$ budget falls from $1.44$ to $1.12$ over all 40 regions, still in
-favour of native UTM (Holm-adjusted $p<10^{-4}$), and the $5\%$ and $10\%$
-ratios fall from $3.86$ and $32.2$ to $2.50$ and $19.0$. At the one RMSE
-target that this read makes reportable, $10^{-2}$, HEALPix is the smaller
-representation under the illustrative overhead: a median ratio of $0.93$
-over the 32 qualifying regions (Holm-adjusted $p=1\times10^{-3}$), with an
-overhead-free ratio of $1.20$, a critical overhead below the illustrative
-$1.30$ rather than above it. The within-representation ratio at this target
-($0.72$) is not recovered, and the three storage budgets stay with native
-UTM, so the change of reference still costs HEALPix the advantage it holds
-at generous budgets; what the two reads bracket is how much of that cost
-belongs to the reading operator. Of the gap between the two references at
-the $2\%$ budget, $1.44$ against $0.83$ under the nearest read and $1.12$
-against $0.83$ under the interpolating one, about half was the reader.
+Two results survive the switch of reference. JPEG~2000 leads by a wide
+margin under both references and both reads, while JPEG~XL and SZ3
+exchange second place (under the nearest read JPEG~XL takes more outright
+wins, $49$ against $33$, and SZ3 the better mean rank, $2.54$ against
+$3.01$; under the interpolating read $48$ against $44$ and $2.54$ against
+$2.96$). The latitude effect keeps its direction, the equatorial belt
+staying more favourable to HEALPix than the caps at the tightest budget
+($1.63$ against $2.06$ under the nearest read, $1.31$ against $1.60$ under
+the interpolating one), and the reader decides its significance: under
+the nearest read the contrast fails the Holm correction of its family
+($p^{\mathrm{Holm}}=0.18$); under the interpolating read it passes at all
+three budgets ($p^{\mathrm{Holm}}=0.003$ at the tightest, $0.003$ and
+$0.002$ at the other two) and fails at the one reportable RMSE target,
+as expected if the jitter of the nearest read, largest where cells are
+most anisotropic, was masking it.
 
-Two results are unchanged by the switch of reference. JPEG~2000 leads by a
-wide margin under both references and both reads; JPEG~XL and SZ3 exchange
-second place without either approaching it (under the nearest read JPEG~XL
-takes more outright wins, $49$ against $33$, and SZ3 the better mean rank,
-$2.54$ against $3.01$; under the interpolating read the figures are $48$
-against $44$ and $2.54$ against $2.96$), so that the leading codec is a
-property of the data and not of the measure. The latitude effect keeps its
-direction: the equatorial belt remains more favourable to HEALPix than the
-caps at the tightest budget, with median ratios of $1.63$ against $2.06$
-under the nearest read and $1.31$ against $1.60$ under the interpolating
-one. Here the reader determines the significance. Under the nearest read the
-contrast does not pass the Holm correction of its family
-($p^{\mathrm{Holm}}=0.18$); under the interpolating read it does at all
-three storage budgets ($p^{\mathrm{Holm}}=0.003$ at the tightest, $0.003$
-and $0.002$ at the other two), though not at the one reportable RMSE
-target, as expected if the jitter of the nearest read,
-largest where the cells are most anisotropic, was masking it.
-
-Both measures are therefore reported, and neither is elected. If the HEALPix
-cube is itself the product, which is the case a DGGS archive is built for,
+Both measures are therefore reported and neither is elected. If the
+HEALPix cube is itself the product, the case a DGGS archive is built for,
 the within-representation measure is the operative one and the
-regime-dependent verdict of Section~\ref{sec:rd_main} stands. If the native
-product remains the ground truth and the HEALPix copy is a derived
-convenience, the transfer error belongs in the accounting, and on that basis
-the native grid is more efficient at every storage budget and under the
-nearest read at every target, the single exception being the loosest RMSE
-target read through the interpolating operator. What the
-two measures jointly exclude is the unconditional claim that a HEALPix
-carrier is cheaper.
-
-Two further questions concerning this reference are answered in the
-appendices and summarised here because Section~\ref{sec:transfer_cost}
-relies on them. Writing the compression error as a fraction $\kappa$ of the
-transfer error (Appendix~\ref{app:error_budget}), the crossings of
-Section~\ref{sec:rd_illustrative} occur at $\kappa=0.13$ to $0.50$ against
-the latent scene and inflate the total error of the product by a measured
-$2.5$ to $16.0\%$ for savings of $12$ to $30\%$ in three of the four scene
-classes, whereas against the observation the same crossings cost $37$ to
-$115\%$. The two errors do not add in quadrature
-(Appendix~\ref{app:cross_term}): the sign of the cross term depends on the
-reference, negative against the observation, where quadrature overstates
-the total by up to $24$ points, and positive against the latent scene,
-where it understates the total by up to $6.6$ points, with JPEG~2000
-carrying the whole effect and ZFP orthogonal within $|\rho|\le0.03$.
+regime-dependent verdict of Section~\ref{sec:rd_main} stands. If the
+native product remains the ground truth and the HEALPix copy is a derived
+convenience, the transfer error belongs in the accounting, and on that
+basis the native grid is more efficient at every storage budget and,
+under the nearest read, at every target, the single exception being the
+loosest RMSE target read through the interpolating operator. What the two
+measures jointly exclude is the unconditional claim that a HEALPix
+carrier is cheaper. Two further questions about this reference are
+answered in the appendices. Writing the compression error as a fraction
+$\kappa$ of the transfer error (Appendix~\ref{app:error_budget}), the
+crossings of Section~\ref{sec:rd_illustrative} occur at $\kappa=0.13$ to
+$0.50$ against the latent scene and inflate the total error of the
+product by a measured $2.5$ to $16.0\%$ for savings of $12$ to $30\%$ in
+three of the four scene classes, while against the observation the same
+crossings cost $37$ to $115\%$. The two errors do not add in quadrature
+(Appendix~\ref{app:cross_term}): the cross term is negative against the
+observation, where quadrature overstates the total by up to $24$ points,
+and positive against the latent scene, where it understates it by up to
+$6.6$ points, with JPEG~2000 carrying the whole effect and ZFP orthogonal
+within $|\rho|\le0.03$.

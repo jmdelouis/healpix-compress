@@ -2,23 +2,23 @@
 
 \subsection{HEALPix as an Earth Observation Grid}
 HEALPix is a hierarchical equal-area pixelization of the
-sphere~\cite{gorski2005healpix}. At each level all cells have the same area,
-each cell is subdivided into four children, and in the nested indexing
-scheme a parent and all its descendants occupy a contiguous range of
-indices, referred to here as a HEALPix chunk. This locality is valuable for
-cloud object storage, where chunk contiguity governs I/O performance, and
-for compression, where every chunk is by construction a single quadtree
-rooted at one parent cell. For Earth observation, equal-area cells avoid the
-latitude-dependent area bias of plate-carr\'ee-like grids, and a single
-spherical index simplifies the fusion of products with different map
-projections. Sensor ground sampling distances, however, do not coincide with
-the dyadic sequence of HEALPix levels, as Table~\ref{tab:levels} shows for
-Sentinel-2.
+sphere~\cite{gorski2005healpix}. At each level all cells have the same
+area; each cell splits into four children; and in the nested index a
+parent and all its descendants occupy one contiguous range, called a
+HEALPix chunk here. This locality matters for cloud object storage, where
+chunk contiguity sets I/O performance, and for compression, where every
+chunk is one quadtree rooted at a single parent cell. For Earth
+observation, equal-area cells avoid the latitude bias of
+plate-carr\'ee-like grids, and one spherical index eases the fusion of
+products with different map projections. Sensor ground sampling distances,
+however, do not fall on the dyadic sequence of levels
+(Table~\ref{tab:levels}).
 
 \begin{table}[t]
 \centering
-\caption{Approximate HEALPix equal-area equivalent cell widths near Sentinel-2 high-resolution bands. Values are computed from \eqref{eq:healpix_width} using $\Rearth=\SI{6371008.8}{m}$.}
+\caption{HEALPix equal-area cell widths near the Sentinel-2 high-resolution bands}
 \label{tab:levels}
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{ccc}
 \toprule
 HEALPix level $\level$ & Equivalent width $\Delta_{\mathrm{eq}}$ & Relation to Sentinel-2 \SI{10}{m} \\
@@ -30,31 +30,34 @@ HEALPix level $\level$ & Equivalent width $\Delta_{\mathrm{eq}}$ & Relation to S
 \end{tabular}
 \end{table}
 
-On a sphere of radius $\Rearth$, the number of pixels at level $\level$ is $N_{\mathrm{pix}}(\level) = 12\,4^{\level}$, and the equal-area equivalent cell width is
+On a sphere of radius $\Rearth$, level $\level$ has
+$N_{\mathrm{pix}}(\level) = 12\,4^{\level}$ cells, and the equal-area
+equivalent cell width is
 \begin{equation}
-\Delta_{\mathrm{eq}}(\level) = \sqrt{\frac{4\pi \Rearth^2}{12\,4^{\level}}}.
+\Delta_{\mathrm{eq}}(\level) = \sqrt{\frac{4\pi \Rearth^2}{12\,4^{\level}}},
 \label{eq:healpix_width}
 \end{equation}
-Level 20 has exactly four times as many cells as level 19; this factor is an exact property of the dyadic refinement rule. Separately, the nominal per-cell-area oversampling factor of level 20 relative to a \SI{10}{m} native pixel is
+with $\Rearth=\SI{6371008.8}{m}$ in Table~\ref{tab:levels}. Level 20 has
+exactly four times the cells of level 19. Its nominal oversampling
+relative to a \SI{10}{m} native pixel is a different quantity,
 \begin{equation}
 \alpha_{\mathrm{HPX/native}} = \frac{A_{\mathrm{native}}}{A_{\mathrm{HPX20}}} \simeq \frac{10^2}{6.22^2} \simeq 2.58.
 \label{eq:alpha}
 \end{equation}
-The two factors answer different questions: \eqref{eq:alpha} compares level 20 with the \emph{native sensor grid}, whereas the factor of four compares level 20 with level 19. Neither indicates by itself whether the additional samples cost more to store once compressed, which is the empirical question addressed in Section~\ref{sec:results}.
+Neither factor says whether the extra samples cost more to store once
+compressed; that is the empirical question of Section~\ref{sec:results}.
 
 \subsection{Terms Used in This Paper}
 \label{sec:glossary}
-The comparison rests on a small number of notions that are standard in
-compression and signal processing but not in Earth-observation data
-management. Table~\ref{tab:glossary} states each in the sense in which
-this paper uses it. Two deserve a word here because the result turns on
-them. The \emph{transfer} is the operation that fills the HEALPix tile
-from the native pixels; it has no counterpart on the UTM side, and the
-storage cost of the tile depends on it more than on anything else in the
-study. The \emph{reference} is the field against which the reconstruction
-error is measured; measured against the tile itself, the transfer costs
-nothing, whereas measured against the native observation the transfer is
-charged to HEALPix, and the two references reach different verdicts.
+The comparison rests on a few notions from compression and signal
+processing, given in Table~\ref{tab:glossary} in the sense used here. Two
+of them decide the result. The \emph{transfer} fills the HEALPix tile from
+the native pixels; it has no counterpart on the UTM side, and the storage
+cost of the tile depends on it more than on anything else. The
+\emph{reference} is the field against which reconstruction error is
+measured: against the tile itself the transfer costs nothing, against the
+native observation it is charged to HEALPix, and the two reach different
+verdicts.
 
 \begin{table*}[t]
 \centering
@@ -67,7 +70,7 @@ Term & Meaning in this paper \\
 \midrule
 Carrier grid, tile & The HEALPix level-20 grid on which the imagery is stored, and the unit of storage on it: the $1024\times1024$ cells descending from one level-10 cell, about \SI{6.4}{km} across. \\
 Native UTM square & The $637\times637$-pixel square of the original Sentinel-2 raster that covers the same ground area as one tile; the native side is never resampled. \\
-Transfer & The operation that fills the tile from the native pixels. Three are compared. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it adds nothing to the image and is the carrier used throughout. \emph{PSF-aware} additionally undoes part of the blur of the instrument, so the tile is sharper than the product it came from. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
+Transfer & The operation that fills the tile from the native pixels. Three are compared. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it adds nothing to the image and is the carrier used throughout. \emph{PSF-aware} also undoes part of the instrument blur, so the tile is sharper than the product it came from. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
 Read & The operation that returns a value on a native pixel from a decoded tile, needed only when the tile is compared with the observation; nearest cell, or interpolation within the tile. \\
 Size ratio & Compressed bytes of the HEALPix tile divided by compressed bytes of the native square, at the same reconstruction error. Above one, the HEALPix representation is larger. Uncompressed, the ratio is $2.58$ by geometry. \\
 Target RMSE & The tolerated reconstruction error, in reflectance units. Sentinel-2 reflectances are of order $0.1$ and a typical tile has a standard deviation, its contrast, of $0.04$; an RMSE of $10^{-4}$ is a quarter of a percent of that contrast and $10^{-2}$ a quarter of it. Five targets from $10^{-4}$ to $10^{-2}$ are used. \\
@@ -78,25 +81,20 @@ Matched error, matched budget & Two ways of comparing rate--distortion curves: a
 \end{tabular}
 \end{table*}
 
-\subsection{Compressible Redundancy, Not Missing Information}
+\subsection{Compressible Redundancy}
 \label{sec:redundancy}
-A level-20 representation avoids the nominal undersampling of level 19,
-whose \SI{12.4}{m} cells are coarser than the \SI{10}{m} product. Some
-detail is nevertheless lost at level 19, and Section~\ref{sec:level_choice}
-measures what a cell-average of the level-20 carrier onto level 19
-discards.
-Level 20 is nominally storage-inefficient by the factor of \eqref{eq:alpha}
-relative to the native grid. The question is whether this inefficiency
-survives compression and a realistic accounting of native-grid overhead, or
-whether it consists of redundant, and therefore compressible, structure. We
-do not claim that the sensor carries no information at the finer scale, nor
-that the signal is strictly band-limited; neither assumption is required.
-The level-20 samples are not independent measurements at \SI{6.2}{m} but a
-redundant representation of a coarser physical signal. Redundancy suggests
-compressibility without guaranteeing it: how much of it survives depends on
-the noise, on the interpolator that produced the samples and on the codec.
-The two bodies of theory that make this expectation precise, approximation
-theory for the error of oversampling a band-limited field and the
-cross-scale persistence exploited by zerotree coders, are summarised in
-Appendix~\ref{app:literatures}; the measurement that establishes what the
-added octave carries is reported in Section~\ref{sec:level_choice}.
+Level 20 avoids the nominal undersampling of level 19, whose \SI{12.4}{m}
+cells are coarser than the \SI{10}{m} product; what level 19 loses is
+measured in Section~\ref{sec:level_choice}. Level 20 is nominally
+storage-inefficient by the factor of \eqref{eq:alpha}. The question is
+whether this inefficiency survives compression and a realistic accounting
+of native-grid overhead, or whether it is redundant, and therefore
+compressible, structure. We do not claim that the sensor carries no
+information at the finer scale, or that the signal is strictly
+band-limited; neither is needed. The level-20 samples are a redundant
+representation of a coarser physical signal. Redundancy suggests
+compressibility without guaranteeing it: how much survives depends on the
+noise, on the interpolator that produced the samples and on the codec.
+Approximation theory and the cross-scale persistence used by zerotree
+coders make this expectation precise (Appendix~\ref{app:literatures}), and
+Section~\ref{sec:level_choice} measures what the added octave carries.

@@ -415,8 +415,16 @@ def tile_crop_checks():
         # Per region, not per tile: the recorded box is stale because the
         # window was re-acquired, which is a property of the region.
         n_shift = int(d[d.box_shifted].scene.nunique())
+        n_rows = int(d.box_shifted.sum())
+        # A bare "36" is satisfied by any 36 in the appendix (a percentage,
+        # an n), which is how the prose said "39 of the 40 windows" -- the
+        # row count -- for a while while this check passed. Lock the phrase.
         out.append((f"tile/crop audit, stale recorded boxes {where}",
-                    f"{n_shift:d}", "regions re-acquired at another size"))
+                    f"{n_shift:d} of the {d.scene.nunique():d} windows",
+                    "regions re-acquired at another size"))
+        out.append((f"tile/crop audit, mismatches at recorded indices {where}",
+                    f"reports {n_rows:d} mismatched tiles",
+                    "rows, i.e. (region, transfer) pairs"))
     return out
 
 

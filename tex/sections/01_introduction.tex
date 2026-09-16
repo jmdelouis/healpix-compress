@@ -1,103 +1,99 @@
 \section{Introduction}
 \label{sec:intro}
-\IEEEPARstart{E}{arth} observation archives are growing in volume, combine
-several sensors and resolutions, and are increasingly hosted in the cloud.
-Their scientific use depends on storage organisations that provide globally
-consistent spatial referencing, efficient local access and scalable
-chunking. Discrete Global Grid Systems (DGGS) divide the Earth into
-hierarchically indexed cells that serve as a shared spatial reference for
-storage, aggregation and analysis~\cite{ogc_dggs,iso19170}. Prominent
-instances include H3~\cite{h3}, S2~\cite{s2geometry} and
-HEALPix~\cite{gorski2005healpix}, which differ in cell shape, refinement
-strategy and area preservation.
+\IEEEPARstart{E}{arth} observation archives grow in volume, combine several
+sensors and resolutions, and move to the cloud. Their use depends on a
+storage layout with a global spatial reference, fast local access and
+scalable chunking. Discrete Global Grid Systems (DGGS) divide the Earth into
+hierarchically indexed cells that serve as a shared reference for storage,
+aggregation and analysis~\cite{ogc_dggs,iso19170}; H3~\cite{h3},
+S2~\cite{s2geometry} and HEALPix~\cite{gorski2005healpix} differ in cell
+shape, refinement rule and area preservation.
 
-HEALPix was designed for the analysis of astronomical data on the
-sphere~\cite{gorski2005healpix}. It provides equal-area pixels, a dyadic
-hierarchical refinement and a nested indexing scheme in which all descendants
-of a pixel occupy a contiguous block of indices. These properties are equally
-attractive for Earth observation, but they impose a practical limitation:
-HEALPix resolution changes only by powers of two, so the native ground
-sampling distance of an instrument almost never coincides with a level. The
-\SI{10}{m} bands of Sentinel-2, for example, lie between level 19
-(\SI{12.4}{m}, too coarse) and level 20 (\SI{6.2}{m}, geometrically safe but
-nominally oversampled).
+HEALPix was designed for astronomical data on the
+sphere~\cite{gorski2005healpix}. Its cells have equal area, its refinement
+is dyadic, and in its nested index all descendants of a cell form one
+contiguous block. These properties suit Earth observation as well, with
+one practical limit: HEALPix resolution changes only by powers of two, so
+the native sampling of an instrument almost never matches a level. The
+\SI{10}{m} bands of Sentinel-2 fall between level 19 (\SI{12.4}{m}, too
+coarse) and level 20 (\SI{6.2}{m}, geometrically safe and nominally
+oversampled).
 
-The question addressed in this paper is whether such oversampling is
-expensive once storage and compression are both considered. The level-20
-samples are not independent observations at \SI{6.2}{m}; they form an
-overcomplete representation whose information content remains limited by the
-sensor response. If this redundancy compresses well, storing the data at
-level 20 and compressing them should cost no more, and possibly less, than
-keeping the equivalent information on the native UTM grid. The native
-product, when distributed under an operational tiling layout such as the
-MGRS granule scheme of Sentinel-2, carries padding, overlap and per-tile
-metadata beyond the area actually needed. This paper uses a $30\%$ overhead
-as an illustrative operational scenario; it is not a property of UTM as a
-coordinate reference system (Section~\ref{sec:overhead}).
+This paper asks whether that oversampling is expensive once storage and
+compression are both counted. Level-20 samples are not independent
+observations at \SI{6.2}{m}; they form an overcomplete representation
+whose information content the sensor response still limits. If this
+redundancy compresses well, storing the data at level 20 could cost no
+more than keeping the same information on the native UTM grid. The native
+product has a cost of its own: under an operational tiling layout such as
+the MGRS granules of Sentinel-2 it carries padding, overlap and per-tile
+metadata beyond the area needed. This paper uses a $30\%$ overhead as an
+illustrative scenario for one layout (Section~\ref{sec:overhead}).
 
-The answer, in the terms a data manager would use, is given in one table
-and one figure (Table~\ref{tab:headline} and Fig.~\ref{fig:headline},
-Section~\ref{sec:headline}). Before compression, a level-20 tile takes
-$2.58$ times the bytes of the native raster covering the same ground.
-After compression to the same reconstruction error, it takes $2.06$ times
-as many when the tolerated error is a quarter of a percent of the contrast
-of a typical scene, and $0.93$ times as many, that is slightly fewer, when
-the tolerated error is a quarter of that contrast; the land-cover class of
-the scene moves them by a few percent at the tight end and by about a fifth
-at the loose end. That is the outcome for
-a tile filled by Clough--Tocher interpolation, which passes a smooth
-surface through the observed pixels and reads it at the HEALPix cell
-centres. Filling the same tile with the PSF-aware transfer of the companion
-study~\cite{delouis2026resample}, which also undoes part of the blur of
-the instrument, produces a sharper product whose compressed size stays at
-$2.2$--$2.7$ times the native raster at every error, that is, the
-uncompressed factor is not recovered at all. The choice of transfer is
-thus the largest single factor in the storage cost of a HEALPix carrier,
-larger than the codec, the scene or the tolerated error, and the paper
-gives it the space that this implies. Readers who are not specialists in
-compression or signal processing will find the few terms the paper relies
-on, and the reading of each, in Table~\ref{tab:glossary}.
+The answer, in a data manager's terms, is in Table~\ref{tab:headline} and
+Fig.~\ref{fig:headline}. Before compression, a level-20 tile takes $2.58$
+times the bytes of the native raster over the same ground. After
+compression to the same reconstruction error, it takes $2.06$ times as
+many when the tolerated error is a quarter of a percent of a typical
+scene's contrast, and $0.93$ times as many when it is a quarter of that
+contrast. This holds for a tile filled by Clough--Tocher interpolation,
+which passes a smooth surface through the observed pixels and reads it at
+the HEALPix cell centres. The PSF-aware transfer of the companion
+study~\cite{delouis2026resample}, which also undoes part of the instrument
+blur, aims at a sharper latent-field estimand; its tile stays at
+$2.2$--$2.7$ times the native raster at every error. The choice of
+transfer is therefore the largest single factor in the storage cost of a
+HEALPix carrier, above the codec, the scene and the tolerated error, and
+the paper gives it the space this implies. Table~\ref{tab:glossary}
+defines the few terms the paper relies on.
 
-The question is addressed empirically, with established and independently
-maintained compression libraries and without any HEALPix-specific coding.
-The finer HEALPix level is treated strictly as a two-dimensional raster,
-obtained by Morton/Z-order de-interleaving of the nested chunk, and passed to
-standard codecs as a conventional image. The comparison is made over matched
-ground area: the centroid of the HEALPix tile defines an axis-aligned,
-equal-area square extracted directly from the native UTM raster
-(Section~\ref{sec:utm_crop}), so that the UTM side is always the untouched
-native product.
+The question is answered empirically, with established compression
+libraries and no HEALPix-specific coding. The finer HEALPix level is
+treated as a plain 2-D raster, obtained by Morton (Z-order) de-interleaving
+of the nested chunk, and passed to standard codecs as an ordinary image.
+The comparison covers matched ground area: the centroid of the HEALPix
+tile defines an axis-aligned, equal-area square cut from the native UTM
+raster (Section~\ref{sec:utm_crop}), so the UTM side is always the
+untouched native product.
 
-The contributions of this work are the following:
+The contributions are:
 \begin{itemize}
-    \item a storage--distortion formulation of the resolution mismatch between native Sentinel-2 sampling and the next finer HEALPix level, with a geometric accounting showing that the $2.58\times$ oversampling of level 20 makes the raw HEALPix tile the \emph{larger} representation by a factor of $\approx\!1.99$ under the illustrative $30\%$ granule-overhead scenario, so that compression rather than raw storage must make HEALPix competitive;
-    \item an equal-area rate--distortion protocol that separates the overhead-free carrier/native size ratio from the overhead of the native layout through a critical-overhead $\gamma_\star$ analysis, comparing HEALPix tiles with a native UTM square of identical nominal area (rather than a bounding box of the rotated footprint, which inflates the UTM pixel count by roughly $2\times$), with matched error and matched budget obtained by log--log interpolation over the sweep of each codec;
-    \item an evaluation across 40 Sentinel-2 regions, covering four land-cover classes and latitudes from $43.5^\circ$S to $64.1^\circ$N, hence both HEALPix cell-shape regimes (Section~\ref{sec:latitude}), and five general-purpose codecs, with sensitivity analyses on codec, target, resampling operator and assumed overhead, a multiple-testing correction that seven of the eight per-target comparisons survive, and a control that replaces the scene by an analytic field with the spectrum of the imagery and shows that sampling geometry alone reproduces the decline of the gap with the target and its approximate magnitude (Section~\ref{sec:support_controls});
-    \item a reusable, assertion-guarded evaluation pipeline that shares its sites, products and resampling operator with a companion study of HEALPix resampling~\cite{delouis2026resample}, so that the storage and transfer questions are answered on the same data.
+    \item a storage--distortion formulation of the resolution mismatch
+    between native Sentinel-2 sampling and the next finer HEALPix level,
+    with a geometric accounting: the $2.58\times$ oversampling of level 20
+    makes the raw HEALPix tile the \emph{larger} representation by
+    $\approx\!1.99$ under the illustrative $30\%$ overhead, so only
+    compression can make HEALPix competitive;
+    \item an equal-area rate--distortion protocol that separates the
+    overhead-free carrier/native size ratio from the overhead of the native
+    layout through a critical-overhead $\gamma_\star$ analysis, at matched
+    error and matched budget obtained by log--log interpolation over each
+    codec's sweep, against a native UTM square of the same nominal area (a
+    bounding box of the rotated footprint would inflate the UTM pixel count
+    by about $2\times$);
+    \item an evaluation over 40 Sentinel-2 regions, four land-cover
+    classes, latitudes from $43.5^\circ$S to $64.1^\circ$N (both HEALPix
+    cell-shape regimes) and five general-purpose codecs, with sensitivity
+    analyses on codec, target, resampling operator and assumed overhead, a
+    multiple-testing correction that seven of the eight per-target
+    comparisons survive, and an analytic-field control showing that
+    sampling geometry alone reproduces the decline of the gap with the
+    target and its approximate magnitude (Section~\ref{sec:support_controls});
+    \item a reusable, assertion-guarded pipeline that shares its sites,
+    products and resampling operator with the companion
+    study~\cite{delouis2026resample}, so the storage and transfer questions
+    are answered on the same data.
 \end{itemize}
 
-The scope of the result should be stated before the result itself. The
-competitive regime reported below belongs to the complete carrier-grid chain
-(transfer, carrier, codec and read), not to HEALPix geometry alone, and it is
-conditional on four quantities, whose influence is explicitly measured or
-parameterised here rather than assumed. The
-first is the storage overhead assigned to the native product, which is never
-fixed: every verdict is expressed through the critical overhead
-$\gamma_\star(e)$ of Section~\ref{sec:rd_main}, and the $30\%$ scenario is
-one abscissa on that curve. The second is the transfer that populates the
-carrier: the same tiles rebuilt with a PSF-aware or an inverse-distance
-transfer cost $1.2$ to $2.4$ times the bytes at the same coding RMSE, each
-measured against its own uncompressed carrier, and leave HEALPix ahead at
-no target (Section~\ref{sec:transfer_cost}), a sensitivity larger than the
-advantage itself. The third is the codec: held fixed on both grids, four of
-the five reproduce the regime-dependent verdict and ZFP, a fixed-accuracy
-coder, does not (Section~\ref{sec:same_codec}). The fourth is the
-reconstruction reference: when the carrier is scored against the native
-observation rather than within its own representation, its transfer-and-read
-floor of about $10\%$ of a scene's standard deviation is not reached by any
-swept configuration under the nearest-cell read; replacing that read by an
-interpolating one removes about two thirds of the floor's mean squared error
-and narrows the lead of native UTM without reversing it at any storage
-budget (Sections~\ref{sec:operator} and~\ref{sec:common_reference}). These
-four conditions are stated together here so that no statement of the form
-``HEALPix is smaller'' is read without them.
+The scope comes before the result. The competitive regime reported below
+belongs to the complete chain --- transfer, carrier, codec and read --- and
+depends on four measured or parameterised quantities: the overhead of the
+native product, expressed through $\gamma_\star(e)$ so that no value is
+assumed; the transfer, which costs a factor of two
+(Section~\ref{sec:transfer_cost}); the codec, since ZFP alone of the five
+shows no crossover (Section~\ref{sec:same_codec}); and the reconstruction
+reference, since against the native observation the transfer and the read
+already cost about $10\%$ of a scene's standard deviation and native UTM
+leads at every storage budget (Sections~\ref{sec:operator}
+and~\ref{sec:common_reference}). These four conditions belong with every
+statement of the form ``HEALPix is smaller''.

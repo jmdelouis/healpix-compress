@@ -669,13 +669,25 @@ def main(argv=None) -> int:
             denominators(kern, args.denominator)
         except (FileNotFoundError, ValueError) as exc:
             missing.append(f"  {kern}: {exc}")
+    # The kappa analysis needs a reconstruction error for every transfer; the
+    # tables and the digest do not read resampling_error.csv at all -- they
+    # are built from the codec benches alone. A missing denominator used to
+    # abort both, which is why --tex could not be run for a control that has
+    # a sweep but no reconstruction error. Now it blocks only the analysis.
     if missing:
-        print("no reconstruction error available for every transfer, so "
-              "nothing is comparable yet:")
+        print("no reconstruction error available for every transfer, so the "
+              "kappa analysis cannot run:")
         print("\n".join(missing))
         print(f"\nrun\n    python resampling_error.py --kernels "
               f"{' '.join(dict.fromkeys([args.baseline] + todo))}")
-        return 1
+        if not args.tex:
+            return 1
+        print("\n--tex was asked for, so the tables and the digest are still "
+              "written: they come from the codec benches, not from the "
+              "reconstruction error. No figure and no superres_cost*.csv.")
+        latex_tables(args.baseline, tuple(todo), args.codecs,
+                     publish=not args.no_publish)
+        return 0
     for kern in todo:
         df, e_base, e_test = build(kern, args.baseline, args.denominator,
                                    args.codecs)

@@ -1,33 +1,30 @@
 \subsection{Which Codec to Use on a HEALPix Chunk}
 \label{sec:codec_choice}
 
-An operating point here is one (region, target) pair over the 40 regions
-and the five RMSE plus five budget targets, four hundred in all, retained
-when at least one codec is evaluable there. Wins sum to the number of
-points by construction, since each point has exactly one best codec, while
-\emph{evaluable} counts the points where a codec produced a value at all.
+An operating point is one (region, target) pair over the 40 regions and the
+five RMSE plus five budget targets, four hundred in all, kept when at least
+one codec is evaluable there. Wins sum to the number of points, since each
+point has exactly one best codec; \emph{evaluable} counts the points where a
+codec produced a value at all.
 
 \input{tables/table_codec_ranking}
 
 Table~\ref{tab:codec_ranking} aggregates every matched-quality and
-matched-size operating point on the HEALPix side and ranks the codecs by how
-often each is the best choice. The 400 operating points comprise the 40
-regions at all ten swept targets, including the two storage budgets withheld
-from Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size} for
-insufficient bracketing, since a per-point ranking does not require the
-target to be bracketed on both grids. JPEG~2000 is best at 196 points and
-JPEG~XL at 131, against 35 for ZFP, 28 for SZ3 and 10 for the DWT+Zstandard
+matched-size operating point on the HEALPix side and ranks the codecs by
+how often each is best. The 400 points include the two storage budgets
+withheld from Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size}
+for insufficient bracketing, since a per-point ranking does not need the
+target bracketed on both grids. JPEG~2000 is best at 196 points and JPEG~XL
+at 131, against 35 for ZFP, 28 for SZ3 and 10 for the DWT+Zstandard
 baseline; the mean ranks are $1.63$, $2.35$, $4.55$, $2.78$ and $3.66$.
-Every codec is evaluable at almost every point, so the ordering is not an
-artefact of sweep coverage. The robust conclusion is that JPEG~2000 and
-JPEG~XL form the leading pair, rather than a strict ordering between the
-two: the counts are descriptive, the points are not independent (the same
-regions recur across targets), and no BD-rate summary, which would order the
-pair properly, has been computed. This ranking is a statement about codecs,
-not about grids: the same pair leads on the native UTM side, and
-Section~\ref{sec:same_codec} reports what each codec says about the grid
-comparison when it is held fixed on both sides.
-
-The byte-level audit of every encoded point and the meaning of ``lossless''
-after the 16-bit requantisation required by the image codecs are given in
+Every codec is evaluable at almost every point, so sweep coverage does not
+drive the order. The robust conclusion is that JPEG~2000 and JPEG~XL form
+the leading pair; a strict order between the two is not claimed, because
+the counts are descriptive, the points are not independent (the same
+regions recur across targets), and no BD-rate summary has been computed.
+This ranking is a statement about codecs. The same pair leads on the native
+UTM side, and Section~\ref{sec:same_codec} reports what each codec says
+about the grid comparison when held fixed on both sides. The byte-level
+audit of every encoded point, and the meaning of ``lossless'' after the
+16-bit requantisation the image codecs require, are in
 Appendix~\ref{app:codec_audit}.
