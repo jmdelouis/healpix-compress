@@ -13,9 +13,4 @@ level 19, direct & 39 & 8.72e-03 & 2.25 & 15 \\
 level 19, four-child aggregate & 39 & 8.69e-03 & 2.24 & 24 \\
 \bottomrule
 \end{tabular}
-\vspace{3pt}
-\begin{minipage}{\columnwidth}
-\footnotesize
-Median over the 39 regions of the RMSE of each carrier against the same Sentinel-2 observation, on the intersection mask of Section~\ref{sec:common_reference}, each read at the nearest containing cell of its own level. \emph{Direct} evaluates the Clough--Tocher interpolant of the same native samples at the level-19 cell centres; \emph{aggregate} averages the four level-20 children, which is the exact cell-average of the stored carrier and the object Section~\ref{sec:level_choice} measures. The last column counts the regions on which that carrier has the lower floor. The two level-19 carriers are genuinely different objects, differing by 6.0\% of a scene's standard deviation in RMS, 0.27 times the level-19 floor itself, yet their floors agree to 0.2\% in median and to within $5\%$ on 38 of the 39 regions, so the level-19 penalty is a property of the level rather than of which object is called the carrier. The widest departure is water/lake\_baikal, at 1.051. One region is excluded and reported separately (water/lake\_geneva): this comparison rebuilds the transfer from the native window, and the audit of Appendix~\ref{app:window_radiometry} finds its window is not the product its stored tile was built from, so a rebuild reproduces neither level. Kept, the median ratio would be 1.002.
-\end{minipage}
 \end{table}

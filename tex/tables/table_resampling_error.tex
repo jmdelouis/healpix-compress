@@ -15,9 +15,4 @@ Urban & 1.23 & 13.7 & 13.4 & 0.0748 & 0.0063 & 0.0758 & -1.4 & +3.0 \\
 Water & 1.90 & 11.9 & 8.2 & 0.0068 & 0.0008 & 0.0064 & +6.0 & +6.3 \\
 \bottomrule
 \end{tabular}
-\vspace{3pt}
-\begin{minipage}{\textwidth}
-\footnotesize
-On a synthetic scene built per region from that region's own fitted spectral slope $\beta$ and response width, over 39 regions. The latent field is analytic, the observation is that field convolved exactly with the fitted Gaussian response, sampled at the native pixel positions and given additive noise at the level Immerkaer's estimator reads off the region's own imagery; the truth at each cell is the average over its sixteen level-22 children, matching the companion study's cell-average estimand. \emph{Blur} is the RMSE between the observed and latent fields, i.e.\ what a non-deconvolving transfer leaves on the table by construction. \texttt{clough\_tocher} is scored against the observed field it claims to represent, \texttt{psf} against the latent field it claims to recover; the last two columns are the companion study's recovery fraction $1-e_{\mathrm{psf}}/e_{\mathrm{blur}}$ at the measured noise and in a noiseless control.
-\end{minipage}
 \end{table*}

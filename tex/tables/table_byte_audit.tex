@@ -17,9 +17,4 @@ Codec & Library & Self-cont. & Sidecar (B) & 16-bit floor & Bit-exact \\
 \texttt{zfp} & zfpy~1.0.1 & yes & 0 & -- & -- \\
 \bottomrule
 \end{tabular}
-\vspace{3pt}
-\begin{minipage}{\textwidth}
-\footnotesize
-Every operating point was written to a file, closed, re-opened and decoded by a reader independent of the encoder; 424 of 424 points reproduced the encoder's array exactly. \emph{Self-contained} asks whether the file alone suffices to decode; \emph{sidecar} is the number of bytes a decoder needs that the reported size does not charge (the float32 minimum and span of the 16-bit renormalisation). The 16-bit floor is the RMSE that renormalisation costs before any compression, which is why points through it are reported as lossless \emph{after requantisation} rather than lossless.
-\end{minipage}
 \end{table*}

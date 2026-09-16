@@ -24,9 +24,4 @@ Shifted crops, spread & $0.003$ & 4 & 0.020 & 13\% of effect \\
 Shifted crops, spread & $0.01$ & 4 & 0.030 & 11\% of effect \\
 \bottomrule
 \end{tabular}
-\vspace{3pt}
-\begin{minipage}{\columnwidth}
-\footnotesize
-The rotated HEALPix tile and the axis-aligned equal-area crop enclose the same nominal area but not the same ground; these controls bound what that mismatch contributes. The synthetic rows evaluate one analytic random field --- a power law of slope $\beta$ times a Gaussian instrument response of 11.9\,m FWHM, both fitted to the imagery itself --- at both lattices' sample positions. Neither side is resampled and both see the same function, so no content difference remains and the ratio is the sampling geometry alone. Ratios are intrinsic ($\gamma_{\mathrm{tile}}=1$); $n$ counts the regions where the target is bracketed on both grids. The common-support rows compress the largest common-ground region on each native lattice and normalise by the ground area each covers. The shifted-crop rows report how far the ratio moves when the UTM crop is re-cut at eight offsets of up to 16 native pixels with the HEALPix side held fixed, which bounds the mismatch's contribution without removing it; their \emph{Median} column is that spread, not a ratio.
-\end{minipage}
 \end{table}

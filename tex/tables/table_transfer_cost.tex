@@ -16,9 +16,4 @@ $0.003$ & 38 & 2.08 & 1.94 & 1.05 & 0.93 & 2.00 & 1.90 \\
 $0.01$ & 37 & 2.41 & 2.01 & 1.09 & 0.73 & 1.72 & 1.59 \\
 \bottomrule
 \end{tabular}
-\vspace{3pt}
-\begin{minipage}{\textwidth}
-\footnotesize
-C--T is \texttt{clough\_tocher}, PSF the PSF-aware transfer, IDW the inverse-distance-weighted average over four neighbours that the library calls \texttt{linear} and that Section~\ref{sec:resampler} reports abandoning. Every ratio at a given target is a paired median over the same regions, those bracketed on all sweeps at that target, so the columns are comparable to one another. Left block: compressed size relative to the \texttt{clough\_tocher} tile of the same region at the same absolute RMSE; its last column is the deconvolving transfer over the non-deconvolving one, which is the cost of deconvolving separated from the cost of leaving Clough--Tocher. Right block: each product against the equal-area native crop scaled by $\gamma_{\mathrm{tile}}=1.3$, composed per region rather than as a product of medians; below one favours HEALPix.
-\end{minipage}
 \end{table*}

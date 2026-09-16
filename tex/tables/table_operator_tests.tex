@@ -21,9 +21,4 @@ Wavelength & \multicolumn{4}{c}{Amplitude response} & Max shift \\
 1592 & 1.000 & 1.000 & 1.000 & 1.000 & 0.00 \\
 \bottomrule
 \end{tabular}
-\vspace{3pt}
-\begin{minipage}{\columnwidth}
-\footnotesize
-Each row is a single-frequency wave placed analytically on the level-20 cell centres, read on the native UTM pixels, and regressed against the same wave evaluated at those pixels; the columns are the recovered amplitude response by wave direction in the projected frame, and the largest phase shift converted to metres. Nothing is resampled: the ground truth is the same analytic function, so the residual is the operator and the unavoidable discretisation of reading a cell centre. On a band-limited field with the imagery's own fitted spectrum the operator contributes 1.4e-01 of the field's standard deviation; one cell lights 1.0 native pixels; a unit gradient is reproduced to 0.32 cells.
-\end{minipage}
 \end{table}
