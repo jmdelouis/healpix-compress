@@ -188,7 +188,7 @@ def markdown(df):
                 f"| `{k}` | {len(g)} | {g.departure.median():.3f} | "
                 f"{verdict} | {names or '--'} |")
     df = carrier_rows(df)
-    bad = df[df.status != "ok"]
+    bad = df[df.status == "MISMATCH"]
     lines = [
         "# Window radiometry audit",
         "",
@@ -264,7 +264,7 @@ def latex_table(df):
     which is what every published number depends on.
     """
     df = carrier_rows(df)
-    ok, bad = df[df.status == "ok"], df[df.status != "ok"]
+    ok, bad = df[df.status == "ok"], df[df.status == "MISMATCH"]
     if not len(bad):
         cols = "one column"
         head = r"Quantity & All " + str(len(df)) + r" regions \\"
@@ -364,7 +364,7 @@ def main(argv=None) -> int:
                   f"corr {r['corr']:.4f}  slope {r['slope']:.3f}  "
                   f"slope/corr^2 {r['slope_over_corr2']:.3f}  "
                   f"offset {r['offset']:+.5f}  RMS "
-                  f"{r['rms_frac_of_std']:.3f} std  -> {r['status']}")
+                  f"{r['rms_frac_of_std']:.3f} std")
     if not rows:
         for s, why in failures:
             print(f"  {s}: {why}")
@@ -390,10 +390,13 @@ def main(argv=None) -> int:
     if "kernel" in df.columns and df.kernel.nunique() > 1:
         print("\nby transfer:")
         for k, g in df.groupby("kernel"):
-            print(f"  {k:16s} {len(g):3d} tile(s), "
-                  f"{int((g.status != 'ok').sum())} mismatched")
+            judged = int(g.status.isin(("ok", "MISMATCH")).sum())
+            verdict = (f"{int((g.status == 'MISMATCH').sum())} mismatched"
+                       if judged else "not judged (measured only)")
+            print(f"  {k:16s} {len(g):3d} tile(s), median |ratio-1| "
+                  f"{g.departure.median():.3f}, {verdict}")
     df = carrier_rows(df)
-    bad = df[df.status != "ok"]
+    bad = df[df.status == "MISMATCH"]
     print(f"\n{len(df)} carrier tile(s) audited, {len(bad)} mismatched")
     for _, r in bad.iterrows():
         print(f"  MISMATCH {r['scene']}: stored ~ {r['slope']:.3f} * window "
