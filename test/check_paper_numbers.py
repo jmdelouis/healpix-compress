@@ -780,6 +780,11 @@ def consistency_checks(tex):
                 syn = syn.iloc[0:0]
             else:
                 syn = syn[near <= 0.15]
+        # Revision 5 adds rows where the field is carried to the cells by a
+        # transfer (column `transfer`); the geometry-only statements of the
+        # text are about the direct rows.
+        if "transfer" in syn.columns and len(syn):
+            syn = syn[syn.transfer.fillna("none").astype(str) == "none"]
         syn = syn[syn.both_bracketed] if len(syn) else syn
         med = syn.groupby("target").ratio.median() if len(syn) else pd.Series(dtype=float)
         gs = {float(k): float(v) for k, v in load("self").get("gamma_star", {}).items()}

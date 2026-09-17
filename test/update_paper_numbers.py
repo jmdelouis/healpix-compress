@@ -383,6 +383,15 @@ def table_latitude(rows, index):
     """Does the HPX/UTM gap depend on where the tile sits on the sphere?"""
     lat = index.set_index("scene")["abs_lat"].to_dict() if "abs_lat" in index else {}
     regime = index.set_index("scene")["hpx_regime"].to_dict() if "hpx_regime" in index else {}
+    # The spectral slope of each crop, fitted by support_controls.py --control
+    # spectrum, is the scene-content covariate a latitude test has to hold
+    # fixed: latitude and land cover are confounded in a 40-region sample.
+    beta = {}
+    spec = cfg.RESULTS_DIR / "support_controls_spectrum.csv"
+    if spec.exists():
+        sp_df = pd.read_csv(spec)
+        if "beta_fit" in sp_df.columns:
+            beta = sp_df.set_index("scene")["beta_fit"].to_dict()
     body, stats_out, order = [], {}, []
     # Half the sample at least: the gamma=1 variant of the loosest budget is
     # out of interpolation range for most regions, and a correlation on the
@@ -400,6 +409,10 @@ def table_latitude(rows, index):
         mw = st.mannwhitney(eq, cap)
         key = (f"{r['kind']}:{r['target']:g}")
         stats_out[key] = dict(spearman=sp, equatorial_vs_cap=mw)
+        if beta:
+            betas = [beta.get(s, np.nan) for s in scenes]
+            stats_out[key]["partial_beta"] = st.partial_spearman(lats, vals, betas)
+            stats_out[key]["beta_vs_lat"] = st.spearman(lats, betas)
         order.append(key)
         label = (RMSE_LABEL.get(r["target"], f"${r['target']:g}$") if r["kind"] == "rmse"
                  else f"${100*r['target']:g}\\%$")
@@ -759,6 +772,12 @@ def main(argv=None) -> int:
                   f"{v['equatorial_vs_cap']['median_b']:.3f} "
                   f"(p={v['equatorial_vs_cap']['p']:.3f}, "
                   f"Holm={v['equatorial_vs_cap'].get('p_holm', float('nan')):.3f})")
+        if "partial_beta" in v:
+            pb, bl = v["partial_beta"], v["beta_vs_lat"]
+            md.append(f"    given the spectral slope beta: partial rho="
+                      f"{pb['rho']:.3f} (p={pb['p']:.3f}, n={pb['n']}); "
+                      f"rho(beta, |lat|)={bl['rho']:.3f} (p={bl['p']:.3f}); "
+                      f"rho(beta, ratio)={pb['rho_yz']:.3f}")
     md += ["", "## Codec ranking (HEALPix side)", "",
            f"- {ranking['points']} operating points, wins sum to the same number"]
     for c, w in sorted(ranking["wins"].items(), key=lambda kv: -kv[1]):

@@ -35,9 +35,18 @@ cleanest isolation:
                 whatsoever, so whatever ratio survives is the grid effect
                 alone. This is the control that isolates rather than bounds.
 
+    smoothed    Read the native crop through the same Clough-Tocher operator
+                at points shifted by half a pixel, at the native density, and
+                compress that. The native side then carries the carrier's
+                smoothing and nothing else: smoothed/native is what the
+                transfer alone buys, HEALPix/smoothed what remains of the
+                carrier's cost once both sides are equally smooth (revision 5).
+
 Usage
 -----
-    python support_controls.py --control synthetic --fitted   # the paper's control
+    # the paper's controls (revision 5): direct and transferred synthetic
+    # rows, plus the smoothed-native rows, in one run
+    python -B support_controls.py --control synthetic smoothed --fitted --transfer clough_tocher
     python support_controls.py --control common --limit 10
     python support_controls.py --control shift --limit 5      # the expensive one
     python support_controls.py --control all --limit 5
@@ -361,6 +370,176 @@ def control_common(scene, codecs, targets, verbose=True):
     return pd.DataFrame(rows)
 
 
+# --- the transfer, evaluated where the paper needs it -------------------------
+def _to_lonlat(crs_wkt, x, y):
+    """Projected (x, y) of the region's CRS back to geographic lon/lat."""
+    import pyproj
+    crs = pyproj.CRS.from_wkt(crs_wkt)
+    tr = pyproj.Transformer.from_crs(crs, pyproj.CRS.from_epsg(4326),
+                                     always_xy=True)
+    lon, lat = tr.transform(np.asarray(x, dtype=np.float64),
+                            np.asarray(y, dtype=np.float64))
+    return np.asarray(lon, dtype=np.float64), np.asarray(lat, dtype=np.float64)
+
+
+def ct_transfer_to_points(lon, lat, val, q_lon, q_lat, xy=None, q_xy=None,
+                          verbose=False):
+    """Clough--Tocher transfer from scattered samples to arbitrary points.
+
+    The library's CloughTocherResampler only targets HEALPix cell centres. The
+    smoothed-native control (revision 5, review point "free smoothing") needs
+    the same operator evaluated on a UTM lattice shifted by a fraction of a
+    pixel, so the operator is assembled here from the library's own building
+    blocks -- gnomonic frame, Delaunay triangulation, 1-ring gradient
+    operators, sparse M -- exactly as its constructor does, with the query
+    points in place of the cell centres and nothing else changed. The package
+    is pinned at tag jstars-submission, so these internals are stable for the
+    paper.
+
+    If they are unavailable, scipy's CloughTocher2DInterpolator on the
+    projected plane is used instead and the implementation is recorded in the
+    CSV: the two estimate gradients differently, and a row must say which
+    operator produced it.
+
+    Returns (values at the query points, NaN where outside the hull, impl).
+    """
+    lon = np.asarray(lon, dtype=np.float64).ravel()
+    lat = np.asarray(lat, dtype=np.float64).ravel()
+    val = np.asarray(val, dtype=np.float64).ravel()
+    q_lon = np.asarray(q_lon, dtype=np.float64).ravel()
+    q_lat = np.asarray(q_lat, dtype=np.float64).ravel()
+    try:
+        import torch
+        from scipy.spatial import Delaunay
+        from healpix_resample import clough_tocher as ct
+        radius = 6371000.0                     # the library's default
+        t, east, north = ct._gnomonic_tangent_frame(lon, lat)
+        x, y, _den = ct._gnomonic_project(lon, lat, t, east, north, radius=radius)
+        pts = np.stack([x, y], axis=-1)
+        tri = Delaunay(pts)
+        dtype, device = torch.float64, torch.device("cpu")
+        pts_t = torch.as_tensor(pts, dtype=dtype, device=device)
+        (_gx, _gy, edges_j, cgx, cgy, dgx, dgy, indptr) = \
+            ct._build_gradient_operators(pts_t, tri, device, dtype,
+                                         det_floor_rel=1e-9)
+        qx, qy, qden = ct._gnomonic_project(q_lon, q_lat, t, east, north,
+                                            radius=radius)
+        simplex = tri.find_simplex(np.stack([qx, qy], axis=-1))
+        simplex = np.where(qden <= 0.05, -1, simplex)
+        keep = simplex >= 0
+        M = ct._assemble_M(points2d=pts_t, tri=tri, simplex_idx=simplex[keep],
+                           qx=qx[keep], qy=qy[keep], N=int(lon.size),
+                           K=int(keep.sum()), edges_j=edges_j,
+                           coef_gx_edge=cgx, coef_gy_edge=cgy, diag_gx=dgx,
+                           diag_gy=dgy, nbr_indptr=indptr, device=device,
+                           dtype=dtype)
+        yv = torch.as_tensor(val, dtype=dtype, device=device)[None, :]
+        out = np.full(q_lon.size, np.nan, dtype=np.float64)
+        out[keep] = (yv @ M)[0].cpu().numpy()
+        return out, "healpix_resample"
+    except Exception as exc:                                   # noqa: BLE001
+        if verbose:
+            print(f"    library operator unavailable ({type(exc).__name__}: "
+                  f"{exc}); falling back to scipy's Clough-Tocher")
+    from scipy.interpolate import CloughTocher2DInterpolator
+    if xy is None or q_xy is None:
+        raise RuntimeError("scipy fallback needs projected sample and query "
+                           "coordinates (xy, q_xy)")
+    p = np.asarray(xy, dtype=np.float64).reshape(-1, 2)
+    q = np.asarray(q_xy, dtype=np.float64).reshape(-1, 2)
+    f = CloughTocher2DInterpolator(p, val, fill_value=np.nan)
+    return np.asarray(f(q), dtype=np.float64), "scipy"
+
+
+# --- control E: the transfer alone, on the native lattice ---------------------
+def control_smoothed(scene, codecs, targets, shift=(0.5, 0.5), verbose=True):
+    """Native crop -> Clough--Tocher -> UTM lattice shifted by a fraction of a
+    pixel, at the native density, compressed like the crop.
+
+    The carrier is scored against its own smooth tile, and the review objects
+    that the transfer therefore hands the carrier a free smoothing the native
+    side never receives. This control gives the native side the same
+    smoothing and nothing else: the crop is read through the same operator at
+    points a fraction of a pixel away, so the result is a raster of the same
+    density as the crop, filled by the same interpolant as the tile. Two
+    ratios follow. Smoothed/native says what the transfer alone buys at each
+    target; HEALPix/smoothed is what remains of the carrier's cost once both
+    sides are equally smooth, i.e. the density and the lattice.
+
+    Half a pixel is the phase at which the interpolant departs most from the
+    samples; cell centres of the carrier sit at every phase, so this is the
+    strongest smoothing the transfer can give, and the ratio is a bound in
+    the carrier's favour. `shift` selects another phase.
+    """
+    reg = load_region(scene)
+    crop = np.asarray(reg["utm_crop"], dtype=np.float64)
+    n = crop.shape[0]
+    x, y = reg["utm_x"], reg["utm_y"]
+    fx, fy = float(shift[0]), float(shift[1])
+    # Interior lattice, so that every query point lies inside the sample hull:
+    # Clough--Tocher does not extrapolate.
+    qx1 = x[:-1] + fx * (x[1:] - x[:-1])
+    qy1 = y[:-1] + fy * (y[1:] - y[:-1])
+    qx, qy = np.meshgrid(qx1, qy1)
+    gx, gy = np.meshgrid(x, y)
+    q_lon, q_lat = _to_lonlat(reg["crs_wkt"], qx, qy)
+    sm, impl = ct_transfer_to_points(
+        reg["utm_lon"], reg["utm_lat"], crop, q_lon, q_lat,
+        xy=np.stack([gx.ravel(), gy.ravel()], -1),
+        q_xy=np.stack([qx.ravel(), qy.ravel()], -1), verbose=verbose)
+    sm = sm.reshape(qx.shape)
+    n_missing = int((~np.isfinite(sm)).sum())
+    if n_missing:
+        if n_missing / sm.size > 1e-4:
+            raise RuntimeError(f"{scene}: {n_missing} shifted points fell outside "
+                               f"the hull ({100*n_missing/sm.size:.3f}%)")
+        filled, _ = build_tiles._fill_small_holes(sm.astype(np.float32))
+        sm = np.asarray(filled, dtype=np.float64)
+    if verbose:
+        print(f"    smoothed native {sm.shape[0]}x{sm.shape[1]} px at phase "
+              f"({fx:g},{fy:g}) via {impl}; std ratio "
+              f"{np.std(sm)/np.std(crop):.4f}")
+
+    utm = sweep_array(crop.astype(np.float32), scene, codecs, label="utm")
+    smo = sweep_array(sm.astype(np.float32), scene, codecs, label="utm_smoothed")
+    hpx = sweep_array(expanded(reg["cell_data"]), scene, codecs, label="hpx")
+    _save_sweeps("smoothed", scene, [utm, smo, hpx])
+
+    # Sizes per sample: the shifted lattice has one row and one column fewer.
+    n_utm, n_smo = float(crop.size), float(sm.size)
+    rows = []
+    for t in targets:
+        u = st.best_of_codecs_size(utm, scene, codecs, t)
+        s = st.best_of_codecs_size(smo, scene, codecs, t)
+        h = st.best_of_codecs_size(hpx, scene, codecs, t)
+        bu = st.oracle_bracketed(utm, scene, codecs, t, "rmse")
+        bs = st.oracle_bracketed(smo, scene, codecs, t, "rmse")
+        bh = st.oracle_bracketed(hpx, scene, codecs, t, "rmse")
+        ok_su = np.isfinite(u) and np.isfinite(s) and u > 0
+        ok_hs = np.isfinite(h) and np.isfinite(s) and s > 0
+        rows.append(dict(
+            scene=scene, control="smoothed", shift_x=fx, shift_y=fy,
+            transfer_impl=impl, target=t,
+            utm_bytes=float(u), smoothed_bytes=float(s), hpx_bytes=float(h),
+            bracketed_utm=bool(bu), bracketed_smoothed=bool(bs),
+            bracketed_hpx=bool(bh),
+            both_bracketed=bool(bu and bs),
+            hpx_both_bracketed=bool(bh and bs),
+            ratio_smoothed_native=((s / n_smo) / (u / n_utm)) if ok_su else np.nan,
+            ratio_hpx_smoothed=(h / (s * n_utm / n_smo)) if ok_hs else np.nan,
+            ratio_hpx_native=(h / u) if (np.isfinite(h) and np.isfinite(u)
+                                         and u > 0) else np.nan,
+            std_ratio=float(np.std(sm) / np.std(crop))))
+    if verbose:
+        shown = ", ".join(
+            f"{r['target']:g}:{r['ratio_smoothed_native']:.3f}/"
+            f"{r['ratio_hpx_smoothed']:.3f}"
+            + ("" if r["both_bracketed"] and r["hpx_both_bracketed"] else "*")
+            for r in rows if np.isfinite(r["ratio_smoothed_native"]))
+        print(f"    smoothed/native, HPX/smoothed: {shown}")
+    return pd.DataFrame(rows)
+
+
 # --- control C: one analytic field on both geometries ------------------------
 def psf_sigma_from_fwhm(fwhm_m: float) -> float:
     """Gaussian standard deviation of the instrument response, in metres.
@@ -447,9 +626,48 @@ def synthetic_field(px, py, *, beta=2.0, k_min, k_max, n_modes=512, seed=0,
     return out.reshape(np.shape(px))
 
 
+def _synthetic_transfer(reg, x0, y0, field_kwargs, mu, sd, target_mean,
+                        target_std, kernel="clough_tocher", halo_px=32):
+    """The field sampled on the native lattice, then transferred to the cells.
+
+    Reproduces the paper's own chain on the analytic field: native samples on
+    a UTM lattice large enough to enclose the rotated tile (the crop alone
+    leaves the tile's corners outside the sample hull), then the library's
+    resampler to the level-20 cell centres, then the same hole rule as
+    build_tiles. Returns the transferred cell values in the crop's units,
+    the number of cells the resampler dropped, and the lattice side.
+    """
+    step = float(cfg.NATIVE_PIXEL_M)
+    xc = float(np.mean(reg["utm_x"]))
+    yc = float(np.mean(reg["utm_y"]))
+    half = int(math.ceil(cfg.TILE_SIDE_M / math.sqrt(2.0) / step)) + halo_px
+    offs = (np.arange(-half, half + 1, dtype=np.float64)) * step
+    xe = xc + offs
+    ye = yc + offs
+    gxe, gye = np.meshgrid(xe, ye)
+    f_ue = synthetic_field(gxe - x0, gye - y0, **field_kwargs)
+    f_ue = target_mean + target_std * (f_ue - mu) / sd
+    lon_e, lat_e = _to_lonlat(reg["crs_wkt"], gxe, gye)
+    rs = build_tiles.make_resampler(kernel, lon_e.ravel(), lat_e.ravel(),
+                                    reg["cell_ids"])
+    res = rs.resample(f_ue.ravel().astype(np.float64))
+    full, n_missing = build_tiles.complete_block(res.cell_ids, res.cell_data,
+                                                 reg["cell_ids"])
+    return full, n_missing, int(offs.size)
+
+
 def control_synthetic(scene, codecs, targets, betas=(3.0, 4.0, 5.0),
-                      band="hpx", seed=0, psf_fwhm_m=12.5, verbose=True):
-    """Sample one analytic field on both lattices and compress both."""
+                      band="hpx", seed=0, psf_fwhm_m=12.5, verbose=True,
+                      transfer=None):
+    """Sample one analytic field on both lattices and compress both.
+
+    With `transfer` set (e.g. "clough_tocher"), the field is also sampled on
+    the native lattice and carried to the cells by that resampler, and the
+    transferred carrier is swept as well. The direct rows isolate the sampling
+    geometry; the transferred rows add the one step of the real chain the
+    direct rows omit, and the difference between the two is the transfer's
+    own contribution to the ratio, on a field whose truth is known.
+    """
     import pyproj
     reg = load_region(scene)
 
@@ -522,20 +740,47 @@ def control_synthetic(scene, codecs, targets, betas=(3.0, 4.0, 5.0),
                           label=f"utm_synth_b{beta}")
         ratios = ratio_at_targets(hpx, utm, scene, codecs, targets)
         sweeps += [hpx, utm]
+        common = dict(scene=scene, control="synthetic", beta=beta, band=band,
+                      psf_fwhm_m=psf_fwhm_m, psf_sigma_m=sigma,
+                      mtf_utm_nyquist=mtf_utm, mtf_hpx_nyquist=mtf_hpx,
+                      hpx_std=float(np.std(f_h)), utm_std=float(np.std(f_u)))
         for t, r in ratios.items():
-            rows.append(dict(scene=scene, control="synthetic", beta=beta,
-                             band=band, psf_fwhm_m=psf_fwhm_m,
-                             psf_sigma_m=sigma, mtf_utm_nyquist=mtf_utm,
-                             mtf_hpx_nyquist=mtf_hpx, target=t, **r,
+            rows.append(dict(**common, transfer="none", target=t, **r,
                              both_bracketed=_both_bracketed(r),
-                             hpx_std=float(np.std(f_h)),
-                             utm_std=float(np.std(f_u))))
+                             transfer_rmse_rel=np.nan, cells_filled=0))
         if verbose:
             shown = ", ".join(
                 f"{t:g}:{ratios[t]['ratio']:.3f}"
                 + ("" if _both_bracketed(ratios[t]) else "*")
                 for t in targets if np.isfinite(ratios[t]["ratio"]))
             print(f"    beta={beta}: {shown}   (* = not bracketed on both sides)")
+
+        if transfer:
+            f_t, n_filled, side = _synthetic_transfer(
+                reg, x0, y0, dict(beta=beta, k_min=k_min, k_max=k_max,
+                                  seed=seed, psf_sigma_m=sigma),
+                mu, sd, target_mean, target_std, kernel=transfer)
+            # Transfer error against the field's exact value at the cells, in
+            # units of the scene's standard deviation: the same quantity the
+            # kernel ablation measures, here on a field with no noise.
+            t_rmse = codec_lib.rmse(f_t, f_h) / (target_std or 1.0)
+            hpx_t = sweep_array(expanded(f_t.astype(np.float32)), scene, codecs,
+                                label=f"hpx_synth_{transfer}_b{beta}")
+            ratios_t = ratio_at_targets(hpx_t, utm, scene, codecs, targets)
+            sweeps.append(hpx_t)
+            for t, r in ratios_t.items():
+                rows.append(dict(**common, transfer=transfer, target=t, **r,
+                                 both_bracketed=_both_bracketed(r),
+                                 transfer_rmse_rel=float(t_rmse),
+                                 cells_filled=int(n_filled)))
+            if verbose:
+                shown = ", ".join(
+                    f"{t:g}:{ratios_t[t]['ratio']:.3f}"
+                    + ("" if _both_bracketed(ratios_t[t]) else "*")
+                    for t in targets if np.isfinite(ratios_t[t]["ratio"]))
+                print(f"    beta={beta} via {transfer} (lattice {side}^2, "
+                      f"transfer RMSE {100*t_rmse:.2f}% of std, "
+                      f"{n_filled} cells filled): {shown}")
     _save_sweeps("synthetic", scene, sweeps)
     return pd.DataFrame(rows)
 
@@ -681,17 +926,21 @@ def summarize(frames: dict) -> str:
                     f"--psf-fwhm {d.psf_fwhm_m.median():.1f}", ""]
 
     if "synthetic" in frames and len(frames["synthetic"]):
-        d = frames["synthetic"]
+        d = _with_transfer(frames["synthetic"])
         out += ["## One analytic field on both geometries", "",
                 "Same function sampled by both lattices: no content difference "
                 "at all, so the ratio is the grid effect alone. Rows where the "
                 "target is bracketed on both sides for fewer than "
                 f"{100*cfg.MIN_BRACKETED:.0f}% of regions are marked withheld: "
                 "there the sweeps did not reach the target and the ratio is a "
-                "quotient of bounds, not an estimate.", "",
-                "| beta | target | n | bracketed | median ratio | range | "
-                "reportable |", "|---|---|---|---|---|---|---|"]
-        for (beta, t), g in d.groupby(["beta", "target"]):
+                "quotient of bounds, not an estimate. `transfer` = none is the "
+                "field evaluated at the cell centres; otherwise the field was "
+                "sampled on the native lattice and carried to the cells by "
+                "that resampler, the one step of the real chain the direct "
+                "rows omit.", "",
+                "| transfer | beta | target | n | bracketed | median ratio | "
+                "range | reportable |", "|---|---|---|---|---|---|---|---|"]
+        for (tr, beta, t), g in d.groupby(["transfer", "beta", "target"]):
             ok = g.dropna(subset=["ratio"])
             if not len(ok):
                 continue
@@ -699,27 +948,98 @@ def summarize(frames: dict) -> str:
             frac = len(br) / len(ok)
             use = br if len(br) else ok
             keep = frac >= cfg.MIN_BRACKETED
-            out.append(f"| {beta:g} | {t:g} | {len(ok)} | {frac:.0%} | "
+            out.append(f"| {tr} | {beta:g} | {t:g} | {len(ok)} | {frac:.0%} | "
                        f"{use.ratio.median():.3f} | "
                        f"[{use.ratio.min():.3f}, {use.ratio.max():.3f}] | "
                        f"{'yes' if keep else '**withheld**'} |")
+        tr_rows = d[(d.transfer != "none") & d.transfer_rmse_rel.notna()]
+        if len(tr_rows):
+            per = tr_rows.groupby("scene").transfer_rmse_rel.first()
+            out.append("")
+            out.append(f"Transfer error on the analytic field (RMSE against the "
+                       f"exact cell values, in units of the scene std): median "
+                       f"{100*per.median():.2f}%, range [{100*per.min():.2f}%, "
+                       f"{100*per.max():.2f}%] over {len(per)} regions.")
+        out.append("")
+
+    if "smoothed" in frames and len(frames["smoothed"]):
+        d = frames["smoothed"]
+        impl = ", ".join(sorted(d.transfer_impl.unique()))
+        out += ["## The transfer alone, on the native lattice", "",
+                "The native crop read through the same Clough-Tocher operator "
+                "at points shifted by a fraction of a pixel, at the native "
+                f"density (operator: {impl}). Smoothed/native is what the "
+                "transfer alone buys at each target; HPX/smoothed is what "
+                "remains of the carrier's cost once both sides carry the same "
+                "smoothing. Sizes are per sample (the shifted lattice has one "
+                "row and one column fewer).", "",
+                f"- std ratio smoothed/native: median {d.std_ratio.median():.4f}",
+                "", "| target | n | smoothed/native | range | n | HPX/smoothed | "
+                "range | HPX/native |", "|---|---|---|---|---|---|---|---|"]
+        for t, g in d.groupby("target"):
+            a = g[g.both_bracketed].dropna(subset=["ratio_smoothed_native"])
+            b = g[g.hpx_both_bracketed].dropna(subset=["ratio_hpx_smoothed"])
+            c = g[g.bracketed_hpx & g.bracketed_utm].dropna(subset=["ratio_hpx_native"])
+            if not len(a) and not len(b):
+                continue
+            out.append(
+                f"| {t:g} | {len(a)} | "
+                + (f"{a.ratio_smoothed_native.median():.3f} | "
+                   f"[{a.ratio_smoothed_native.min():.3f}, "
+                   f"{a.ratio_smoothed_native.max():.3f}]" if len(a) else "-- | --")
+                + f" | {len(b)} | "
+                + (f"{b.ratio_hpx_smoothed.median():.3f} | "
+                   f"[{b.ratio_hpx_smoothed.min():.3f}, "
+                   f"{b.ratio_hpx_smoothed.max():.3f}]" if len(b) else "-- | --")
+                + " | " + (f"{c.ratio_hpx_native.median():.3f}" if len(c) else "--")
+                + " |")
         out.append("")
     return "\n".join(out)
+
+
+def _with_transfer(d: pd.DataFrame) -> pd.DataFrame:
+    """Older synthetic CSVs predate the `transfer` column: they are direct rows."""
+    d = d.copy()
+    if "transfer" not in d.columns:
+        d["transfer"] = "none"
+    d["transfer"] = d["transfer"].fillna("none").astype(str)
+    if "transfer_rmse_rel" not in d.columns:
+        d["transfer_rmse_rel"] = np.nan
+    return d
 
 
 def latex_table(frames: dict) -> str:
     rows = []
     if "synthetic" in frames and len(frames["synthetic"]):
-        d = frames["synthetic"]
-        for (beta, t), g in d.groupby(["beta", "target"]):
+        d = _with_transfer(frames["synthetic"])
+        names = {"none": "direct", "clough_tocher": "via C--T", "psf": "via PSF",
+                 "linear": "via bilinear", "nearest": "via nearest",
+                 "bicubic": "via bicubic"}
+        for (tr, beta, t), g in d.groupby(["transfer", "beta", "target"]):
             ok = g.dropna(subset=["ratio"])
             br = ok[ok.both_bracketed] if len(ok) else ok
             # Same reporting rule as the paper's tables: a target that is not
             # bracketed for most regions is withheld rather than printed.
             if len(ok) and len(br) / len(ok) >= cfg.MIN_BRACKETED:
-                rows.append(f"Synthetic, $\\beta={beta:g}$ & ${t:g}$ & {len(br)} & "
-                            f"{br.ratio.median():.2f} & "
+                rows.append(f"Synthetic, {names.get(tr, tr)}, $\\beta={beta:g}$ & "
+                            f"${t:g}$ & {len(br)} & {br.ratio.median():.2f} & "
                             f"[{br.ratio.min():.2f}, {br.ratio.max():.2f}] \\\\")
+    if "smoothed" in frames and len(frames["smoothed"]):
+        d = frames["smoothed"]
+        for t, g in d.groupby("target"):
+            a = g[g.both_bracketed].dropna(subset=["ratio_smoothed_native"])
+            if len(g) and len(a) / len(g) >= cfg.MIN_BRACKETED:
+                rows.append(f"Smoothed native / native & ${t:g}$ & {len(a)} & "
+                            f"{a.ratio_smoothed_native.median():.2f} & "
+                            f"[{a.ratio_smoothed_native.min():.2f}, "
+                            f"{a.ratio_smoothed_native.max():.2f}] \\\\")
+        for t, g in d.groupby("target"):
+            b = g[g.hpx_both_bracketed].dropna(subset=["ratio_hpx_smoothed"])
+            if len(g) and len(b) / len(g) >= cfg.MIN_BRACKETED:
+                rows.append(f"HEALPix / smoothed native & ${t:g}$ & {len(b)} & "
+                            f"{b.ratio_hpx_smoothed.median():.2f} & "
+                            f"[{b.ratio_hpx_smoothed.min():.2f}, "
+                            f"{b.ratio_hpx_smoothed.max():.2f}] \\\\")
     if "common" in frames and len(frames["common"]):
         d = frames["common"].dropna(subset=["ratio_per_km2"])
         for t, g in d.groupby("target"):
@@ -749,17 +1069,35 @@ def latex_table(frames: dict) -> str:
              "enclose the same nominal area but not the same ground; these "
              "controls bound what that mismatch contributes."]
     if "synthetic" in frames and len(frames["synthetic"]):
-        d = frames["synthetic"]
+        d = _with_transfer(frames["synthetic"])
         fw = d["psf_fwhm_m"].median() if "psf_fwhm_m" in d else float("nan")
         parts.append(
             "The synthetic rows evaluate one analytic random field --- a power "
             "law of slope $\\beta$ times a Gaussian instrument response of "
             f"{fw:.1f}\\,m FWHM, both fitted to the imagery itself --- at both "
-            "lattices' sample positions. Neither side is resampled and both see "
-            "the same function, so no content difference remains and the ratio "
-            "is the sampling geometry alone. Ratios are intrinsic "
-            "($\\gamma_{\\mathrm{tile}}=1$); $n$ counts the regions where the "
-            "target is bracketed on both grids.")
+            "lattices' sample positions. In the direct rows neither side is "
+            "resampled and both see the same function, so no content "
+            "difference remains and the ratio is the sampling geometry alone.")
+        if (d.transfer != "none").any():
+            parts.append(
+                "In the rows marked via a transfer, the field is sampled on the "
+                "native lattice and carried to the cell centres by that "
+                "resampler, as in the real chain; the difference from the "
+                "direct rows is the transfer's own contribution.")
+        parts.append(
+            "Ratios are intrinsic ($\\gamma_{\\mathrm{tile}}=1$); $n$ counts "
+            "the regions where the target is bracketed on both grids.")
+    if "smoothed" in frames and len(frames["smoothed"]):
+        d = frames["smoothed"]
+        fx, fy = float(d.shift_x.iloc[0]), float(d.shift_y.iloc[0])
+        parts.append(
+            "The smoothed-native rows read the native crop through the same "
+            "Clough--Tocher operator at points shifted by "
+            f"({fx:g}, {fy:g}) pixel, at the native density, so the native "
+            "side receives the carrier's smoothing and nothing else; sizes "
+            "are per sample. Smoothed native / native is what the transfer "
+            "alone buys; HEALPix / smoothed native is the carrier's cost once "
+            "both sides are equally smooth.")
     if "common" in frames and len(frames["common"]):
         parts.append("The common-support rows compress the largest "
                      "common-ground region on each native lattice and "
@@ -785,7 +1123,20 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--control", nargs="*", default=["synthetic"],
-                    choices=["spectrum", "shift", "common", "synthetic", "all"])
+                    choices=["spectrum", "shift", "common", "synthetic",
+                             "smoothed", "all"])
+    ap.add_argument("--transfer", choices=["none"] + list(build_tiles.KERNELS),
+                    default="none",
+                    help="for the synthetic control: also sample the field on "
+                         "the native lattice and carry it to the cells with "
+                         "this resampler, and sweep that carrier too (the "
+                         "paper's rows use clough_tocher)")
+    ap.add_argument("--smooth-shift", type=float, nargs=2, default=(0.5, 0.5),
+                    metavar=("FX", "FY"),
+                    help="for the smoothed control: phase of the shifted "
+                         "native lattice, in pixels (default half a pixel in "
+                         "both axes, the strongest smoothing the interpolant "
+                         "gives)")
     ap.add_argument("--regions", nargs="*", default=None)
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--codecs", nargs="*", default=cfg.COMPRESSOR_CODECS)
@@ -813,7 +1164,7 @@ def main(argv=None) -> int:
     ap.add_argument("--no-tex", action="store_true")
     args = ap.parse_args(argv)
 
-    controls = (["spectrum", "shift", "common", "synthetic"]
+    controls = (["spectrum", "shift", "common", "synthetic", "smoothed"]
                 if "all" in args.control else list(dict.fromkeys(args.control)))
     if args.fitted:
         spec = cfg.RESULTS_DIR / "support_controls_spectrum.csv"
@@ -853,7 +1204,7 @@ def main(argv=None) -> int:
     frames, failures = {}, []
     for control in controls:
         fn = {"shift": control_shift, "common": control_common,
-              "synthetic": control_synthetic,
+              "synthetic": control_synthetic, "smoothed": control_smoothed,
               "spectrum": control_spectrum}[control]
         parts = []
         for scene in scenes:
@@ -862,7 +1213,12 @@ def main(argv=None) -> int:
                 if control == "synthetic":
                     df = fn(scene, args.codecs, args.targets,
                             betas=args.betas, band=args.band, seed=args.seed,
-                            psf_fwhm_m=args.psf_fwhm)
+                            psf_fwhm_m=args.psf_fwhm,
+                            transfer=(None if args.transfer == "none"
+                                      else args.transfer))
+                elif control == "smoothed":
+                    df = fn(scene, args.codecs, args.targets,
+                            shift=tuple(args.smooth_shift))
                 else:
                     df = fn(scene, args.codecs, args.targets)
             except Exception as exc:                       # noqa: BLE001
@@ -883,7 +1239,7 @@ def main(argv=None) -> int:
     # The table reports every control that has results, not only the ones
     # this invocation ran: a synthetic-only re-run must not drop the
     # common-support and shifted-crop rows from Table XI.
-    for control in ("synthetic", "common", "shift"):
+    for control in ("synthetic", "smoothed", "common", "shift"):
         path = cfg.RESULTS_DIR / f"support_controls_{control}.csv"
         if control not in frames and path.exists():
             frames[control] = pd.read_csv(path)

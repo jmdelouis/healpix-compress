@@ -6,6 +6,7 @@ selection and the multiple-testing correction have exactly one implementation.
 
 from __future__ import annotations
 
+import math
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -244,6 +245,34 @@ def spearman(x, y):
         return dict(n=int(m.sum()), rho=np.nan, p=np.nan)
     r = stats.spearmanr(x[m], y[m])
     return dict(n=int(m.sum()), rho=float(r.statistic), p=float(r.pvalue))
+
+
+def partial_spearman(x, y, z):
+    """Rank correlation of x and y with z held fixed (first-order partial).
+
+    Computed on the ranks: rho_xy.z = (r_xy - r_xz r_yz) / sqrt((1-r_xz^2)(1-r_yz^2)),
+    with the usual t approximation on n-3 degrees of freedom. Used to ask
+    whether an association with latitude survives once the scene's spectral
+    slope, which is measured per region, is controlled for.
+    """
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    z = np.asarray(z, dtype=float)
+    m = np.isfinite(x) & np.isfinite(y) & np.isfinite(z)
+    n = int(m.sum())
+    if n < 6:
+        return dict(n=n, rho=np.nan, p=np.nan, rho_xz=np.nan, rho_yz=np.nan)
+    rx, ry, rz = (stats.rankdata(v[m]) for v in (x, y, z))
+    r_xy = float(np.corrcoef(rx, ry)[0, 1])
+    r_xz = float(np.corrcoef(rx, rz)[0, 1])
+    r_yz = float(np.corrcoef(ry, rz)[0, 1])
+    den = math.sqrt(max((1 - r_xz ** 2) * (1 - r_yz ** 2), 1e-300))
+    rho = (r_xy - r_xz * r_yz) / den
+    rho = max(-1.0, min(1.0, rho))
+    df = n - 3
+    t = rho * math.sqrt(df / max(1 - rho ** 2, 1e-300))
+    p = float(2 * stats.t.sf(abs(t), df))
+    return dict(n=n, rho=float(rho), p=p, rho_xz=r_xz, rho_yz=r_yz)
 
 
 def mannwhitney(a, b):
