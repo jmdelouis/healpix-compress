@@ -183,8 +183,10 @@ def figure(df, gamma_utm, publish=True, name="fig_verdict_vs_gamma"):
     ax1.axvline(1.0, color="0.75", lw=0.8, zorder=-1)
     ax1.set_ylabel("qualifying regions where HEALPix is smaller (%)")
     ax1.set_ylim(-3, 103)
-    ax1.legend(fontsize=8, loc="upper left", frameon=False, ncol=2,
-               title="target", title_fontsize=8, bbox_to_anchor=(0.02, 0.98))
+    # lower right is empty (every curve is above 40% there); upper left
+    # collided with the annotation of the illustrative overhead.
+    ax1.legend(fontsize=8, loc="lower right", frameon=False, ncol=1,
+               title="target", title_fontsize=8, bbox_to_anchor=(0.99, 0.02))
     ax1.set_title("Verdict as a function of the overhead ratio "
                   r"$\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$",
                   fontsize=10)

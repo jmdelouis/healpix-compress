@@ -59,7 +59,7 @@ def draw():
 
     # --- source ------------------------------------------------------------
     src = box(ax, (2.6, 9.7), 4.8, 1.0,
-              "Sentinel-2 L2A B04, 10 m\n40 regions, 1512$^2$-px native window",
+              "Sentinel-2 L2A B04, 10 m\n40 regions, $\\approx$11 km native window",
               color=INK, fs=6.5)
 
     # --- two branches ------------------------------------------------------
