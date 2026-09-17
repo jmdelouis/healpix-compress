@@ -9,13 +9,17 @@ aggregation and analysis~\cite{ogc_dggs,iso19170}; H3~\cite{h3},
 S2~\cite{s2geometry} and HEALPix~\cite{gorski2005healpix} differ in cell
 shape, refinement rule and area preservation.
 
-HEALPix was designed for astronomical data on the
-sphere~\cite{gorski2005healpix}. Its cells have equal area, its refinement
+Cloud-native Earth observation products are moving in this direction:
+chunked array stores such as Zarr~\cite{moore2023zarr}, community tooling
+for DGGS data cubes such as \texttt{xdggs}~\cite{kmoch2024xdggs}, and
+ESA's Earth Observation Processing Framework, which republishes the
+Sentinel archive as Zarr. HEALPix was designed for astronomical data on
+the sphere~\cite{gorski2005healpix}. Its cells have equal area, its refinement
 is dyadic, and in its nested index all descendants of a cell form one
 contiguous block. These properties suit Earth observation as well, with
 one practical limit: HEALPix resolution changes only by powers of two, so
 the native sampling of an instrument almost never matches a level. The
-\SI{10}{m} bands of Sentinel-2 fall between level 19 (\SI{12.4}{m}, too
+\SI{10}{m} bands of Sentinel-2~\cite{drusch2012sentinel2} fall between level 19 (\SI{12.4}{m}, too
 coarse) and level 20 (\SI{6.2}{m}, geometrically safe and nominally
 oversampled).
 
@@ -49,7 +53,7 @@ choice of
 transfer is therefore the largest single factor in the storage cost of a
 HEALPix carrier, above the codec, the scene and the tolerated error, and
 the paper gives it the space this implies. Table~\ref{tab:glossary}
-defines the few terms the paper relies on.
+defines the nine terms the paper relies on.
 
 The question is answered empirically, with established compression
 libraries and no HEALPix-specific coding. The finer HEALPix level is

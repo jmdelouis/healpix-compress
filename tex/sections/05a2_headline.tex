@@ -50,7 +50,8 @@ of scene moves the ratio less than the tolerated error does: across the
 four classes the medians span $2.01$--$2.17$ at the tightest target and
 $0.89$--$1.10$ at the loosest, and no class changes the picture. Third,
 the way the tile was filled matters as much as everything else combined.
-The Clough--Tocher transfer adds nothing that was not in the image. The
+The Clough--Tocher transfer adds no information that was not in the
+native pixels; it does smooth them. The
 PSF-aware transfer of the companion study~\cite{delouis2026resample} is
 designed to undo part of the instrument blur and estimate a sharper
 latent field; its reconstruction gain is established in that study under
@@ -58,8 +59,8 @@ its experimental conditions, and a codec asked to preserve the content it
 places on the tile must spend bytes on it. The result is a tile that compresses
 to $2.3$--$2.6$ times the UTM square at every target, close to the
 uncompressed ratio. The inverse-distance average, which restores no detail
-at all, costs nearly as much ($2.1$--$2.5$), so the extra bytes are mainly
-the price of leaving the smooth interpolant
+at all, costs nearly as much ($2.1$--$2.5$), so the extra bytes are
+consistent with the price of leaving the smooth interpolant
 (Section~\ref{sec:transfer_cost}).
 
 The columns are therefore not interchangeable. With a Clough--Tocher

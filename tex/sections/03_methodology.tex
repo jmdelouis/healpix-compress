@@ -15,15 +15,20 @@ invertibly. We use $\delta=10$: the $1024\times1024$ level-20 descendants
 of one level-10 parent form one carrier tile, large enough to amortise
 per-chunk codec overhead and small enough to stay a practical storage unit.
 This reshaping is the only HEALPix-specific step; all later steps work on
-a plain float32 raster. That raster still carries two marks of its origin,
-the kernel that filled it from the sensor grid and the shape anisotropy of
-equal-area HEALPix cells (a local axis-length ratio of up to $\sim\!1.7$
-between the raster axes), and both affect compressibility
-(Section~\ref{sec:resampler}).
+a plain float32 raster. That raster still carries three marks of its
+origin. The kernel that filled it from the sensor grid and the shape
+anisotropy of equal-area HEALPix cells (a local axis-length ratio of up
+to $\sim\!1.7$ between the raster axes) both affect compressibility
+(Section~\ref{sec:resampler}). And its axes are those of the nested
+hierarchy, which in the UTM zone of a scene run at about $45^\circ$ to
+north (Fig.~\ref{fig:utm_crop_footprints}), so the row and column
+predictors of the codecs follow diagonals of the native raster; how much
+that orientation costs or saves has not been measured
+(Section~\ref{sec:limitations}).
 
 \subsection{Equal-Area Native UTM Comparison}
 \label{sec:utm_crop}
-Both sides must cover the same ground, and the two grids are not
+Both sides must cover the same nominal area, and the two grids are not
 co-oriented: a carrier tile projected into the UTM zone of a scene is a
 rotated square. An axis-aligned bounding box around it holds about twice
 the pixel count of the true footprint and would penalise the native side,
@@ -118,12 +123,26 @@ is a property of the carrier built with this transfer, and the other two do
 not show it. The lesson reaches beyond this paper: the kernel that fills a
 HEALPix grid from a sensor grid is a scientific choice, and a kernel
 mismatched to the source sampling can change which of two grids looks more
-storage-efficient once compressed. The PSF-aware transfer and the forward
-operator of Section~\ref{sec:operator} come from the
-\texttt{healpix-resample} package at its tag \texttt{jstars-submission},
-the version the companion paper describes; the environment record written
-with every sweep names the checkout it ran against, because the package's
-PSF width convention changed once between versions during this work.
+storage-efficient once compressed.
+
+The PSF-aware transfer is described here so that this paper stands on its
+own. It models each native pixel as a Gaussian-weighted sum of the latent
+field at the level-20 cell centres, with the instrument's response as the
+weight (nominal B04 width \SI{12.5}{m} FWHM), assembles that forward
+operator as a sparse matrix from cells to samples, and estimates the cell
+values by damped least squares, solved by conjugate gradients on the
+normal equations with a damping of $\lambda=10^{-3}$, the value at which
+the companion study reports its accuracy. Its estimand is therefore the
+latent field before the instrument blur, which a pure interpolant such as
+Clough--Tocher never aims at; the companion study measures that it recovers
+$15.4\%$ to $19.6\%$ of the blur on noise-free fields, and
+Section~\ref{sec:transfer_cost} prices the bytes this sharper estimand
+costs. The PSF-aware transfer and the forward operator of
+Section~\ref{sec:operator} come from the \texttt{healpix-resample}
+package at its tag \texttt{jstars-submission}, the version the companion
+paper describes; the environment record written with every sweep names
+the checkout it ran against, because the package's PSF width convention
+changed once between versions during this work.
 
 \subsection{Codecs Compared}
 \label{sec:codecs}

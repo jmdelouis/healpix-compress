@@ -48,13 +48,14 @@ count and the reconstruction RMSE against the raw tile (level-20 carrier
 or native crop). Codecs are then compared at an \emph{achieved} error or
 size, never at a nominal parameter value~\cite{lindstrom2014zfp,liang2022sz3},
 by interpolating $\log(\text{size})$ against $\log(\text{RMSE})$, and the
-inverse, on the sorted and de-duplicated sweep points. Interpolating
-through a dominated configuration could produce a target no real
-configuration achieves; restricting each of the 400 (region, codec) sweeps
-to its Pareto frontier removes 44 dominated points, almost all at the
-coarse end of the extended ladders, and changes no reported median (at the
-$10^{-3}$ target it admits one more region and moves the adjusted
-$p$-value from $0.016$ to $0.010$).
+inverse, on the sorted and de-duplicated sweep points. The reported numbers
+interpolate the full sorted sweeps. Interpolating through a dominated
+configuration could in principle produce a target no real configuration
+achieves, so the same analysis was repeated with each of the 400 (region,
+codec) sweeps restricted to its Pareto frontier: this removes 44 dominated
+points, almost all at the coarse end of the extended ladders, and changes
+no reported median (at the $10^{-3}$ target it admits one more region and
+moves the adjusted $p$-value from $0.016$ to $0.010$).
 
 Three rules govern the targets. First, the curve is the constrained
 problem $R(D)=\min\{S(q): d(q)\le D\}$: when a codec's coarsest setting is
@@ -113,7 +114,7 @@ count of the equal-area crop and compare absolute bytes, with the raw size
 of the fixed HEALPix tile ($\num{4194304}$ bytes) as the single reference
 for both grids; the tile and the crop have different pixel counts
 ($1024\times1024$ against $637\times637$), so only absolute bytes for the
-same ground are comparable. For a target RMSE, the HEALPix value is its
+same nominal area are comparable. For a target RMSE, the HEALPix value is its
 interpolated compressed size divided by the reference, and the UTM value
 its interpolated size multiplied by $\gamma_{\mathrm{tile}}$ and divided
 by the same reference. For a budget given as a share of the reference, the

@@ -97,6 +97,11 @@ def load_targets(metric: str):
     return out, gamma_utm, doc
 
 
+# Raw HEALPix/UTM size ratio at gamma = 1: 1024^2 cells against 637^2 pixels,
+# both float32, the geometric constant of Table IV.
+RAW_RATIO = cfg.N_CHILDREN / float(cfg.UTM_SIDE_PX ** 2)
+
+
 def curves(gamma_star, grid=GAMMA_GRID):
     """Win fraction, median operational ratio and paired p-value, over gamma."""
     gs = np.asarray(gamma_star, dtype=float)
@@ -136,6 +141,12 @@ def analyse(metric="self"):
         for g in REFERENCE_GAMMAS:
             row[f"win_at_{g:g}"] = float(np.mean(gs <= g))
             row[f"median_ratio_at_{g:g}"] = float(np.median(gs)) / g
+        # The fraction of the raw oversampling penalty that compression
+        # recovers at this target: f(e) = (alpha - gamma_star(e)) / (alpha - 1),
+        # with alpha the raw size ratio. Zero means the codec recovered none of
+        # the 2.58x, one means the carrier reached parity, above one that it
+        # is smaller than the native crop (revision 5, review point).
+        row["recovered_fraction"] = float((RAW_RATIO - np.median(gs)) / (RAW_RATIO - 1.0))
         rows.append(dict(row, _gamma_star=gs, _win=win, _med=med, _p=p))
     return pd.DataFrame(rows), gamma_utm, doc
 
@@ -285,17 +296,18 @@ def latex_table(df, gamma_utm):
         body.append(
             f"{label} & {int(r.n)} & {r.gamma_star_median:.2f} & "
             f"[{r.gamma_star_q25:.2f}, {r.gamma_star_q75:.2f}] & "
+            f"{r.recovered_fraction:.2f} & "
             f"{100*r['win_at_1']:.0f} & {100*r['win_at_1.3']:.0f} & "
             f"{100*r['win_at_2']:.0f} & {inc} \\\\")
     return (
         "\\begin{table*}[t]\n\\centering\n"
         "\\caption{The verdict over a continuous range of the overhead ratio}\n"
         "\\label{tab:gamma_continuous}\n\\footnotesize\n"
-        "\\begin{tabular}{lrrlrrrl}\n\\toprule\n"
-        "Target RMSE & $n$ & $\\gamma_\\star$ & IQR & \\multicolumn{3}{c}{HPX "
+        "\\begin{tabular}{lrrlrrrrl}\n\\toprule\n"
+        "Target RMSE & $n$ & $\\gamma_\\star$ & IQR & $f(e)$ & \\multicolumn{3}{c}{HPX "
         "smaller (\\% of the $n$ qualifying)} & Inconclusive \\\\\n"
-        "\\cmidrule(lr){5-7}\n"
-        " & & median & & $\\gamma{=}1$ & $\\gamma{=}1.3$ & $\\gamma{=}2$ & "
+        "\\cmidrule(lr){6-8}\n"
+        " & & median & & & $\\gamma{=}1$ & $\\gamma{=}1.3$ & $\\gamma{=}2$ & "
         "$\\gamma$ range \\\\\n\\midrule\n"
         + "\n".join(body) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 

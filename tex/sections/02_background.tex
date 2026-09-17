@@ -31,7 +31,9 @@ HEALPix level $\level$ & Equivalent width $\Delta_{\mathrm{eq}}$ & Relation to S
 \end{table}
 
 On a sphere of radius $\Rearth$, level $\level$ has
-$N_{\mathrm{pix}}(\level) = 12\,4^{\level}$ cells, and the equal-area
+$N_{\mathrm{pix}}(\level) = 12\,4^{\level}$ cells (in the notation
+of~\cite{gorski2005healpix}, $N_{\mathrm{side}}=2^{\level}$ and
+$N_{\mathrm{pix}}=12N_{\mathrm{side}}^2$), and the equal-area
 equivalent cell width is
 \begin{equation}
 \Delta_{\mathrm{eq}}(\level) = \sqrt{\frac{4\pi \Rearth^2}{12\,4^{\level}}},
@@ -70,7 +72,7 @@ Term & Meaning in this paper \\
 \midrule
 Carrier grid, tile & The HEALPix level-20 grid on which the imagery is stored, and the unit of storage on it: the $1024\times1024$ cells descending from one level-10 cell, about \SI{6.4}{km} across. \\
 Native UTM square & The $637\times637$-pixel square of the original Sentinel-2 raster with the same nominal projected area as one tile (Section~\ref{sec:utm_crop}); the native side is never resampled. \\
-Transfer & The operation that fills the tile from the native pixels. Three are compared. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it adds nothing to the image and is the carrier used throughout. \emph{PSF-aware} also undoes part of the instrument blur, so the tile is sharper than the product it came from. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
+Transfer & The operation that fills the tile from the native pixels. Three are compared. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it adds no information that was not in the native pixels, though it does smooth them, and is the carrier used throughout. \emph{PSF-aware} also undoes part of the instrument blur, so the tile aims at a sharper field than the product it came from. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
 Read & The operation that returns a value on a native pixel from a decoded tile, needed only when the tile is compared with the observation; nearest cell, or interpolation within the tile. \\
 Size ratio & Compressed bytes of the HEALPix tile divided by compressed bytes of the native square, at the same reconstruction error. Above one, the HEALPix representation is larger. Uncompressed, the ratio is $2.58$ by geometry. \\
 Target RMSE & The tolerated reconstruction error, in reflectance units. Sentinel-2 reflectances are of order $0.1$ and a typical tile has a standard deviation, its contrast, of $0.04$; an RMSE of $10^{-4}$ is a quarter of a percent of that contrast and $10^{-2}$ a quarter of it. Five targets from $10^{-4}$ to $10^{-2}$ are used. \\
@@ -98,3 +100,24 @@ noise, on the interpolator that produced the samples and on the codec.
 Approximation theory and the cross-scale persistence used by zerotree
 coders make this expectation precise (Appendix~\ref{app:literatures}), and
 Section~\ref{sec:level_choice} measures what the added octave carries.
+
+One bound is exact and worth stating. The carrier is a deterministic
+function of the native samples: the transfer is known, and the tile is
+the transfer applied to the crop. A coder that stored the native samples
+and the name of the transfer would reproduce the tile without loss, so
+the smallest lossless description of the carrier is never larger than
+that of the native product plus a constant, and an ideal codec would give
+a size ratio at or below one. The same holds at a tolerated error, up
+to the factor by which the transfer amplifies a coding error on its
+input, which for an interpolant of smooth data is close to one. The
+ratios above one
+measured in Section~\ref{sec:results} are therefore a property of
+general-purpose codecs applied to an oversampled representation, not of
+the information it holds; the gap between the measured ratio and one is
+what such codecs fail to exploit. This is the situation of oversampled
+analogue-to-digital conversion, where the redundant samples form a frame
+and a consistent decoder can recover part of the oversampling
+gain~\cite{thao1994oversampled,christensen2016frames}, and of
+generalised sampling, where a smooth interpolant read at a finer lattice
+adds no degrees of freedom~\cite{unser2000sampling}. Whether a practical
+codec approaches the bound is the empirical question of this paper.

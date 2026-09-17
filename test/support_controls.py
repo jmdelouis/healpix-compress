@@ -627,7 +627,8 @@ def synthetic_field(px, py, *, beta=2.0, k_min, k_max, n_modes=512, seed=0,
 
 
 def _synthetic_transfer(reg, x0, y0, field_kwargs, mu, sd, target_mean,
-                        target_std, kernel="clough_tocher", halo_px=32):
+                        target_std, kernel="clough_tocher", halo_px=32,
+                        cell_xy=None):
     """The field sampled on the native lattice, then transferred to the cells.
 
     Reproduces the paper's own chain on the analytic field: native samples on
@@ -635,15 +636,40 @@ def _synthetic_transfer(reg, x0, y0, field_kwargs, mu, sd, target_mean,
     leaves the tile's corners outside the sample hull), then the library's
     resampler to the level-20 cell centres, then the same hole rule as
     build_tiles. Returns the transferred cell values in the crop's units,
-    the number of cells the resampler dropped, and the lattice side.
+    the number of cells the resampler dropped, and the lattice shape.
+
+    The lattice is sized on the projected cell centres themselves
+    (`cell_xy`, absolute UTM coordinates) plus a halo: a square set from the
+    tile's equivalent side is too small where the cells are anisotropic and
+    the projected tile is a rhombus, and the resampler then drops the
+    corners (0.9% of the cells on the first region tried, 17 September).
     """
     step = float(cfg.NATIVE_PIXEL_M)
-    xc = float(np.mean(reg["utm_x"]))
-    yc = float(np.mean(reg["utm_y"]))
-    half = int(math.ceil(cfg.TILE_SIDE_M / math.sqrt(2.0) / step)) + halo_px
-    offs = (np.arange(-half, half + 1, dtype=np.float64)) * step
-    xe = xc + offs
-    ye = yc + offs
+    x_axis = np.asarray(reg["utm_x"], dtype=np.float64)
+    y_axis = np.asarray(reg["utm_y"], dtype=np.float64)
+    if cell_xy is None:
+        xc, yc = float(np.mean(x_axis)), float(np.mean(y_axis))
+        half = cfg.TILE_SIDE_M / math.sqrt(2.0)
+        xmin, xmax, ymin, ymax = xc - half, xc + half, yc - half, yc + half
+    else:
+        cx, cy = cell_xy
+        xmin, xmax = float(np.min(cx)), float(np.max(cx))
+        ymin, ymax = float(np.min(cy)), float(np.max(cy))
+    margin = halo_px * step
+    # Lattice nodes on the crop's own pixel grid, so the native samples of
+    # the control sit exactly where the product's pixels sit.
+    sx = float(x_axis[1] - x_axis[0])
+    sy = float(y_axis[1] - y_axis[0])
+    i0 = int(math.floor((xmin - margin - x_axis[0]) / sx))
+    i1 = int(math.ceil((xmax + margin - x_axis[0]) / sx))
+    j0 = int(math.floor((ymin - margin - y_axis[0]) / sy))
+    j1 = int(math.ceil((ymax + margin - y_axis[0]) / sy))
+    if i1 < i0:
+        i0, i1 = i1, i0
+    if j1 < j0:
+        j0, j1 = j1, j0
+    xe = x_axis[0] + sx * np.arange(i0, i1 + 1, dtype=np.float64)
+    ye = y_axis[0] + sy * np.arange(j0, j1 + 1, dtype=np.float64)
     gxe, gye = np.meshgrid(xe, ye)
     f_ue = synthetic_field(gxe - x0, gye - y0, **field_kwargs)
     f_ue = target_mean + target_std * (f_ue - mu) / sd
@@ -653,7 +679,7 @@ def _synthetic_transfer(reg, x0, y0, field_kwargs, mu, sd, target_mean,
     res = rs.resample(f_ue.ravel().astype(np.float64))
     full, n_missing = build_tiles.complete_block(res.cell_ids, res.cell_data,
                                                  reg["cell_ids"])
-    return full, n_missing, int(offs.size)
+    return full, n_missing, (int(ye.size), int(xe.size))
 
 
 def control_synthetic(scene, codecs, targets, betas=(3.0, 4.0, 5.0),
@@ -756,10 +782,11 @@ def control_synthetic(scene, codecs, targets, betas=(3.0, 4.0, 5.0),
             print(f"    beta={beta}: {shown}   (* = not bracketed on both sides)")
 
         if transfer:
-            f_t, n_filled, side = _synthetic_transfer(
+            f_t, n_filled, shape = _synthetic_transfer(
                 reg, x0, y0, dict(beta=beta, k_min=k_min, k_max=k_max,
                                   seed=seed, psf_sigma_m=sigma),
-                mu, sd, target_mean, target_std, kernel=transfer)
+                mu, sd, target_mean, target_std, kernel=transfer,
+                cell_xy=(cx, cy))
             # Transfer error against the field's exact value at the cells, in
             # units of the scene's standard deviation: the same quantity the
             # kernel ablation measures, here on a field with no noise.
@@ -778,7 +805,7 @@ def control_synthetic(scene, codecs, targets, betas=(3.0, 4.0, 5.0),
                     f"{t:g}:{ratios_t[t]['ratio']:.3f}"
                     + ("" if _both_bracketed(ratios_t[t]) else "*")
                     for t in targets if np.isfinite(ratios_t[t]["ratio"]))
-                print(f"    beta={beta} via {transfer} (lattice {side}^2, "
+                print(f"    beta={beta} via {transfer} (lattice {shape[0]}x{shape[1]}, "
                       f"transfer RMSE {100*t_rmse:.2f}% of std, "
                       f"{n_filled} cells filled): {shown}")
     _save_sweeps("synthetic", scene, sweeps)

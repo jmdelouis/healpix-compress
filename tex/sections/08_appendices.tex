@@ -196,13 +196,13 @@ transfer step, not decisive and not negligible.
 \label{app:censoring}
 A target that a codec's coarsest setting already satisfies is met and not
 measured: the size of that setting bounds what the codec could have
-reached with a coarser one. An earlier version of this study kept such
-bounds in the paired tests as if they were estimates, and at the loosest
-RMSE target the oracle codec was censored in this way on 16 of the 40
-regions, enough for the sign of the verdict there to rest on how the
-bounds were read. Every ladder was therefore extended at its coarse end
+reached with a coarser one. Kept in the paired tests as if they were
+estimates, such bounds can decide a verdict: with the original ladders,
+the oracle codec was censored in this way on 16 of the 40 regions at the
+loosest RMSE target, enough for the sign there to rest on how the bounds
+were read. Every ladder is therefore extended at its coarse end
 (Section~\ref{sec:codecs}) and the rule of Section~\ref{sec:rd_protocol}
-adopted. Table~\ref{tab:censoring} reports the verdict under three
+applies. Table~\ref{tab:censoring} reports the verdict under three
 readings of the extended sweeps: the ratios with every censored pair kept
 as a bound, the ratios on the qualifying pairs alone (the values reported
 in the paper), and the interval that bounds the median of all 40 regions
@@ -240,7 +240,8 @@ The radiometric test is Table~\ref{tab:window_radiometry}. Each stored
 tile is compared with its own window sampled at the tile's cell centres by
 nearest pixel. Nearest-pixel sampling is cruder than the transfer that
 built the tile, so the two differ even when the window is the right
-product; that difference is additive noise on the regressor, which
+product; that difference is additive noise on the regressor; for noise
+uncorrelated with the signal, the classical errors-in-variables case, it
 attenuates the regression slope by exactly the squared correlation,
 \begin{equation}
   \mathrm{slope} = \frac{\sigma_t^2}{\sigma_t^2 + \sigma_n^2}
@@ -252,12 +253,11 @@ acquisition carries a gain and an offset of its own and breaks the
 identity. Across the 40 regions the ratio has median $1.0032$, and 39 of
 them lie in $[0.982, 1.011]$ over correlations from $0.910$ to $0.999$ and
 scene contrasts spanning more than two orders of magnitude. Lake Geneva
-lies at $1.884$. A first version of this audit tested the correlation, the
-slope and the offset against fixed thresholds instead, and flagged two
-more regions, the two lowest-contrast lakes, whose absolute residuals are
-among the smallest of the forty: in a scene of standard deviation
-$1.4\times10^{-3}$, any small offset is many standard deviations. The
-identity above has neither failure mode.
+lies at $1.884$. Fixed thresholds on the correlation, the slope and the
+offset would not do: they flag the two lowest-contrast lakes as well,
+whose absolute residuals are among the smallest of the forty, because in
+a scene of standard deviation $1.4\times10^{-3}$ any small offset is many
+standard deviations. The identity above has neither failure mode.
 
 A second test, exact and free of statistics, confirms it and carries a
 warning. Each tile's file also holds the equal-area UTM crop it is
@@ -351,24 +351,23 @@ HEALPix is the smaller representation, set by the ratios alone and so
 common to both denominators. The choice of denominator moves $\kappa$ at
 the crossing by a factor of five at the most expensive class ($0.50$
 against $2.28$), which is why both are reported.
+Fig.~\ref{fig:error_budget} draws the latent-scene reading: on the
+left the median ratio against $\kappa$, on the right the same curves
+against the measured growth of the total error, interpolated log--log
+over the cross-term run of Appendix~\ref{app:cross_term} at the same
+reference, so a point whose $\kappa$ that run did not sample is dropped
+and a curve may start later on the right. The own-estimand reading shifts
+every curve right by the ratio of the two denominators.
 
 \input{tables/table_alpha_budget}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_alpha_budget_blur.pdf}
-\caption{The storage verdict as a function of what compressing costs the
-product, latent-scene denominator. Left: median HPX/UTM compressed size at
-the illustrative $\gamma_{\mathrm{tile}}=1.30$, against
-$\kappa=e_{\mathrm{comp}}/e_{\mathrm{resample}}$. Right: the same curves
-against the \emph{measured} growth of the product's total error,
-interpolated log--log over the cross-term run of
-Appendix~\ref{app:cross_term} at the same reference; a point whose
-$\kappa$ falls outside the range that run sampled is dropped, so a curve
-may start later on the right than on the left. The dashed line marks
-parity; points below it favour HEALPix. The own-estimand denominator
-shifts the curves right by the ratio of the two denominators in
-Table~\ref{tab:alpha_budget}.}
+\caption{Median HPX/UTM compressed size at $\gamma_{\mathrm{tile}}=1.30$,
+latent-scene denominator, against $\kappa$ (left) and against the
+measured growth of the product's total error (right). Dashed line:
+parity; below it favours HEALPix.}
 \label{fig:error_budget}
 \end{figure*}
 
@@ -449,19 +448,20 @@ points in each window (region, codec and coding setting together, over
 the same 40 regions), and a window holding fewer than five is not
 reported. The last two columns give the growth of the product's total
 error as measured and as quadrature predicts it.
+Fig.~\ref{fig:cross_term} shows the same points one by one: the wavelet
+coder carries the whole effect, under both references and in opposite
+directions, while the block-floating-point coder sits on the orthogonal
+curve.
 
 \input{tables/table_cross_term}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_cross_term.pdf}
-\caption{The cross term, per operating point, over 40 regions and two codec
-families. Left: $\rho$ against $\kappa$. Right: the measured growth of the
-product's total error against $\kappa$, with $\sqrt{1+\kappa^2}-1$ drawn as
-the orthogonal case. The four series are the two reference fields crossed
-with the two codecs; the wavelet coder carries the whole effect under both
-references and in opposite directions, while the block-floating-point coder
-sits on the orthogonal curve.}
+\caption{The cross term per operating point, 40 regions, two reference
+fields and two codecs. Left: $\rho$ against $\kappa$. Right: measured
+growth of the total error against $\kappa$; the curve is the orthogonal
+case $\sqrt{1+\kappa^2}-1$.}
 \label{fig:cross_term}
 \end{figure*}
 
@@ -506,14 +506,13 @@ computing them depends on the reference the product answers to.
 \section{Detailed Limitations}
 \label{app:limitations}
 \begin{itemize}
-    \item \textbf{The verdict is conditional on the transfer, by about a factor of two.} Rebuilding the carrier with a PSF-aware or an inverse-distance transfer costs $1.2$ to $2.4$ times the bytes at the same coding RMSE against each transfer's own uncompressed carrier (Section~\ref{sec:transfer_cost}), more than the margin by which HEALPix leads at the loosest targets. Clough--Tocher is also the most accurate transfer tested against an analytic field, and we argue the two properties share a cause; the argument does not extend to transfers we have not swept, and a non-deconvolving transfer of Clough--Tocher's smoothness class, which would isolate deconvolution from smoothness, has not been tested;
-    \item \textbf{An earlier out-of-range figure for the inverse-distance transfer was a diagnostic artefact.} A previous version reported $0.95\%$ of cells outside the range of the input and read this as overshoot; the range had been taken over the footprints' intersection while the values were taken over the whole tile. The diagnostic now takes both over the same ground, and the argument rests on the transfer error of Table~\ref{tab:kernel_ablation}, which is unaffected;
+    \item \textbf{The verdict is conditional on the transfer, by about a factor of two.} Rebuilding the carrier with a PSF-aware or an inverse-distance transfer costs $1.2$ to $2.4$ times the bytes at the same coding RMSE against each transfer's own uncompressed carrier (Section~\ref{sec:transfer_cost}), more than the margin by which HEALPix leads at the loosest targets. Clough--Tocher is also the most accurate transfer tested against an analytic field, and we argue the two properties share a cause; the argument does not extend to transfers we have not swept, and a non-deconvolving transfer as smooth as Clough--Tocher, which would isolate deconvolution from smoothness, has not been tested;
     \item \textbf{The equal-area UTM square is not pixel-for-pixel the HEALPix footprint.} It matches the tile's nominal projected area by construction and neither its exact geodesic area (UTM is conformal, and $636.7$ pixels were rounded to $637$) nor its shape (Section~\ref{sec:utm_crop}). A footprint-exact crop is a possible refinement; the fixed $2.58\times$ oversampling follows from the equal-area property and would not change;
     \item \textbf{The overhead is a parameter because only its container component is measured.} The verdict is reported over a continuous range of $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$, the container cost of each side is measured at under half a percent, and granule geometry is assumed. UTM is a coordinate reference system; padding, overlap and per-tile metadata belong to a product organisation, and a native UTM COG or Zarr archive need not carry them. $\gamma_{\mathrm{tile}}$ has not been measured from complete tiled product files, nor swept over $[1.0,1.5]$ for the matched-budget protocol, and for compressed storage the overhead is assumed to apply proportionally to the compressed byte count;
     \item \textbf{The level-19 comparison was made on a cell-averaged carrier; the directly evaluated one agrees.} Section~\ref{sec:level19_direct} finds the two within $0.2\%$ in floor against the observation, with the widest departure at $1.051$, on 39 regions: for Lake Geneva the window is no longer the product the stored tile was built from (Appendix~\ref{app:window_radiometry}), so the rebuild returns neither carrier. Including it moves the median ratio by less than $0.001$. The kernel ablation and the resampling-error study, which also re-run a transfer, rest on the same 39; no measurement read from a stored tile is affected;
     \item \textbf{The loosest targets rest on fewer regions.} After the ladders were extended, the failing pairs are the lowest-contrast scenes: none at the two tightest RMSE targets, one at $10^{-3}$, three at $3\times10^{-3}$ and eight at $10^{-2}$, with no urban scene among the absent. Seven of eight paired tests survive the Holm correction; the $3\times10^{-3}$ target is the crossover point itself and is reported as inconclusive. The $40\%$ and $20\%$ budgets qualify on $0\%$ and $65\%$ of the regions and are withheld;
     \item \textbf{Neither reconstruction reference is the whole story.} The floor of Table~\ref{tab:representation_floor} is an upper bound on what the representation costs, since the read alone can account for it (Section~\ref{sec:operator}); an interpolating read removes two thirds of its mean squared error, the common-reference sweep has been re-scored through it (Table~\ref{tab:common_two_readers}), and the PSF-aware transfer has been run through the same protocol. Still open are the $3\times10^{-3}$ target, bracketed for $57\%$ of regions under the better read, and a read matched to the PSF transfer on the PSF tiles, which Table~\ref{tab:reader_floor} shows to be within $4\%$ of the interpolating one;
-    \item \textbf{The super-resolution surcharge is measured, and our deconvolution control does not reproduce the companion's recovery.} The deconvolved carrier costs $1.27$ to $2.41$ times the Clough--Tocher one, of which at most nine percent is attributable to deconvolving; that is a measurement on real imagery. In our harness the PSF-aware reconstruction recovers $+3.0\%$ to $+6.5\%$ of the blur without noise and nothing at the measured noise level, against the $15.4\%$ to $19.6\%$ the companion study reports noise-free; the added noise and a latent spectrum extrapolated to the level-20 Nyquist contribute, the depth of the cell average is excluded by measurement, and a residual gap remains unattributed. The storage price is reportable and the quality it buys is not;
+    \item \textbf{The super-resolution surcharge is measured, and our deconvolution control does not reproduce the companion's recovery.} The deconvolved carrier costs $1.27$ to $2.45$ times the Clough--Tocher one, and the PSF/IDW differential of $3$--$13\%$ bounds what deconvolving itself adds; that is a measurement on real imagery. In our harness the PSF-aware reconstruction recovers $+3.0\%$ to $+6.5\%$ of the blur without noise and nothing at the measured noise level, against the $15.4\%$ to $19.6\%$ the companion study reports noise-free; the added noise and a latent spectrum extrapolated to the level-20 Nyquist contribute, the depth of the cell average is excluded by measurement, and a residual gap remains unattributed. The storage price is reportable and the quality it buys is not;
     \item \textbf{The oracle-best-codec comparison is an envelope, and the crossover is codec-dependent.} Four of the five codecs held fixed on both grids reproduce the regime-dependent pattern and ZFP does not (Section~\ref{sec:same_codec}); the same-codec comparison is the operational result and the oracle protocol an upper bound on what codec selection could add;
     \item \textbf{The byte and type audit covers two regions.} Over 424 points it found no gap between reported and on-disk sizes and no disagreement with an independent decoder; it tests the adapters, which do not vary by region. The image codecs' eight-byte scale-and-offset sidecar is not charged to their sizes, and the DWT baseline charges four bytes for a scale it never writes;
     \item \textbf{The footprint mismatch is bounded, and its geometry is measured from cell centres.} The analytic control reproduces the decline of the measured gap to within $8$--$27\%$ without attributing the residual; the intersection fractions come from the convex hull of the cell centres, and each footprint's geodesic area has not been computed;

@@ -19,8 +19,9 @@ $3\times10^{-3}$. At $10^{-2}$ the sign changes: the Clough--Tocher tile is
 $7\%$ smaller than the native square with no overhead on either side
 (median $0.93$ over the 32 regions whose contrast admits the target,
 $95\%$ confidence interval $0.89$--$0.99$, $p=0.03$ before correction;
-10 of the 32 regions lie above parity). The advantage is thus real but
-narrow, and it rests on the reference used here, which scores the carrier
+10 of the 32 regions lie above parity). The advantage is thus $7\%$ and
+statistically marginal: the confidence interval stops just short of parity. It also
+rests on the reference used here, which scores the carrier
 against its own smooth tile: the Clough--Tocher transfer has already
 removed high-frequency noise a codec would otherwise spend bits on, while
 the native side is scored against its raw product.
@@ -58,7 +59,10 @@ recomputed for the matched-budget protocol
 In Table~\ref{tab:gamma_continuous}, each region's $\gamma_\star$ is the
 value at which the two representations reach equal compressed size for
 that region, so HEALPix is the smaller one exactly where
-$\gamma \ge \gamma_\star$. The win columns give the fraction of the $n$
+$\gamma \ge \gamma_\star$. The column $f(e)=(2.58-\gamma_\star(e))/(2.58-1)$
+is the share of the raw oversampling penalty that compression recovers at
+error $e$: $0.33$ at the tightest target and $1.04$ at the loosest, where
+the carrier has passed parity. The win columns give the fraction of the $n$
 regions that qualify at that target --- 40, 40, 39, 37 and 32 as the
 target loosens --- satisfying that at three illustrative values, and
 \emph{inconclusive} the range of $\gamma$ over which the paired

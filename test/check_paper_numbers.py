@@ -133,6 +133,10 @@ def checks(tex: str):
             v = v.get("median")
         if v is not None:
             out.append((f"raw {key}", _fmt(float(v), nd), "geometric constant"))
+    if acc.get("ratio_uint16") is not None:
+        out.append(("raw ratio, native as distributed (uint16) [in sections/05a_raw.tex]",
+                    f"${acc['ratio_uint16']:.2f}\\times$",
+                    "2 x the float32 ratio; Table IV last row"))
 
     # --- how many latitude associations survive Holm -------------------------
     lat = self_.get("latitude", {})
@@ -142,6 +146,26 @@ def checks(tex: str):
     out.append(("number of latitude associations surviving Holm",
                 str(len(survivors)),
                 "survivors: " + (", ".join(survivors) or "none")))
+    # Revision 5: the association at the tightest budget, with the spectral
+    # slope held fixed (partial Spearman), and the slope's own relation to
+    # latitude; both quoted in Section V-D.
+    tb = lat.get("budget:0.02", {})
+    pb, bl = tb.get("partial_beta"), tb.get("beta_vs_lat")
+    if pb and bl:
+        where = "[in sections/05d_latitude.tex]"
+        out.append((f"latitude | beta, partial rho at the 2% budget {where}",
+                    f"$\\rho={pb['rho']:.2f}$", "paper_numbers_self latitude.partial_beta"))
+        out.append((f"latitude | beta, partial p at the 2% budget {where}",
+                    f"$p={pb['p']:.3f}$", ""))
+        out.append((f"latitude | beta, n at the 2% budget {where}",
+                    f"$n={pb['n']}$", ""))
+        out.append((f"beta vs latitude, rho {where}",
+                    f"$\\rho={bl['rho']:.2f}$", ""))
+        out.append((f"beta vs latitude, p {where}",
+                    f"$p={bl['p']:.2f}$", ""))
+    else:
+        out.append(("latitude | beta  [skipped: rerun update_paper_numbers.py "
+                    "with support_controls_spectrum.csv present]", "", ""))
     out += level_and_reader_checks()
     out += gamma_continuous_checks()
     out += headline_checks()
@@ -186,6 +210,13 @@ def gamma_continuous_checks():
         out.append(("inconclusive gamma band at RMSE 1e-3",
                     f"${r.inconclusive_lo.iloc[0]:.2f}$--${r.inconclusive_hi.iloc[0]:.2f}$",
                     "paired test does not reject parity"))
+    if "recovered_fraction" in rep and len(rep):
+        s_ = rep.sort_values("target")
+        where = "[in sections/05b_rd_main.tex]"
+        out.append((f"recovered fraction f(e) at the tightest target {where}",
+                    f"${s_.recovered_fraction.iloc[0]:.2f}$", "(alpha - gamma_star)/(alpha - 1)"))
+        out.append((f"recovered fraction f(e) at the loosest target {where}",
+                    f"${s_.recovered_fraction.iloc[-1]:.2f}$", ""))
     return out
 
 
@@ -614,9 +645,14 @@ def transfer_cost_prose_checks():
                 f"${min(both):.1f}$ to ${max(both):.1f}$",
                 "min and max over both transfers and all targets"))
     v = [rows[t]["deconv_over_control"] for t in ts]
-    out.append((f"transfer cost, PSF/IDW differential as percent {where}",
-                f"${100*(min(v)-1):.0f}$--${100*(max(v)-1):.0f}\\%$",
-                "(ratio - 1), min and max over targets"))
+    pct = f"${100*(min(v)-1):.0f}$--${100*(max(v)-1):.0f}\\%$"
+    for scope in (where, "[in sections/07_conclusion.tex]",
+                  "[in sections/08_appendices.tex]"):
+        out.append((f"transfer cost, PSF/IDW differential as percent {scope}",
+                    pct, "(ratio - 1), min and max over targets"))
+    v = [rows[t]["psf_over_base"] for t in ts]
+    out.append(("transfer cost, PSF / C-T range [in sections/08_appendices.tex]",
+                f"${min(v):.2f}$ to ${max(v):.2f}$", "Appendix E item"))
     for key, label in (("clough_tocher_over_utm", "C-T"), ("psf_over_utm", "PSF"),
                        ("linear_over_utm", "IDW")):
         a, b = rows[ts[-2]][key], rows[ts[-1]][key]

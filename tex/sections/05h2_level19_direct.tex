@@ -42,21 +42,21 @@ $2.24$, so the conclusion of Section~\ref{sec:level_choice} holds for
 either reading of ``the level-19 carrier'', and the figure quoted there is
 the aggregate's.
 
-The excluded region is Lake Geneva, and our first reading of it was wrong.
-Rebuilt at level 19 its carrier missed the aggregate by twice the scene's
-standard deviation, which we took for a failure of the transfer at the
-coarser level. Asked for level 20, where the rebuild must return the
-stored tile, the same operator on the same samples misses it by the same
-amount, an RMS of $1.97$ standard deviations at a correlation of $0.585$.
-Level 19 inherited the discrepancy: the window and the tile are related
+The excluded region is Lake Geneva. Rebuilt at level 19 its carrier
+misses the aggregate by twice the scene's standard deviation, which looks
+like a failure of the transfer at the coarser level. It is not: asked for
+level 20, where the rebuild must return the stored tile, the same operator
+on the same samples misses it by the same amount, an RMS of $1.97$
+standard deviations at a correlation of $0.585$.
+Level 19 inherits the discrepancy: the window and the tile are related
 by a gain and an offset of their own, a radiometric difference between two
 products, as Appendix~\ref{app:window_radiometry} establishes for all 40
 regions. Kept, the region would move the median ratio from $1.002$ to
 $1.002$; it is excluded because its input is no longer the input the
-comparison assumes. Two lessons follow for anyone rebuilding a carrier at
-a new level. A tile and the window it came from are separate files that
-can drift apart, and a geometric check that the window still covers the
-tile does not catch a window that has been re-acquired --- ours passed on
-all 40 regions, including this one. And the cheap control is the one this
-section needed: a transfer asked for the level its tile is already stored
-at must return that tile.
+comparison assumes. Two safeguards follow for anyone rebuilding a
+carrier at a new level. A tile and the window it came from are separate
+files that can drift apart, and a geometric check that the window still
+covers the tile does not catch a window that has been re-acquired (the
+check passes on all 40 regions, this one included). And the cheap control
+is the decisive one: a transfer asked for the level its tile is already
+stored at must return that tile.

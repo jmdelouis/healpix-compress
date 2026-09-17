@@ -59,24 +59,25 @@ decoder (Appendix~\ref{app:codec_audit}). Each sweep records the codec
 library versions and the checkout of the shared resampling
 package~\cite{delouis2026resample} it ran against, pinned to a tagged
 release, so a results folder can be matched to the code that wrote it. The
-discipline is not decoration: it caught, during preparation, a run whose
-synthetic control had silently doubled its point-spread width, before its
-numbers reached these pages.
+harness also refuses a run whose instrument response falls outside the
+band of the sensor, a guard that has already proved necessary.
 
 \subsection{Current Limitations}
 \label{sec:limitations}
 Five groups, detailed in Appendix~\ref{app:limitations}. \emph{Transfer}:
-the crossover is a result for a carrier filled by a transfer in the
-smoothness class of Clough--Tocher; a non-deconvolving transfer of the
-same class has not been tested, and energy compaction is the mechanism
-the data are consistent with, short of a demonstration. \emph{Reference
+the crossover is a result for a carrier filled by a transfer as smooth as
+Clough--Tocher; a non-deconvolving transfer of the same smoothness has not
+been tested, and the data are consistent with energy compaction playing an
+important role, short of a demonstration. \emph{Reference
 and reader}: the two reconstruction references disagree at the crossover
 and both are reported; the common-reference sweep has been re-scored
 through an interpolating read, the $3\times10^{-3}$ target remains
 withheld at $57\%$ bracketing, and a read matched to the PSF transfer has
-not been swept. \emph{Footprint}: the equal-area crop and the rotated tile
-overlap over $74$--$83\%$ of their extent, and the mismatch is bounded by
-three controls, one analytic and two on subsets. \emph{Dataset}:
+not been swept. \emph{Footprint and orientation}: the equal-area crop and the rotated
+tile overlap over $74$--$83\%$ of their extent, and the mismatch is
+bounded by three controls, one analytic and two on subsets; the raster's
+axes run at about $45^\circ$ to the native ones, and the cost of that
+orientation to row-and-column codecs is not measured. \emph{Dataset}:
 Sentinel-2 B04 at \SI{10}{m}, one acquisition per region, one tile per
 region, 40 regions in four classes; nothing is claimed for other bands,
 sensors, temporal cubes, model output, flux-conservative fields or the

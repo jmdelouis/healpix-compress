@@ -17,7 +17,9 @@ $\gamma_{\mathrm{tile}}=1.3$, so a value below one favours HEALPix; the
 median is over the $n$ evaluable regions of 40, with the range in
 brackets; $p$ is a two-sided Wilcoxon test on the log ratio, and
 $p^{\mathrm{Holm}}$ corrects over the family of eight targets the two
-tables report together.
+tables report together. The last column follows the corrected test: a
+target it does not separate at the $5\%$ level is marked inconclusive
+whatever the side of its median.
 
 \input{tables/table_storage_at_constant_rmse}
 
@@ -70,6 +72,6 @@ difficulty, which the per-scene-ratio protocol was designed to avoid.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_storage_at_constant_rmse}
-\caption{Rate-distortion comparison, native UTM (blue) vs.\ HEALPix level-20 (red), same marker per codec on both grids, median \emph{absolute} compressed size/RMSE across the 40 regions (contrast with the per-scene ratios of Fig.~\ref{fig:ratio_boxplots}). Left: compressed size (as a fraction of the shared HEALPix raw tile size) at fixed target RMSE, $10^{-4}$--$10^{-2}$. Right: RMSE at fixed storage budget, $2$--$40\%$ of that same shared reference. Both panels use direct log--log interpolation of the raw codec sweeps (Section~\ref{sec:rd_protocol}); single-configuration lossless codecs (JPEG~2000, JPEG~XL) are shown as isolated points.}
+\caption{Rate--distortion curves per codec, native UTM (solid, with the illustrative overhead) and HEALPix level 20 (dashed), one marker per codec: median absolute compressed size at each target RMSE (top, as a fraction of the shared raw tile size) and median RMSE at each storage budget (bottom), over the 40 regions. The lossless codecs are the isolated hollow points.}
 \label{fig:rd_comparison}
 \end{figure}

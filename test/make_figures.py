@@ -1,6 +1,7 @@
 """Regenerate the paper figures for the 40-region protocol.
 
-    fig_ratio_boxplots        per-region HPX/UTM ratio distributions (Fig. 3)
+    fig_ratio_boxplots        per-region HPX/UTM ratio distributions (Fig. 5)
+    fig_storage_at_constant_rmse  median size/RMSE curves per codec and grid (Fig. 6)
     fig_utm_crop_footprints   HEALPix tile vs equal-area UTM square (Fig. 1)
     fig_region_map            where the 40 regions sit, and in which HEALPix regime
     fig_latitude_effect       intrinsic ratio against |latitude|
@@ -18,6 +19,7 @@ from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.ticker               # noqa: E402
 import matplotlib.pyplot as plt          # noqa: E402
 import numpy as np                        # noqa: E402
 import pandas as pd                       # noqa: E402
@@ -27,6 +29,26 @@ import paper_stats as st                  # noqa: E402
 
 CLASS_COLOR = {"urban": "#D55E00", "water": "#0072B2",
                "forest": "#009E73", "agriculture": "#E69F00"}
+GRID_COLOR = {"utm": "#0072B2", "hpx": "#D55E00"}
+CODEC_MARKER = {"zfp": "o", "sz3": "s", "jpeg2000_lossy": "D",
+                "jpegxl_lossy": "^", "dwt_zstd": "v",
+                "jpeg2000_lossless": "P", "jpegxl_lossless": "*"}
+CODEC_LABEL = {"zfp": "ZFP", "sz3": "SZ3", "jpeg2000_lossy": "JPEG 2000",
+               "jpegxl_lossy": "JPEG XL", "dwt_zstd": "DWT+zstd",
+               "jpeg2000_lossless": "JPEG 2000 lossless",
+               "jpegxl_lossless": "JPEG XL lossless"}
+
+# Figures 5 and 6 are set at IEEE column width (3.5 in). Drawing them at
+# 11 in and letting LaTeX scale them by a third made 8 pt text 2.5 pt on the
+# page (revision 5, review point on legibility); the figures are now drawn
+# at the width they are printed at, with fonts that survive the page.
+COLUMN_IN = 3.5
+plt.rcParams.update({"font.size": 7, "axes.titlesize": 7.5,
+                     "axes.labelsize": 7, "xtick.labelsize": 6.5,
+                     "ytick.labelsize": 6.5, "legend.fontsize": 6.5,
+                     "lines.linewidth": 0.9, "lines.markersize": 3,
+                     "axes.linewidth": 0.6, "xtick.major.width": 0.5,
+                     "ytick.major.width": 0.5, "pdf.fonttype": 42})
 RMSE_TICK = {1e-4: "1e-4", 3e-4: "3e-4", 1e-3: "1e-3", 3e-3: "3e-3", 1e-2: "1e-2"}
 
 
@@ -47,104 +69,10 @@ def _load(metric="self"):
     utm = pd.read_csv(cfg.RESULTS_DIR / "utm_codec_bench.csv")
     rmse_col = "rmse_common" if metric == "common" else "rmse"
     scenes = sorted(set(hpx.scene) & set(utm.scene))
-    index = _region_index(hpx, scenes)
+    idx_path = cfg.TILE_DIR / "tiles_index.csv"
+    index = pd.read_csv(idx_path) if idx_path.exists() else pd.DataFrame()
     codecs = [c for c in cfg.COMPRESSOR_CODECS if c in set(hpx.codec)]
     return hpx, utm, scenes, codecs, rmse_col, index
-
-
-def _lonlat_from_tiles(scenes):
-    """Region centres read from the built tiles themselves.
-
-    The manifest is the authority on where a region sits, but it lives in the
-    healpix-resample checkout and is not always reachable (no sibling
-    directory, no $HEALPIX_RESAMPLE_ROOT). The tiles are, whenever these
-    figures can be drawn at all, so the hull stored in each .npz is the
-    fallback: its mean, with the longitudes wrapped, is the tile centre to
-    well within a plotted marker.
-    """
-    try:
-        import build_tiles
-    except Exception:                                     # noqa: BLE001
-        return {}
-    out = {}
-    for scene in scenes:
-        path = build_tiles.tile_path(scene)
-        if not path.exists():
-            continue
-        try:
-            with np.load(path) as z:
-                lon = _wrap_deg(np.asarray(z["hull_lon"], dtype=np.float64))
-                lat = np.asarray(z["hull_lat"], dtype=np.float64)
-        except Exception:                                 # noqa: BLE001
-            continue
-        out[scene] = (float(_wrap_deg(lon.mean())), float(lat.mean()))
-    return out
-
-
-def _region_index(hpx, scenes):
-    """One row per benchmarked region: class, lon, lat, |lat|, regime.
-
-    Assembled from the sources in order of authority, each one filling only
-    what the previous ones left missing:
-
-      1. the benchmark itself, which carries the class, the latitude and the
-         regime of every region actually compressed;
-      2. the frozen manifest (region_sites), which adds the longitude and is
-         the published definition of the region list;
-      3. the built tiles, whose stored hull gives a centre when the manifest
-         is out of reach;
-      4. data/tiles/tiles_index.csv, for tile-specific columns only.
-
-    It is deliberately not built from tiles_index.csv alone: a partial
-    build_tiles run once left that file with a single row, and the region
-    map, the box-plot class colours and the latitude figure all silently
-    inherited it -- a map titled "1 evaluation regions".
-    """
-    cols = ["scene", "scene_class", "lat", "abs_lat", "hpx_regime"]
-    idx = (hpx.drop_duplicates("scene")[[c for c in cols if c in hpx.columns]]
-           .pipe(lambda d: d[d.scene.isin(scenes)]).copy())
-    if "lon" not in idx:
-        idx["lon"] = np.nan
-
-    try:
-        import region_sites
-        sites = region_sites.load_sites().set_index("scene")
-        for col in ("scene_class", "lon", "lat", "abs_lat", "hpx_regime"):
-            if col in sites:
-                filled = idx.scene.map(sites[col])
-                idx[col] = filled.where(filled.notna(), idx.get(col))
-    except Exception as exc:                              # noqa: BLE001
-        print(f"  region index: manifest unavailable ({type(exc).__name__}: "
-              f"{exc}); positions will come from the built tiles")
-
-    if idx.lon.isna().any():
-        centres = _lonlat_from_tiles(sorted(idx.loc[idx.lon.isna(), "scene"]))
-        if centres:
-            idx.loc[idx.lon.isna(), "lon"] = idx.scene.map(
-                {k: v[0] for k, v in centres.items()})
-            if "lat" in idx:
-                idx["lat"] = idx.lat.where(idx.lat.notna(),
-                                           idx.scene.map({k: v[1] for k, v in centres.items()}))
-            print(f"  region index: {len(centres)} region centre(s) read from the "
-                  f"built tiles")
-
-    if "lat" in idx and "abs_lat" in idx:
-        idx["abs_lat"] = idx.abs_lat.where(idx.abs_lat.notna(), idx.lat.abs())
-
-    idx_path = cfg.TILE_DIR / "tiles_index.csv"
-    if idx_path.exists():
-        tiles = pd.read_csv(idx_path)
-        extra = [c for c in tiles.columns if c not in idx.columns and c != "scene"]
-        if extra:
-            idx = idx.merge(tiles[["scene"] + extra], on="scene", how="left")
-
-    if len(idx) != len(scenes):
-        print(f"  region index: {len(idx)} rows for {len(scenes)} benchmarked regions")
-    n_pos = int(idx.lon.notna().sum()) if "lon" in idx else 0
-    if n_pos < len(idx):
-        print(f"  region index: {len(idx) - n_pos} region(s) without a longitude; "
-              f"the region map will show the rest")
-    return idx.sort_values("scene").reset_index(drop=True)
 
 
 def ratios_per_target(hpx, utm, scenes, codecs, rmse_col, gamma=cfg.GAMMA_UTM):
@@ -170,7 +98,7 @@ def ratios_per_target(hpx, utm, scenes, codecs, rmse_col, gamma=cfg.GAMMA_UTM):
 
 def fig_ratio_boxplots(ratios, index, publish=True):
     cls = index.set_index("scene")["scene_class"].to_dict() if "scene_class" in index else {}
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11, 4.4))
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(COLUMN_IN, 2.1))
     for ax, kind, targets, xlabel in (
             (axL, "rmse", cfg.TARGET_RMSE, "Target RMSE"),
             (axR, "budget", cfg.BUDGETS, "Storage budget (of shared raw)")):
@@ -195,20 +123,94 @@ def fig_ratio_boxplots(ratios, index, publish=True):
             scenes_i = list(ratios[(kind, t)])
             x = np.random.default_rng(i).normal(i, 0.05, len(vals))
             colors = [CLASS_COLOR.get(cls.get(s, ""), "0.4") for s in scenes_i]
-            ax.scatter(x, vals, s=14, c=colors, alpha=0.8, zorder=3, linewidths=0)
-        ax.axhline(1.0, color="grey", linestyle="--", linewidth=1)
+            ax.scatter(x, vals, s=6, c=colors, alpha=0.8, zorder=3, linewidths=0)
+        ax.axhline(1.0, color="grey", linestyle="--", linewidth=0.7)
         ax.set_yscale("log")
         ax.set_xlabel(xlabel)
-    axL.set_ylabel("HPX / UTM compressed-size ratio")
+    axL.set_ylabel("HPX / UTM size ratio")
     axR.set_ylabel("HPX / UTM RMSE ratio")
-    axL.set_title("Storage ratio at constant RMSE")
+    axL.set_title("Size ratio at constant RMSE")
     axR.set_title("Error ratio at constant budget")
-    handles = [plt.Line2D([], [], marker="o", linestyle="", color=c, label=k)
+    handles = [plt.Line2D([], [], marker="o", linestyle="", color=c, label=k,
+                          markersize=3)
                for k, c in CLASS_COLOR.items()]
     if cls:
         fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False,
-                   bbox_to_anchor=(0.5, -0.06))
+                   bbox_to_anchor=(0.5, -0.08), handletextpad=0.3,
+                   columnspacing=1.0)
+    fig.tight_layout(w_pad=1.0)
     _save(fig, "fig_ratio_boxplots", publish)
+
+
+def fig_rd_comparison(hpx, utm, scenes, codecs, rmse_col, publish=True,
+                      lossless=("jpeg2000_lossless", "jpegxl_lossless")):
+    """Fig. 6: median absolute size at each target and median RMSE at each
+    budget, per codec and grid, over the regions (the figure the notebook
+    used to draw; column width, one panel per row, lossy codecs as curves
+    and the single-configuration lossless codecs as isolated points)."""
+    fig, (axT, axB) = plt.subplots(2, 1, figsize=(COLUMN_IN, 4.4))
+    gamma = cfg.GAMMA_UTM
+    for grid, df, g in (("utm", utm, gamma), ("hpx", hpx, 1.0)):
+        col = GRID_COLOR[grid]
+        for c in list(codecs) + [l for l in lossless if l in set(df.codec)]:
+            mk = CODEC_MARKER.get(c, "o")
+            if c in lossless:
+                sub = df[df.codec == c]
+                sz = sub.groupby("scene").total_bytes.min()
+                er = sub.groupby("scene")[rmse_col].median()
+                axT.plot([float(np.median(er))], [float(np.median(sz)) * g / cfg.SHARED_RAW],
+                         marker=mk, linestyle="", color=col, markerfacecolor="none",
+                         markersize=4)
+                continue
+            ys = []
+            for t in cfg.TARGET_RMSE:
+                v = [st.best_of_codecs_size(df, s, [c], t, gamma=g, rmse_col=rmse_col)
+                     for s in scenes]
+                v = [x for x in v if np.isfinite(x)]
+                ys.append(np.median(v) / cfg.SHARED_RAW if len(v) >= cfg.MIN_SCENES
+                          else np.nan)
+            axT.plot(cfg.TARGET_RMSE, ys, marker=mk, color=col,
+                     linestyle="-" if grid == "utm" else "--")
+            ys = []
+            for f in cfg.BUDGETS:
+                v = [st.best_of_codecs_rmse(df, s, [c], f * cfg.SHARED_RAW / g,
+                                            rmse_col=rmse_col) for s in scenes]
+                v = [x for x in v if np.isfinite(x)]
+                ys.append(np.median(v) if len(v) >= cfg.MIN_SCENES else np.nan)
+            axB.plot([100 * f for f in cfg.BUDGETS], ys, marker=mk, color=col,
+                     linestyle="-" if grid == "utm" else "--")
+    axT.set_xscale("log"); axT.set_yscale("log")
+    axB.set_xscale("log"); axB.set_yscale("log")
+    axT.set_xlabel("Target RMSE")
+    axT.set_ylabel("Median size / shared raw")
+    axB.set_xlabel("Storage budget (% of shared raw)")
+    axB.set_ylabel("Median RMSE")
+    axT.set_title("Size at constant RMSE")
+    axB.set_title("Error at constant budget")
+    axB.set_xticks([100 * f for f in cfg.BUDGETS])
+    axB.set_xticklabels([f"{100*f:g}%" for f in cfg.BUDGETS])
+    axB.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    axT.set_xticks(cfg.TARGET_RMSE)
+    axT.set_xticklabels([RMSE_TICK.get(t, f"{t:g}") for t in cfg.TARGET_RMSE])
+    axT.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    for ax in (axT, axB):
+        ax.grid(True, which="major", linewidth=0.3, alpha=0.6)
+    grid_h = [plt.Line2D([], [], color=GRID_COLOR["utm"], linestyle="-",
+                         label=f"UTM (x{gamma:g} overhead)"),
+              plt.Line2D([], [], color=GRID_COLOR["hpx"], linestyle="--",
+                         label="HEALPix level 20")]
+    codec_h = [plt.Line2D([], [], marker=CODEC_MARKER[c], linestyle="",
+                          color="0.3", label=CODEC_LABEL.get(c, c),
+                          markerfacecolor="none" if c in lossless else "0.3")
+               for c in list(codecs) + [l for l in lossless
+                                        if l in set(hpx.codec)]]
+    fig.legend(handles=grid_h, loc="lower center", ncol=2, frameon=False,
+               bbox_to_anchor=(0.5, -0.02))
+    fig.legend(handles=codec_h, loc="lower center", ncol=4, frameon=False,
+               bbox_to_anchor=(0.5, -0.09), handletextpad=0.3,
+               columnspacing=0.8)
+    fig.tight_layout(h_pad=1.2)
+    _save(fig, "fig_storage_at_constant_rmse", publish)
 
 
 def _local_km(lon, lat, lon0, lat0):
@@ -227,19 +229,9 @@ def _local_km(lon, lat, lon0, lat0):
     """
     m_per_deg_lat = 111132.95
     m_per_deg_lon = 111320.0 * np.cos(np.radians(lat0))
-    # healpix_geo returns cell-centre longitudes in [0, 360) while the UTM
-    # crop carries [-180, 180): west of Greenwich the two footprints of one
-    # region were 360 degrees (40 000 km) apart and every panel shared that
-    # scale, which is what reduced the footprints to dots. Wrap the offset.
-    dlon = _wrap_deg(np.asarray(lon, dtype=np.float64) - lon0)
-    x = dlon * m_per_deg_lon
+    x = (np.asarray(lon, dtype=np.float64) - lon0) * m_per_deg_lon
     y = (np.asarray(lat, dtype=np.float64) - lat0) * m_per_deg_lat
     return x / 1000.0, y / 1000.0
-
-
-def _wrap_deg(d):
-    """Longitude difference wrapped to (-180, 180]."""
-    return (np.asarray(d, dtype=np.float64) + 180.0) % 360.0 - 180.0
 
 
 def _overlap_fractions(z):
@@ -263,25 +255,10 @@ def _overlap_fractions(z):
     return f, f / (2.0 - f)
 
 
-def _spread_over_classes(scenes, max_panels):
-    """Pick regions round-robin over the land-cover classes, in scene order,
-    so that eight panels show two of each class rather than eight agriculture
-    regions (the first eight alphabetically)."""
-    by_cls = {}
-    for s in scenes:
-        by_cls.setdefault(s.split("__")[1] if "__" in s else "", []).append(s)
-    out, queues = [], [list(v) for _, v in sorted(by_cls.items())]
-    while len(out) < max_panels and any(queues):
-        for q in queues:
-            if q and len(out) < max_panels:
-                out.append(q.pop(0))
-    return out
-
-
 def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
     import build_tiles
-    avail = [s for s in scenes if build_tiles.tile_path(s).exists()]
-    shown = _spread_over_classes(avail, max_panels)
+    shown = [s for s in scenes[:max_panels]
+             if build_tiles.tile_path(s).exists()]
     n = len(shown)
     if n == 0:
         print("  fig_utm_crop_footprints: skipped (no tiles under data/tiles)")
@@ -295,7 +272,7 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
     panels, lim = [], 0.0
     for scene in shown:
         z = np.load(build_tiles.tile_path(scene))
-        lon0 = float(_wrap_deg(np.mean(_wrap_deg(z["hull_lon"]))))
+        lon0 = float(np.mean(z["hull_lon"]))
         lat0 = float(np.mean(z["hull_lat"]))
         hx, hy = _local_km(z["hull_lon"], z["hull_lat"], lon0, lat0)
         # close the hull ring
@@ -345,8 +322,8 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
                                 r"$^2$ px)")]
     fig.legend(handles=handles, loc="lower center", ncol=2, frameon=False,
                fontsize=7.5, bbox_to_anchor=(0.5, -0.015))
-    # No in-figure title: these figures are published with a LaTeX caption,
-    # and a title inside the image duplicates it in the proof.
+    fig.suptitle("Footprints in a local metric frame, common scale for every "
+                 "panel", fontsize=8.5, y=1.0)
     _save(fig, "fig_utm_crop_footprints", publish)
     fr = [p[5] for p in panels if np.isfinite(p[5])]
     if fr:
@@ -354,84 +331,26 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
               f"[{100*min(fr):.1f}, {100*max(fr):.1f}]")
 
 
-def _map_axes(figsize):
-    """A geographic axes with coastlines when cartopy is available.
-
-    The continents are context, not data: the region positions are plotted in
-    plain PlateCarree either way, so the figure degrades to a bare lon/lat
-    frame (with a printed reason) rather than failing where cartopy or its
-    Natural Earth cache is missing.
-    """
-    try:
-        import cartopy.crs as ccrs
-        import cartopy.feature as cfeature
-    except Exception as exc:                              # noqa: BLE001
-        print(f"    coastlines: cartopy unavailable ({type(exc).__name__}); "
-              f"plotting a plain lon/lat frame")
-        fig, ax = plt.subplots(figsize=figsize)
-        ax.set_xlim(-180, 180)
-        ax.set_ylim(-70, 75)
-        ax.set_xlabel("Longitude (deg)")
-        ax.set_ylabel("Latitude (deg)")
-        ax.grid(alpha=0.25, linewidth=0.5)
-        return fig, ax, None
-
-    proj = ccrs.PlateCarree()
-    fig, ax = plt.subplots(figsize=figsize, subplot_kw={"projection": proj})
-    ax.set_extent([-180, 180, -70, 75], crs=proj)
-    try:
-        # Resolve the Natural Earth files now. add_feature() is lazy: it
-        # defers the download to draw time, i.e. to inside savefig, where a
-        # failure would take the whole figure down instead of falling back.
-        from cartopy.io import shapereader
-        for name in ("land", "coastline"):
-            shapereader.natural_earth(resolution="110m", category="physical",
-                                      name=name)
-        ax.add_feature(cfeature.LAND, facecolor="#EDEDED", edgecolor="none",
-                       zorder=0)
-        ax.add_feature(cfeature.COASTLINE, edgecolor="#9A9A9A", linewidth=0.5,
-                       zorder=1)
-    except Exception as exc:                              # noqa: BLE001
-        # Natural Earth ships as a download; an offline machine must still
-        # get the figure, with the graticule alone for context.
-        print(f"    coastlines: Natural Earth unavailable "
-              f"({type(exc).__name__}: {str(exc)[:70]}); graticule only")
-    gl = ax.gridlines(draw_labels=True, linewidth=0.4, color="0.8",
-                      alpha=0.6, linestyle="-", zorder=1)
-    gl.top_labels = gl.right_labels = False
-    gl.xlabel_style = gl.ylabel_style = {"size": 8}
-    return fig, ax, proj
-
-
 def fig_region_map(index, publish=True):
-    if not {"lon", "lat"} <= set(index.columns):
-        print("  fig_region_map: skipped (no region positions; set "
-              "HEALPIX_RESAMPLE_ROOT or rebuild the tiles)")
+    if "lat" not in index:
         return
-    pos = index.dropna(subset=["lon", "lat"])
-    if pos.empty:
-        print("  fig_region_map: skipped (no region has a position)")
-        return
-    fig, ax, proj = _map_axes((9, 4.6))
-    tr = {"transform": proj} if proj is not None else {}
-    for cls, g in pos.groupby("scene_class"):
+    fig, ax = plt.subplots(figsize=(9, 4.4))
+    for cls, g in index.groupby("scene_class"):
         ax.scatter(g.lon, g.lat, s=42, label=cls,
                    color=CLASS_COLOR.get(cls, "0.4"),
-                   edgecolor="black", linewidth=0.4, zorder=3, **tr)
+                   edgecolor="black", linewidth=0.4, zorder=3)
     for lat in (cfg.EQUATORIAL_LAT_DEG, -cfg.EQUATORIAL_LAT_DEG):
-        ax.plot([-180, 180], [lat, lat], color="grey", linestyle=":",
-                linewidth=1, zorder=2, **tr)
-    ax.text(-176, cfg.EQUATORIAL_LAT_DEG + 3.5,
+        ax.axhline(lat, color="grey", linestyle=":", linewidth=1)
+    ax.text(-178, cfg.EQUATORIAL_LAT_DEG + 2,
             r"HEALPix equatorial belt boundary  $|\mathrm{lat}|=41.81^\circ$",
-            fontsize=8, color="dimgrey", zorder=4, va="bottom",
-            bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none",
-                      alpha=0.75), **tr)
-    ax.legend(ncol=4, frameon=False, loc="lower center",
-              bbox_to_anchor=(0.5, -0.22), fontsize=9)
-    n_belt = int((pos.lat.abs() < cfg.EQUATORIAL_LAT_DEG).sum())
-    print(f"    {len(pos)} regions, {n_belt} in the equatorial belt and "
-          f"{len(pos) - n_belt} in the caps (the LaTeX caption states this; "
-          f"the figure carries no title of its own)")
+            fontsize=8, color="grey")
+    ax.set_xlim(-180, 180)
+    ax.set_ylim(-70, 75)
+    ax.set_xlabel("Longitude (deg)")
+    ax.set_ylabel("Latitude (deg)")
+    ax.grid(alpha=0.25, linewidth=0.5)
+    ax.legend(ncol=4, frameon=False, loc="lower center", bbox_to_anchor=(0.5, -0.32))
+    ax.set_title(f"{len(index)} evaluation regions, shared with healpix-resample")
     _save(fig, "fig_region_map", publish)
 
 
@@ -479,6 +398,7 @@ def main(argv=None) -> int:
 
     ratios = ratios_per_target(hpx, utm, scenes, codecs, rmse_col)
     fig_ratio_boxplots(ratios, index, publish)
+    fig_rd_comparison(hpx, utm, scenes, codecs, rmse_col, publish)
     fp = args.footprint_regions or scenes
     fig_footprints([s for s in fp if (cfg.TILE_DIR / f"{s}.npz").exists()],
                    publish, max_panels=args.footprint_panels)

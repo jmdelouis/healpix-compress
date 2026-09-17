@@ -14,5 +14,9 @@ geometry-only result and the only exact one in the paper. Under the
 illustrative $\gamma_{\mathrm{tile}}=1.30$ scenario the gap narrows and
 stays open: the uncompressed tile is still $1.99\times$ the size of the crop
 scaled by $\gamma_{\mathrm{tile}}$. A $30\%$ overhead cannot offset a
-$2.58\times$ oversampling. Only compression, by exploiting the redundancy
-that oversampling represents, can make HEALPix competitive.
+$2.58\times$ oversampling. The three rows compare float32 rasters, the
+form the codecs sweep; the native product is distributed as 16-bit
+integers, and stored in that form the crop is half the size again, so the
+tile is $5.17\times$ the product as it ships (last row). Only
+compression, by exploiting the redundancy that oversampling represents,
+can make HEALPix competitive.

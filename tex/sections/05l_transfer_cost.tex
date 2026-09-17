@@ -2,8 +2,8 @@
 \label{sec:transfer_cost}
 This section prices the transfer itself. The same rate--distortion
 protocol is run on carrier tiles rebuilt from the same native windows by
-two further transfers: the PSF-aware one, which restores small-scale
-structure by construction, and the inverse-distance average over the four
+two further transfers: the PSF-aware one, which is designed to restore
+small-scale structure, and the inverse-distance average over the four
 nearest cells that Section~\ref{sec:resampler} abandoned, which restores
 none and serves as the control. The library calls the latter
 \texttt{linear}; it is a Shepard-type weighted average whose kernel width

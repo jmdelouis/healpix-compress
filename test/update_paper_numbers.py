@@ -173,6 +173,12 @@ def table_storage_accounting(utm, scenes):
         f"{np.mean(list(raw.values()))/1e6:.3f} & {t_1['median']:.3f} \\\\",
         f"UTM crop $\\times\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$ & "
         f"{np.mean(list(raw.values()))*cfg.GAMMA_UTM/1e6:.3f} & {t_g['median']:.3f} \\\\",
+        # The native product is distributed as 16-bit integers; both sides
+        # above are float32, the form the codecs sweep. Stored as distributed,
+        # the crop is half the size again (revision 5, review point on
+        # Table IV).
+        f"UTM crop as distributed (uint16) & "
+        f"{np.mean(list(raw.values()))*0.5/1e6:.3f} & {2*t_1['median']:.3f} \\\\",
     ]
     tex = _table(
         "Raw storage for the same nominal ground area",
@@ -181,9 +187,13 @@ def table_storage_accounting(utm, scenes):
         note=(f"Over the {len(ratios_g)} regions. Both representations are "
               f"fixed-size, so the ratio is a geometric constant (measured "
               f"range {t_1['lo']:.3f}--{t_1['hi']:.3f} at "
-              f"$\\gamma_{{\\mathrm{{tile}}}}=1$)."))
+              f"$\\gamma_{{\\mathrm{{tile}}}}=1$). The first three rows are "
+              f"float32, the form the codecs sweep; the last is the native "
+              f"product as distributed, 16-bit integers."))
     return tex, dict(n=int(t_g["n"]), ratio_gamma1=t_1, ratio_gamma=t_g,
-                     utm_raw_bytes_mean=float(np.mean(list(raw.values()))))
+                     utm_raw_bytes_mean=float(np.mean(list(raw.values()))),
+                     utm_uint16_bytes_mean=float(np.mean(list(raw.values())) * 0.5),
+                     ratio_uint16=float(2 * t_1["median"]))
 
 
 def _ratio_rows(hpx, utm, scenes, rmse_col, codecs):
@@ -264,7 +274,15 @@ def table_iv_v(rows, family_size, n_regions, metric="self"):
             if r["kind"] != kind or not r.get("reported"):
                 continue
             t = r["test"]
-            favors = "HPX" if t["median"] < 1 else "UTM"
+            # The verdict column follows the test, not the median alone: a
+            # target the paired test does not separate at the 5% level after
+            # Holm is reported as inconclusive, as the text says of the
+            # 3e-3 crossover (revision 5, review point on Table VII).
+            ph = r.get("p_holm", np.nan)
+            if np.isfinite(ph) and ph >= 0.05:
+                favors = "inconcl."
+            else:
+                favors = "HPX" if t["median"] < 1 else "UTM"
             out.append(f"{fmt_target(r['target'])} & {t['n']:d} & {_fmt(t['median'])} & "
                        f"[{_fmt(t['lo'])}, {_fmt(t['hi'])}] & "
                        f"{_p(t['p'])} & {_p(r['p_holm'])} & {favors} \\\\")
@@ -285,7 +303,9 @@ def table_iv_v(rows, family_size, n_regions, metric="self"):
         note=(f"Per-region HPX/UTM ratio, oracle-best codec chosen "
               f"independently per region and grid; the UTM side already "
               f"includes $\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$. A ratio "
-              f"below one favours HEALPix. Median and [min, max] over the $n$ "
+              f"below one favours HEALPix; a target the corrected paired test "
+              f"does not separate at the $5\\%$ level is marked inconclusive. "
+              f"Median and [min, max] over the $n$ "
               f"evaluable regions of {n_regions}. " + note))
     tex_v = _table(
         "Reconstruction-error ratio at a constant storage budget" + ref,
