@@ -95,10 +95,10 @@ tiles (MGRS granules with overlap bands), whose padding, overlap and
 per-tile metadata add storage beyond the area needed. This overhead
 belongs to the product organisation: UTM as a coordinate reference system
 carries none of it, and a native UTM COG or Zarr archive need not either.
-The tiling geometry bounds it from both sides. Sentinel-2 granules are \SI{109.8}{km} squares
-($10980$ pixels at \SI{10}{m}) laid on a \SI{100}{km}
-step~\cite{esa_s2_products}, so a fully covered area is stored
-$(109.8/100)^2=1.21$ times: real pixels held twice, a cost that survives
+The tiling geometry bounds it from both sides. Sentinel-2 granules are nominally \SI{110}{km} squares laid on a
+\SI{100}{km} step~\cite{esa_s2_products}; a \SI{10}{m} band holds
+$10980$ pixels per side, \SI{109.8}{km}, so a fully covered area is
+stored $(109.8/100)^2=1.21$ times: real pixels held twice, a cost that survives
 compression and is a floor for $\gamma_{\mathrm{tile}}$. Cutting the
 \SI{290}{km} swath into such tiles takes four across track wherever the
 swath edge falls, the edge tiles are partly no-data ($34\%$ of the stored
@@ -107,8 +107,8 @@ $1.66$; no-data compresses to almost nothing, so under compression the
 overhead falls back towards the floor. We use $\gamma_{\mathrm{tile}}=1.30$
 as an illustrative point on the decision curve of
 Section~\ref{sec:rd_main}, between the measured floor and the raw
-figure; it is not a measurement of a complete product file
-(Section~\ref{sec:limitations}), and $\gamma_{\mathrm{tile}}=1$ is the
+figure, never as a measurement of a complete product file
+(Section~\ref{sec:limitations}); $\gamma_{\mathrm{tile}}=1$ is the
 overhead-free result.
 
 For \emph{uncompressed} storage (Table~\ref{tab:storage_accounting}),

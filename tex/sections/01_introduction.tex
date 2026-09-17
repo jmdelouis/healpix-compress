@@ -33,8 +33,8 @@ of Sentinel-2 it carries padding, overlap and per-tile metadata beyond
 the area needed, and this paper uses a $30\%$ overhead as an illustrative
 scenario for one layout (Section~\ref{sec:overhead}).
 
-The answer, in a data manager's terms, is in Table~\ref{tab:synthesis} and
-Fig.~\ref{fig:headline}. Before compression, a level-20 tile takes $2.58$
+The answer, in a data manager's terms, is given in
+Section~\ref{sec:headline}. Before compression, a level-20 tile takes $2.58$
 times the bytes of the area-matched native raster. After compression to
 the same reconstruction error, it takes $2.06$ times as many when the
 tolerated error is a quarter of a percent of a typical scene's contrast,
@@ -49,7 +49,7 @@ $2.3$--$2.6$ times the native raster at every error, bytes whose
 reconstruction benefit is established by that study, not by this one. The
 choice of transfer is therefore the largest single factor in the storage
 cost of a HEALPix carrier, above the codec, the scene and the tolerated
-error. Table~\ref{tab:glossary} defines the nine terms the paper relies on.
+error. Section~\ref{sec:glossary} defines the nine terms the paper relies on.
 
 The question is answered empirically, with established compression
 libraries and no HEALPix-specific coding. The finer HEALPix level is
