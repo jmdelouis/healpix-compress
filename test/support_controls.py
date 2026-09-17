@@ -1043,7 +1043,11 @@ def latex_table(frames: dict) -> str:
         names = {"none": "direct", "clough_tocher": "via C--T", "psf": "via PSF",
                  "linear": "via bilinear", "nearest": "via nearest",
                  "bicubic": "via bicubic"}
-        for (tr, beta, t), g in d.groupby(["transfer", "beta", "target"]):
+        # Direct rows first, then each transfer: the reader meets the
+        # geometry-only control before the chain that adds the transfer.
+        order = {"none": 0}
+        d = d.assign(_o=d.transfer.map(lambda x: order.get(x, 1)))
+        for (_o, tr, beta, t), g in d.groupby(["_o", "transfer", "beta", "target"]):
             ok = g.dropna(subset=["ratio"])
             br = ok[ok.both_bracketed] if len(ok) else ok
             # Same reporting rule as the paper's tables: a target that is not

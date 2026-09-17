@@ -821,8 +821,18 @@ def consistency_checks(tex):
         # text are about the direct rows.
         if "transfer" in syn.columns and len(syn):
             syn = syn[syn.transfer.fillna("none").astype(str) == "none"]
+        syn_all = syn
         syn = syn[syn.both_bracketed] if len(syn) else syn
         med = syn.groupby("target").ratio.median() if len(syn) else pd.Series(dtype=float)
+        # n at the two loosest targets, quoted as "partly censored (n = a and b)"
+        if len(syn):
+            ns = syn.groupby("target").size()
+            ts_ = sorted(ns.index)
+            if len(ts_) >= 2:
+                out.append(("synthetic control n at the two loosest targets [in sections/05e_support.tex]",
+                            f"$n={ns[ts_[-2]]}$ and ${ns[ts_[-1]]}$", "both bracketed"))
+            out.append(("synthetic control at the loosest target under gamma_tile [in sections/05e_support.tex]",
+                        f"${med[ts_[-1]]/cfg.GAMMA_UTM:.2f}$", "median / 1.30"))
         gs = {float(k): float(v) for k, v in load("self").get("gamma_star", {}).items()}
         agree = []
         ts = sorted(med.index)
@@ -847,6 +857,52 @@ def consistency_checks(tex):
             rng2 = f"${min(agree):.0f}\\%$ to ${max(agree):.0f}\\%$"
             out.append(("control excess over measured, 'X% to Y%' form", rng2,
                         "same quantity as the agreement range"))
+
+    # --- the synthetic field carried through the real transfer (revision 5) --
+    syn2 = _csv("support_controls_synthetic.csv")
+    if syn2 is not None and "transfer" in syn2.columns and len(syn2):
+        where = "[in sections/05e_support.tex]"
+        ok_mtf = ("mtf_utm_nyquist" not in syn2.columns
+                  or 0.12 <= float(syn2.mtf_utm_nyquist.median()) <= 0.33)
+        spec = _csv("support_controls_spectrum.csv")
+        if ok_mtf and spec is not None:
+            b_fit = round(float(spec.beta_fit.median()), 1)
+            syn2 = syn2[syn2.beta.sub(b_fit).abs() <= 0.15]
+            via = syn2[(syn2.transfer.fillna("none").astype(str) != "none") & syn2.both_bracketed]
+            direct = syn2[(syn2.transfer.fillna("none").astype(str) == "none") & syn2.both_bracketed]
+            if len(via) and len(direct):
+                mv = via.groupby("target").ratio.median()
+                md_ = direct.groupby("target").ratio.median()
+                ts2 = sorted(mv.index)
+                out.append((f"synthetic via transfer at the tightest target {where}",
+                            f"${mv[ts2[0]]:.2f}$", "both bracketed"))
+                out.append((f"synthetic via transfer at the loosest target {where}",
+                            f"${mv[ts2[-1]]:.2f}$", ""))
+                out.append((f"synthetic via transfer n at the loosest target {where}",
+                            f"${len(via[via.target == ts2[-1]])}$", ""))
+                # what the transfer removes at the loosest target, as percent
+                out.append((f"transfer's share of the synthetic ratio at the loosest target {where}",
+                            f"${100*(1-mv[ts2[-1]]/md_[ts2[-1]]):.0f}\\%$", "1 - via/direct"))
+                tr = via.groupby("scene").transfer_rmse_rel.first().dropna()
+                if len(tr):
+                    out.append((f"transfer RMSE on the analytic field, % of std {where}",
+                                f"${100*tr.median():.1f}\\%$", "median over regions"))
+                # agreement of the via-transfer control with gamma_star, min/max
+                gs2 = {float(k): float(v) for k, v in load("self").get("gamma_star", {}).items()}
+                ag = [100*abs(mv[t]-gs2[t])/gs2[t] for t in ts2 if t in gs2]
+                if ag:
+                    out.append((f"via-transfer control / measured agreement range {where}",
+                                f"${min(ag):.0f}$--${max(ag):.0f}\\%$", "|via - gamma_star|/gamma_star"))
+                # agreement of HPX/smoothed-native with the direct control
+                smx = _csv("support_controls_smoothed.csv")
+                if smx is not None and len(smx):
+                    if {"shift_x", "shift_y"} <= set(smx.columns):
+                        smx = smx[np.isclose(smx.shift_x, 0.5) & np.isclose(smx.shift_y, 0.5)]
+                    hs = smx[smx.hpx_both_bracketed].groupby("target").ratio_hpx_smoothed.median()
+                    ag2 = [100*abs(hs[t]-md_[t])/md_[t] for t in ts2 if t in hs.index]
+                    if ag2:
+                        out.append(("HPX/smoothed vs direct synthetic, largest gap, percent [in sections/05e_support.tex]",
+                                    f"${max(ag2):.0f}\\%$", "max over targets of |hpx/smoothed - direct|/direct"))
 
     # --- the smoothed-native control (revision 5): the transfer's smoothing
     # given to the native side, Section V-G ---------------------------------

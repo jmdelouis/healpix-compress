@@ -49,34 +49,31 @@ is bracketed on both grids.
 
 \input{tables/table_support_controls}
 
-With no content difference between the two supports, the ratio falls
-monotonically from $2.22$ at $10^{-4}$ to $1.18$ at $10^{-2}$, against
-$2.06$ to $0.93$ on the imagery. The control thus reproduces the decline
-of the gap and its approximate magnitude, tracking the measured ratio to
-within $8$--$27\%$ at the five targets, closely at the tight end and less
-so at the loose end, where its own sweep, run with the original ladders,
-is partly censored ($n=37$ and $36$). Under $\gamma_{\mathrm{tile}}=1.30$
-it also reproduces the change of sides, reaching $0.91$ at the loosest
-target where the imagery reaches $0.72$. Sampling geometry alone
-therefore reproduces the trend and the order of magnitude of the gap,
-though not its exact size. It does not decompose the residual, and the
-residual is not small: the synthetic ratio lies above the measured one at
-all five targets, by $8\%$ to $27\%$ and in the same direction, exceeding
-the effect under study at the two intermediate targets. Three omissions
-push that way. The transfer step is absent, so the smoothing that makes the
-real carrier compressible is not counted; the scene content is absent; and
-the field carries modes up to the level-20 Nyquist frequency, which the
-native lattice aliases and the carrier represents, a term built into the
-control that charges the carrier a little content the real chain never
-gives it. The control therefore corroborates the geometric origin of the
-trend without bounding the magnitude. In plain words: a
-made-up image with the same texture statistics as Sentinel-2, sampled by
-the two grids over the same field, shows the same size penalty
-for HEALPix and the same decline of that penalty with the tolerated
-error. The geometry-only control thus shows that sampling the same field
-at the $2.58\times$ higher level-20 density reproduces the trend of the
-storage penalty and its approximate magnitude; it does not, on its own,
-account for the penalty in full.
+With no content difference between the two supports, the direct ratio
+falls monotonically from $2.17$ at $10^{-4}$ to $1.16$ at $10^{-2}$,
+against $2.06$ to $0.93$ on the imagery. The control thus reproduces the
+decline of the gap and its approximate magnitude, tracking the measured
+ratio to within $5$--$24\%$ at the five targets, closely at the tight end
+and less so at the loose end, where its own sweep is partly censored
+($n=38$ and $32$). Under $\gamma_{\mathrm{tile}}=1.30$ it reaches $0.89$
+at the loosest target where the imagery reaches $0.72$. The synthetic
+ratio lies above the measured one at all five targets, by $5\%$ to $24\%$ and in the same direction, and the gap grows as the target
+loosens. The rows marked via C--T say why. There the same field is
+sampled on the native lattice and carried to the cells by the paper's
+own transfer, as in the real chain (its error against the exact field is
+$8.8\%$ of the scene's standard deviation, median over the 40 regions).
+The transfer changes nothing at the three tightest targets, where the
+codec keeps every sample, and removes $18\%$ of the ratio at the loosest,
+where the ratio falls from $2.17$ to $0.94$ against $0.93$ measured: the
+crossover appears in the control as soon as the control contains the
+transfer. Over the five targets the transferred control tracks the
+measurement to within $1$--$19\%$, the remainder lying at the two middle
+targets, where the scene content that a one-parameter spectrum cannot
+carry matters most. In plain words: a made-up image with the same
+texture statistics as Sentinel-2, sampled by the two grids over the same
+field, shows the same size penalty for HEALPix and the same decline of
+that penalty with the tolerated error; passed through the same transfer,
+it shows the same crossover.
 
 The smoothed-native rows say where the rest goes. Read through the
 carrier's own interpolant at half-pixel phase, the native raster
@@ -86,8 +83,8 @@ $6\%$ to $22\%$ of the bytes at equal error, more as the target loosens.
 Charged with the same smoothing, the native side is smaller than the
 carrier at every target: HEALPix over smoothed native falls from $2.23$
 to $1.24$, with $32$ regions at the loosest target and the paired test
-rejecting parity there ($p=1\times10^{-4}$). These values sit within a
-few percent of the geometry-only synthetic control ($2.22$ to $1.18$),
+rejecting parity there ($p=1\times10^{-4}$). These values sit within
+$7\%$ of the direct synthetic control ($2.17$ to $1.16$) at every target,
 so once both sides carry the same smoothing, what remains of the
 carrier's cost is what sampling the same field at $2.58$ times the
 density predicts. The crossover of Section~\ref{sec:rd_main} is
