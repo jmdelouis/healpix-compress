@@ -229,7 +229,13 @@ def _local_km(lon, lat, lon0, lat0):
     """
     m_per_deg_lat = 111132.95
     m_per_deg_lon = 111320.0 * np.cos(np.radians(lat0))
-    x = (np.asarray(lon, dtype=np.float64) - lon0) * m_per_deg_lon
+    # The tile hull comes from healpix-geo, which returns longitudes in
+    # [0, 360), while the UTM crop's longitudes come from the raster
+    # transform in (-180, 180]. West of Greenwich the two conventions differ
+    # by 360 degrees, which once put the two footprints 30 000 km apart and
+    # shrank every panel to a dot. Wrap the offset into (-180, 180].
+    dlon = (np.asarray(lon, dtype=np.float64) - lon0 + 180.0) % 360.0 - 180.0
+    x = dlon * m_per_deg_lon
     y = (np.asarray(lat, dtype=np.float64) - lat0) * m_per_deg_lat
     return x / 1000.0, y / 1000.0
 
@@ -272,7 +278,10 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
     panels, lim = [], 0.0
     for scene in shown:
         z = np.load(build_tiles.tile_path(scene))
-        lon0 = float(np.mean(z["hull_lon"]))
+        # circular mean of the hull longitude, safe on either side of the
+        # date line and whatever the longitude convention of the file
+        hl = np.radians(np.asarray(z["hull_lon"], dtype=np.float64))
+        lon0 = float(np.degrees(np.arctan2(np.sin(hl).mean(), np.cos(hl).mean())))
         lat0 = float(np.mean(z["hull_lat"]))
         hx, hy = _local_km(z["hull_lon"], z["hull_lat"], lon0, lat0)
         # close the hull ring
@@ -286,6 +295,14 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
         lim = max(lim, np.abs(hx).max(), np.abs(hy).max(),
                   np.abs(sx).max(), np.abs(sy).max())
     lim = float(np.ceil(lim * 1.08))
+    # A level-10 tile is 9 km across its bounding box, so no footprint can
+    # reach further than ~7 km from its own centre; a larger limit means the
+    # two footprints are drawn in different frames and the figure is wrong.
+    if lim > 12.0:
+        raise RuntimeError(
+            f"fig_utm_crop_footprints: a footprint extends {lim:.0f} km from "
+            "the tile centre; the tile hull and the UTM crop are not in the "
+            "same longitude frame (check _local_km).")
 
     for ax, (scene, hx, hy, sx, sy, frac, iou) in zip(axes, panels):
         ax.fill(hx, hy, color="#0072B2", alpha=0.75, edgecolor="#023d63",
