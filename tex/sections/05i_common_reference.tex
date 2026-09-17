@@ -5,18 +5,17 @@ Every ratio above compares each grid with its own raw representation,
 which charges the carrier nothing for the transfer. This section scores
 both grids against the same Sentinel-2 observation. The decoded HEALPix
 field is read on the native UTM pixels and compared with the observed
-crop over the intersection of the two footprints, which is necessary
-because the two enclose the same area without covering the same ground:
-over the 40 regions the intersection is $74$--$83\%$ of the crop ($81\%$
-median), and the comparison is made on the $73$--$81\%$ that survives a
-three-pixel erosion of its boundary. Projecting a constant field returns
-exactly one everywhere on this area, the check required before any region
-is accepted. Everything here depends on how the decoded carrier is read
-on the native pixels, and Section~\ref{sec:operator} shows that changing
-the read alone removes two thirds of the floor's mean squared error, so
-the sweep was scored twice, through the nearest-cell read used throughout
-the paper and through the interpolating read of that section; the UTM
-side is identical under both.
+crop over the intersection of the two footprints: over the 40 regions
+the intersection is $74$--$83\%$ of the crop ($81\%$ median), and the
+comparison is made on the $73$--$81\%$ that survives a three-pixel
+erosion of its boundary. Projecting a constant field returns exactly one
+everywhere on this area, the check required before any region is
+accepted. Everything here depends on how the decoded carrier is read,
+and Section~\ref{sec:operator} shows that changing the read alone
+removes two thirds of the floor's mean squared error, so the sweep was
+scored twice, through the nearest-cell read used throughout the paper
+and through the interpolating read of that section; the UTM side is
+identical under both.
 
 The first consequence is a floor, which belongs to the transfer-and-read
 pair. The first block of Table~\ref{tab:floors} reports the RMSE of the
@@ -25,10 +24,9 @@ intersection with the nearest read, against the observation:
 $4.0\times10^{-3}$ in median, about $10\%$ of the standard deviation of
 the scene, rising to $7.9\times10^{-3}$ over urban scenes and falling to
 $8.1\times10^{-4}$ over water, following the high-frequency content as a
-transfer step should. No codec setting on the HEALPix side can go below
-it, and Section~\ref{sec:operator} shows that the read alone accounts for
-an error of that size, so the floor is an upper bound on what the
-representation costs under the present reading operator.
+transfer step should. No codec setting on the HEALPix side can go below it, and the read
+alone accounts for an error of that size (Section~\ref{sec:operator}),
+so the floor is an upper bound on what the representation costs.
 
 \input{tables/table_floors}
 
@@ -42,18 +40,16 @@ floor halves, to $1.9\times10^{-3}$, and $10^{-2}$ becomes reportable
 and stay withheld, since the regions that would remain are the smoothest.
 The budgets of Table~\ref{tab:error_at_size_common} are read as in
 Table~\ref{tab:error_at_size}, with $p^{\mathrm{Holm}}$ corrected over the
-three targets this reference admits.
+three targets this reference admits. Table~\ref{tab:common_two_readers}
+puts the two reads side by side: the median per-region ratio of the
+HEALPix side to the native side under the illustrative $30\%$ overhead,
+at each target the sweep brackets for at least three quarters of the
+regions under that reader, with the Holm-adjusted paired signed-rank $p$;
+the last column is the same ratio at $\gamma=1$ under the interpolating
+read, which for an RMSE target is $\gamma_\star$; the floor row is the
+uncompressed carrier's RMSE against the observation.
 
 \input{tables/table_error_at_constant_size_common}
-
-Table~\ref{tab:common_two_readers} puts the two reads side by side: the
-median per-region ratio of the HEALPix side to the native side under the
-illustrative $30\%$ overhead, at each target the sweep brackets for at
-least three quarters of the regions under that reader, with the
-Holm-adjusted paired signed-rank $p$; the last column is the same ratio at
-$\gamma=1$ under the interpolating read, which for an RMSE target is
-$\gamma_\star$; the floor row is the uncompressed carrier's RMSE against
-the observation.
 
 \input{tables/table_common_two_readers}
 
@@ -63,12 +59,11 @@ ahead at \emph{every} evaluable target, matched-budget included: the
 median RMSE ratios are $1.44$, $3.86$ and $32.2$ at the $2\%$, $5\%$ and
 $10\%$ budgets, over the 37, 36 and 34 regions that qualify
 (Holm-adjusted $p<10^{-4}$ throughout), against $0.83$, $1.33$ and $4.01$
-under the within-representation measure. The one clear HEALPix advantage
-of Section~\ref{sec:rd_illustrative} does not survive the change of
-reference, for an arithmetic reason: at a $2\%$ budget the compression
-error and the transfer error are of the same order, so a measure that
-charges the second to HEALPix moves the balance by more than the codec
-does. The interpolating read changes the size of this reversal, and at
+under the within-representation measure. The one clear HEALPix advantage of Section~\ref{sec:rd_illustrative}
+reverses under the change of reference for an arithmetic reason: at a
+$2\%$ budget the compression error and the transfer error are of the
+same order, so a measure that charges the second to HEALPix moves the
+balance by more than the codec does. The interpolating read changes the size of this reversal, and at
 one target its sign. The ratio at the $2\%$ budget falls from $1.44$ to
 $1.12$ over all 40 regions, still in favour of native UTM (Holm-adjusted
 $p<10^{-4}$), and the $5\%$ and $10\%$ ratios fall from $3.86$ and $32.2$
@@ -76,10 +71,9 @@ to $2.50$ and $19.0$. At the one RMSE target this read makes reportable,
 $10^{-2}$, HEALPix is the smaller representation under the illustrative
 overhead: a median ratio of $0.93$ over the 32 qualifying regions
 (Holm-adjusted $p=1\times10^{-3}$), with an overhead-free ratio of
-$1.20$, a critical overhead below the illustrative $1.30$. That median
-coincides by chance with the overhead-free within-representation value of
-Section~\ref{sec:rd_main}; the two come from different sweeps, different
-references and different overheads, and only the latter is marginal. The
+$1.20$, a critical overhead below the illustrative $1.30$. That median coincides by chance with the overhead-free
+within-representation value of Section~\ref{sec:rd_main}; the two come
+from different sweeps, references and overheads. The
 within-representation ratio at this target ($0.72$) is never recovered,
 and the three budgets stay with native UTM; of the gap between the two
 references at the $2\%$ budget ($1.44$ against $0.83$ under the nearest
@@ -108,12 +102,12 @@ the within-representation measure is the operative one and the
 regime-dependent verdict of Section~\ref{sec:rd_main} stands. If the
 native product remains the ground truth and the HEALPix copy is a derived
 convenience, the transfer error belongs in the accounting, and on that
-basis the native grid is more efficient at every storage budget and,
-under the nearest read, at every target, the single exception being the
-loosest RMSE target read through the interpolating operator. What the two
-measures jointly exclude is the unconditional claim that a HEALPix
-carrier is cheaper. Two further questions about this reference are
-answered in the appendices. Writing the compression error as a fraction
+basis the native grid is more efficient at every storage budget and at
+every target, the single exception being the loosest RMSE target read
+through the interpolating operator. What the two measures jointly
+exclude is the unconditional claim that a HEALPix carrier is cheaper.
+Two further questions about this reference are answered in the
+appendices. Writing the compression error as a fraction
 $\kappa$ of the transfer error (Appendix~\ref{app:error_budget}), the
 crossings of Section~\ref{sec:rd_illustrative} occur at $\kappa=0.13$ to
 $0.50$ against the latent scene in all four classes and inflate the total

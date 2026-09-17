@@ -9,12 +9,11 @@ same for every scene. At $\gamma_{\mathrm{tile}}=1$ the HEALPix tile is
 $2.584\times$ larger than the crop, exactly $1024^2/637^2$ on every region
 (its range over the 40 regions is $2.584$ to $2.584$). It matches the
 analytic factor $\alpha_{\mathrm{HPX/native}}\approx2.58$ of
-\eqref{eq:alpha} because the crop side was derived from it. This is the
-geometry-only result and the only exact one in the paper. Under the
-illustrative $\gamma_{\mathrm{tile}}=1.30$ scenario the gap narrows and
-stays open: the uncompressed tile is still $1.99\times$ the size of the crop
-scaled by $\gamma_{\mathrm{tile}}$. A $30\%$ overhead cannot offset a
-$2.58\times$ oversampling. The three rows compare float32 rasters, the
+\eqref{eq:alpha} because the crop side was derived from it; this is the
+only exact result in the paper. Under the illustrative
+$\gamma_{\mathrm{tile}}=1.30$ scenario the uncompressed tile is still
+$1.99\times$ the size of the crop scaled by $\gamma_{\mathrm{tile}}$: a
+$30\%$ overhead cannot offset a $2.58\times$ oversampling. The three rows compare float32 rasters, the
 form the codecs sweep; the native product is distributed as 16-bit
 integers, and stored in that form the crop is half the size again, so the
 tile is $5.17\times$ the product as it ships (last row). Only

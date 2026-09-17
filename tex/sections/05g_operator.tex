@@ -17,37 +17,31 @@ made of. On a band-limited field with the spectrum of the imagery
 ($0.19\%$ of its variance above half the native Nyquist frequency,
 against the $0.21\%$ measured on the crops), the read alone produces an
 RMSE of $14.0$--$14.4\%$ of the field's standard deviation, against a
-floor of about $10\%$ on the real tiles; the two agree, because a carrier
-tile is a Clough--Tocher interpolation of the scene and the smoothing
-removes the gradients that a jitter turns into error. The floor is thus
-an upper bound on the cost of the representation, and a reconstructor
-that interpolates within the carrier lattice could lower it.
-The middle block of Table~\ref{tab:floors} reports three reads of the
-same uncompressed carriers, scored on the native pixels of the
-intersection against the observation: \emph{nearest} is the containing cell; \emph{bilinear}
-interpolates within the carrier's own lattice at sub-cell position;
+floor of about $10\%$ on the real tiles; the two agree, because the
+Clough--Tocher smoothing of the tile removes the gradients that a jitter
+turns into error. The floor is thus an upper bound on the cost of the
+representation, and a read that interpolates within the carrier lattice
+can lower it. The middle block of Table~\ref{tab:floors} reports three
+reads of the same uncompressed carriers, scored on the native pixels of
+the intersection against the observation: \emph{nearest} is the
+containing cell; \emph{bilinear} places each native pixel in the carrier
+lattice at sub-cell precision (the local index of a NESTED block is the
+Morton code of the cell's integer position on its base face, so the tile
+is a $1024\times1024$ lattice whose neighbours are spatial neighbours)
+and takes the bilinear combination of the four bracketing centres;
 \emph{psf} is the companion study's forward operator, reported only on
 the tiles it is matched to. Ratios are paired per region before the
-median is taken.
-
-
-The interpolating read places each native pixel in the carrier lattice at
-sub-cell precision (the local index of a NESTED block is the Morton code
-of the cell's integer position on its base face, so the tile is a
-$1024\times1024$ lattice whose neighbours are spatial neighbours) and
-takes the bilinear combination of the four bracketing centres. On the
-same tiles, mask and observation, its floor is $0.582$ times that of the
-nearest read (paired median over the 40 regions, lower on every region),
-so replacing the nearest-cell read by the interpolating one removes
-$66\%$ of the mean squared error of the transfer-and-read floor: the
-floor drops from $10.0\%$ to $5.9\%$ of a scene's standard deviation when
-the read changes and nothing else does. On the PSF-transferred tiles the
-same read lies within $4\%$ of the companion study's forward operator
-($0.957$). A substantial part of the floor is therefore caused by the
-reading operator. This is a measured difference between two chains and no
+median is taken. On the same tiles, mask and observation, the bilinear
+floor is $0.582$ times that of the nearest read (lower on every region),
+so changing the read alone removes $66\%$ of the mean squared error of
+the transfer-and-read floor: it drops from $10.0\%$ to $5.9\%$ of a
+scene's standard deviation. On the PSF-transferred tiles the same read
+lies within $4\%$ of the companion study's forward operator ($0.957$). A
+substantial part of the floor is therefore caused by the reading
+operator. This is a measured difference between two chains and no
 variance decomposition: the transfer and read errors need not be
-orthogonal, and what the residual $1.9\times10^{-3}$ owes to the
-transfer, to the read and to their interaction is not separated here.
+orthogonal, and what the residual $1.9\times10^{-3}$ owes to each is
+not separated here.
 
 The read has a second consequence, on rate. A nearest-cell read of a
 $1024^2$ tile by the $637^2$ crop touches only $30.8\%$ of the cells
@@ -59,7 +53,7 @@ space, $68.9\%$ of the error energy lies in cells the product never
 reads. The product error is no smaller for it: the RMS of the
 transmitted error is $1.00$ times its RMS over all cells, because a
 gather leaves the error per read pixel unchanged, so a coarser step gains
-nothing ($0.1\%$ of the rate). What the kernel reveals is allocation,
+nothing ($0.1\%$ of the rate). What the kernel reveals is allocation:
 bits spent on cells nothing depends on, with a bound of
 $1/0.308\approx3.2\times$ that a uniform quantiser cannot reach. Seen from
 the sweep, $54.0\%$ of the $2\,800$ lossy operating points of the

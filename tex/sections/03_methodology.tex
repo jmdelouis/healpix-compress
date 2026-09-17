@@ -31,29 +31,26 @@ $2b+1$. De-interleaving the bits recovers $(x,y)$ for every cell and
 scatters the array into a $2^{\delta}\times2^{\delta}$ raster, exactly
 invertibly. We use $\delta=10$: the $1024\times1024$ level-20 descendants
 of one level-10 parent form one carrier tile, large enough to amortise
-per-chunk codec overhead and small enough to stay a practical storage unit.
-This reshaping is the only HEALPix-specific step; all later steps work on
-a plain float32 raster. That raster still carries three marks of its
-origin. The kernel that filled it from the sensor grid and the shape
+per-chunk codec overhead and small enough to stay a practical storage
+unit. This reshaping is the only HEALPix-specific step; all later steps
+work on a plain float32 raster. That raster still carries three marks of
+its origin: the kernel that filled it from the sensor grid and the shape
 anisotropy of equal-area HEALPix cells (a local axis-length ratio of up
-to $\sim\!1.7$ between the raster axes) both affect compressibility
-(Section~\ref{sec:resampler}). And its axes are those of the nested
-hierarchy, which in the UTM zone of a scene run at about $45^\circ$ to
-north (Fig.~\ref{fig:utm_crop_footprints}), so the row and column
-predictors of the codecs follow diagonals of the native raster; how much
-that orientation costs or saves has not been measured
+to $\sim\!1.7$ between the raster axes), which both affect
+compressibility (Section~\ref{sec:resampler}), and its axes, which in
+the UTM zone of a scene run at about $45^\circ$ to north
+(Fig.~\ref{fig:utm_crop_footprints}), so the row and column predictors
+of the codecs follow diagonals of the native raster; what that
+orientation costs or saves has not been measured
 (Section~\ref{sec:limitations}).
 
 \subsection{Equal-Area Native UTM Comparison}
 \label{sec:utm_crop}
-Both sides must cover the same nominal area, and the two grids are not
-co-oriented: a carrier tile projected into the UTM zone of a scene is a
-rotated square. An axis-aligned bounding box around it holds about twice
-the pixel count of the true footprint and would penalise the native side,
-as we observed on real scenes before adopting the protocol below.
-
-Each grid is therefore compared in its own geometry, matched by ground
-area. HEALPix is equal-area, so the ground area of a level-20 tile is a
+Both sides must cover the same nominal area, and a carrier tile
+projected into the UTM zone of a scene is a rotated square. An
+axis-aligned bounding box around it holds about twice the pixel count of
+the true footprint and would penalise the native side. Each grid is
+therefore compared in its own geometry, matched by ground area. HEALPix is equal-area, so the ground area of a level-20 tile is a
 geometric constant: by \eqref{eq:healpix_width}, a $1024\times1024$-cell
 tile covers a square of side $1024\,\Delta_{\mathrm{eq}}(20)\approx\SI{6.37}{km}$,
 about $636.7$ native \SI{10}{m} pixels, rounded to $637$. For each scene a
@@ -64,29 +61,27 @@ WGS84 ellipsoid. The square extends beyond the rotated tile along its
 edges and falls short at its corners; ``equal-area'' is shorthand for equal
 \emph{nominal projected} area. UTM is conformal, so $637^2$ nominal pixels
 do not enclose exactly the geodesic area of the tile, and rounding $636.7$
-to $637$ alone adds about $0.1\%$ of area before the zone's scale factor.
-These terms are small next to the $2.58\times$ oversampling under study and
-have not been computed scene by scene. Both representations have a fixed raw size across regions by
-construction, \SI{1.623}{MB} for the $637\times637$ native crop
-($637^2\times\SI{4}{B}$) and \SI{4.194}{MB} for the $1024\times1024$
-HEALPix tile, with no fill value on either side.
+to $637$ alone adds about $0.1\%$ of area before the zone's scale factor;
+these terms are small next to the $2.58\times$ oversampling under study
+and have not been computed scene by scene. Both representations have a
+fixed raw size across regions by construction, \SI{1.623}{MB} for the
+$637\times637$ native crop ($637^2\times\SI{4}{B}$) and \SI{4.194}{MB}
+for the $1024\times1024$ HEALPix tile, with no fill value on either side.
 
 Matching by area means each grid is compressed in the frame it is stored
-in, with no resampling of the native side --- the comparison a
-practitioner faces. It also means the two representations do not encode
-the same ground. Compressed size depends on texture, edges and class
-boundaries, so two supports of equal area that differ over a fifth of their
-extent can have different entropies. Over the 40 regions the intersection
-is $74$--$83\%$ of the crop ($81\%$ median), an intersection-over-union of
-about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}).
+in, with no resampling of the native side, the comparison a practitioner
+faces. It also means the two representations encode different ground
+over part of their extent: over the 40 regions the intersection is
+$74$--$83\%$ of the crop ($81\%$ median), an intersection-over-union of
+about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}), and supports that
+differ over a fifth of their extent can have different entropies.
 Section~\ref{sec:support_controls} bounds the effect with an analytic
-field that both geometries sample identically; that control reproduces the
-monotonic decline of the measured gap and its approximate magnitude, to
-within $5$--$24\%$, and the crossover itself once the field passes
-through the transfer, so sampling geometry and the transfer together
-suffice to produce the effect. The mismatch matters more for cross-grid comparisons of
-reconstruction \emph{error}, which is why the common-reference evaluation
-of Section~\ref{sec:common_reference} is restricted to the intersection.
+field that both geometries sample identically; that control reproduces
+the decline of the measured gap to within $5$--$24\%$, and the crossover
+itself once the field passes through the transfer. The mismatch matters
+more for cross-grid comparisons of reconstruction \emph{error}, which is
+why the common-reference evaluation of
+Section~\ref{sec:common_reference} is restricted to the intersection.
 
 \begin{figure}[t]
 \centering
@@ -99,50 +94,47 @@ of Section~\ref{sec:common_reference} is restricted to the intersection.
 \label{sec:resampler}
 Filling the level-20 tile means resampling the native raster onto the
 HEALPix cell centres, a step with no counterpart on the UTM side. During
-validation, the 2-D power spectrum of the resulting raster showed visible
-excess high-frequency power relative to the native spectrum of the same
+validation, the 2-D power spectrum of the resulting raster showed excess
+high-frequency power relative to the native spectrum of the same
 footprint and to the tangent-plane spectra of the companion
-study~\cite{delouis2026resample}. Left in place, this excess would have
-lowered the apparent compressibility of HEALPix. Slow positional
-distortion of the grid was ruled out, since a smooth gradient in cell
-placement cannot inject high frequencies. Cell anisotropy contributes
-without sufficing: at fixed area the two local sample spacings scale as
-$\sqrt{1.7}$ and $1/\sqrt{1.7}$, which brings the shorter spacing closer
-to the native \SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests.
-We call the effect an interpolation artefact.
+study~\cite{delouis2026resample}; left in place, this excess would have
+lowered the apparent compressibility of HEALPix. A smooth gradient in
+cell placement cannot inject high frequencies, so positional distortion
+was ruled out. Cell anisotropy contributes without sufficing: at fixed
+area the two local sample spacings scale as $\sqrt{1.7}$ and
+$1/\sqrt{1.7}$, which brings the shorter spacing closer to the native
+\SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests.
 
 The cause we could attribute directly was the resampler. The tiles were
 first filled with a Shepard-type inverse-distance interpolator over the
 four nearest neighbours, with a kernel width set to the HEALPix
 \emph{output} scale ($\sim\SI{6.2}{m}$) instead of the \SI{10}{m}
-\emph{input} spacing, and a visual comparison of spectra suggested that it
-injected high-frequency content. The 40-region ablation of
-Section~\ref{sec:support_controls} later qualified this impression: in the
-radially averaged spectrum the inverse-distance transfer leaves no excess
-power in the top octave ($0.92$ of the observation's), and it is $9.5$
-times less accurate than Clough--Tocher against an analytic field, with an
-output that costs about twice the bytes at equal error
-(Section~\ref{sec:transfer_cost}). The replacement was justified; the
-reason first given for it was only partly so. Kernels are compared
-quantitatively with the approximation-order framework
-of~\cite{blu1999fourier} and the kernel comparison
-of~\cite{thevenaz2000interpolation}, by scoring each against an analytic
-field (Section~\ref{sec:support_controls}). The replacement is a Clough--Tocher piecewise-cubic interpolant over a
-Delaunay triangulation, distinct from bicubic interpolation
-(\texttt{scipy.interpolate.griddata} with \texttt{method="cubic"}). It brought the HEALPix spectrum much closer to the
-native one, and all results of Section~\ref{sec:results} use it.
-
+\emph{input} spacing. The 40-region ablation of
+Section~\ref{sec:support_controls} later qualified the first impression
+that it injected high-frequency content: in the radially averaged
+spectrum the inverse-distance transfer leaves no excess power in the top
+octave ($0.92$ of the observation's), while it is $9.5$ times less
+accurate than Clough--Tocher against an analytic field and its output
+costs about twice the bytes at equal error
+(Section~\ref{sec:transfer_cost}). Kernels are compared with the
+approximation-order framework of~\cite{blu1999fourier} and the kernel
+comparison of~\cite{thevenaz2000interpolation}, by scoring each against
+an analytic field. The replacement is a Clough--Tocher piecewise-cubic
+interpolant over a Delaunay triangulation, distinct from bicubic
+interpolation (\texttt{scipy.interpolate.griddata} with
+\texttt{method="cubic"}). It brought the HEALPix spectrum much closer to
+the native one, and all results of Section~\ref{sec:results} use it.
 The sensitivity to this choice is measured: Section~\ref{sec:transfer_cost}
-rebuilds the carrier with the PSF-aware and inverse-distance transfers and
-repeats the sweep, and Section~\ref{sec:support_controls} scores five
-kernels against an analytic field, the first on the 40 regions and the
-second on the 39 that the window audit of
-Appendix~\ref{app:window_radiometry} admits. The crossover reported below
-is a property of the carrier built with this transfer, and the other two do
-not show it. The lesson reaches beyond this paper: the kernel that fills a
-HEALPix grid from a sensor grid is a scientific choice, and a kernel
-mismatched to the source sampling can change which of two grids looks more
-storage-efficient once compressed.
+rebuilds the carrier with the PSF-aware and inverse-distance transfers
+and repeats the sweep on the 40 regions, and
+Section~\ref{sec:support_controls} scores five kernels against an
+analytic field on the 39 regions the window audit of
+Appendix~\ref{app:window_radiometry} admits. The crossover reported
+below is a property of the carrier built with this transfer. The lesson
+reaches beyond this paper: the kernel that fills a HEALPix grid from a
+sensor grid is a scientific choice, and a kernel mismatched to the source
+sampling can change which of two grids looks more storage-efficient once
+compressed.
 
 The PSF-aware transfer is described here so that this paper stands on its
 own. It models each native pixel as a Gaussian-weighted sum of the latent
@@ -152,11 +144,10 @@ operator as a sparse matrix from cells to samples, and estimates the cell
 values by damped least squares, solved by conjugate gradients on the
 normal equations with a damping of $\lambda=10^{-3}$, the value at which
 the companion study reports its accuracy. Its estimand is therefore the
-latent field before the instrument blur, which a pure interpolant such as
-Clough--Tocher never aims at; the companion study measures that it recovers
-$15.4\%$ to $19.6\%$ of the blur on noise-free fields, and
-Section~\ref{sec:transfer_cost} prices the bytes this sharper estimand
-costs. The PSF-aware transfer and the forward operator of
+latent field before the instrument blur; the companion study measures
+that it recovers $15.4\%$ to $19.6\%$ of the blur on noise-free fields,
+and Section~\ref{sec:transfer_cost} prices the bytes this sharper
+estimand costs. The PSF-aware transfer and the forward operator of
 Section~\ref{sec:operator} come from the \texttt{healpix-resample}
 package at its tag \texttt{jstars-submission}, the version the companion
 paper describes; the environment record written with every sweep names
@@ -171,10 +162,9 @@ compression can be exploited with tools a practitioner can already
 install. Learned codecs are absent by design: they have reshaped the
 rate--distortion frontier for natural images since~\cite{balle2017endtoend}
 and reached remote sensing, including on-board use~\cite{valsesia2019onboard},
-but their performance depends on the training distribution, so a
-HEALPix-versus-UTM comparison would measure the training set as much as
-the geometry, and no pair of models trained symmetrically on the two grids
-exists. Compression practice for optical space imagery is surveyed
+but their performance depends on the training distribution, and no pair
+of models trained symmetrically on the two grids exists. Compression
+practice for optical space imagery is surveyed
 in~\cite{blanes2014tutorial}; the mission-side standards there, the CCSDS
 wavelet coder and its multispectral successor~\cite{hernandez2021ccsds123},
 target the on-board bandwidth problem, where complexity, memory and channel

@@ -6,26 +6,18 @@ evaluated at the level-19 cell centres; the aggregate holds the mean of
 the interpolant at the four level-20 centres inside each cell. The two
 coincide only for a function that is affine over a cell, so the gap
 between them is the curvature of the interpolant at the \SI{12.4}{m}
-scale, which need not be negligible. Both objects were therefore built.
-The direct carrier uses the same native sub-window each stored tile was
-transferred from, the same parent, the same Clough--Tocher operator and
-the same constant-field check and missing-cell completion; only the output
-level differs. The two are read identically, at the nearest containing
-cell of their own level, against the same observation over the same
-intersection mask. Rebuilding from the window makes this the one
-measurement in the paper that depends on the window still holding the
-product its tile was built from; Appendix~\ref{app:window_radiometry}
-tests that for all 40 regions and finds 39 sound, so the comparison runs
-on 39.
-
-The last block of Table~\ref{tab:floors} sets the two level-19 carriers
-against the same observation as the level-20 tile, on the intersection
-mask of Section~\ref{sec:common_reference}.
-\emph{Direct} evaluates the Clough--Tocher interpolant of the native
-samples at the level-19 cell centres; \emph{aggregate} averages the four
-level-20 children, the object Section~\ref{sec:level_choice} measures. The
-last column counts the regions on which that carrier has the lower floor.
-
+scale. Both objects were therefore built. The direct carrier uses the
+same native sub-window each stored tile was transferred from, the same
+parent, the same Clough--Tocher operator and the same checks; only the
+output level differs. The two are read identically, at the nearest
+containing cell of their own level, against the same observation over
+the intersection mask of Section~\ref{sec:common_reference}. Rebuilding
+from the window makes this the one measurement in the paper that depends
+on the window still holding the product its tile was built from;
+Appendix~\ref{app:window_radiometry} tests that for all 40 regions and
+finds 39 sound, so the comparison runs on 39. The last block of
+Table~\ref{tab:floors} reports both carriers; its last column counts the
+regions on which the direct carrier has the lower floor.
 
 The two carriers are different arrays: they differ by $6.0\%$ of a scene's
 standard deviation in RMS, $0.27$ times the level-19 floor itself, so the
@@ -44,19 +36,16 @@ the aggregate's.
 
 The excluded region is Lake Geneva. Rebuilt at level 19 its carrier
 misses the aggregate by twice the scene's standard deviation, which looks
-like a failure of the transfer at the coarser level. It is not: asked for
-level 20, where the rebuild must return the stored tile, the same operator
-on the same samples misses it by the same amount, an RMS of $1.97$
-standard deviations at a correlation of $0.585$.
-Level 19 inherits the discrepancy: the window and the tile are related
-by a gain and an offset of their own, a radiometric difference between two
-products, as Appendix~\ref{app:window_radiometry} establishes for all 40
-regions. Kept, the region would move the median ratio from $1.002$ to
-$1.002$; it is excluded because its input is no longer the input the
-comparison assumes. Two safeguards follow for anyone rebuilding a
-carrier at a new level. A tile and the window it came from are separate
-files that can drift apart, and a geometric check that the window still
-covers the tile does not catch a window that has been re-acquired (the
-check passes on all 40 regions, this one included). And the cheap control
-is the decisive one: a transfer asked for the level its tile is already
-stored at must return that tile.
+like a failure of the transfer at the coarser level. The cause lies
+upstream: asked for level 20, where the rebuild must return the stored
+tile, the same operator on the same samples misses it by the same amount,
+an RMS of $1.97$ standard deviations at a correlation of $0.585$. The
+window and the tile are related by a gain and an offset of their own, a
+radiometric difference between two products
+(Appendix~\ref{app:window_radiometry}). Kept, the region would leave the
+median ratio at $1.002$; it is excluded because its input is no longer
+the input the comparison assumes. One safeguard follows for anyone
+rebuilding a carrier at a new level: a geometric check that the window
+still covers the tile does not catch a window that has been re-acquired
+(it passes on all 40 regions, this one included), while a transfer asked
+for the level its tile is already stored at must return that tile.

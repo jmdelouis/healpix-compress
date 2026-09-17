@@ -3,17 +3,15 @@
 
 Section~\ref{sec:utm_crop} left an objection open: the rotated tile and
 the axis-aligned crop overlap over only $81\%$ of their equal areas, so
-every ratio above is measured between rasters that cover partly different
-ground. The protocol cannot settle this, because it never compresses the
-same ground twice, so we remove the content instead of the mismatch. The
-control is an analytic random field, a sum of plane waves with power
-spectrum $P(k)\propto k^{-\beta}$ multiplied by a Gaussian instrument
-response of width $\sigma$; it lives on the plane, its instrument
-convolution is exact, and it can be evaluated anywhere. It is evaluated
-at the level-20 cell centres and at the native pixel centres of the same
-region, and both samplings are compressed. Neither side is resampled and
-both see the same function, so whatever ratio survives comes from the
-sampling geometry alone.
+every ratio above compares rasters that cover partly different ground.
+The control removes the content difference and keeps the mismatch. The control is an
+analytic random field, a sum of plane waves with power spectrum
+$P(k)\propto k^{-\beta}$ multiplied by a Gaussian instrument response of
+width $\sigma$; its instrument convolution is exact and it can be
+evaluated anywhere. Evaluated at the level-20 cell centres and at the
+native pixel centres of the same region, with both samplings compressed,
+both sides see the same function, so whatever ratio survives comes from
+the sampling geometry alone.
 
 Both parameters are measured. Fitting
 $\log P(k)=c-\beta\log k-k^2\sigma^2$ to the radially averaged spectrum of
@@ -21,16 +19,14 @@ each of the 40 crops, from four fundamental wavenumbers to the native
 Nyquist frequency, gives a median slope of $1.9$ and a median response of
 \SI{11.9}{m} FWHM, against a nominal Sentinel-2 B04 response near
 \SI{12.5}{m}. Natural images have power-law spectra with exponents near
-two~\cite{tolhurst1992amplitude,vanderschaaf1996powerspectra}, and
-recovering the instrument width from the imagery with no prior knowledge
-of it is what makes the synthetic field the right object. The same fit
-gives the spectral evidence that a level-20 carrier is affordable at all:
-a median of $0.21\%$ of each crop's variance lies above half the native
-Nyquist frequency. That band, $0.025$--$\SI{0.05}{m^{-1}}$, differs from
-the octave level~20 adds over level~19, $0.040$--$\SI{0.080}{m^{-1}}$,
-most of it above the \SI{0.05}{m^{-1}} Nyquist frequency of the product
-measured; the added octave may still hold content, which a product that
-does not represent it cannot show.
+two~\cite{tolhurst1992amplitude,vanderschaaf1996powerspectra}. The same
+fit gives the spectral evidence that a level-20 carrier is affordable at
+all: a median of $0.21\%$ of each crop's variance lies above half the
+native Nyquist frequency. That band, $0.025$--$\SI{0.05}{m^{-1}}$,
+differs from the octave level~20 adds over level~19,
+$0.040$--$\SI{0.080}{m^{-1}}$, most of it above the \SI{0.05}{m^{-1}}
+Nyquist frequency of the product measured; the added octave may still
+hold content the product cannot show.
 
 Table~\ref{tab:support_controls} collects four controls. The synthetic
 rows evaluate the analytic field at the sample positions of both
@@ -57,8 +53,8 @@ ratio to within $5$--$24\%$ at the five targets, closely at the tight end
 and less so at the loose end, where its own sweep is partly censored
 ($n=38$ and $32$). Under $\gamma_{\mathrm{tile}}=1.30$ it reaches $0.89$
 at the loosest target where the imagery reaches $0.72$. The synthetic
-ratio lies above the measured one at all five targets, by $5\%$ to $24\%$ and in the same direction, and the gap grows as the target
-loosens. The rows marked via C--T say why. There the same field is
+ratio lies above the measured one at all five targets, by $5\%$ to $24\%$,
+and the gap grows as the target loosens. The rows marked via C--T say why. There the same field is
 sampled on the native lattice and carried to the cells by the paper's
 own transfer, as in the real chain (its error against the exact field is
 $8.8\%$ of the scene's standard deviation, median over the 40 regions).
@@ -69,14 +65,10 @@ crossover appears in the control as soon as the control contains the
 transfer. Over the five targets the transferred control tracks the
 measurement to within $1$--$19\%$, the remainder lying at the two middle
 targets, where the scene content that a one-parameter spectrum cannot
-carry matters most. In plain words: a made-up image with the same
-texture statistics as Sentinel-2, sampled by the two grids over the same
-field, shows the same size penalty for HEALPix and the same decline of
-that penalty with the tolerated error; passed through the same transfer,
-it shows the same crossover.
+carry matters most.
 
-The smoothed-native rows say where the rest goes. Read through the
-carrier's own interpolant at half-pixel phase, the native raster
+The smoothed-native rows confirm this from the other side. Read through
+the carrier's own interpolant at half-pixel phase, the native raster
 compresses to $0.94$ of its size at the tightest target and $0.78$ at the
 loosest (median over $40$ and $34$ regions), so the transfer alone buys
 $6\%$ to $22\%$ of the bytes at equal error, more as the target loosens.
@@ -89,13 +81,13 @@ so once both sides carry the same smoothing, what remains of the
 carrier's cost is what sampling the same field at $2.58$ times the
 density predicts. The crossover of Section~\ref{sec:rd_main} is
 therefore the smoothing the transfer gives the carrier and the reference
-charges to nobody, the same conclusion the common reference reaches from
-the other side (Section~\ref{sec:common_reference}). Half a pixel is
-the phase at which the interpolant departs most from the samples; the
+charges to nobody, the conclusion the common reference reaches from the
+other side (Section~\ref{sec:common_reference}). Half a pixel is the
+phase at which the interpolant departs most from the samples; the
 carrier's cells sit at every phase, so the native side receives here at
 least the smoothing the carrier averages, and the equal-smoothing ratio
 at the loosest target lies between the $0.93$ of the raw comparison and
-this $1.24$. Two controls on subsets (Appendix~\ref{app:support}) agree
-from different directions: a common-support comparison on ten regions,
-and re-cutting the UTM crop at shifted positions on four regions, which
-moves the ratio by about $1\%$ of the effect.
+this $1.24$. Two controls on subsets agree
+(Appendix~\ref{app:support}): a common-support comparison on ten
+regions, and re-cutting the UTM crop at shifted positions on four
+regions, which moves the ratio by about $1\%$ of the effect.

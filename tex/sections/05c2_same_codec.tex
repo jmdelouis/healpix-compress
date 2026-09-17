@@ -5,20 +5,17 @@ Tables~\ref{tab:synthesis} and~\ref{tab:error_at_size} let the codec
 be chosen for each region, grid and target, and the answer is an
 envelope: no archive selects its codec region by region after the fact.
 Table~\ref{tab:fixed_codec} holds the codec fixed on both grids, the
-controlled and operational form of the comparison, which separates
-whether a grid compresses better from whether the codecs that suit it
-best differ from those that suit the other. Each cell is the median
-per-region HPX/UTM compressed-size ratio at that target with the
-\emph{same} codec on both grids, the UTM side carrying
-$\gamma_{\mathrm{tile}}$, and the number of qualifying regions in
-parentheses; a region enters a cell only if that codec brackets the
-target with two measured points on both grids. One reporting rule
-differs here on purpose: this is a codec-by-codec sensitivity table, so
-every cell is shown with its own $n$ and none is withheld, even where
-fewer than three quarters of the regions qualify (at the loosest target
-JPEG~XL qualifies on 26 regions and JPEG~2000 on 30). The verdicts of
+operational form of the comparison. Each cell is the median per-region
+HPX/UTM compressed-size ratio at that target with the \emph{same} codec
+on both grids, the UTM side carrying $\gamma_{\mathrm{tile}}$, and the
+number of qualifying regions in parentheses; a region enters a cell only
+if that codec brackets the target with two measured points on both
+grids. This is a codec-by-codec sensitivity table, so every cell is shown
+with its own $n$ and none is withheld, even where fewer than three
+quarters of the regions qualify (at the loosest target JPEG~XL qualifies
+on 26 regions and JPEG~2000 on 30); the verdicts of
 Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative} rest on the
-withheld rule; this table is read beside them.
+withheld rule.
 
 \input{tables/table_fixed_codec}
 
@@ -32,14 +29,12 @@ envelope. Codec selection does not create the crossover. Second, the
 crossover is codec-dependent in a way the envelope hides. Four of the
 five codecs reproduce it, JPEG~XL and JPEG~2000 most strongly ($0.71$ and
 $0.77$ at $10^{-2}$, $p<10^{-7}$), then DWT+Zstandard ($0.81$) and SZ3
-($0.93$, $p=0.02$). ZFP does not: under ZFP the HEALPix tile costs
-$1.54$--$1.72$ times the native product at every target, with no decline
-as the target loosens. This behaviour is consistent with ZFP's
-fixed-accuracy block coding and its different rate-allocation strategy,
-and the experiment does not isolate the codec mechanism responsible for
-the difference; SZ3, which also reproduces the crossover, is
-prediction-based, so the successful family cannot be defined by the
-transform alone. An archive that standardised on ZFP would see no regime
+($0.93$, $p=0.02$). Under ZFP the HEALPix tile costs $1.54$--$1.72$ times the native
+product at every target, with no decline as the target loosens. This is
+consistent with ZFP's fixed-accuracy block coding and its rate
+allocation, and the experiment does not isolate the mechanism; SZ3,
+which reproduces the crossover, is prediction-based, so the successful
+family cannot be defined by the transform alone. An archive that standardised on ZFP would see no regime
 in which the carrier is the smaller representation; one that
 standardised on any of the other four would see the regime of
 Table~\ref{tab:synthesis}. The scope of the crossover is thus a

@@ -13,13 +13,11 @@ Clough--Tocher carrier is $1.59$ times its size at the tightest tolerance
 and $0.72$ times at the loosest. Each entry is a per-region HPX/UTM ratio
 with the oracle-best codec chosen per region and per grid, the UTM side
 carrying $\gamma_{\mathrm{tile}}=1.3$, so a value below one favours
-HEALPix; the median is over the $n$ evaluable regions of 40, and
+HEALPix; the median is over the $n$ evaluable regions, and
 $p^{\mathrm{Holm}}$ is a two-sided Wilcoxon test on the log ratio
 corrected over the family of eight targets the two tables report
-together (Fig.~\ref{fig:ratio_boxplots} shows the spread behind each
-median). The verdict column follows the corrected test: a target it does
-not separate at the $5\%$ level is marked inconclusive whatever the side
-of its median.
+together. A target the corrected test does not separate at the $5\%$
+level is marked inconclusive whatever the side of its median.
 
 At matched RMSE (Table~\ref{tab:synthesis}), native UTM is ahead at
 the three tightest targets: HEALPix needs $1.23$--$1.59\times$ the size of
@@ -29,9 +27,9 @@ $10^{-2}$, where HEALPix needs $0.72\times$ that size over the 32 regions
 whose contrast admits the target (Holm-adjusted $p<10^{-4}$). Between
 them, $3\times10^{-3}$ lies near parity (median $0.92$, $n=37$) and is the
 only reported target that fails correction ($p^{\mathrm{Holm}}=0.14$); it
-is reported as inconclusive, since no equivalence margin has been
-defined. Appendix~\ref{app:censoring} shows that keeping the excluded
-regions as bounds would change no verdict. In
+is inconclusive, since no equivalence margin has been defined. Keeping
+the excluded regions as bounds would change no verdict
+(Appendix~\ref{app:censoring}). In
 Table~\ref{tab:error_at_size} the budget is a fraction of the shared raw
 HEALPix tile size, \SI{4194304}{\byte}, the UTM side receives that budget
 divided by $\gamma_{\mathrm{tile}}$, and the ratio compared is of
@@ -61,11 +59,10 @@ $10^{-2}$); water regions produce nearly all the extreme ratios in either
 direction, because over near-constant water the compressed files fall
 below \SI{10}{kB}, where container overhead is a large share of the total
 and any resampling artefact is most of the remaining signal. Medians are
-reported for this reason, and individual water-region ratios are treated
-as uninformative at the loosest targets. Figure~\ref{fig:rd_comparison}
-shows the absolute-value curves, aggregated by median over scenes at each
-target; aggregation in absolute bytes mixes scenes of different
-difficulty, which the per-scene-ratio protocol was designed to avoid.
+reported for this reason. Figure~\ref{fig:rd_comparison} shows the
+absolute-value curves, aggregated by median over scenes at each target;
+aggregation in absolute bytes mixes scenes of different difficulty, which
+the per-scene-ratio protocol avoids.
 
 \begin{figure}[t]
 \centering

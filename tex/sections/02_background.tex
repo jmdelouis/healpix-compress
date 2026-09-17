@@ -5,13 +5,12 @@ HEALPix is a hierarchical equal-area pixelization of the
 sphere~\cite{gorski2005healpix}. At each level all cells have the same
 area; each cell splits into four children; and in the nested index a
 parent and all its descendants occupy one contiguous range, called a
-HEALPix chunk here. This locality matters for cloud object storage, where
-chunk contiguity sets I/O performance, and for compression, where every
-chunk is one quadtree rooted at a single parent cell. For Earth
-observation, equal-area cells avoid the latitude bias of
-plate-carr\'ee-like grids, and one spherical index eases the fusion of
-products with different map projections. Sensor ground sampling distances,
-however, do not fall on the dyadic sequence of levels
+HEALPix chunk here. This locality matters for cloud object storage, where chunk contiguity
+sets I/O performance, and for compression, where every chunk is one
+quadtree rooted at a single parent cell. Equal-area cells avoid the
+latitude bias of plate-carr\'ee-like grids, and one spherical index eases
+the fusion of products with different map projections. Sensor ground
+sampling distances, however, fall between the dyadic levels
 (Table~\ref{tab:levels}).
 
 \begin{table}[t]
@@ -86,35 +85,32 @@ Matched error, matched budget & Two ways of comparing rate--distortion curves: a
 \subsection{Compressible Redundancy}
 \label{sec:redundancy}
 Level 20 avoids the nominal undersampling of level 19, whose \SI{12.4}{m}
-cells are coarser than the \SI{10}{m} product; what level 19 loses is
-measured in Section~\ref{sec:level_choice}. Level 20 is nominally
-storage-inefficient by the factor of \eqref{eq:alpha}. The question is
-whether this inefficiency survives compression and a realistic accounting
-of native-grid overhead, or whether it is redundant, and therefore
-compressible, structure. We do not claim that the sensor carries no
-information at the finer scale, or that the signal is strictly
-band-limited; neither is needed. The level-20 samples are a redundant
-representation of a coarser physical signal. Redundancy suggests
-compressibility without guaranteeing it: how much survives depends on the
-noise, on the interpolator that produced the samples and on the codec.
-Approximation theory and the cross-scale persistence used by zerotree
-coders make this expectation precise (Appendix~\ref{app:literatures}), and
-Section~\ref{sec:level_choice} measures what the added octave carries.
+cells are coarser than the \SI{10}{m} product (what level 19 loses is
+measured in Section~\ref{sec:level_choice}), at the nominal storage cost
+of \eqref{eq:alpha}. The question is whether this cost survives
+compression and a realistic accounting of native-grid overhead, or
+whether it is redundant, and therefore compressible, structure. We do not
+claim that the sensor carries no information at the finer scale, or that
+the signal is strictly band-limited; neither is needed. The level-20
+samples are a redundant representation of a coarser physical signal, and
+redundancy suggests compressibility without guaranteeing it: how much
+survives depends on the noise, on the interpolator that produced the
+samples and on the codec. Approximation theory and the cross-scale
+persistence used by zerotree coders make this expectation precise
+(Appendix~\ref{app:literatures}).
 
-One bound is exact and worth stating. The carrier is a deterministic
-function of the native samples: the transfer is known, and the tile is
-the transfer applied to the crop. A coder that stored the native samples
-and the name of the transfer would reproduce the tile without loss, so
-the smallest lossless description of the carrier is never larger than
-that of the native product plus a constant, and an ideal codec would give
-a size ratio at or below one. The same holds at a tolerated error, up
-to the factor by which the transfer amplifies a coding error on its
-input, which for an interpolant of smooth data is close to one. The
-ratios above one
-measured in Section~\ref{sec:results} are therefore a property of
-general-purpose codecs applied to an oversampled representation, not of
-the information it holds; the gap between the measured ratio and one is
-what such codecs fail to exploit. This is the situation of oversampled
+One bound is exact. The carrier is a deterministic function of the
+native samples: the tile is a known transfer applied to the crop. A coder
+that stored the native samples and the name of the transfer would
+reproduce the tile without loss, so the smallest lossless description of
+the carrier is never larger than that of the native product plus a
+constant, and an ideal codec would give a size ratio at or below one. The
+same holds at a tolerated error, up to the factor by which the transfer
+amplifies a coding error on its input, close to one for an interpolant of
+smooth data. The ratios above one measured in Section~\ref{sec:results}
+are therefore a property of general-purpose codecs applied to an
+oversampled representation; the gap between the measured ratio and one
+is what such codecs fail to exploit. This is the situation of oversampled
 analogue-to-digital conversion, where the redundant samples form a frame
 and a consistent decoder can recover part of the oversampling
 gain~\cite{thao1994oversampled,christensen2016frames}, and of

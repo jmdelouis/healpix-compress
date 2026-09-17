@@ -22,9 +22,9 @@ $p^{\mathrm{Holm}}=0.008$), and at the $5\%$ budget $2.67$ against $2.81$
 outside the threshold at $0.128$). The loosest RMSE target points the
 same way without reaching it, $0.90$ against $1.02$
 ($p^{\mathrm{Holm}}=0.188$), and nothing at the three tightest RMSE
-targets approaches significance, which we read as an influence smaller
-than this sample can resolve where the gap is large. Taken at face value,
-the surviving association says that the regime in which HEALPix becomes
+targets approaches significance: where the gap is large, the influence
+is smaller than this sample can resolve. Taken at face value, the
+surviving association says that the regime in which HEALPix becomes
 competitive at a given overhead is reached in the belt before the caps.
 The result is exploratory: latitude is confounded with scene class,
 spatial spectrum, orientation relative to UTM and cell anisotropy. One of
@@ -32,9 +32,8 @@ these is measured. The spectral slope $\beta$ of each crop
 (Section~\ref{sec:support_controls}) is unrelated to latitude in this
 sample ($\rho=0.05$, $p=0.76$), and the association at the tightest
 budget survives holding it fixed (partial Spearman $\rho=0.52$,
-$p=0.001$, $n=40$), so scene texture as the slope measures it is not what
-carries the latitude effect. Orientation relative to UTM and cell
-anisotropy remain unmeasured, and the measurement that would settle it
---- the local Jacobian of the UTM-to-HEALPix map per tile, entered as a
-covariate with scene class --- has not been made. This subsection
-therefore stays out of the abstract.
+$p=0.001$, $n=40$), so scene texture as the slope measures it leaves the
+latitude effect intact. Orientation relative to UTM and cell anisotropy
+remain unmeasured; the local Jacobian of the UTM-to-HEALPix map per
+tile, entered as a covariate with scene class, would settle it. This
+subsection therefore stays out of the abstract.

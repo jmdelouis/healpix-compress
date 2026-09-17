@@ -1,16 +1,15 @@
 \subsection{What Level 20 Buys Over Level 19}
 \label{sec:level_choice}
 
-Section~\ref{sec:redundancy} chose level 20 on a nominal argument and
-deferred the measurement. The object measured here is a stored level-20
-tile aggregated in groups of four, which in the NESTED ordering are
-adjacent elements and exactly the four children of one level-19 cell.
-Because HEALPix cells are equal-area, this is the exact quadtree Haar
-transform of the tile, and the aggregate is the cell-average of the
-carrier over each level-19 cell. It differs from the carrier the same
-transfer would build at level 19, which stores point evaluations of the
-interpolant at cell centres; whether that carrier costs the same is
-answered in Section~\ref{sec:level19_direct}.
+Section~\ref{sec:redundancy} chose level 20 on a nominal argument. The
+object measured here is a stored level-20 tile aggregated in groups of
+four, which in the NESTED ordering are adjacent elements and exactly the
+four children of one level-19 cell. Because the cells are equal-area,
+this is the exact quadtree Haar transform of the tile, and the aggregate
+is the cell-average of the carrier over each level-19 cell. It differs
+from the carrier the same transfer would build at level 19, which stores
+point evaluations at cell centres; Section~\ref{sec:level19_direct}
+shows the two cost the same.
 
 Two quantities are separated, because a coarser carrier is charged twice
 and only one charge concerns information. The first is what the
@@ -27,14 +26,14 @@ floor equals the level-20 floor and the discarded energy added in
 quadrature to within $7\%$ (median ratio of measured to quadrature
 $1.07$), and the discarded energy alone accounts for $84\%$ of the excess
 variance, so the extra error of the aggregate is the information the
-aggregation removed. $66.8\%$ of the sampled operating points in the extended codec sweeps lie
-below that floor, a share that depends on how many points the ladders hold
-and how far they reach; what it says is that a cell-averaged level-19
-carrier already carries more error than most of the settings this study
-swept, and in that sense level 19 cannot replace level 20 here.
+aggregation removed. $66.8\%$ of the sampled operating points in the
+extended codec sweeps lie below that floor, a share that depends on how
+far the ladders reach; a cell-averaged level-19 carrier already carries
+more error than most of the settings this study swept, and in that sense
+level 19 cannot replace level 20 here.
 
-The result also cautions against the spectral argument that made the
-question look settled the other way. The observed field carries $0.21\%$
+The result also cautions against the spectral argument that pointed the
+other way. The observed field carries $0.21\%$
 of its variance above half the native Nyquist frequency
 (Section~\ref{sec:support_controls}), and propagating the fitted spectrum
 to the level-19 Nyquist frequency places about $0.03\%$ above it, two
@@ -50,8 +49,8 @@ report the spectral model as an ensemble parameter only.
 \input{tables/table_level19_rd}
 
 What the coarser carrier costs to store is measured as well
-(Table~\ref{tab:level19_rd}): the level-19 carrier built directly by the
-transfer, and its cell-averaged twin, are run through the codec sweep of
+(Table~\ref{tab:level19_rd}): the direct level-19 carrier and its
+cell-averaged twin are run through the codec sweep of
 Section~\ref{sec:rd_protocol} and compared with the native crop and the
 level-20 tile under the paper's rules. Raw, the level-19 carrier is
 $0.65$ times the native crop. Compressed to equal error it stays smaller
