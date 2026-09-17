@@ -50,15 +50,12 @@ compressed; that is the empirical question of Section~\ref{sec:results}.
 
 \subsection{Terms Used in This Paper}
 \label{sec:glossary}
-The comparison rests on a few notions from compression and signal
-processing, given in Table~\ref{tab:glossary} in the sense used here. Two
-of them decide the result. The \emph{transfer} fills the HEALPix tile from
-the native pixels; it has no counterpart on the UTM side, and the storage
-cost of the tile depends on it more than on anything else. The
-\emph{reference} is the field against which reconstruction error is
-measured: against the tile itself the transfer costs nothing, against the
-native observation it is charged to HEALPix, and the two reach different
-verdicts.
+Table~\ref{tab:glossary} gives the terms used here. Two of them decide
+the result: the \emph{transfer}, which fills the HEALPix tile from the
+native pixels and has no counterpart on the UTM side, and the
+\emph{reference}, the field against which reconstruction error is
+measured, since against the tile itself the transfer costs nothing and
+against the native observation it is charged to HEALPix.
 
 \begin{table*}[t]
 \centering

@@ -43,9 +43,12 @@ no demonstrated quadtree effect (Section~\ref{sec:why_quadtree}). A
 reader interested in HEALPix as such should keep the first three; a
 product designer should keep all six, because a product is the complete
 chain. Full-sphere behaviour has not been measured: every result is on
-one level-10 parent tile per scene, and a global product would need a
-multi-chunk hierarchy and boundary handling across the 12 base faces
-(Appendix~\ref{app:global_sphere}).
+one level-10 parent tile per scene ($1024\times1024$ level-20 cells),
+large enough to amortise per-chunk codec overhead and small enough to
+remain a practical chunking unit. A global product would need a
+multi-chunk hierarchy and boundary handling across the 12 base faces of
+level 0; a single base face carried down to level 20 would hold
+$4^{20}\approx10^{12}$ cells, far too large to compress as one array.
 
 \subsection{Reproducibility}
 Every figure quoted in the text is produced by a script from the stored
@@ -53,11 +56,10 @@ results, and an assertion harness recomputes each one and refuses to let
 the manuscript state a value the current run does not support; the sizes
 reported are those of files written, closed and re-read by an independent
 decoder (Appendix~\ref{app:codec_audit}). Each sweep records the codec
-library versions and the checkout of the shared resampling
-package~\cite{delouis2026resample} it ran against, pinned to a tagged
-release, so a results folder can be matched to the code that wrote it.
-The harness also refuses a run whose instrument response falls outside
-the band of the sensor, a guard that has already proved necessary.
+library versions and the tagged checkout of the shared resampling
+package~\cite{delouis2026resample} it ran against, and the harness
+refuses a run whose instrument response falls outside the band of the
+sensor.
 
 \subsection{Current Limitations}
 \label{sec:limitations}

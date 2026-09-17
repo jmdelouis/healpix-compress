@@ -4,18 +4,13 @@ This section prices the transfer itself. The same rate--distortion
 protocol is run on carrier tiles rebuilt from the same native windows by
 two further transfers: the PSF-aware one, designed to restore small-scale
 structure, and the inverse-distance average over the four nearest cells
-that Section~\ref{sec:resampler} abandoned, which restores none and
-serves as the control. The library calls the latter \texttt{linear}; it
-is a Shepard-type weighted average whose kernel width defaults to the
-\emph{output} cell scale, and Table~\ref{tab:transfer} finds it $9.5$
-times less accurate than Clough--Tocher against an analytic field while
-leaving no excess top-octave power. The control makes the question
-falsifiable: a deconvolved tile costing more than a Clough--Tocher tile
-would establish nothing on its own, since every property of a
-deconvolving transfer is confounded with its not being Clough--Tocher.
-The PSF tiles are built at the damping at which the reconstruction error
-was measured ($\lambda=10^{-3}$) and at the nominal \SI{12.5}{m} response
-width. Coverage is 40 regions for the PSF transfer and 39 for the
+of Section~\ref{sec:resampler} (the library's \texttt{linear} kernel),
+which restores none and serves as the control: a deconvolved tile costing more than a Clough--Tocher tile would
+establish nothing on its own, since every property of a deconvolving
+transfer is confounded with its not being Clough--Tocher. The PSF tiles
+are built at the damping at which the reconstruction error was measured
+($\lambda=10^{-3}$) and at the nominal \SI{12.5}{m} response width.
+Coverage is 40 regions for the PSF transfer and 39 for the
 inverse-distance average.
 
 Table~\ref{tab:transfer} uses short names: C--T for Clough--Tocher, PSF
@@ -97,38 +92,32 @@ while the content of the Clough--Tocher tile is mostly the smooth
 redundancy a codec is built to remove.
 
 The third block of Table~\ref{tab:transfer} rebuilds the carrier with
-five kernels from the same native window and reads each with the same
-operator, so any difference between rows is the transfer alone (IDW is
-the library's \texttt{linear} kernel, bicubic is Keys' cubic
-convolution). \emph{Transfer} is the error against the analytic field, as
-a percentage of that field's standard deviation. \emph{Over} counts the
-cells a transfer places outside the range of the data it was given, which
-is how a diverging interpolant shows itself to a check that a constant
-field passes. \emph{Floor} is the error of the uncompressed tile read
-back on the native pixels, as a fraction of the scene's standard
-deviation, and \emph{rel.} its per-region ratio to Clough--Tocher; both
-reward a transfer for staying close to the identity on the native lattice
-and are reported without ranking. \emph{log-PSD} is the RMS distance in
-$\log_{10}$ between the tile's radial power spectrum and the
-observation's up to the native Nyquist frequency, and \emph{top oct.} the
-ratio of their power in the highest octave, above one when the transfer
-leaves more high-frequency power than the observation carries. The last
-three columns are compressed-size ratios to the same reference at three
-targets.
+five kernels from the same native window (bicubic is Keys' cubic
+convolution) and reads each with the same operator, so any difference
+between rows is the transfer alone. \emph{Transfer} is the error against
+the analytic field, as a percentage of that field's standard deviation,
+the only measure in the table that gives a transfer no credit for
+copying its input samples. \emph{Over} counts the cells a transfer places
+outside the range of the data it was given, how a diverging interpolant
+shows itself to a check that a constant field passes. \emph{Floor} is
+the error of the uncompressed tile read back on the native pixels, as a
+fraction of the scene's standard deviation, and \emph{rel.} its
+per-region ratio to Clough--Tocher; both reward a transfer for staying
+close to the identity on the native lattice. \emph{log-PSD} is the RMS
+distance in $\log_{10}$ between the tile's radial power spectrum and the
+observation's up to the native Nyquist frequency, and \emph{top oct.}
+the ratio of their power in the highest octave. The last three columns
+are compressed-size ratios to Clough--Tocher at three targets.
 
-Equal bytes are not equal value. The accuracy column scores each transfer
-against an analytic field known at every position, the only measure in
-that table that gives a transfer no credit for copying its input samples.
-Among the transfers that aim to reproduce that field, Clough--Tocher
-reaches $1.20\%$ of its standard deviation, against $10.04\%$ for nearest
-and $11.48\%$ for the inverse-distance average, on the 39 regions the
-window audit of Appendix~\ref{app:window_radiometry} admits (38 for the
-inverse-distance average and for bicubic). The bicubic row is there for
-completeness: the signed kernel of Keys rings outside the local sample
-range by design. The $8.15\%$ of the PSF transfer is no ranking entry,
-since its estimand is the latent field and departing from the observed
-one is its purpose. The extra bytes of the inverse-distance average buy
-transfer error, tenfold.
+Equal bytes are not equal value. Among the transfers that aim to
+reproduce the analytic field, Clough--Tocher reaches $1.20\%$ of its
+standard deviation, against $10.04\%$ for nearest and $11.48\%$ for the
+inverse-distance average, on the 39 regions the window audit of
+Appendix~\ref{app:window_radiometry} admits (38 for the inverse-distance
+average and for bicubic). The signed kernel of Keys rings outside the
+local sample range by design. The $8.15\%$ of the PSF transfer is no
+ranking entry, since its estimand is the latent field. The extra bytes of
+the inverse-distance average buy transfer error, tenfold.
 
 The extra bytes of the deconvolved carrier are of a different kind by
 design, and what they buy is established by the companion study under its
@@ -143,15 +132,14 @@ not established, and our own harness does not reproduce the magnitude of
 the recovery (Appendix~\ref{app:limitations}). With this reservation, the
 two-fold surcharge has two meanings: on the deconvolved carrier it is the
 price of small-scale content placed there by a validated method; on the
-inverse-distance carrier it is the price of content that the ablation
-shows to lie ten times further from the truth than the transfer it
-replaced. Clough--Tocher remains both the most accurate of the reproducing
-transfers and the most compressible, and we argue the two share a cause:
-a transfer that represents a band-limited field faithfully does not invent
-fine-scale content, and content it does not invent is content the codec
-need not pay for. A HEALPix level-20 carrier becomes competitive at
-aggressive compression when it is filled by a transfer in the smoothness
-class of Clough--Tocher; leaving that class costs about a factor of two at
-the loosest targets and removes the advantage, and this cost is a property
-of how compactly the transfer's output can be coded, more than of how much
-detail it restores.
+inverse-distance carrier it is the price of content ten times further
+from the truth than the transfer it replaced. Clough--Tocher is both the
+most accurate of the reproducing transfers and the most compressible,
+and we argue the two share a cause: a transfer that represents a
+band-limited field faithfully does not invent fine-scale content, and
+content it does not invent is content the codec need not pay for. A
+level-20 carrier becomes competitive at aggressive compression when it
+is filled by a transfer in the smoothness class of Clough--Tocher;
+leaving that class costs about a factor of two at the loosest targets
+and removes the advantage, a cost set by how compactly the transfer's
+output can be coded more than by how much detail it restores.

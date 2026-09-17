@@ -57,12 +57,10 @@ targets (median $1.67$ at $10^{-4}$) and, with agriculture, the most
 favourable to HEALPix at the loosest one ($0.70$ and $0.69$ at
 $10^{-2}$); water regions produce nearly all the extreme ratios in either
 direction, because over near-constant water the compressed files fall
-below \SI{10}{kB}, where container overhead is a large share of the total
-and any resampling artefact is most of the remaining signal. Medians are
-reported for this reason. Figure~\ref{fig:rd_comparison} shows the
-absolute-value curves, aggregated by median over scenes at each target;
-aggregation in absolute bytes mixes scenes of different difficulty, which
-the per-scene-ratio protocol avoids.
+below \SI{10}{kB}, where container overhead and resampling artefacts
+dominate, which is why medians are reported.
+Figure~\ref{fig:rd_comparison} shows the absolute-value curves, medians
+over scenes at each target.
 
 \begin{figure}[t]
 \centering

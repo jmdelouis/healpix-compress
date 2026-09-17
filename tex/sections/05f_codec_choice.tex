@@ -1,20 +1,19 @@
 \subsection{Which Codec to Use on a HEALPix Chunk}
 \label{sec:codec_choice}
 
-An operating point is one (region, target) pair over the 40 regions and the
-five RMSE plus five budget targets, four hundred in all, kept when at least
-one codec is evaluable there. Wins sum to the number of points, since each
-point has exactly one best codec; \emph{evaluable} counts the points where a
-codec produced a value at all.
+An operating point is one (region, target) pair over the 40 regions and
+the five RMSE plus five budget targets, four hundred in all, kept when at
+least one codec is evaluable there; each point has exactly one best
+codec, and \emph{evaluable} counts the points where a codec produced a
+value at all.
 
 \input{tables/table_codec_ranking}
 
-Table~\ref{tab:codec_ranking} aggregates every matched-quality and
-matched-size operating point on the HEALPix side and ranks the codecs by
+Table~\ref{tab:codec_ranking} ranks the codecs on the HEALPix side by
 how often each is best. The 400 points include the two storage budgets
-withheld from Tables~\ref{tab:synthesis} and~\ref{tab:error_at_size}
-for insufficient bracketing, since a per-point ranking does not need the
-target bracketed on both grids. JPEG~2000 is best at 196 points and JPEG~XL
+withheld from Tables~\ref{tab:synthesis} and~\ref{tab:error_at_size},
+since a per-point ranking does not need the target bracketed on both
+grids. JPEG~2000 is best at 196 points and JPEG~XL
 at 131, against 35 for ZFP, 28 for SZ3 and 10 for the DWT+Zstandard
 baseline; the mean ranks are $1.63$, $2.35$, $4.55$, $2.78$ and $3.66$.
 Every codec is evaluable at almost every point, so sweep coverage does not

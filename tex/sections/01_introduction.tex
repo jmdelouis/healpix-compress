@@ -69,20 +69,17 @@ untouched native product. The contributions are:
     \item an equal-area rate--distortion protocol that separates the
     overhead-free carrier/native size ratio from the overhead of the native
     layout through a critical-overhead $\gamma_\star$ analysis, at matched
-    error and matched budget obtained by log--log interpolation over each
-    codec's sweep, against a native UTM square of the same nominal area (a
-    bounding box of the rotated footprint would inflate the UTM pixel count
-    by about $2\times$);
+    error and matched budget, against a native UTM square of the same
+    nominal area;
     \item an evaluation over 40 Sentinel-2 regions, four land-cover
     classes, latitudes from $43.5^\circ$S to $64.1^\circ$N (both HEALPix
     cell-shape regimes) and five general-purpose codecs, with sensitivity
-    analyses on codec, target, resampling operator and assumed overhead, a
+    analyses on codec, target, transfer and assumed overhead, a
     multiple-testing correction that seven of the eight per-target
     comparisons survive, an analytic-field control showing that sampling
-    geometry alone reproduces the decline of the gap with the target and
-    its approximate magnitude, and a smoothed-native control showing that
-    the remainder is the smoothing the transfer gives the carrier
-    (Section~\ref{sec:support_controls});
+    geometry alone reproduces the decline of the gap with the target, and
+    a smoothed-native control showing that the remainder is the smoothing
+    the transfer gives the carrier (Section~\ref{sec:support_controls});
     \item a reusable, assertion-guarded pipeline that shares its sites,
     products and resampling operator with the companion
     study~\cite{delouis2026resample}, so the storage and transfer questions
@@ -90,14 +87,9 @@ untouched native product. The contributions are:
 \end{itemize}
 
 The competitive regime reported below belongs to the complete chain
-(transfer, carrier, codec and read) and depends on four measured or
-parameterised quantities: the overhead of the native product, expressed
-through $\gamma_\star(e)$ so that no value is assumed; the transfer,
-which costs a factor of two (Section~\ref{sec:transfer_cost}); the codec,
-since ZFP alone of the five shows no crossover
-(Section~\ref{sec:same_codec}); and the reconstruction reference, since
-against the native observation the transfer and the read already cost
-about $10\%$ of a scene's standard deviation and native UTM leads at
-every storage budget (Sections~\ref{sec:operator}
-and~\ref{sec:common_reference}). These four conditions belong with every
-statement of the form ``HEALPix is smaller''.
+and depends on four quantities: the overhead of the native product,
+carried as $\gamma_\star(e)$ so that no value is assumed; the transfer
+(Section~\ref{sec:transfer_cost}); the codec
+(Section~\ref{sec:same_codec}); and the reconstruction reference
+(Section~\ref{sec:common_reference}). These four conditions belong with
+every statement of the form ``HEALPix is smaller''.

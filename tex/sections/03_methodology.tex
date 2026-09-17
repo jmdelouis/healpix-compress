@@ -57,16 +57,13 @@ about $636.7$ native \SI{10}{m} pixels, rounded to $637$. For each scene a
 $637\times637$-pixel axis-aligned square is cut from the native Sentinel-2
 B04 raster, centred on the native pixel nearest to the mean longitude and
 latitude of the tile's cells, computed with \texttt{healpix\_geo} on the
-WGS84 ellipsoid. The square extends beyond the rotated tile along its
-edges and falls short at its corners; ``equal-area'' is shorthand for equal
-\emph{nominal projected} area. UTM is conformal, so $637^2$ nominal pixels
-do not enclose exactly the geodesic area of the tile, and rounding $636.7$
-to $637$ alone adds about $0.1\%$ of area before the zone's scale factor;
-these terms are small next to the $2.58\times$ oversampling under study
-and have not been computed scene by scene. Both representations have a
-fixed raw size across regions by construction, \SI{1.623}{MB} for the
-$637\times637$ native crop ($637^2\times\SI{4}{B}$) and \SI{4.194}{MB}
-for the $1024\times1024$ HEALPix tile, with no fill value on either side.
+WGS84 ellipsoid. ``Equal-area'' is shorthand for equal \emph{nominal
+projected} area: UTM is conformal, and rounding $636.7$ to $637$ alone
+adds about $0.1\%$ of area; these terms are small next to the
+$2.58\times$ oversampling under study. Both representations have a fixed
+raw size across regions, \SI{1.623}{MB} for the native crop
+($637^2\times\SI{4}{B}$) and \SI{4.194}{MB} for the HEALPix tile, with no
+fill value on either side.
 
 Matching by area means each grid is compressed in the frame it is stored
 in, with no resampling of the native side, the comparison a practitioner
@@ -93,48 +90,33 @@ Section~\ref{sec:common_reference} is restricted to the intersection.
 \subsection{The Resampling Kernel Is Part of the Result}
 \label{sec:resampler}
 Filling the level-20 tile means resampling the native raster onto the
-HEALPix cell centres, a step with no counterpart on the UTM side. During
-validation, the 2-D power spectrum of the resulting raster showed excess
-high-frequency power relative to the native spectrum of the same
-footprint and to the tangent-plane spectra of the companion
-study~\cite{delouis2026resample}; left in place, this excess would have
-lowered the apparent compressibility of HEALPix. A smooth gradient in
-cell placement cannot inject high frequencies, so positional distortion
-was ruled out. Cell anisotropy contributes without sufficing: at fixed
-area the two local sample spacings scale as $\sqrt{1.7}$ and
+HEALPix cell centres, a step with no counterpart on the UTM side, and the
+kernel decides what the codec sees. Cell anisotropy already matters: at
+fixed area the two local sample spacings scale as $\sqrt{1.7}$ and
 $1/\sqrt{1.7}$, which brings the shorter spacing closer to the native
-\SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests.
-
-The cause we could attribute directly was the resampler. The tiles were
-first filled with a Shepard-type inverse-distance interpolator over the
-four nearest neighbours, with a kernel width set to the HEALPix
-\emph{output} scale ($\sim\SI{6.2}{m}$) instead of the \SI{10}{m}
-\emph{input} spacing. The 40-region ablation of
-Section~\ref{sec:support_controls} later qualified the first impression
-that it injected high-frequency content: in the radially averaged
-spectrum the inverse-distance transfer leaves no excess power in the top
-octave ($0.92$ of the observation's), while it is $9.5$ times less
-accurate than Clough--Tocher against an analytic field and its output
-costs about twice the bytes at equal error
+\SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests. The
+carrier used throughout is a Clough--Tocher piecewise-cubic interpolant
+over a Delaunay triangulation, distinct from bicubic interpolation
+(\texttt{scipy.interpolate.griddata} with \texttt{method="cubic"}); it
+brings the HEALPix spectrum close to the native one. A Shepard-type
+inverse-distance average over the four nearest neighbours, with a kernel
+width set to the HEALPix \emph{output} scale ($\sim\SI{6.2}{m}$) instead
+of the \SI{10}{m} \emph{input} spacing, is kept as a control: it leaves
+no excess power in the top octave ($0.92$ of the observation's), but it
+is $9.5$ times less accurate than Clough--Tocher against an analytic
+field and its output costs about twice the bytes at equal error
 (Section~\ref{sec:transfer_cost}). Kernels are compared with the
 approximation-order framework of~\cite{blu1999fourier} and the kernel
 comparison of~\cite{thevenaz2000interpolation}, by scoring each against
-an analytic field. The replacement is a Clough--Tocher piecewise-cubic
-interpolant over a Delaunay triangulation, distinct from bicubic
-interpolation (\texttt{scipy.interpolate.griddata} with
-\texttt{method="cubic"}). It brought the HEALPix spectrum much closer to
-the native one, and all results of Section~\ref{sec:results} use it.
-The sensitivity to this choice is measured: Section~\ref{sec:transfer_cost}
-rebuilds the carrier with the PSF-aware and inverse-distance transfers
-and repeats the sweep on the 40 regions, and
-Section~\ref{sec:support_controls} scores five kernels against an
-analytic field on the 39 regions the window audit of
+an analytic field: Section~\ref{sec:transfer_cost} rebuilds the carrier
+with the PSF-aware and inverse-distance transfers and repeats the sweep
+on the 40 regions, and Section~\ref{sec:support_controls} scores five
+kernels on the 39 regions the window audit of
 Appendix~\ref{app:window_radiometry} admits. The crossover reported
-below is a property of the carrier built with this transfer. The lesson
-reaches beyond this paper: the kernel that fills a HEALPix grid from a
-sensor grid is a scientific choice, and a kernel mismatched to the source
-sampling can change which of two grids looks more storage-efficient once
-compressed.
+below is a property of the carrier built with this transfer: the kernel
+that fills a HEALPix grid from a sensor grid is a scientific choice, and
+a kernel mismatched to the source sampling can change which of two grids
+looks more storage-efficient once compressed.
 
 The PSF-aware transfer is described here so that this paper stands on its
 own. It models each native pixel as a Gaussian-weighted sum of the latent

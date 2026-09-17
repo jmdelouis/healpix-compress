@@ -5,8 +5,9 @@
 \label{sec:datasets}
 The evaluation uses 40 Sentinel-2 L2A \SI{10}{m} regions, ten in each of
 four land-cover classes (urban, water, forest, agriculture), from
-$43.5^\circ$S to $64.1^\circ$N (Table~\ref{tab:benchmark_scenes},
-Fig.~\ref{fig:region_map}). The sites are those of the companion study of
+$43.5^\circ$S to $64.1^\circ$N (Fig.~\ref{fig:region_map}; the per-region
+list, with product identifiers and window sizes, is in the data
+repository). The sites are those of the companion study of
 PSF-aware resampling onto HEALPix~\cite{delouis2026resample}, whose
 $256\times256$-pixel patches are archived under a public dataset DOI. A
 level-20 carrier tile needs a much larger native window, so each region is
@@ -30,8 +31,6 @@ counts are reported with the data. The red band (B04) is then resampled
 once onto the level-20 tile by Clough--Tocher interpolation
 (Section~\ref{sec:resampler}), and the native B04 raster is cropped to the
 equal-area square of Section~\ref{sec:utm_crop}.
-
-\input{tables/table_benchmark_regions}
 
 \begin{figure}[t]
 \centering
@@ -58,14 +57,13 @@ $0.010$).
 
 Three rules govern the targets. First, the curve is the constrained
 problem $R(D)=\min\{S(q): d(q)\le D\}$: when a codec's coarsest setting is
-already more accurate than the target, that setting is admissible and its
-size is a bound on what the codec could achieve. Second, a (region,
-target) pair enters the paired comparison only when the codec the oracle
-selects brackets the target with two measured points on both grids, so
-that every ratio tested is an interpolated estimate. This is stricter than
-asking some codec to bracket the target, because a censored codec can be
-the smallest admissible one. Every ladder was therefore extended at its
-coarse end
+already more accurate than the target, its size is a bound on what the
+codec could achieve. Second, a (region, target) pair enters the paired
+comparison only when the codec the oracle selects brackets the target
+with two measured points on both grids, so that every ratio tested is an
+interpolated estimate; a censored codec can be the smallest admissible
+one, so this is stricter than asking some codec to bracket the target.
+Every ladder was therefore extended at its coarse end
 (Appendix~\ref{app:censoring}) until the only failing pairs were the
 lowest-contrast scenes, where the target is a large fraction of the
 scene's standard deviation or exceeds it: at $10^{-2}$ the eight excluded

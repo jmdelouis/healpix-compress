@@ -38,18 +38,15 @@ $7\%$; $10^{-4}$ is reachable nowhere. Under the interpolating read the
 floor halves, to $1.9\times10^{-3}$, and $10^{-2}$ becomes reportable
 ($80\%$), while $3\times10^{-3}$ and $10^{-3}$ rise to $60\%$ and $25\%$
 and stay withheld, since the regions that would remain are the smoothest.
-The budgets of Table~\ref{tab:error_at_size_common} are read as in
-Table~\ref{tab:error_at_size}, with $p^{\mathrm{Holm}}$ corrected over the
-three targets this reference admits. Table~\ref{tab:common_two_readers}
-puts the two reads side by side: the median per-region ratio of the
-HEALPix side to the native side under the illustrative $30\%$ overhead,
-at each target the sweep brackets for at least three quarters of the
-regions under that reader, with the Holm-adjusted paired signed-rank $p$;
-the last column is the same ratio at $\gamma=1$ under the interpolating
-read, which for an RMSE target is $\gamma_\star$; the floor row is the
-uncompressed carrier's RMSE against the observation.
-
-\input{tables/table_error_at_constant_size_common}
+Table~\ref{tab:common_two_readers} puts the two reads side by side:
+the median per-region ratio of the HEALPix side to the native side under
+the illustrative $30\%$ overhead (errors at a budget, sizes at an RMSE
+target), at each target the sweep brackets for at least three quarters
+of the regions under that reader, with the paired signed-rank $p$
+Holm-corrected over the targets this reference admits; the last column
+is the same ratio at $\gamma=1$ under the interpolating read, which for
+an RMSE target is $\gamma_\star$; the floor row is the uncompressed
+carrier's RMSE against the observation.
 
 \input{tables/table_common_two_readers}
 
@@ -107,15 +104,15 @@ every target, the single exception being the loosest RMSE target read
 through the interpolating operator. What the two measures jointly
 exclude is the unconditional claim that a HEALPix carrier is cheaper.
 Two further questions about this reference are answered in the
-appendices. Writing the compression error as a fraction
-$\kappa$ of the transfer error (Appendix~\ref{app:error_budget}), the
-crossings of Section~\ref{sec:rd_illustrative} occur at $\kappa=0.13$ to
-$0.50$ against the latent scene in all four classes and inflate the total
-error of the product by a measured $2.5$ to $16.0\%$; the saving in bytes
-is substantial in three of them, $12$ to $30\%$, and about $2\%$ over
-water. Against the observation the same crossings cost $37$ to $115\%$. The two errors do not add in quadrature
-(Appendix~\ref{app:cross_term}): the cross term is negative against the
-observation, where quadrature overstates the total by up to $24$ points,
-and positive against the latent scene, where it understates it by up to
-$6.6$ points, with JPEG~2000 carrying the whole effect and ZFP orthogonal
-within $|\rho|\le0.03$.
+appendices. Writing the compression error as a fraction $\kappa$ of the
+transfer error (Appendix~\ref{app:error_budget}), the crossings of
+Section~\ref{sec:rd_illustrative} occur at $\kappa=0.13$ to $0.50$
+against the latent scene in all four classes and inflate the total error
+of the product by a measured $2.5$ to $16.0\%$, for a saving in bytes of
+$12$ to $30\%$ in three classes and about $2\%$ over water; against the
+observation the same crossings cost $37$ to $115\%$. The two errors do
+not add in quadrature (Appendix~\ref{app:cross_term}): the cross term is
+negative against the observation, where quadrature overstates the total
+by up to $24$ points, and positive against the latent scene, where it
+understates it by up to $6.6$ points, with JPEG~2000 carrying the whole
+effect and ZFP orthogonal within $|\rho|\le0.03$.
