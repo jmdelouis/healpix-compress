@@ -32,14 +32,18 @@ most of it above the \SI{0.05}{m^{-1}} Nyquist frequency of the product
 measured; the added octave may still hold content, which a product that
 does not represent it cannot show.
 
-Table~\ref{tab:support_controls} collects three controls. The synthetic
+Table~\ref{tab:support_controls} collects four controls. The synthetic
 rows evaluate the analytic field at the sample positions of both
-lattices, so the ratio is the sampling geometry alone. The common-support
-rows compress the largest common-ground region on each native lattice and
-normalise by the ground area each covers. The shifted-crop rows report
-how far the ratio moves when the UTM crop is re-cut at eight offsets of
-up to sixteen native pixels with the HEALPix side fixed; for those rows
-the \emph{Median} column is that spread. All ratios are overhead-free
+lattices, so the ratio is the sampling geometry alone. The smoothed-native
+rows give the native side the carrier's smoothing and nothing else: the
+crop is read through the same Clough--Tocher operator at points shifted
+by half a pixel in both axes, at the native density, and that raster is
+compressed like the crop. The common-support rows compress the largest
+common-ground region on each native lattice and normalise by the ground
+area each covers. The shifted-crop rows report how far the ratio moves
+when the UTM crop is re-cut at eight offsets of up to sixteen native
+pixels with the HEALPix side fixed; for those rows the \emph{Median}
+column is that spread. All ratios are overhead-free
 ($\gamma_{\mathrm{tile}}=1$), and $n$ counts the regions where the target
 is bracketed on both grids.
 
@@ -72,8 +76,29 @@ for HEALPix and the same decline of that penalty with the tolerated
 error. The geometry-only control thus shows that sampling the same field
 at the $2.58\times$ higher level-20 density reproduces the trend of the
 storage penalty and its approximate magnitude; it does not, on its own,
-account for the penalty in full. Two controls on subsets
-(Appendix~\ref{app:support}) agree from different directions: a
-common-support comparison on ten regions, and re-cutting the UTM crop at
-shifted positions on four regions, which moves the ratio by about $1\%$
-of the effect.
+account for the penalty in full.
+
+The smoothed-native rows say where the rest goes. Read through the
+carrier's own interpolant at half-pixel phase, the native raster
+compresses to $0.94$ of its size at the tightest target and $0.78$ at the
+loosest (median over $40$ and $34$ regions), so the transfer alone buys
+$6\%$ to $22\%$ of the bytes at equal error, more as the target loosens.
+Charged with the same smoothing, the native side is smaller than the
+carrier at every target: HEALPix over smoothed native falls from $2.23$
+to $1.24$, with $32$ regions at the loosest target and the paired test
+rejecting parity there ($p=1\times10^{-4}$). These values sit within a
+few percent of the geometry-only synthetic control ($2.22$ to $1.18$),
+so once both sides carry the same smoothing, what remains of the
+carrier's cost is what sampling the same field at $2.58$ times the
+density predicts. The crossover of Section~\ref{sec:rd_main} is
+therefore the smoothing the transfer gives the carrier and the reference
+charges to nobody, the same conclusion the common reference reaches from
+the other side (Section~\ref{sec:common_reference}). Half a pixel is
+the phase at which the interpolant departs most from the samples; the
+carrier's cells sit at every phase, so the native side receives here at
+least the smoothing the carrier averages, and the equal-smoothing ratio
+at the loosest target lies between the $0.93$ of the raw comparison and
+this $1.24$. Two controls on subsets (Appendix~\ref{app:support}) agree
+from different directions: a common-support comparison on ten regions,
+and re-cutting the UTM crop at shifted positions on four regions, which
+moves the ratio by about $1\%$ of the effect.

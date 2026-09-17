@@ -98,11 +98,22 @@ tiles (MGRS granules with overlap bands), whose padding, overlap and
 per-tile metadata add storage beyond the area needed \emph{under that
 granule layout}. This overhead belongs to the product organisation; UTM
 as a coordinate reference system carries none of it, and a native UTM COG
-or Zarr archive need not either. We use $\gamma_{\mathrm{tile}}=1.30$ as
-an illustrative point on the decision curve of
-Section~\ref{sec:rd_main}; it is not an estimate of the Sentinel-2 product
-overhead, which we have not measured (Section~\ref{sec:limitations}), and
-$\gamma_{\mathrm{tile}}=1$ is the overhead-free result.
+or Zarr archive need not either. The tiling geometry bounds it from
+both sides. Sentinel-2 granules are \SI{109.8}{km} squares
+($10980$ pixels at \SI{10}{m}) laid on a \SI{100}{km}
+step~\cite{esa_s2_products}, so a fully covered area is stored
+$(109.8/100)^2=1.21$ times: real pixels held twice, a cost that survives
+compression and is a floor for $\gamma_{\mathrm{tile}}$. Cutting the
+\SI{290}{km} swath into such tiles takes four across track wherever the
+swath edge falls, the edge tiles are partly no-data ($34\%$ of the stored
+raster on average), and the raw-byte overhead of the tiled swath is
+$1.66$; no-data compresses to almost nothing, so under compression the
+overhead falls back towards the floor. We use $\gamma_{\mathrm{tile}}=1.30$
+as an illustrative point on the decision curve of
+Section~\ref{sec:rd_main}, between the measured floor and the raw
+figure; it is not a measurement of a complete product file
+(Section~\ref{sec:limitations}), and $\gamma_{\mathrm{tile}}=1$ is the
+overhead-free result.
 
 For \emph{uncompressed} storage (Table~\ref{tab:storage_accounting}),
 $\gamma_{\mathrm{tile}}$ multiplies the raw equal-area UTM byte count
@@ -120,3 +131,13 @@ its interpolated size multiplied by $\gamma_{\mathrm{tile}}$ and divided
 by the same reference. For a budget given as a share of the reference, the
 UTM crop receives the budget divided by $\gamma_{\mathrm{tile}}$; the rest
 is taken by the operational padding.
+
+The two rasters also differ in size and in divisibility: $1024^2$ against
+$637^2$, a power of two against an odd side that block and wavelet codecs
+must pad. Compressing each raster against its own central sub-blocks
+shows no penalty for the odd side: per pixel, the $637^2$ crop costs
+$0.6\%$ less than the same reduction costs the HEALPix raster, and
+padding the crop to $640^2$ changes its lossless size by $0.2\%$. Larger
+rasters do cost less per pixel at loose targets, where a file's fixed
+cost weighs, but the protocol compares whole files of the same area, so
+that cost enters both sides alike.

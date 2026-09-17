@@ -1001,16 +1001,17 @@ def summarize(frames: dict) -> str:
                 "smoothing. Sizes are per sample (the shifted lattice has one "
                 "row and one column fewer).", "",
                 f"- std ratio smoothed/native: median {d.std_ratio.median():.4f}",
-                "", "| target | n | smoothed/native | range | n | HPX/smoothed | "
+                "", "| phase, target | n | smoothed/native | range | n | HPX/smoothed | "
                 "range | HPX/native |", "|---|---|---|---|---|---|---|---|"]
-        for t, g in d.groupby("target"):
+        for (fx, fy, t), g in d.groupby([d.shift_x.round(3), d.shift_y.round(3),
+                                         "target"]):
             a = g[g.both_bracketed].dropna(subset=["ratio_smoothed_native"])
             b = g[g.hpx_both_bracketed].dropna(subset=["ratio_hpx_smoothed"])
             c = g[g.bracketed_hpx & g.bracketed_utm].dropna(subset=["ratio_hpx_native"])
             if not len(a) and not len(b):
                 continue
             out.append(
-                f"| {t:g} | {len(a)} | "
+                f"| ({fx:g},{fy:g}) {t:g} | {len(a)} | "
                 + (f"{a.ratio_smoothed_native.median():.3f} | "
                    f"[{a.ratio_smoothed_native.min():.3f}, "
                    f"{a.ratio_smoothed_native.max():.3f}]" if len(a) else "-- | --")
@@ -1053,20 +1054,24 @@ def latex_table(frames: dict) -> str:
                             f"[{br.ratio.min():.2f}, {br.ratio.max():.2f}] \\\\")
     if "smoothed" in frames and len(frames["smoothed"]):
         d = frames["smoothed"]
-        for t, g in d.groupby("target"):
-            a = g[g.both_bracketed].dropna(subset=["ratio_smoothed_native"])
-            if len(g) and len(a) / len(g) >= cfg.MIN_BRACKETED:
-                rows.append(f"Smoothed native / native & ${t:g}$ & {len(a)} & "
-                            f"{a.ratio_smoothed_native.median():.2f} & "
-                            f"[{a.ratio_smoothed_native.min():.2f}, "
-                            f"{a.ratio_smoothed_native.max():.2f}] \\\\")
-        for t, g in d.groupby("target"):
-            b = g[g.hpx_both_bracketed].dropna(subset=["ratio_hpx_smoothed"])
-            if len(g) and len(b) / len(g) >= cfg.MIN_BRACKETED:
-                rows.append(f"HEALPix / smoothed native & ${t:g}$ & {len(b)} & "
-                            f"{b.ratio_hpx_smoothed.median():.2f} & "
-                            f"[{b.ratio_hpx_smoothed.min():.2f}, "
-                            f"{b.ratio_hpx_smoothed.max():.2f}] \\\\")
+        phases = sorted(set(zip(d.shift_x.round(3), d.shift_y.round(3))))
+        for fx, fy in phases:
+            dp = d[np.isclose(d.shift_x, fx) & np.isclose(d.shift_y, fy)]
+            tag = "" if len(phases) == 1 else f", phase $({fx:g},{fy:g})$"
+            for t, g in dp.groupby("target"):
+                a = g[g.both_bracketed].dropna(subset=["ratio_smoothed_native"])
+                if len(g) and len(a) / len(g) >= cfg.MIN_BRACKETED:
+                    rows.append(f"Smoothed native / native{tag} & ${t:g}$ & {len(a)} & "
+                                f"{a.ratio_smoothed_native.median():.2f} & "
+                                f"[{a.ratio_smoothed_native.min():.2f}, "
+                                f"{a.ratio_smoothed_native.max():.2f}] \\\\")
+            for t, g in dp.groupby("target"):
+                b = g[g.hpx_both_bracketed].dropna(subset=["ratio_hpx_smoothed"])
+                if len(g) and len(b) / len(g) >= cfg.MIN_BRACKETED:
+                    rows.append(f"HEALPix / smoothed native{tag} & ${t:g}$ & {len(b)} & "
+                                f"{b.ratio_hpx_smoothed.median():.2f} & "
+                                f"[{b.ratio_hpx_smoothed.min():.2f}, "
+                                f"{b.ratio_hpx_smoothed.max():.2f}] \\\\")
     if "common" in frames and len(frames["common"]):
         d = frames["common"].dropna(subset=["ratio_per_km2"])
         for t, g in d.groupby("target"):
@@ -1116,11 +1121,12 @@ def latex_table(frames: dict) -> str:
             "the regions where the target is bracketed on both grids.")
     if "smoothed" in frames and len(frames["smoothed"]):
         d = frames["smoothed"]
-        fx, fy = float(d.shift_x.iloc[0]), float(d.shift_y.iloc[0])
+        phases = sorted(set(zip(d.shift_x.round(3), d.shift_y.round(3))))
+        ph = " and ".join(f"({fx:g}, {fy:g})" for fx, fy in phases)
         parts.append(
             "The smoothed-native rows read the native crop through the same "
             "Clough--Tocher operator at points shifted by "
-            f"({fx:g}, {fy:g}) pixel, at the native density, so the native "
+            f"{ph} pixel, at the native density, so the native "
             "side receives the carrier's smoothing and nothing else; sizes "
             "are per sample. Smoothed native / native is what the transfer "
             "alone buys; HEALPix / smoothed native is the carrier's cost once "
@@ -1257,6 +1263,18 @@ def main(argv=None) -> int:
             frames[control] = pd.concat(parts, ignore_index=True)
             path = cfg.RESULTS_DIR / f"support_controls_{control}.csv"
             cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+            if control == "smoothed" and path.exists():
+                # One CSV holds every phase swept: rows of other phases are
+                # kept, rows of this phase are replaced.
+                prev = pd.read_csv(path)
+                if {"shift_x", "shift_y"} <= set(prev.columns):
+                    fx, fy = tuple(args.smooth_shift)
+                    keep = prev[~(np.isclose(prev.shift_x, fx)
+                                  & np.isclose(prev.shift_y, fy))]
+                    if len(keep):
+                        frames[control] = pd.concat([keep, frames[control]],
+                                                    ignore_index=True)
+                        print(f"  kept {len(keep)} rows of other phases")
             frames[control].to_csv(path, index=False)
             print(f"  wrote {path} ({len(frames[control])} rows)")
 

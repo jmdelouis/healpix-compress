@@ -20,9 +20,15 @@ from $+106\%$ to $-7\%$, a critical overhead $\gamma_\star$ falling from
 $2.06$ to $0.93$. An analytic field with the spectrum and instrument width
 fitted to the imagery, sampled by both lattices with no support mismatch,
 no content difference and no transfer, follows that decline to within
-$8$--$27\%$, so sampling geometry reproduces rate--distortion behaviour of
-this form and approximate magnitude; whether it accounts for it in full is
-open. At the illustrative $\gamma_{\mathrm{tile}}=1.30$,
+$8$--$27\%$, and the remainder is the smoothing the transfer gives the
+carrier: a native raster read through the same interpolant compresses to
+$0.94$ to $0.78$ of its size, and with both sides equally smooth the
+carrier costs $2.23$ to $1.24$ times the native square, within a few
+percent of the geometry-only control at every target. The coarser
+level-19 carrier, swept under the same protocol, stays at $0.67$ to
+$0.78$ of the native square and at $0.32$ to $0.88$ of the level-20 tile,
+so the finer carrier's cost is the cost of its density, large where the
+codec keeps every sample and small where it keeps few. At the illustrative $\gamma_{\mathrm{tile}}=1.30$,
 native UTM stays smaller at the three tightest RMSE targets and the two
 looser budgets (median ratios $1.23$--$1.59$ and $1.33$--$4.01$), HEALPix
 is smaller at the loosest RMSE target ($0.72$) and the tightest budget
@@ -72,10 +78,12 @@ error is charged to it.
 \emph{Product architecture.} Whether the carrier is the smaller archive is
 a comparison between two measured quantities: the overhead the native
 product carries, and $\gamma_\star(e)$ at the distortion the archive
-tolerates. At $10^{-2}$ that threshold has fallen just below one, though
-by a margin the paired test does not resolve (Section~\ref{sec:rd_main});
-at $10^{-4}$ it stands at $2.06$, an overhead we know of no measurement
-supporting.
+tolerates. The Sentinel-2 tiling alone imposes $21\%$ through tile
+overlap (Section~\ref{sec:overhead}). At $10^{-2}$ the threshold has
+fallen just below one, though by a margin the paired test does not
+resolve (Section~\ref{sec:rd_main}) and only under a reference that
+charges the transfer's smoothing to nobody; at $10^{-4}$ it stands at
+$2.06$, an overhead we know of no measurement supporting.
 
 In summary, oversampling at HEALPix level 20 brings a large raw storage
 penalty, most of it is redundancy that lossy compression removes, and

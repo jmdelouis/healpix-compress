@@ -46,3 +46,25 @@ grows as $(kd)^4$ and draws mainly on the shoulder of the spectrum
 fitted spectra predict the discarded fraction well only in the ensemble
 median (predicted $3.4\%$ against $3.1\%$ measured), one more reason to
 report the spectral model as an ensemble parameter only.
+
+\input{tables/table_level19_rd}
+
+What the coarser carrier costs to store is measured as well
+(Table~\ref{tab:level19_rd}): the level-19 carrier built directly by the
+transfer, and its cell-averaged twin, are run through the codec sweep of
+Section~\ref{sec:rd_protocol} and compared with the native crop and the
+level-20 tile under the paper's rules. Raw, the level-19 carrier is
+$0.65$ times the native crop. Compressed to equal error it stays smaller
+than the crop at every target, on $85\%$ to $100\%$ of the regions, and
+its ratio rises from $0.67$ at the tightest target to $0.78$ at the
+loosest: compression recovers nothing for a carrier that has already
+discarded samples, and at loose targets it erodes the raw advantage
+instead. Against the level-20 tile the same carrier costs $0.32$ of the
+bytes at the tightest target and $0.88$ at the loosest, so the
+level-20 tile costs $1.13$ times the level-19 carrier at $10^{-2}$ and
+$3.1$ times at $10^{-4}$. Both readings say the same thing as
+Section~\ref{sec:rd_main}: the cost of the finer carrier is the cost of
+its density, largest where the codec keeps every sample and nearly gone
+where it keeps few. The cell-averaged carrier is $9\%$ cheaper than the
+direct one at equal error (median over $195$ region--target pairs), the
+price of the sharper point evaluations the transfer keeps.

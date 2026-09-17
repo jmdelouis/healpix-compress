@@ -25,17 +25,21 @@ One result is purely geometric: the raw $2.584\times$ sampling-density
 ratio. Under the illustrative $\gamma_{\mathrm{tile}}=1.30$ scenario this
 becomes $1.99\times$, and that second figure is a product-architecture
 quantity, since it divides a geometric constant by an assumed layout
-overhead. A second finding is consistent with geometry without
-being attributable to it alone: the monotone decrease of the overhead-free
-size ratio with the target, which an analytic field sampled on both
-lattices reproduces in shape and to within $8$--$27\%$ in magnitude
-(Section~\ref{sec:support_controls}). So is the exploratory latitude
+overhead. A second finding is geometric once the transfer's smoothing is
+set aside: the monotone decrease of the overhead-free size ratio with the
+target, which an analytic field sampled on both lattices reproduces in
+shape and to within $8$--$27\%$ in magnitude, and which it matches to
+within a few percent once the native side is read through the same
+interpolant (Section~\ref{sec:support_controls}); the level-19 carrier
+swept under the same protocol says the same from below
+(Section~\ref{sec:level_choice}). So is the exploratory latitude
 dependence, compatible with the expected variation of cell-shape
 anisotropy without isolating it. Three findings belong elsewhere. The
 crossover at a given overhead belongs to the transfer, since it exists for
 a Clough--Tocher carrier and for no other transfer tested
-(Section~\ref{sec:transfer_cost}), and to the codec, since four of the
-five reproduce it and ZFP does not (Section~\ref{sec:same_codec}). A
+(Section~\ref{sec:transfer_cost}), and disappears when the native raster
+receives the same smoothing; and to the codec, since four of the five
+reproduce it and ZFP does not (Section~\ref{sec:same_codec}). A
 substantial part of the transfer-and-read floor is caused by the read,
 since changing the reading operator alone removes two thirds of its mean
 squared error (Section~\ref{sec:operator}). The codec ranking is a
@@ -66,9 +70,12 @@ band of the sensor, a guard that has already proved necessary.
 \label{sec:limitations}
 Five groups, detailed in Appendix~\ref{app:limitations}. \emph{Transfer}:
 the crossover is a result for a carrier filled by a transfer as smooth as
-Clough--Tocher; a non-deconvolving transfer of the same smoothness has not
-been tested, and the data are consistent with energy compaction playing an
-important role, short of a demonstration. \emph{Reference
+Clough--Tocher and scored against its own smooth tile; the smoothed-native
+control gives the native side that smoothing at one phase, the strongest,
+so the equal-smoothing ratio at the loosest target is bracketed between
+$0.93$ and $1.24$ rather than measured; a non-deconvolving transfer of the
+same smoothness has not been tested, and the data are consistent with
+energy compaction playing an important role, short of a demonstration. \emph{Reference
 and reader}: the two reconstruction references disagree at the crossover
 and both are reported; the common-reference sweep has been re-scored
 through an interpolating read, the $3\times10^{-3}$ target remains

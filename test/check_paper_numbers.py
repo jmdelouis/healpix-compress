@@ -848,6 +848,116 @@ def consistency_checks(tex):
             out.append(("control excess over measured, 'X% to Y%' form", rng2,
                         "same quantity as the agreement range"))
 
+    # --- the smoothed-native control (revision 5): the transfer's smoothing
+    # given to the native side, Section V-G ---------------------------------
+    sm = _csv("support_controls_smoothed.csv")
+    if sm is None:
+        out.append(("smoothed-native control  [skipped: support_controls_smoothed.csv "
+                    "absent]", "", ""))
+    else:
+        import paper_stats as _st
+        where = "[in sections/05e_support.tex]"
+        if {"shift_x", "shift_y"} <= set(sm.columns):
+            sm = sm[np.isclose(sm.shift_x, 0.5) & np.isclose(sm.shift_y, 0.5)]
+        ts = sorted(sm.target.unique())
+        a = {t: sm[(sm.target == t) & sm.both_bracketed] for t in ts}
+        b = {t: sm[(sm.target == t) & sm.hpx_both_bracketed] for t in ts}
+        if ts and len(a[ts[0]]) and len(a[ts[-1]]):
+            r0 = a[ts[0]].ratio_smoothed_native.median()
+            r1 = a[ts[-1]].ratio_smoothed_native.median()
+            out.append((f"smoothed/native at the tightest target {where}", f"${r0:.2f}$",
+                        "median, both bracketed"))
+            out.append((f"smoothed/native at the loosest target {where}", f"${r1:.2f}$", ""))
+            out.append((f"smoothed/native n at tightest and loosest {where}",
+                        f"${len(a[ts[0]])}$ and ${len(a[ts[-1]])}$", ""))
+            out.append((f"transfer alone buys, percent range {where}",
+                        f"${100*(1-r0):.0f}\\%$ to ${100*(1-r1):.0f}\\%$", "1 - ratio"))
+        if ts and len(b[ts[0]]) and len(b[ts[-1]]):
+            h0 = b[ts[0]].ratio_hpx_smoothed.median()
+            h1 = b[ts[-1]].ratio_hpx_smoothed.median()
+            out.append((f"HPX/smoothed at the tightest target {where}", f"${h0:.2f}$", ""))
+            out.append((f"HPX/smoothed at the loosest target (several places)", f"{h1:.2f}",
+                        "abstract, V-B, V-G, discussion, conclusion"))
+            out.append((f"HPX/smoothed n at the loosest target {where}",
+                        f"${len(b[ts[-1]])}$ regions", ""))
+            pt = _st.paired_ratio_test(b[ts[-1]].ratio_hpx_smoothed)
+            pv = pt["p"]
+            if np.isfinite(pv):
+                if pv < 1e-4:
+                    ptxt = "$p<10^{-4}$"
+                else:
+                    e = int(np.floor(np.log10(pv)))
+                    ptxt = f"$p={pv/10**e:.0f}\\times10^{{{e}}}$"
+                out.append((f"HPX/smoothed paired p at the loosest target {where}", ptxt,
+                            "signed-rank on log ratio"))
+
+    # --- the level-19 carrier under compression (revision 5, Section V-K) --
+    p19 = cfg.RESULTS_DIR / "level19_rd.json"
+    if not p19.exists():
+        out.append(("level-19 compressed  [skipped: level19_rd.json absent]", "", ""))
+    else:
+        d19 = json.loads(p19.read_text())
+        where = "[in sections/05h_level_choice.tex]"
+        c = d19.get("carriers", {}).get("direct")
+        if c:
+            ts = sorted(float(k) for k in c["targets"])
+            e0, e1 = c["targets"][f"{ts[0]:g}"], c["targets"][f"{ts[-1]:g}"]
+            if d19.get("raw_ratio_l19_utm"):
+                out.append((f"level-19 raw ratio {where}", f"${d19['raw_ratio_l19_utm']:.2f}$", ""))
+            out.append((f"L19/UTM at the tightest target {where}",
+                        f"${e0['l19_over_utm']['median']:.2f}$", "direct carrier"))
+            out.append((f"L19/UTM at the loosest target {where}",
+                        f"${e1['l19_over_utm']['median']:.2f}$", ""))
+            out.append((f"L19/L20 at the tightest target {where}",
+                        f"${e0['l19_over_l20']['median']:.2f}$", ""))
+            out.append((f"L19/L20 at the loosest target {where}",
+                        f"${e1['l19_over_l20']['median']:.2f}$", ""))
+            out.append((f"L20/L19 at the loosest target {where}",
+                        f"${1/e1['l19_over_l20']['median']:.2f}$", "inverse"))
+            out.append((f"L20/L19 at the tightest target {where}",
+                        f"${1/e0['l19_over_l20']['median']:.1f}$", "inverse, one decimal"))
+            wf = [c["targets"][f"{t:g}"]["l19_over_utm_win_fraction"] for t in ts]
+            wf = [w for w in wf if w is not None]
+            if wf:
+                out.append((f"L19 win-fraction range {where}",
+                            f"${100*min(wf):.0f}\\%$ to ${100*max(wf):.0f}\\%$", ""))
+        da = d19.get("direct_over_aggregate_size")
+        if da:
+            out.append((f"aggregate cheaper than direct, percent {where}",
+                        f"${100*(1-1/da['median']):.0f}\\%$", "1 - 1/median"))
+            out.append((f"direct/aggregate n {where}", f"${da['n']}$", ""))
+
+    # --- tiling overhead from the product geometry (revision 5, IV-B) -------
+    pg = cfg.RESULTS_DIR / "granule_overhead.json"
+    if not pg.exists():
+        out.append(("granule overhead  [skipped: granule_overhead.json absent]", "", ""))
+    else:
+        g = json.loads(pg.read_text())
+        where = "[in sections/04_design.tex]"
+        out.append((f"tile overlap overhead {where}", f"$(109.8/100)^2={g['overlap']:.2f}$",
+                    "granule_overhead.py"))
+        out.append((f"tiled-swath raw overhead {where}", f"${g['swath']['total']:.2f}$", ""))
+        out.append((f"no-data share of the tiled swath {where}",
+                    f"${100*g['swath']['nodata_fraction_mean']:.0f}\\%$", ""))
+        out.append(("overlap overhead as percent (several places)",
+                    f"${100*(g['overlap']-1):.0f}\\%$", "V-B, limitations"))
+
+    # --- block-size and odd-side bias (revision 5, IV-B) -------------------
+    pb_ = cfg.RESULTS_DIR / "block_size_bias.json"
+    if not pb_.exists():
+        out.append(("block-size bias  [skipped: block_size_bias.json absent]", "", ""))
+    else:
+        b = json.loads(pb_.read_text())
+        where = "[in sections/04_design.tex]"
+        x = b.get("odd_side_excess_lossless")
+        if x is not None:
+            out.append((f"odd-side excess, lossless, percent {where}",
+                        f"${100*abs(x-1):.1f}\\%$", "|excess - 1|"))
+        r = b["ratios_bytes_per_px"]["lossless_bytes_per_px"].get("utm_640_over_utm_odd")
+        if r:
+            out.append((f"padding to 640, lossless change {where}",
+                        f"${100*abs(r['median']-1):.1f}\\%$", ""))
+
     # --- the estimand's depth, as the table caption states it ----------------
     re_csv = _csv("resampling_error.csv")
     if re_csv is not None and "children" in re_csv:

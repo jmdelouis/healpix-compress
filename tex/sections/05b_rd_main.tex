@@ -26,7 +26,9 @@ against its own smooth tile: the Clough--Tocher transfer has already
 removed high-frequency noise a codec would otherwise spend bits on, while
 the native side is scored against its raw product.
 Section~\ref{sec:common_reference} charges that smoothing to the carrier,
-and the sign reverses. A smaller confound runs the other way at the tight
+and the sign reverses; Section~\ref{sec:support_controls} gives the
+native side the same smoothing instead, and the carrier is then $1.24$
+times the native raster at this target. A smaller confound runs the other way at the tight
 targets: the native product is distributed as integers and already sits on
 the coding lattice, while the interpolated carrier does not, which costs
 the carrier a quantisation the native side never pays
@@ -46,7 +48,10 @@ grids there. At the three tightest targets $\gamma_\star$ runs from $1.59$
 to $2.06$, overheads we know of no measurement supporting, and at the
 tightest target native UTM stays ahead for three quarters of the regions
 even at $\gamma=2$. At $3\times10^{-3}$ a native product organised with
-less than $19\%$ of overhead would restore the advantage of UTM. At
+less than $19\%$ of overhead would restore the advantage of UTM; the
+$21\%$ that tile overlap alone imposes on the Sentinel-2 layout
+(Section~\ref{sec:overhead}) lies just above that value and inside the
+band where the paired test separates nothing. At
 $10^{-2}$, $\gamma_\star=0.93$ lies below one, so the carrier is already
 the smaller representation at equal layout overhead ($\gamma=1$) and stays
 so for any relative overhead $\gamma\ge0.93$; a native product organised
@@ -98,11 +103,12 @@ native product, only the ratio $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX
 matters, which is why the figure extends below $1$: there the carrier
 carries the heavier container, and at the looser targets a fifth to a
 third of the regions already have their critical overhead in that range.
-One component of $\gamma$ is measurable: the container format accounts for
-at most half a percent on either side (Appendix~\ref{app:container}). A
-$30\%$ overhead therefore describes granule geometry (padding, overlap,
-per-granule metadata), a property of a product layout, which is why it is
-carried as a parameter.
+Two components of $\gamma$ are measurable: the container format
+accounts for at most half a percent on either side
+(Appendix~\ref{app:container}), and the overlap of the Sentinel-2 tiling
+for $21\%$ (Section~\ref{sec:overhead}). Padding and per-granule
+metadata depend on the product layout, which is why $\gamma$ is carried
+as a parameter and $30\%$ is an illustration.
 
 No single summary statement is available. A reader who assumes no
 overhead ($\gamma=1$) finds HEALPix smaller for $2\%$ to $69\%$ of the
