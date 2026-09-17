@@ -12,7 +12,7 @@ $2.584\times$ relative to the native \SI{10}{m} raster, exact for every
 region, which $30\%$ of native-layout overhead reduces to $1.99\times$.
 
 \emph{Compression.} That penalty is largely redundancy, and lossy coding
-removes most of it (Table~\ref{tab:headline}). With no overhead charged to
+removes most of it (Table~\ref{tab:synthesis}). With no overhead charged to
 either side, the Clough--Tocher tile is $2.06\times$ the native square at
 an RMSE of $10^{-4}$ and $0.93\times$ at $10^{-2}$, the class medians
 within $2.01$--$2.17$ and $0.89$--$1.10$; the gap falls monotonically
@@ -61,7 +61,7 @@ nearest-cell read, about $10\%$ of a scene's standard deviation; no swept
 configuration reaches four of the five RMSE targets against it, and the
 $2\%$-budget ratio moves from $0.83$ to $1.44$ in favour of native UTM. A
 read that interpolates within the carrier lattice removes $66\%$ of that
-floor's mean squared error (Table~\ref{tab:reader_floor}); re-scored
+floor's mean squared error (Table~\ref{tab:floors}); re-scored
 through it, the lead of native UTM at the $2\%$ budget narrows to $1.12$
 without reversing, and the loosest RMSE target turns in favour of HEALPix
 ($0.93$ at the illustrative overhead, $1.20$ overhead-free). Against the

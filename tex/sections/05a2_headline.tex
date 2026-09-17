@@ -2,39 +2,38 @@
 \label{sec:headline}
 
 The rest of this section builds the comparison one factor at a time; its
-outcome is in Table~\ref{tab:headline} and Fig.~\ref{fig:headline}. Both
-report one quantity: the compressed size of the HEALPix tile divided by
-the compressed size of the area-matched native UTM square, at
-the same reconstruction error, with no storage overhead charged to either
-side. A value of $2$ means the HEALPix representation takes twice the
-bytes; $1$ means the two are the same size. The second column gives each
-target as a fraction of a typical scene's contrast, the median standard
-deviation of the 40 tiles, $0.04$ in reflectance. The C--T column is the
-Clough--Tocher carrier the paper uses, with the range of the four
-land-cover class medians in brackets; the PSF and IDW columns are the same
+outcome is in Table~\ref{tab:synthesis} and Fig.~\ref{fig:headline}. Both
+start from one quantity: the compressed size of the HEALPix tile divided by
+the compressed size of the area-matched native UTM square, at the same
+reconstruction error, with no storage overhead charged to either side. A
+value of $2$ means the HEALPix representation takes twice the bytes; $1$
+means the two are the same size. The five targets run from a quarter of a
+percent to a quarter of a typical scene's contrast, the median standard
+deviation of the 40 tiles, $0.04$ in reflectance. The table gives, per
+target, that ratio for the Clough--Tocher carrier the paper uses (the
+column $\gamma_\star$, since the two coincide, Section~\ref{sec:rd_main}),
+the share of the raw penalty that compression recovers, the verdict over
+a range of native-layout overheads, and the verdict at the illustrative
+$30\%$ overhead with its corrected $p$-value; $n$ is the number of regions
+whose sweeps bracket the target on both grids. The figure adds the same
 tile rebuilt with the PSF-aware and inverse-distance transfers of
-Section~\ref{sec:transfer_cost}. The two blocks rest on different
-populations and each carries its own $n$: the Clough--Tocher column is the
-median over every region its own sweep brackets, the population of
-Table~\ref{tab:gamma_continuous}, so the two agree entry by entry; the
-PSF and IDW columns cover the regions all three sweeps bracket, on which
-the Clough--Tocher median would read $2.07$ down to $0.93$. Under an
-operational overhead $\gamma$ on the native product every entry divides by
-$\gamma$.
+Section~\ref{sec:transfer_cost}, on the regions all three sweeps bracket
+(Table~\ref{tab:transfer}). Under an operational overhead $\gamma$ on the
+native product every ratio at $\gamma=1$ divides by $\gamma$.
 
-\input{tables/table_headline}
+\input{tables/table_synthesis}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_headline}
-\caption{The quantity of Table~\ref{tab:headline}: compressed size of the
-HEALPix tile relative to the native UTM square, at equal reconstruction
-error and with no overhead on either side, for the three transfers used to
-fill the tile. The shaded band is the range of the four land-cover class
-medians for the Clough--Tocher carrier. The three curves have the
-populations of Table~\ref{tab:headline}. The dashed line is the
-uncompressed ratio; the dotted lines mark parity with no overhead and with
-the illustrative $30\%$ overhead on the native product.}
+\caption{Compressed size of the HEALPix tile relative to the native UTM
+square, at equal reconstruction error and with no overhead on either side,
+for the three transfers used to fill the tile. The shaded band is the
+range of the four land-cover class medians for the Clough--Tocher
+carrier; the curves have the populations of Tables~\ref{tab:synthesis}
+and~\ref{tab:transfer}. The dashed line is the uncompressed ratio; the
+dotted lines mark parity with no overhead and with the illustrative $30\%$
+overhead on the native product.}
 \label{fig:headline}
 \end{figure}
 
@@ -75,5 +74,5 @@ the native product closes that gap; what such a transfer buys in
 reconstruction quality is established by the companion study under its own
 conditions, and this paper measures its storage cost. A reader whose
 product carries $30\%$ of padding and metadata reads the Clough--Tocher
-column as $1.59$ down to $0.72$, and the PSF-aware column as
-$1.8$ to $2.0$.
+ratio as $1.59$ down to $0.72$ (last block of Table~\ref{tab:synthesis}),
+and the PSF-aware one as $1.8$ to $2.0$.

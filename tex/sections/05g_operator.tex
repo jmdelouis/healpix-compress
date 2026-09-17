@@ -1,7 +1,7 @@
 \subsection{What the Reading Operator Itself Contributes}
 \label{sec:operator}
 
-The floor of Table~\ref{tab:representation_floor} is the error of two
+The floor of Table~\ref{tab:floors} is the error of two
 operators together, the Clough--Tocher transfer that places the data on
 the carrier and the nearest-cell read that retrieves them.
 Appendix~\ref{app:operator} characterises the read alone, on analytic
@@ -22,15 +22,14 @@ tile is a Clough--Tocher interpolation of the scene and the smoothing
 removes the gradients that a jitter turns into error. The floor is thus
 an upper bound on the cost of the representation, and a reconstructor
 that interpolates within the carrier lattice could lower it.
-Table~\ref{tab:reader_floor} reports three reads of the same uncompressed
-carrier, scored on the native pixels of the intersection against the
-observation: \emph{nearest} is the containing cell; \emph{bilinear}
+The middle block of Table~\ref{tab:floors} reports three reads of the
+same uncompressed carriers, scored on the native pixels of the
+intersection against the observation: \emph{nearest} is the containing cell; \emph{bilinear}
 interpolates within the carrier's own lattice at sub-cell position;
 \emph{psf} is the companion study's forward operator, reported only on
 the tiles it is matched to. Ratios are paired per region before the
 median is taken.
 
-\input{tables/table_reader_floor}
 
 The interpolating read places each native pixel in the carrier lattice at
 sub-cell precision (the local index of a NESTED block is the Morton code
@@ -65,7 +64,7 @@ bits spent on cells nothing depends on, with a bound of
 $1/0.308\approx3.2\times$ that a uniform quantiser cannot reach. Seen from
 the sweep, $54.0\%$ of the $2\,800$ lossy operating points of the
 extended ladders reach a cell-space RMSE below the floor of
-Table~\ref{tab:representation_floor}. The matched case behaves
+Table~\ref{tab:floors}. The matched case behaves
 differently: on the PSF-transferred tiles read through the forward
 operator they were built for (floor $0.558$ times that of the nearest
 read, lower on all 40 regions), the operator attenuates a white coding

@@ -1,6 +1,24 @@
 \section{Carrier-Grid Compression Methodology}
 \label{sec:method}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_workflow}
+\caption{The chain the paper measures. Each native window yields an
+equal-area UTM square (Section~\ref{sec:utm_crop}) and a HEALPix level-20
+tile filled by a transfer (Section~\ref{sec:resampler}); both go through
+the same codec sweep (Section~\ref{sec:codecs}) and are compared at equal
+error under two references (Sections~\ref{sec:rd_protocol}
+and~\ref{sec:common_reference}); the outcome is the size ratio and the
+critical overhead of Table~\ref{tab:synthesis}, and the controls of
+Sections~\ref{sec:support_controls}, \ref{sec:level_choice}
+and~\ref{sec:same_codec} test what drives it.}
+\label{fig:workflow}
+\end{figure}
+
+Fig.~\ref{fig:workflow} shows the chain from the native product to the
+verdict; the subsections below describe each step.
+
 \subsection{From a Nested Chunk to a 2-D Raster}
 \label{sec:morton}
 Every codec used here is a generic 2-D array or image compressor with no

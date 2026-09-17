@@ -1,29 +1,27 @@
 \subsection{One Illustrative Operating Point: a 30\% Granule Overhead}
 \label{sec:rd_illustrative}
 
-The tables that follow evaluate the comparison at
-$\gamma_{\mathrm{tile}}=1.30$, the illustrative overhead scenario of
-Section~\ref{sec:overhead}. Every verdict in them is the curve of
-Table~\ref{tab:gamma_continuous} read at one abscissa: HEALPix is the
-smaller representation exactly where $1.30$ exceeds that target's
-$\gamma_\star$, which is why the sign changes between $10^{-3}$ and
-$3\times10^{-3}$ and nowhere else. In sizes: if the native product is
-stored with $30\%$ of padding and metadata, the Clough--Tocher carrier is
-$1.59$ times its size at the tightest tolerance and $0.72$ times at the
-loosest. Each entry of Tables~\ref{tab:storage_at_rmse}
-and~\ref{tab:error_at_size} is a per-region HPX/UTM ratio with the
-oracle-best codec chosen per region and per grid, the UTM side carrying
-$\gamma_{\mathrm{tile}}=1.3$, so a value below one favours HEALPix; the
-median is over the $n$ evaluable regions of 40, with the range in
-brackets; $p$ is a two-sided Wilcoxon test on the log ratio, and
-$p^{\mathrm{Holm}}$ corrects over the family of eight targets the two
-tables report together. The last column follows the corrected test: a
-target it does not separate at the $5\%$ level is marked inconclusive
-whatever the side of its median.
+The last block of Table~\ref{tab:synthesis} and Table~\ref{tab:error_at_size}
+evaluate the comparison at $\gamma_{\mathrm{tile}}=1.30$, the
+illustrative overhead scenario of Section~\ref{sec:overhead}. Every
+verdict in them is the curve of Section~\ref{sec:rd_main} read at one
+abscissa: HEALPix is the smaller representation exactly where $1.30$
+exceeds that target's $\gamma_\star$, which is why the sign changes
+between $10^{-3}$ and $3\times10^{-3}$ and nowhere else. In sizes: if the
+native product is stored with $30\%$ of padding and metadata, the
+Clough--Tocher carrier is $1.59$ times its size at the tightest tolerance
+and $0.72$ times at the loosest. Each entry is a per-region HPX/UTM ratio
+with the oracle-best codec chosen per region and per grid, the UTM side
+carrying $\gamma_{\mathrm{tile}}=1.3$, so a value below one favours
+HEALPix; the median is over the $n$ evaluable regions of 40, and
+$p^{\mathrm{Holm}}$ is a two-sided Wilcoxon test on the log ratio
+corrected over the family of eight targets the two tables report
+together (Fig.~\ref{fig:ratio_boxplots} shows the spread behind each
+median). The verdict column follows the corrected test: a target it does
+not separate at the $5\%$ level is marked inconclusive whatever the side
+of its median.
 
-\input{tables/table_storage_at_constant_rmse}
-
-At matched RMSE (Table~\ref{tab:storage_at_rmse}), native UTM is ahead at
+At matched RMSE (Table~\ref{tab:synthesis}), native UTM is ahead at
 the three tightest targets: HEALPix needs $1.23$--$1.59\times$ the size of
 the native product under the illustrative overhead from $10^{-3}$ to
 $10^{-4}$, with Holm-adjusted $p\le0.016$. The order reverses at
@@ -51,7 +49,7 @@ RMSE over all 40 regions (Holm-adjusted $p<10^{-4}$).
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_ratio_boxplots}
-\caption{Per-scene HPX/UTM ratio distributions underlying Tables~\ref{tab:storage_at_rmse}--\ref{tab:error_at_size}, at the illustrative $\gamma_{\mathrm{tile}}=1.30$ of this subsection (oracle-best codec chosen independently per scene, per grid). Left: compressed-size ratio at each target RMSE. Right: RMSE ratio at each target storage budget (log scale). The dashed line at $1.0$ marks parity; values below it favour HEALPix.}
+\caption{Per-scene HPX/UTM ratio distributions underlying Tables~\ref{tab:synthesis} and~\ref{tab:error_at_size}, at the illustrative $\gamma_{\mathrm{tile}}=1.30$ of this subsection (oracle-best codec chosen independently per scene, per grid). Left: compressed-size ratio at each target RMSE. Right: RMSE ratio at each target storage budget (log scale). The dashed line at $1.0$ marks parity; values below it favour HEALPix.}
 \label{fig:ratio_boxplots}
 \end{figure}
 

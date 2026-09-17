@@ -7,7 +7,7 @@ small-scale structure, and the inverse-distance average over the four
 nearest cells that Section~\ref{sec:resampler} abandoned, which restores
 none and serves as the control. The library calls the latter
 \texttt{linear}; it is a Shepard-type weighted average whose kernel width
-defaults to the \emph{output} cell scale, and Table~\ref{tab:kernel_ablation}
+defaults to the \emph{output} cell scale, and Table~\ref{tab:transfer}
 finds it $9.5$ times less accurate than Clough--Tocher against an analytic
 field while leaving no excess top-octave power. The control makes the
 question falsifiable: a deconvolved tile costing more than a
@@ -18,24 +18,26 @@ reconstruction error was measured ($\lambda=10^{-3}$) and at the nominal
 \SI{12.5}{m} response width. Coverage is 40 regions for the PSF transfer
 and 39 for the inverse-distance average.
 
-Table~\ref{tab:transfer_cost} reports the three carriers under short
+Table~\ref{tab:transfer} reports the three carriers under short
 names: C--T for Clough--Tocher, PSF for the PSF-aware transfer, IDW for
 the inverse-distance average. Every ratio at a given target is a paired
 median over the same regions, admitted under the rule of
 Section~\ref{sec:rd_protocol} applied to all four sweeps: the codec the
 oracle selects must bracket the target with two measured points on the
 C--T, PSF and IDW carriers and on the native crop. Eligibility therefore
-differs from Table~\ref{tab:gamma_continuous}, which asks the same of the
+differs from Table~\ref{tab:synthesis}, which asks the same of the
 C--T carrier and the crop only; the extra sweeps remove one region at the
-tight targets and two at the loosest, where $n$ falls to 30. The left block
-gives the compressed size relative to the Clough--Tocher tile of the same
-region at the same absolute RMSE, its last column setting the deconvolving
-transfer against the non-deconvolving one; the right block gives each
-product against the equal-area native crop at
-$\gamma_{\mathrm{tile}}=1.3$, composed per region, so a value below one
-favours HEALPix.
+tight targets and two at the loosest, where $n$ falls to 30. In the first
+block of the table, the three columns under $\gamma=1$ give each carrier
+against the equal-area native crop with no overhead, composed per region,
+so a value below one favours HEALPix, and the three columns under
+``relative to C--T'' give the compressed size relative to the
+Clough--Tocher tile of the same region at the same absolute RMSE, the last
+of them setting the deconvolving transfer against the non-deconvolving
+one. Under the illustrative overhead every value of the first three
+columns divides by $1.3$.
 
-\input{tables/table_transfer_cost}
+\input{tables/table_transfer}
 
 The control is informative. At the same coding RMSE, each measured against
 that transfer's own uncompressed carrier, the deconvolved tile costs
@@ -53,13 +55,13 @@ response and behaviour under noise, and several effects may compensate.
 Isolating it would need a non-deconvolving transfer of the same smoothness
 class, which we do not have.
 
-Table~\ref{tab:compactability} separates content from codability. Its
-second column is each raster's own lossless size; the other columns give
+The second block of Table~\ref{tab:transfer} separates content from
+codability. Its second column is each raster's own lossless size; the
+other columns give
 the compressed size at each target as a fraction of that lossless size,
 so the entropy difference between rasters divides out and what remains is
 how much of the content a lossy coder can discard.
 
-\input{tables/table_compactability}
 
 What separates the transfers is how compactly each raster can be coded.
 Their lossless sizes are within $9\%$ of each other (\SI{1.31}{MB},
@@ -72,7 +74,7 @@ $3.6\%$ of its own. Across regions, baseline scene complexity does not
 explain the surcharge: correlating each region's own lossless size on the
 Clough--Tocher raster with the surcharge it pays (the median over the
 targets both sweeps bracket of that region's entry in the left block of
-Table~\ref{tab:transfer_cost}) gives a Spearman $\rho$ of $-0.13$ for the
+Table~\ref{tab:transfer}) gives a Spearman $\rho$ of $-0.13$ for the
 PSF transfer ($p=0.442$, $n=40$) and $-0.07$ for the inverse-distance
 average ($p=0.658$, $n=39$), so the regions whose Clough--Tocher rasters
 hold the most information pay no larger surcharge than the others. This
@@ -97,7 +99,7 @@ transfer, $1.90$ and $1.63$ for the inverse-distance average. A factor of
 two in the storage cost of the transfer exceeds the whole margin, so the
 regime-dependent verdict of Section~\ref{sec:rd_main} is a statement
 about a carrier filled by this transfer. In final sizes with no overhead
-(Table~\ref{tab:headline}), the Clough--Tocher tile compresses to between
+(Tables~\ref{tab:synthesis} and~\ref{tab:transfer}), the Clough--Tocher tile compresses to between
 $2.06$ and $0.93$ times the native square as the tolerated error grows,
 the PSF-aware tile to between $2.62$ and $2.28$ times, and the
 inverse-distance tile to between $2.49$ and $2.11$ times. The last two
@@ -105,10 +107,11 @@ barely move with the tolerated error: their content resists lossy coding,
 while the content of the Clough--Tocher tile is mostly the smooth
 redundancy a codec is built to remove.
 
-Table~\ref{tab:kernel_ablation} rebuilds the carrier with five kernels
-from the same native window and reads each with the same operator, so any
-difference between rows is the transfer alone (\texttt{linear} is the
-inverse-distance average and \texttt{bicubic} Keys' cubic convolution).
+The third block of Table~\ref{tab:transfer} rebuilds the carrier with
+five kernels from the same native window and reads each with the same
+operator, so any difference between rows is the transfer alone (IDW is
+the library's \texttt{linear} kernel, an inverse-distance average, and
+bicubic is Keys' cubic convolution).
 \emph{Transfer} is the error against the analytic field, as a percentage
 of that field's standard deviation. \emph{Over} counts the cells a
 transfer places outside the range of the data it was given, which is how
@@ -124,10 +127,9 @@ highest octave, above one when the transfer leaves more high-frequency
 power than the observation carries. The last three columns are
 compressed-size ratios to the same reference at three targets.
 
-\input{tables/table_kernel_ablation}
 
 Equal bytes are not equal value. The accuracy column of
-Table~\ref{tab:kernel_ablation} scores each transfer against an analytic
+Table~\ref{tab:transfer} scores each transfer against an analytic
 field known at every position, the only measure in that table that gives
 a transfer no credit for copying its input samples. Among the transfers
 that aim to reproduce that field, Clough--Tocher reaches $1.20\%$ of its

@@ -305,16 +305,9 @@ def scoped_checks():
             lo, hi = min(v[key] for v in vals), max(v[key] for v in vals)
             out.append((f"headline section: {label} range {hd}",
                         f"${lo:.1f}$--${hi:.1f}$", "gamma=1"))
-        # Table V's C--T column and its PSF/IDW columns do not share a
-        # population: the first is every region its own sweep brackets, the
-        # second the regions all three bracket. The prose states what the
-        # C--T median would be on the narrower set, so that the reader can
-        # see the two blocks are not interchangeable; lock those two ends.
-        tt = sorted(transfers)
-        out.append((f"headline section: C--T median on the three-way set, tightest {hd}",
-                    _fmt(transfers[tt[0]]["ct"]), "transfer_cost_digest population"))
-        out.append((f"headline section: C--T median on the three-way set, loosest {hd}",
-                    _fmt(transfers[tt[-1]]["ct"]), "transfer_cost_digest population"))
+        # Revision 5: the C--T median on the three-way population is a column
+        # of the merged transfer table (merged_tables.py) and is no longer
+        # quoted in the headline prose.
     return out
 
 

@@ -40,7 +40,7 @@ $\gamma_\star(e)=S_{\mathrm{HPX}}(e)/S_{\mathrm{UTM,crop}}(e)$ is an
 accounting identity; the change of sign at $\gamma=\gamma_\star$ explains
 nothing about why the gap narrows with distortion, and what the identity
 gives is a threshold a product designer can compare with a measured
-overhead. Table~\ref{tab:gamma_continuous} reports $\gamma_\star$ at every
+overhead. Table~\ref{tab:synthesis} reports $\gamma_\star$ at every
 target. It falls from $2.06$ to $0.93$ and reaches $1.19$ at
 $3\times10^{-3}$, below the illustrative $1.30$, which is why the measured
 ratio at that target is $0.92$ and the paired test does not separate the
@@ -61,7 +61,7 @@ assume an overhead in the carrier's favour. $\gamma_\star$ has not been
 recomputed for the matched-budget protocol
 (Section~\ref{sec:limitations}).
 
-In Table~\ref{tab:gamma_continuous}, each region's $\gamma_\star$ is the
+In Table~\ref{tab:synthesis}, each region's $\gamma_\star$ is the
 value at which the two representations reach equal compressed size for
 that region, so HEALPix is the smaller one exactly where
 $\gamma \ge \gamma_\star$. The column $f(e)=(2.58-\gamma_\star(e))/(2.58-1)$
@@ -73,7 +73,6 @@ target loosens --- satisfying that at three illustrative values, and
 \emph{inconclusive} the range of $\gamma$ over which the paired
 signed-rank test does not separate the grids at the $5\%$ level.
 
-\input{tables/table_gamma_continuous}
 
 \begin{figure}[t]
 \centering
@@ -82,7 +81,7 @@ signed-rank test does not separate the grids at the $5\%$ level.
 $\gamma=\gamma_{\mathrm{UTM}}/\gamma_{\mathrm{HPX}}$. Top: the fraction of
 the qualifying regions for which HEALPix is the smaller representation, per
 RMSE target; the number that qualifies falls from 40 to 32 as the target
-loosens (Table~\ref{tab:gamma_continuous}), so each curve is a share of its
+loosens (Table~\ref{tab:synthesis}), so each curve is a share of its
 own target's population; the thickened stretch is where the paired
 signed-rank test does not separate the two grids at the $5\%$ level.
 Bottom: the per-region critical overhead $\gamma_\star$ behind those
