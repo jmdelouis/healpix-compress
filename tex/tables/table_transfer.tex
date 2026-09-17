@@ -1,0 +1,49 @@
+\begin{table*}[t]
+\centering
+\caption{What the transfer costs: storage, compactability and accuracy}
+\label{tab:transfer}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+ & & \multicolumn{3}{c}{HPX/UTM at $\gamma=1$} & \multicolumn{3}{c}{Relative to C--T} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+Target RMSE & $n$ & C--T & PSF & IDW & PSF & IDW & PSF/IDW \\
+\midrule
+$10^{-4}$ & 39 & 2.07 & 2.62 & 2.49 & 1.27 & 1.20 & 1.05 \\
+$3\times10^{-4}$ & 39 & 1.95 & 2.64 & 2.51 & 1.36 & 1.31 & 1.05 \\
+$10^{-3}$ & 38 & 1.60 & 2.64 & 2.53 & 1.64 & 1.60 & 1.03 \\
+$3\times10^{-3}$ & 36 & 1.21 & 2.62 & 2.47 & 2.08 & 1.94 & 1.06 \\
+$10^{-2}$ & 30 & 0.93 & 2.28 & 2.11 & 2.45 & 2.18 & 1.13 \\
+\bottomrule
+\end{tabular}
+\vspace{4pt}
+
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+ & Lossless & \multicolumn{5}{c}{Fraction of own lossless size at target RMSE} \\
+\cmidrule(lr){3-7}
+Transfer & (MB) & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ & $3\times10^{-3}$ & $10^{-2}$ \\
+\midrule
+C--T & 1.31 & 0.482 & 0.321 & 0.160 & 0.054 & 0.010 \\
+PSF & 1.36 & 0.577 & 0.410 & 0.245 & 0.119 & 0.025 \\
+IDW & 1.41 & 0.551 & 0.387 & 0.244 & 0.110 & 0.031 \\
+native UTM & 0.37 & 0.819 & 0.584 & 0.349 & 0.148 & 0.036 \\
+\bottomrule
+\end{tabular}
+\vspace{4pt}
+
+\begin{tabular}{@{}lrrrrrrrrrr@{}}
+\toprule
+ & & Transfer & Over & Floor & Floor & & Top & \multicolumn{3}{c}{Size / C--T at target RMSE} \\
+\cmidrule(lr){9-11}
+Kernel & $n$ & (\% std) & (\%) & (\% std) & rel.\ C--T & log-PSD & oct. & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ \\
+\midrule
+C--T & 39 & 1.20 & 0.00 & 10.0 & 1.00 & 0.05 & 0.89 & 1.00 & 1.00 & 1.00 \\
+PSF & 39 & 8.15 & 0.18 & 24.0 & 2.54 & 0.44 & 2.80 & 1.27 & 1.36 & 1.64 \\
+IDW & 38 & 11.48 & 0.86 & 7.0 & 0.74 & 0.03 & 0.92 & 1.20 & 1.31 & 1.60 \\
+nearest & 39 & 10.04 & 0.00 & 0.8 & 0.11 & 0.00 & 1.00 & 1.21 & 1.31 & 1.50 \\
+bicubic & 38 & 392.34 & 2.56 & 11.7 & 0.95 & 0.16 & 1.51 & 1.65 & 1.92 & 2.84 \\
+\bottomrule
+\end{tabular}
+\end{table*}
