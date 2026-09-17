@@ -42,13 +42,21 @@ on both grids; the rest are conservative bounds, not estimates)
 ## HEALPix regime (latitude)
 
 - rmse:0.0001: Spearman rho=-0.106 (p=0.515, Holm=1.000), belt 2.092 vs cap 2.056 (p=0.881, Holm=1.000)
+    given the spectral slope beta: partial rho=-0.099 (p=0.550, n=40); rho(beta, |lat|)=0.049 (p=0.763); rho(beta, ratio)=-0.189
 - rmse:0.0003: Spearman rho=-0.074 (p=0.652, Holm=1.000), belt 1.904 vs cap 1.960 (p=0.654, Holm=1.000)
+    given the spectral slope beta: partial rho=-0.068 (p=0.681, n=40); rho(beta, |lat|)=0.049 (p=0.763); rho(beta, ratio)=-0.124
 - rmse:0.001: Spearman rho=-0.022 (p=0.892, Holm=1.000), belt 1.651 vs cap 1.586 (p=0.767, Holm=1.000)
+    given the spectral slope beta: partial rho=-0.014 (p=0.933, n=39); rho(beta, |lat|)=0.046 (p=0.781); rho(beta, ratio)=-0.190
 - rmse:0.003: Spearman rho=0.077 (p=0.649, Holm=1.000), belt 1.130 vs cap 1.226 (p=0.353, Holm=1.000)
+    given the spectral slope beta: partial rho=0.107 (p=0.534, n=37); rho(beta, |lat|)=0.108 (p=0.523); rho(beta, ratio)=-0.241
 - rmse:0.01: Spearman rho=0.216 (p=0.236, Holm=1.000), belt 0.895 vs cap 1.022 (p=0.031, Holm=0.188)
+    given the spectral slope beta: partial rho=0.225 (p=0.223, n=32); rho(beta, |lat|)=0.000 (p=0.998); rho(beta, ratio)=0.292
 - budget:0.1: Spearman rho=-0.036 (p=0.832, Holm=1.000), belt 12.365 vs cap 12.662 (p=0.659, Holm=1.000)
+    given the spectral slope beta: partial rho=-0.034 (p=0.845, n=37); rho(beta, |lat|)=0.030 (p=0.862); rho(beta, ratio)=-0.078
 - budget:0.05: Spearman rho=0.376 (p=0.018, Holm=0.128), belt 2.667 vs cap 2.811 (p=0.006, Holm=0.039)
+    given the spectral slope beta: partial rho=0.403 (p=0.012, n=39); rho(beta, |lat|)=0.050 (p=0.762); rho(beta, ratio)=0.488
 - budget:0.02: Spearman rho=0.496 (p=0.001, Holm=0.009), belt 0.947 vs cap 1.209 (p=0.001, Holm=0.008)
+    given the spectral slope beta: partial rho=0.522 (p=0.001, n=40); rho(beta, |lat|)=0.049 (p=0.763); rho(beta, ratio)=0.408
 
 ## Codec ranking (HEALPix side)
 

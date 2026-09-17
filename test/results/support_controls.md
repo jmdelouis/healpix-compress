@@ -29,12 +29,33 @@ Largest common-ground region on each native lattice, normalised by the ground ar
 
 ## One analytic field on both geometries
 
-Same function sampled by both lattices: no content difference at all, so the ratio is the grid effect alone. Rows where the target is bracketed on both sides for fewer than 75% of regions are marked withheld: there the sweeps did not reach the target and the ratio is a quotient of bounds, not an estimate.
+Same function sampled by both lattices: no content difference at all, so the ratio is the grid effect alone. Rows where the target is bracketed on both sides for fewer than 75% of regions are marked withheld: there the sweeps did not reach the target and the ratio is a quotient of bounds, not an estimate. `transfer` = none is the field evaluated at the cell centres; otherwise the field was sampled on the native lattice and carried to the cells by that resampler, the one step of the real chain the direct rows omit.
 
-| beta | target | n | bracketed | median ratio | range | reportable |
-|---|---|---|---|---|---|---|
-| 1.9 | 0.0001 | 40 | 100% | 1.793 | [0.803, 2.223] | yes |
-| 1.9 | 0.0003 | 40 | 100% | 1.650 | [0.821, 2.025] | yes |
-| 1.9 | 0.001 | 40 | 95% | 1.438 | [0.811, 1.858] | yes |
-| 1.9 | 0.003 | 40 | 95% | 1.142 | [0.810, 1.822] | yes |
-| 1.9 | 0.01 | 40 | 78% | 1.114 | [0.936, 1.344] | yes |
+| transfer | beta | target | n | bracketed | median ratio | range | reportable |
+|---|---|---|---|---|---|---|---|
+| clough_tocher | 1.9 | 0.0001 | 40 | 100% | 2.173 | [0.927, 2.313] | yes |
+| clough_tocher | 1.9 | 0.0003 | 40 | 100% | 2.099 | [0.817, 2.238] | yes |
+| clough_tocher | 1.9 | 0.001 | 40 | 98% | 1.900 | [0.751, 2.211] | yes |
+| clough_tocher | 1.9 | 0.003 | 40 | 95% | 1.387 | [0.758, 2.370] | yes |
+| clough_tocher | 1.9 | 0.01 | 40 | 80% | 0.944 | [0.817, 1.648] | yes |
+| none | 1.9 | 0.0001 | 40 | 100% | 2.167 | [1.095, 2.371] | yes |
+| none | 1.9 | 0.0003 | 40 | 100% | 2.076 | [0.989, 2.246] | yes |
+| none | 1.9 | 0.001 | 40 | 98% | 1.885 | [0.911, 2.203] | yes |
+| none | 1.9 | 0.003 | 40 | 95% | 1.449 | [0.927, 2.391] | yes |
+| none | 1.9 | 0.01 | 40 | 80% | 1.155 | [0.973, 1.691] | yes |
+
+Transfer error on the analytic field (RMSE against the exact cell values, in units of the scene std): median 8.80%, range [8.66%, 9.26%] over 40 regions.
+
+## The transfer alone, on the native lattice
+
+The native crop read through the same Clough-Tocher operator at points shifted by a fraction of a pixel, at the native density (operator: healpix_resample). Smoothed/native is what the transfer alone buys at each target; HPX/smoothed is what remains of the carrier's cost once both sides carry the same smoothing. Sizes are per sample (the shifted lattice has one row and one column fewer).
+
+- std ratio smoothed/native: median 0.9854
+
+| phase, target | n | smoothed/native | range | n | HPX/smoothed | range | HPX/native |
+|---|---|---|---|---|---|---|---|
+| (0.5,0.5) 0.0001 | 40 | 0.943 | [0.855, 0.967] | 40 | 2.228 | [0.971, 2.394] | 2.063 |
+| (0.5,0.5) 0.0003 | 40 | 0.916 | [0.512, 0.957] | 40 | 2.110 | [0.780, 2.403] | 1.936 |
+| (0.5,0.5) 0.001 | 40 | 0.890 | [0.037, 1.002] | 39 | 1.837 | [0.471, 17.974] | 1.595 |
+| (0.5,0.5) 0.003 | 39 | 0.842 | [0.205, 1.039] | 37 | 1.470 | [0.283, 2.896] | 1.195 |
+| (0.5,0.5) 0.01 | 34 | 0.778 | [0.638, 0.992] | 32 | 1.237 | [0.327, 1.589] | 0.933 |
