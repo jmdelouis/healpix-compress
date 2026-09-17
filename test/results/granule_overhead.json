@@ -1,0 +1,25 @@
+{
+ "tile_px": 10980,
+ "tile_km": 109.8,
+ "step_km": 100.0,
+ "swath_km": 290.0,
+ "sources": {
+  "tile_and_step": "ESA SentiWiki, Sentinel-2 Products (MSI overview): '110 km x 110 km ortho-images ... using a 100 km step'",
+  "swath": "ESA, Sentinel-2 mission description: 290 km swath",
+  "tile_px": "product raster dimensions: 10980 x 10980 pixels at 10 m"
+ },
+ "overlap": 1.2056039999999997,
+ "swath": {
+  "n_tiles_min": 3,
+  "n_tiles_max": 4,
+  "n_tiles_mean": 3.9979,
+  "across_track": 1.5136876551724137,
+  "across_track_min": 1.1358620689655172,
+  "across_track_max": 1.5144827586206897,
+  "along_track": 1.0979999999999999,
+  "total": 1.66202904537931,
+  "nodata_fraction_mean": 0.3392463570127506
+ },
+ "gamma_illustrative": 1.3,
+ "granules": []
+}
