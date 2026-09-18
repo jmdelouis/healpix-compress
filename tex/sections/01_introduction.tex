@@ -47,9 +47,9 @@ study~\cite{delouis2026resample}, which also undoes part of the instrument
 blur, aims at a sharper latent-field estimand; its tile stays at
 $2.3$--$2.6$ times the native raster at every error, bytes whose
 reconstruction benefit is established by that study, not by this one. The
-choice of transfer is therefore the largest single factor in the storage
-cost of a HEALPix carrier, above the codec, the scene and the tolerated
-error. Section~\ref{sec:glossary} defines the nine terms the paper relies on.
+choice of transfer is therefore one of the largest sensitivities in the
+storage cost of a HEALPix carrier.
+Section~\ref{sec:glossary} defines the nine terms the paper relies on.
 
 The question is answered empirically, with established compression
 libraries and no HEALPix-specific coding. The finer HEALPix level is
@@ -78,8 +78,9 @@ untouched native product. The contributions are:
     multiple-testing correction that seven of the eight per-target
     comparisons survive, an analytic-field control showing that sampling
     geometry alone reproduces the decline of the gap with the target, and
-    a smoothed-native control showing that the remainder is the smoothing
-    the transfer gives the carrier (Section~\ref{sec:support_controls});
+    a smoothed-native control showing that transfer-induced smoothing is
+    sufficient to account for a residual of the observed magnitude
+    (Section~\ref{sec:support_controls});
     \item a reusable, assertion-guarded pipeline that shares its sites,
     products and resampling operator with the companion
     study~\cite{delouis2026resample}, so the storage and transfer questions

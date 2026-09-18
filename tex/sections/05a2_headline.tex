@@ -13,15 +13,18 @@ deviation of the 40 tiles, $0.04$ in reflectance. The table gives, per
 target, that ratio for the Clough--Tocher carrier the paper uses (the
 column $\gamma_\star$, since the two coincide, Section~\ref{sec:rd_main}),
 the share of the raw penalty that compression recovers, the same carrier
-against a native raster given the transfer's own smoothing
-(Section~\ref{sec:support_controls}), the verdict over a range of
+against a native raster subjected to the half-pixel Clough--Tocher
+fixed-phase smoothing control of
+Section~\ref{sec:support_controls}, the verdict over a range of
 native-layout overheads, and the verdict at the illustrative $30\%$
 overhead with its corrected $p$-value; $n$ is the number of regions whose
 sweeps bracket the target on both grids. The verdict column is
 within-representation: each grid is scored against its own uncompressed
-raster. The HPX/sm.\ column is the same comparison with that asymmetry
-removed, and it stays above one at every target, so the grid alone never
-crosses parity; Section~\ref{sec:common_reference} charges the transfer
+raster. The HPX/sm.\ column is the same comparison under a sensitivity
+control that reduces the transfer-induced smoothing asymmetry, at one
+fixed phase rather than in a phase-matched experiment. It stays above one
+at every target, so in these controls geometry alone does not cross
+parity; Section~\ref{sec:common_reference} charges the transfer
 and the read to the carrier instead, and reaches the same place. The figure adds the same
 tile rebuilt with the PSF-aware and inverse-distance transfers of
 Section~\ref{sec:transfer_cost}, on the regions all three sweeps bracket.
@@ -63,8 +66,9 @@ the instrument blur and estimate a sharper latent field, whose
 reconstruction gain that study establishes under its own conditions, and
 a codec asked to preserve the content it places on the tile must spend
 bytes on it: the tile compresses to $2.3$--$2.6$ times the UTM square at
-every target, close to the uncompressed ratio, and no plausible overhead
-on the native product closes that gap. The inverse-distance average,
+every target, close to the uncompressed ratio, and the gap remains large
+over the range of native-layout overheads examined here, the illustrative
+$\gamma_{\mathrm{tile}}=1.30$ included. The inverse-distance average,
 which restores no detail at all, costs nearly as much ($2.1$--$2.5$), so
 the extra bytes are consistent with the price of leaving the smooth
 interpolant (Section~\ref{sec:transfer_cost}). With a Clough--Tocher
@@ -73,6 +77,6 @@ error, and Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative} show
 where the answer changes sign: at $10^{-2}$ at equal layout overhead,
 more exactly for any relative overhead $\gamma\ge0.93$, and one target
 earlier once a $30\%$ overhead is charged to the native product. A
-reader whose product carries $30\%$ of padding and metadata reads the
+reader whose product carries an illustrative $30\%$ layout overhead reads the
 Clough--Tocher ratio as $1.59$ down to $0.72$ (last block of
 Table~\ref{tab:synthesis}), and the PSF-aware one as $1.8$ to $2.0$.

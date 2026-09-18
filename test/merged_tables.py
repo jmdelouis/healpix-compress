@@ -137,8 +137,10 @@ def table_synthesis():
             "$^{*}$The verdict is within-representation: each grid is scored "
             "against its own uncompressed raster, so the transfer's smoothing "
             "is charged to neither side. \\emph{HPX/sm.} is the same carrier "
-            "against a native raster given that smoothing "
-            "(Section~\\ref{sec:support_controls}, half-pixel phase): it stays "
+            "against a native raster subjected to the half-pixel "
+            "Clough--Tocher fixed-phase smoothing control of "
+            "Section~\\ref{sec:support_controls}, a sensitivity control "
+            "and not a phase-matched experiment: it stays "
             "above one at every target, so the grid alone never crosses "
             "parity. Section~\\ref{sec:common_reference} charges the transfer "
             "and the read to the carrier instead."))

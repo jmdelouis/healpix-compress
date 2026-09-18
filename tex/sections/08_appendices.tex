@@ -48,8 +48,9 @@ the cell identifiers of a contiguous NESTED block are implicit. A
 single-tile deflate Cloud-Optimized GeoTIFF~\cite{ogc_cog2023} of the
 equal-area crop costs \SI{8461}{\byte} of header, tag directory and
 near-empty payload, $0.52\%$ of its raw size. Container format therefore
-accounts for at most half a percent on either side; the rest of a layout
-overhead is granule geometry, which Section~\ref{sec:overhead} bounds.
+accounts for at most half a percent on either side; a major remaining
+contribution to a layout overhead is granule geometry, whose sample-area
+effect Section~\ref{sec:overhead} constrains.
 
 \section{Supplementary Controls}
 \label{app:controls}
