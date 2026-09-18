@@ -87,7 +87,12 @@ grids; the UTM side receives this budget divided by $\gamma_{\mathrm{tile}}$
 when an operational overhead is assumed (Section~\ref{sec:overhead}).
 Codecs with a single operating point (the two lossless variants) are
 reported at their achieved point only. All reported values are medians over
-the regions that qualify.
+the regions that qualify. Every confidence interval on a median ratio is a
+$95\%$ percentile bootstrap: the qualifying regions are resampled with
+replacement $10\,000$ times, the median is recomputed on each resample,
+and the interval runs from the $2.5$th to the $97.5$th percentile of
+those medians. Paired $p$-values are two-sided Wilcoxon signed-rank tests
+on the log ratios.
 
 \subsection{Operational UTM Storage}
 \label{sec:overhead}

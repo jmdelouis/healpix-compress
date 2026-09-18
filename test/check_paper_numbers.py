@@ -831,7 +831,7 @@ def _smoothed_rows(sm, where, tag, _st):
         out.append((f"smoothed/native n at tightest and loosest{tag} {where}",
                     f"${len(a[ts[0]])}$ and ${len(a[ts[-1]])}$", ""))
         if not tag:
-            out.append((f"transfer alone buys, percent range {where}",
+            out.append((f"fixed-phase control, native size reduction range {where}",
                         f"${100*(1-r0):.0f}\\%$ to ${100*(1-r1):.0f}\\%$", "1 - ratio"))
     if ts and len(b[ts[0]]) and len(b[ts[-1]]):
         h0 = b[ts[0]].ratio_hpx_smoothed.median()

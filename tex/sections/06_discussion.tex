@@ -15,22 +15,26 @@ $10^{-2}$, where the carrier is smaller at equal layout overhead. A
 HEALPix carrier pays less for its oversampling than raw byte counts
 suggest, and compression does not make it free; it becomes competitive in
 the regime of highest storage pressure, where the redundancy it carries is
-exactly what a rate-adaptive coder discards first.
+efficiently discarded by several of the tested codecs as the distortion
+constraint is relaxed.
 
 \subsection{What Is a Property of the Grid}
 One result is purely geometric: the raw $2.584\times$ sampling-density
 ratio, which the illustrative $\gamma_{\mathrm{tile}}=1.30$ turns into a
-product-architecture quantity of $1.99\times$. A second is geometric once
-the transfer's smoothing is set aside: the monotone decrease of the
-overhead-free size ratio with the target, which an analytic field sampled
+product-architecture quantity of $1.99\times$. A second behaviour is
+reproduced by geometry alone under the measured signal model: the
+monotone decrease of the overhead-free size ratio with the target, which
+an analytic field sampled
 on both lattices reproduces in shape and to within $5$--$24\%$ in
 magnitude, matches to within $7\%$ once the native side is read through
 the same interpolant, and whose crossover it reproduces once the field
 itself passes through the transfer (Section~\ref{sec:support_controls});
 the level-19 carrier swept under the same protocol says the same from
-below (Section~\ref{sec:level_choice}). So is the exploratory latitude
-dependence, compatible with the expected variation of cell-shape
-anisotropy without isolating it. Three findings belong elsewhere: the
+below (Section~\ref{sec:level_choice}). Sampling geometry is therefore
+sufficient to generate this trend under the conditions tested. The
+exploratory latitude dependence is consistent with HEALPix cell-shape
+anisotropy, and has not been isolated as a grid property.
+Three findings belong elsewhere: the
 crossover at a given overhead belongs to the transfer, since it exists
 for a Clough--Tocher carrier and for no other transfer tested and
 disappears when the native raster is given that smoothing, and to the
@@ -81,16 +85,19 @@ submitted from.
 Five groups, detailed in Appendix~\ref{app:limitations}. \emph{Transfer}:
 the crossover is a result for a carrier filled by Clough--Tocher, of the
 transfers tested, and scored against its own smooth tile; the
-smoothed-native control gives the native side that smoothing at two
-phases, so the equal-smoothing ratio at the loosest target is bracketed
-between $0.93$ and $1.24$; a non-deconvolving transfer of the same
+smoothed-native control gives the native side that smoothing at two fixed
+phases, and across the original comparison and these two controls the
+loose-target ratio spans $0.93$--$1.24$, sensitivity controls rather than
+formal limits on a phase-matched experiment; a non-deconvolving transfer of the same
 smoothness has not been tested, and the data are consistent with energy
 compaction playing an important role, short of a demonstration.
 \emph{Reference and reader}: the two reconstruction references disagree
 at the crossover and both are reported; the common-reference sweep has
-been re-scored through an interpolating read, the $3\times10^{-3}$ target
-remains withheld at $57\%$ bracketing, and a read matched to the PSF
-transfer has not been swept. \emph{Footprint and orientation}: the
+been re-scored through an interpolating read, and the PSF-aware carrier
+has also been evaluated through its matched forward operator. What stays
+open is the $3\times10^{-3}$ target, bracketed for only $57\%$ of the
+regions under the interpolating read, and a latent-field reference for
+the PSF-aware carrier. \emph{Footprint and orientation}: the
 equal-area crop and the rotated tile overlap over $74$--$83\%$ of their
 extent, and the mismatch is constrained by three controls, one analytic and
 two on subsets; the raster's axes run at about $45^\circ$ to the native
@@ -102,5 +109,7 @@ flux-conservative fields or the full sphere. \emph{Compression and
 operational assumptions}: the oracle-best-codec comparison is optimistic
 by construction; codecs are swept over their own quality parameters; the
 loosest targets carry censored observations; the overhead is a parameter
-because only its container and overlap components are measured; learned
+because the container component is measured in bytes, while the overlap
+sample-area duplication is computed from the published tiling geometry
+and its corresponding compressed-byte cost is not measured; learned
 codecs are not evaluated; and the byte audit covers two regions.

@@ -77,8 +77,9 @@ native lattice and at the native density, while the carrier samples a
 different lattice at every phase. Two phases are reported. At half a
 pixel, the phase at which the interpolant departs most from the samples,
 the native raster compresses to $0.94$ of its size at the tightest target
-and $0.78$ at the loosest (median over $40$ and $34$ regions), so the
-transfer alone buys $6\%$ to $22\%$ of the bytes at equal error, more as
+and $0.78$ at the loosest (median over $40$ and $34$ regions), so this
+fixed-phase smoothing control reduces the native compressed size by
+$6\%$ to $22\%$ at equal error, more as
 the target loosens; at a quarter of a pixel it compresses to $0.96$ and
 $0.87$. Given that smoothing, the native side is smaller than the carrier
 at every target and at both phases: HEALPix over smoothed native falls
@@ -91,11 +92,16 @@ of the carrier's cost, once the native side carries the transfer's
 smoothing, is what sampling the same field at $2.58$ times the density
 predicts. The carrier's cells sit at every phase, including phases near
 zero where the interpolant returns the samples themselves and the ratio
-returns to the $0.93$ of the raw comparison, so the equal-smoothing ratio
-at the loosest target lies between $0.93$ and $1.24$, with the two
-measured phases at $1.10$ and $1.24$. These controls show that the
+returns to the $0.93$ of the raw comparison. Across the original
+comparison and the two measured fixed-phase smoothing controls, the
+loose-target ratio spans $0.93$--$1.24$, with the two measured phases at
+$1.10$ and $1.24$. These values are sensitivity controls rather than
+formal limits on a phase-matched experiment, since the real carrier
+carries a distribution of phases and a different geometry, and
+compression is not linear in that phase. These controls show that the
 smoothing the transfer gives the carrier is enough to remove the
-crossover, and that it accounts for the residual between the
+crossover, and that it is sufficient to account for a residual of the
+observed magnitude between the
 geometry-only control and the measurement; the common reference reaches
 the same place from the other side
 (Section~\ref{sec:common_reference}). Two controls on subsets agree

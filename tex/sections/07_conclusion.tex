@@ -20,21 +20,24 @@ decline comes from. An analytic field sampled by both lattices with no
 transfer follows it to within $5$--$24\%$; and when the native side is
 given a strong Clough--Tocher smoothing control the carrier costs $2.23$
 to $1.24$ times the native square, within $7\%$ of that control. The
-smoothing the transfer gives the carrier is therefore enough to account
-for the remaining crossover, and the grid alone never crosses parity.
+controls show that transfer-induced smoothing is sufficient to account
+for the remaining crossover under the tested conditions, and the grid
+alone never crosses parity.
 The coarser level-19 carrier is smaller, at $0.67$ to $0.78$ of the
 native square, but carries a transfer-and-read floor about $2.25$ times
 that of level 20.
 
-\emph{Processing chain.} The crossover holds for one transfer and one
-class of codec. Rebuilding the same tiles with a PSF-aware or an
+\emph{Processing chain.} The crossover holds for one transfer and is
+codec-dependent: four of the five codecs tested reproduce the
+regime-dependent pattern, while ZFP does not. Rebuilding the same tiles
+with a PSF-aware or an
 inverse-distance transfer costs $1.2$ to $2.5$ times the bytes at the
 same coding RMSE and leaves HEALPix ahead at no target
 (Section~\ref{sec:transfer_cost}). The PSF/IDW differential is only
 $3$--$13\%$, so deconvolution alone is unlikely to explain the two-fold
-surcharge. Held fixed on both grids, four of the five codecs reproduce
-the regime-dependent verdict and ZFP does not
-(Section~\ref{sec:same_codec}).
+surcharge. The split survives when the codec is held fixed on both grids,
+and the four that reproduce the pattern span wavelet, multiscale and
+prediction-based designs (Section~\ref{sec:same_codec}).
 
 \emph{Reference.} Against the same Sentinel-2 observation, the
 uncompressed carrier already differs from the native product by
@@ -49,8 +52,9 @@ needs $1.34$, $4.58$ and $43.5$ times the native product's error at the
 $2\%$, $5\%$ and $10\%$ budgets, and reaches no RMSE target on three
 quarters of the regions (Section~\ref{sec:common_reference}). A HEALPix
 carrier is therefore competitive at aggressive compression when the
-HEALPix cube is itself the reference product, and at no storage budget
-when the native product remains the ground truth.
+HEALPix cube is itself the reference product, while native UTM remains
+ahead at all three reportable matched-storage budgets when the native
+product remains the ground truth.
 
 In summary, whether the carrier is the smaller archive is a comparison
 between the overhead the native product carries and $\gamma_\star(e)$ at

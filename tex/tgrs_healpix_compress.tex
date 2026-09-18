@@ -89,11 +89,10 @@ Clough--Tocher tile falls from $2.06$ to $0.93$ times the native square
 as the tolerated RMSE grows from $10^{-4}$ to $10^{-2}$, while a
 PSF-aware or inverse-distance transfer costs $1.2$ to $2.5$ times those
 bytes and never reaches parity; of the five codecs, ZFP alone shows no
-crossover. Controls place the crossing in the smoothing the transfer
-gives the carrier: given that smoothing, the native raster compresses to
-$0.78$ of its size and the carrier is $1.24$ times it. Against the native
+crossover. Fixed-phase smoothing controls remove the crossover,
+implicating transfer-induced smoothing as a major contributor. Against the native
 observation the carrier starts from a floor of $4.0\times10^{-3}$ and
-native UTM leads at every storage budget. The carrier becomes
+native UTM leads at all three reportable matched-storage budgets. The carrier becomes
 competitive only at aggressive compression; among the transfers tested
 this happens only with Clough--Tocher, and where the crossover falls
 depends on whether the transfer-and-read error is charged to the carrier.
