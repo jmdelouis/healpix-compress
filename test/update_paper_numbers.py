@@ -132,13 +132,41 @@ def reader_tag(cr_mode="nearest"):
     return "" if cr_mode in (None, "nearest") else f"__{cr_mode}"
 
 
-def load(metric="self", cr_mode="nearest"):
-    tag = reader_tag(cr_mode) if metric == "common" else ""
+DEFAULT_KERNEL = "clough_tocher"
+
+
+def kernel_tag(kernel=DEFAULT_KERNEL):
+    """A non-default transfer has its own HEALPix-side sweep (run_codec_bench
+    --resampler); the file names follow run_codec_bench.kernel_tag."""
+    return "" if kernel in (None, DEFAULT_KERNEL) else f"__{kernel}"
+
+
+def hpx_tag(kernel=DEFAULT_KERNEL, cr_mode="nearest"):
+    """Suffix of the HEALPix-side files: transfer first, reader second, as
+    run_codec_bench.run_tag writes them (hpx_codec_bench__psf__psf.csv)."""
+    return kernel_tag(kernel) + reader_tag(cr_mode)
+
+
+def out_tag(metric="self", kernel=DEFAULT_KERNEL, cr_mode="nearest"):
+    """Suffix of the tables and paper_numbers this run writes (single
+    underscores): '' for the published self sweep, '_common',
+    '_common_bilinear', '_common_psf_psf' for the PSF carrier read through
+    its matched operator."""
+    if metric == "self":
+        return ""
+    return ("_common"
+            + ("" if kernel in (None, DEFAULT_KERNEL) else f"_{kernel}")
+            + ("" if cr_mode in (None, "nearest") else f"_{cr_mode}"))
+
+
+def load(metric="self", cr_mode="nearest", kernel=DEFAULT_KERNEL):
+    tag = hpx_tag(kernel, cr_mode) if metric == "common" else kernel_tag(kernel)
     hpx_path = cfg.RESULTS_DIR / f"hpx_codec_bench{tag}.csv"
     if not hpx_path.exists():
         raise SystemExit(
-            f"{hpx_path} is missing; the {cr_mode!r} reader has not been swept. "
-            f"Run\n    python run_codec_bench.py --grid hpx --common-reference "
+            f"{hpx_path} is missing; the {cr_mode!r} reader has not been swept "
+            f"on the {kernel!r} tiles. Run\n    python run_codec_bench.py "
+            f"--grid hpx --resampler {kernel} --common-reference "
             f"--cr-mode {cr_mode}")
     hpx = pd.read_csv(hpx_path)
     utm = pd.read_csv(cfg.RESULTS_DIR / "utm_codec_bench.csv")
@@ -590,6 +618,13 @@ def main(argv=None) -> int:
                          "reader-suffixed HEALPix CSV and floor file and writes "
                          "reader-suffixed tables and paper_numbers, so the "
                          "published summary is never overwritten")
+    ap.add_argument("--resampler", default=DEFAULT_KERNEL,
+                    help="with --metric common: which transfer's HEALPix "
+                         "tiles were swept (run_codec_bench --resampler). "
+                         "Anything but the default reads the kernel-suffixed "
+                         "CSV and floor file and writes kernel-suffixed "
+                         "tables and paper_numbers (e.g. --resampler psf "
+                         "--cr-mode psf -> paper_numbers_common_psf_psf.json)")
     ap.add_argument("--no-write-tex", action="store_true")
     ap.add_argument("--pareto", action="store_true",
                     help="reduce each sweep to its Pareto frontier before "
@@ -602,7 +637,11 @@ def main(argv=None) -> int:
     st.USE_PARETO = bool(args.pareto)
     if args.cr_mode != "nearest" and args.metric != "common":
         raise SystemExit("--cr-mode only applies with --metric common")
-    hpx, utm, scenes, rmse_col = load(args.metric, args.cr_mode)
+    if args.resampler != DEFAULT_KERNEL and args.metric != "common":
+        raise SystemExit("--resampler only applies with --metric common "
+                         "(the within-representation transfer sweeps are "
+                         "summarised by superres_cost.py)")
+    hpx, utm, scenes, rmse_col = load(args.metric, args.cr_mode, args.resampler)
     codecs = [c for c in cfg.COMPRESSOR_CODECS
               if c in set(hpx.codec) or c in set(utm.codec)]
     print(f"{len(scenes)} regions | codecs {codecs} | HPX metric column {rmse_col!r}")
@@ -611,7 +650,8 @@ def main(argv=None) -> int:
         e = json.loads(envf.read_text())
         print(f"  results written by code {e.get('code_sha', '?')} at "
               f"{e.get('written_utc', '?')}")
-    floorf = cfg.RESULTS_DIR / f"common_reference_floor{reader_tag(args.cr_mode)}.csv"
+    floorf = (cfg.RESULTS_DIR
+              / f"common_reference_floor{hpx_tag(args.resampler, args.cr_mode)}.csv")
     if args.metric == "common" and floorf.exists():
         fl = pd.read_csv(floorf)
         modes = sorted(set(fl.get("mode", pd.Series(dtype=str)).astype(str)))
@@ -708,8 +748,7 @@ def main(argv=None) -> int:
         cfg.TEX_TABLES.mkdir(parents=True, exist_ok=True)
         # The two metrics answer different questions and both are reported, so
         # they must not overwrite each other's tables.
-        tag = "" if args.metric == "self" else (
-            f"_{args.metric}" + ("" if args.cr_mode == "nearest" else f"_{args.cr_mode}"))
+        tag = out_tag(args.metric, args.resampler, args.cr_mode)
         for name, tex in [("table_storage_accounting", tex_iii),
                           ("table_storage_at_constant_rmse", tex_iv),
                           ("table_error_at_constant_size", tex_v),
@@ -742,8 +781,7 @@ def main(argv=None) -> int:
                  for r in rows],
     )
     payload["pareto"] = bool(args.pareto)
-    suffix = (args.metric
-              + ("" if args.cr_mode == "nearest" else f"_{args.cr_mode}")
+    suffix = ((out_tag(args.metric, args.resampler, args.cr_mode) or "_self").lstrip("_")
               + ("_pareto" if args.pareto else ""))
     out_json = cfg.RESULTS_DIR / f"paper_numbers_{suffix}.json"
     out_json.write_text(json.dumps(payload, indent=2, default=float), encoding="utf-8")
@@ -803,7 +841,8 @@ def main(argv=None) -> int:
     for c, w in sorted(ranking["wins"].items(), key=lambda kv: -kv[1]):
         md.append(f"- {c}: {w} wins / {ranking['evaluable'].get(c,0)} evaluable, "
                   f"mean rank {ranking['mean_rank'].get(c, float('nan')):.2f}")
-    floor_path = cfg.RESULTS_DIR / f"common_reference_floor{reader_tag(args.cr_mode)}.csv"
+    floor_path = (cfg.RESULTS_DIR
+                  / f"common_reference_floor{hpx_tag(args.resampler, args.cr_mode)}.csv")
     if floor_path.exists():
         fl = pd.read_csv(floor_path)
         md += ["", "## HEALPix representation floor (common reference)", "",

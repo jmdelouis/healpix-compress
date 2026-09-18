@@ -227,6 +227,35 @@ def digest_of(df, targets):
         out["direct_over_aggregate_size"] = {
             "median": float(r.median()), "lo": float(r.min()),
             "hi": float(r.max()), "n": int(r.size)}
+        # per target, on the regions eligible for both carriers (revision 6,
+        # run 2.4): the aggregate's advantage grows with the target, and its
+        # compressed / raw size tracks the native crop's, which is why its
+        # L19/UTM column is flat at the raw ratio.
+        raw_u = df.pivot_table(index=["scene", "target"], values="raw_utm_bytes")
+        ub = df.pivot_table(index=["scene", "target"], values="utm_bytes")
+        raw19 = df.pivot_table(index=["scene", "target"], values="raw_l19_bytes")
+        elig = df.pivot_table(index=["scene", "target"], columns="carrier",
+                              values="eligible_utm")
+        per = {}
+        for t in targets:
+            e = elig.xs(t, level="target")
+            keep = e.index[(e.get("direct", False) == True) & (e.get("aggregate", False) == True)]
+            if not len(keep):
+                continue
+            b = piv.xs(t, level="target").loc[keep]
+            ad = (b["aggregate"] / b["direct"]).dropna()
+            cu = (ub.xs(t, level="target").loc[keep, "utm_bytes"]
+                  / raw_u.xs(t, level="target").loc[keep, "raw_utm_bytes"])
+            r19 = raw19.xs(t, level="target").loc[keep, "raw_l19_bytes"]
+            per[f"{t:g}"] = {
+                "n": int(ad.size),
+                "aggregate_over_direct_median": float(ad.median()),
+                "aggregate_cheaper_fraction": float((ad < 1).mean()),
+                "compact_utm": float(cu.median()),
+                "compact_direct": float((b["direct"] / r19).median()),
+                "compact_aggregate": float((b["aggregate"] / r19).median()),
+            }
+        out["aggregate_vs_direct"] = per
     return out
 
 
@@ -350,6 +379,99 @@ def write_outputs(sweeps, codecs, targets, no_tex=False):
     return 0
 
 
+def diagnose(sweeps, codecs, targets):
+    """Why is L19/UTM flat for the aggregate carrier? (revision 6, run 2.4)
+
+    Review R1 of v6 noticed that the aggregate column of the level-19 table
+    stays at 0.63--0.64 over the five targets, i.e. at the raw ratio 0.65,
+    while the direct carrier rises from 0.67 to 0.78. This prints, per
+    target, what could produce that: the populations (a different n per
+    carrier), the pairing (agg/direct on the same regions), the
+    compactability of each raster (compressed / own lossless size, so the
+    aggregate can be compared with the crop on a ratio that divides the raw
+    size out), and which codec the oracle picks. It computes nothing new
+    from the tiles: everything comes from level19_rd_sweeps.csv and the two
+    published sweeps.
+    """
+    utm, hpx = load_reference_sweeps()
+    df = per_region_ratios(sweeps, utm, hpx, codecs, targets)
+    lines = [f"# Level-{LEVEL19} diagnostic: aggregate against direct", ""]
+    piv_b = df.pivot_table(index=["scene", "target"], columns="carrier",
+                           values="l19_bytes")
+    piv_e = df.pivot_table(index=["scene", "target"], columns="carrier",
+                           values="eligible_utm")
+    lines += ["| target | n direct | n agg | direct/UTM | agg/UTM | "
+              "agg/direct (paired, same regions) | agg < direct | "
+              "compact. UTM | compact. direct | compact. agg |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
+
+    def compact(sw, scene, t):
+        """compressed size at target / raw size of the same raster (the
+        level-19 sweeps carry no lossless point, so raw is the common base)"""
+        s = st.best_of_codecs_size(sw, scene, codecs, t)
+        g = sw[sw.scene == scene]
+        base = g.raw_bytes.iloc[0] if len(g) and "raw_bytes" in g else np.nan
+        return s / base if np.isfinite(s) and np.isfinite(base) and base > 0 else np.nan
+
+    for t in targets:
+        d = df[df.target == t]
+        nd = int(d[(d.carrier == "direct") & d.eligible_utm].scene.nunique())
+        na = int(d[(d.carrier == "aggregate") & d.eligible_utm].scene.nunique())
+        md_ = d[(d.carrier == "direct") & d.eligible_utm].ratio_l19_utm.median()
+        ma_ = d[(d.carrier == "aggregate") & d.eligible_utm].ratio_l19_utm.median()
+        both = piv_e.xs(t, level="target")
+        both = both[(both.get("direct", False) == True) & (both.get("aggregate", False) == True)]
+        bb = piv_b.xs(t, level="target").loc[both.index] if len(both) else piv_b.iloc[0:0]
+        r = (bb["aggregate"] / bb["direct"]).dropna() if len(bb) else pd.Series(dtype=float)
+        cu, cd, ca = [], [], []
+        for scene in both.index:
+            cu.append(compact(utm, scene, t))
+            l19 = sweeps[sweeps.scene == scene]
+            cd.append(compact(l19[l19.carrier == "direct"], scene, t))
+            ca.append(compact(l19[l19.carrier == "aggregate"], scene, t))
+        fmt = lambda v: f"{np.nanmedian(v):.3f}" if len(v) and np.isfinite(np.nanmedian(v)) else "--"
+        lines.append(f"| {t:g} | {nd} | {na} | {md_:.3f} | {ma_:.3f} | "
+                     f"{fmt(r.values) if len(r) else '--'} (n={len(r)}) | "
+                     f"{(r < 1).mean():.2f} | {fmt(cu)} | {fmt(cd)} | {fmt(ca)} |"
+                     if len(r) else
+                     f"| {t:g} | {nd} | {na} | {md_:.3f} | {ma_:.3f} | -- | -- | "
+                     f"{fmt(cu)} | {fmt(cd)} | {fmt(ca)} |")
+    # which codec the oracle selects, per carrier and target
+    lines += ["", "## Oracle codec per carrier (share of regions)", ""]
+    for name, sw in sweeps.groupby("carrier"):
+        for t in targets:
+            picks = []
+            for scene in sw.scene.unique():
+                best, bsize = None, np.inf
+                for c in codecs:
+                    v = st.best_of_codecs_size(sw, scene, [c], t)
+                    if np.isfinite(v) and v < bsize:
+                        best, bsize = c, v
+                if best:
+                    picks.append(best)
+            vc = pd.Series(picks).value_counts(normalize=True)
+            lines.append(f"- {name}, target {t:g}: "
+                         + ", ".join(f"{k} {100*v:.0f}%" for k, v in vc.items()))
+    # sanity: the aggregate's own RMSE reference is the aggregate raster
+    agg = sweeps[(sweeps.carrier == "aggregate") & (sweeps.codec != "uncompressed")]
+    lines += ["", "## Reference check",
+              f"- aggregate sweep rows: {len(agg)}, raw_bytes per row "
+              f"{sorted(agg.raw_bytes.unique())} (expected {4 * N19} for a "
+              f"{SIDE19}^2 float32 raster: the RMSE column is against that raster)",
+              "- compactability columns are compressed / raw bytes of each raster; "
+              "the aggregate is a 2x2 mean of the Clough--Tocher tile, hence "
+              "smoother than the directly evaluated carrier, and a flat agg/UTM "
+              "column with a falling agg/direct column means the aggregate gains "
+              "compressibility with the target at the same rate as the native crop",
+              ]
+    md = "\n".join(lines)
+    out = cfg.RESULTS_DIR / "level19_rd_diagnose.md"
+    out.write_text(md, encoding="utf-8")
+    print(md)
+    print(f"\nwrote {out}")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -363,10 +485,19 @@ def main(argv=None) -> int:
                     help="recompute ratios, digest and table from the saved "
                          "level19_rd_sweeps.csv without sweeping")
     ap.add_argument("--no-tex", action="store_true")
+    ap.add_argument("--diagnose", action="store_true",
+                    help="explain the flat aggregate column from the saved "
+                         "sweeps (revision 6, run 2.4); writes "
+                         "results/level19_rd_diagnose.md, sweeps nothing")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args(argv)
 
     sweeps_path = cfg.RESULTS_DIR / "level19_rd_sweeps.csv"
+    if args.diagnose:
+        if not sweeps_path.exists():
+            print(f"{sweeps_path} is missing; run without --diagnose first")
+            return 1
+        return diagnose(pd.read_csv(sweeps_path), args.codecs, args.targets)
     if args.tables_only:
         if not sweeps_path.exists():
             print(f"{sweeps_path} is missing; run without --tables-only first")
