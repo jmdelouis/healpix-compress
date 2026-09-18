@@ -80,11 +80,27 @@ def table_synthesis():
         # the JSON keeps every target; gamma_analysis says which are reported
         if t["kind"] == "rmse" and t.get("test", {}).get("n"):
             at_g[round(float(t["target"]), 12)] = t
+    # The grid-only ratio, for the same targets: HEALPix against a native
+    # raster given the transfer's own smoothing (Section V-G). Review R1 of
+    # v6 asked for it here, beside the verdict, so that a reader cannot take
+    # "HPX" at the loosest target without the condition that produces it.
+    smoothed = {}
+    sp = cfg.RESULTS_DIR / "support_controls_smoothed.csv"
+    if sp.exists():
+        sm = pd.read_csv(sp)
+        if {"shift_x", "shift_y"} <= set(sm.columns):
+            sm = sm[np.isclose(sm.shift_x, 0.5) & np.isclose(sm.shift_y, 0.5)]
+        sm = sm[sm.hpx_both_bracketed]
+        smoothed = {round(float(t), 12): g.ratio_hpx_smoothed.median()
+                    for t, g in sm.groupby("target")}
+
     rows = []
     for _, r in df.iterrows():
         t = at_g.get(round(float(r.target), 12))
         if t is None:
             continue
+        sm_v = smoothed.get(round(float(r.target), 12))
+        sm_txt = "--" if sm_v is None or not np.isfinite(sm_v) else f"{sm_v:.2f}"
         test, ph = t["test"], t.get("p_holm", np.nan)
         if ph is not None and np.isfinite(ph) and ph >= 0.05:
             verdict = "inconcl."
@@ -95,7 +111,7 @@ def table_synthesis():
         rows.append(
             f"{_label(r.target)} & {int(r.n)} & {r.gamma_star_median:.2f} & "
             f"[{r.gamma_star_q25:.2f}, {r.gamma_star_q75:.2f}] & "
-            f"{r.recovered_fraction:.2f} & "
+            f"{r.recovered_fraction:.2f} & {sm_txt} & "
             f"{100*r['win_at_1']:.0f} & {100*r['win_at_1.3']:.0f} & "
             f"{100*r['win_at_2']:.0f} & {inc} & "
             f"{test['median']:.2f} & {_p(ph)} & {verdict} \\\\")
@@ -106,16 +122,27 @@ def table_synthesis():
         + _caption("The verdict per RMSE target: overhead-free ratio, critical "
                    "overhead and the illustrative operating point",
                    "tab:synthesis")
-        + "\n\\footnotesize\n\\setlength{\\tabcolsep}{4pt}\n"
-        "\\begin{tabular}{@{}lrrlrrrrlrrl@{}}\n\\toprule\n"
-        " & & \\multicolumn{3}{c}{$\\gamma=1$} & "
+        + "\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n"
+        "\\begin{tabular}{@{}lrrlrrrrrlrrl@{}}\n\\toprule\n"
+        " & & \\multicolumn{4}{c}{$\\gamma=1$} & "
         "\\multicolumn{3}{c}{HPX smaller (\\% of $n$)} & & "
         f"\\multicolumn{{3}}{{c}}{{$\\gamma_{{\\mathrm{{tile}}}}={gamma_utm:g}$}} \\\\\n"
-        "\\cmidrule(lr){3-5}\\cmidrule(lr){6-8}\\cmidrule(lr){10-12}\n"
-        "Target RMSE & $n$ & $\\gamma_\\star$ & IQR & $f(e)$ & "
+        "\\cmidrule(lr){3-6}\\cmidrule(lr){7-9}\\cmidrule(lr){11-13}\n"
+        "Target RMSE & $n$ & $\\gamma_\\star$ & IQR & $f(e)$ &  "
+        "HPX/sm. & "
         "$\\gamma{=}1$ & $\\gamma{=}1.3$ & $\\gamma{=}2$ & Inconclusive $\\gamma$ & "
-        "Ratio & $p_{\\mathrm{Holm}}$ & Verdict \\\\\n\\midrule\n"
-        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+        "Ratio & $p_{\\mathrm{Holm}}$ & Verdict$^{*}$ \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
+        + "\n".join(cfg.tex_note(
+            "$^{*}$The verdict is within-representation: each grid is scored "
+            "against its own uncompressed raster, so the transfer's smoothing "
+            "is charged to neither side. \\emph{HPX/sm.} is the same carrier "
+            "against a native raster given that smoothing "
+            "(Section~\\ref{sec:support_controls}, half-pixel phase): it stays "
+            "above one at every target, so the grid alone never crosses "
+            "parity. Section~\\ref{sec:common_reference} charges the transfer "
+            "and the read to the carrier instead."))
+        + "\n\\end{table*}\n")
 
 
 # --- 2. floors ---------------------------------------------------------------
@@ -134,12 +161,12 @@ def table_floors():
         rows.append(f"level 20 & C--T & nearest & {cls} & {len(g)} & "
                     f"{_sci(g.representation_floor_rmse.median())} & {pct:.1f} & "
                     f"[{_sci(g.representation_floor_rmse.min())}, "
-                    f"{_sci(g.representation_floor_rmse.max())}] \\\\")
+                    f"{_sci(g.representation_floor_rmse.max())}] & \\\\")
     pct = 100 * np.median(fl.representation_floor_rmse / fl[std_col])
     rows.append(f"level 20 & C--T & nearest & all & {len(fl)} & "
                 f"{_sci(fl.representation_floor_rmse.median())} & {pct:.1f} & "
                 f"[{_sci(fl.representation_floor_rmse.min())}, "
-                f"{_sci(fl.representation_floor_rmse.max())}] \\\\")
+                f"{_sci(fl.representation_floor_rmse.max())}] & \\\\")
     rows.append("\\midrule")
     rf = pd.read_csv(cfg.RESULTS_DIR / "reader_floor.csv")
     rf = rf[rf.error.isna()] if "error" in rf else rf
@@ -162,14 +189,14 @@ def table_floors():
             if len(ratio):
                 note += f"; MSE $-{100*(1 - float(ratio.median()) ** 2):.0f}\\%$ vs nearest"
         rows.append(f"level 20 & {names[k]} & {rd} & all & {len(g)} & {_sci(med)} & "
-                    f"{100*g.floor_frac_of_std.median():.1f} & {note} \\\\")
+                    f"{100*g.floor_frac_of_std.median():.1f} & -- & {note} \\\\")
     rows.append("\\midrule")
     d19 = json.loads((cfg.RESULTS_DIR / "level19_direct.json").read_text())
     rows.append(f"level 19, direct & C--T & nearest & all & {d19['n']} & "
-                f"{_sci(d19['floor19_direct'])} & -- & "
+                f"{_sci(d19['floor19_direct'])} & -- & -- & "
                 f"${d19['ratio_direct']:.2f}\\times$ level 20; lower on {d19['direct_better_on']} \\\\")
     rows.append(f"level 19, aggregate & C--T & nearest & all & {d19['n']} & "
-                f"{_sci(d19['floor19_agg'])} & -- & "
+                f"{_sci(d19['floor19_agg'])} & -- & -- & "
                 f"${d19['ratio_agg']:.2f}\\times$ level 20; lower on "
                 f"{d19['n'] - d19['direct_better_on']} \\\\")
     return (
@@ -177,9 +204,9 @@ def table_floors():
         + _caption("Transfer-and-read floors against the native observation",
                    "tab:floors")
         + "\n\\footnotesize\n\\setlength{\\tabcolsep}{4pt}\n"
-        "\\begin{tabular}{@{}llllrrrl@{}}\n\\toprule\n"
+        "\\begin{tabular}{@{}llllrrrll@{}}\n\\toprule\n"
         "Carrier & Transfer & Read & Class & $n$ & Floor (RMSE) & \\% of std & "
-        "Range or note \\\\\n\\midrule\n"
+        "Range & Cells read, and against the nearest read \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
 
 
@@ -263,10 +290,13 @@ def table_transfer():
 
     return (
         "\\begin{table*}[t]\n\\centering\n"
-        + _caption("What the transfer costs: storage, compactability and accuracy",
+        + _caption("What the transfer costs: (a) storage, (b) compactability, "
+                   "(c) accuracy",
                    "tab:transfer")
         + "\n\\footnotesize\n\\setlength{\\tabcolsep}{4pt}\n"
-        + part_a + "\n\\vspace{4pt}\n\n" + part_b + "\n\\vspace{4pt}\n\n" + part_c
+        + "\\emph{(a) Storage.}\\\\[2pt]\n" + part_a
+        + "\n\\vspace{4pt}\n\n\\emph{(b) Compactability.}\\\\[2pt]\n" + part_b
+        + "\n\\vspace{4pt}\n\n\\emph{(c) Accuracy, by kernel.}\\\\[2pt]\n" + part_c
         + "\n\\end{table*}\n")
 
 

@@ -20,7 +20,7 @@ admitted under the rule of Section~\ref{sec:rd_protocol} applied to all
 four sweeps: the codec the oracle selects must bracket the target on the
 C--T, PSF and IDW carriers and on the native crop. The extra sweeps
 remove one region at the tight targets and two at the loosest, where $n$
-falls to 30. In the first block, the three columns under $\gamma=1$ give
+falls to 30. In block (a), the three columns under $\gamma=1$ give
 each carrier against the equal-area native crop with no overhead,
 composed per region, so a value below one favours HEALPix; the three
 columns under ``relative to C--T'' give the compressed size relative to
@@ -47,7 +47,7 @@ kernel, smoothness, frequency response and behaviour under noise.
 Isolating it would need a non-deconvolving transfer of the same
 smoothness class, which we do not have.
 
-The second block of Table~\ref{tab:transfer} separates content from
+Block (b) of Table~\ref{tab:transfer} separates content from
 codability: its second column is each raster's own lossless size, and the
 other columns give the compressed size at each target as a fraction of
 that lossless size, so the entropy difference between rasters divides
@@ -91,7 +91,7 @@ barely move with the tolerated error: their content resists lossy coding,
 while the content of the Clough--Tocher tile is mostly the smooth
 redundancy a codec is built to remove.
 
-The third block of Table~\ref{tab:transfer} rebuilds the carrier with
+Block (c) of Table~\ref{tab:transfer} rebuilds the carrier with
 five kernels from the same native window (bicubic is Keys' cubic
 convolution) and reads each with the same operator, so any difference
 between rows is the transfer alone. \emph{Transfer} is the error against
@@ -122,11 +122,11 @@ the inverse-distance average buy transfer error, tenfold.
 The extra bytes of the deconvolved carrier are of a different kind by
 design, and what they buy is established by the companion study under its
 own conditions. On a known pre-degradation texture the matched
-reconstruction recovers $15.4\%$ to $19.6\%$ of the imposed blur error,
-and on real reduced-resolution Sentinel-2 imagery it has the smallest
-RMSE in all 40 regions, improving on the best of nearest, bilinear,
-bicubic and Richardson--Lucy by $11.0\%$ to $17.9\%$, with the restored
-power at low and intermediate frequencies~\cite{delouis2026resample}.
+reconstruction recovers $15.4\%$ to $19.6\%$ of the imposed blur error.
+On real reduced-resolution Sentinel-2 imagery it has the smallest RMSE in
+all 40 regions, improving on the best of nearest, bilinear, bicubic and
+Richardson--Lucy by $11.0\%$ to $17.9\%$, with the restored power at low
+and intermediate frequencies~\cite{delouis2026resample}.
 Whether the particular tiles whose bytes are counted here realise it is
 not established, and our own harness does not reproduce the magnitude of
 the recovery (Appendix~\ref{app:limitations}). With this reservation, the
@@ -135,11 +135,13 @@ price of small-scale content placed there by a validated method; on the
 inverse-distance carrier it is the price of content ten times further
 from the truth than the transfer it replaced. Clough--Tocher is both the
 most accurate of the reproducing transfers and the most compressible,
-and we argue the two share a cause: a transfer that represents a
-band-limited field faithfully does not invent fine-scale content, and
-content it does not invent is content the codec need not pay for. A
-level-20 carrier becomes competitive at aggressive compression when it
-is filled by a transfer in the smoothness class of Clough--Tocher;
-leaving that class costs about a factor of two at the loosest targets
-and removes the advantage, a cost set by how compactly the transfer's
-output can be coded more than by how much detail it restores.
+and the observations are consistent with the two sharing a cause: a
+transfer that represents a band-limited field faithfully does not invent
+fine-scale content, and content it does not invent is content the codec
+need not pay for. A level-20 carrier becomes competitive at aggressive
+compression when it is filled by the Clough--Tocher transfer, of the
+three tested; the other two cost about a factor of two at the loosest
+targets and remove the advantage, a cost set by how compactly the
+transfer's output can be coded more than by how much detail it restores.
+Whether the result extends to other transfers of comparable smoothness
+remains untested.

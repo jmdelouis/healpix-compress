@@ -96,21 +96,25 @@ samples and on the codec. Approximation theory and the cross-scale
 persistence used by zerotree coders make this expectation precise
 (Appendix~\ref{app:literatures}).
 
-One bound is exact. The carrier is a deterministic function of the
-native samples: the tile is a known transfer applied to the crop. A coder
-that stored the native samples and the name of the transfer would
-reproduce the tile without loss, so the smallest lossless description of
-the carrier is never larger than that of the native product plus a
-constant, and an ideal codec would give a size ratio at or below one. The
-same holds at a tolerated error, up to the factor by which the transfer
-amplifies a coding error on its input, close to one for an interpolant of
-smooth data. The ratios above one measured in Section~\ref{sec:results}
-are therefore a property of general-purpose codecs applied to an
-oversampled representation; the gap between the measured ratio and one
-is what such codecs fail to exploit. This is the situation of oversampled
+One bound follows from information alone. For a fixed complete source
+window, the carrier is a deterministic function of the native samples:
+the tile is a known transfer applied to that window. A coder that stored
+those samples and the name of the transfer would reproduce the tile
+without loss, so the information content of the carrier cannot exceed
+that of the complete input samples by more than the description of the
+transfer. This does not give a unit upper bound on the HEALPix/native-crop
+ratio measured here. The equal-area crop and the carrier do not cover
+identical supports, and the transfer reads native samples from outside
+the crop, so the crop is not the input from which the tile is a function
+(Section~\ref{sec:utm_crop}). What the bound says is that the carrier
+holds no more information than the window it came from, and that the
+ratios measured in Section~\ref{sec:results} are a property of
+general-purpose codecs applied to an oversampled representation. This is
+the situation of oversampled
 analogue-to-digital conversion, where the redundant samples form a frame
 and a consistent decoder can recover part of the oversampling
 gain~\cite{thao1994oversampled,christensen2016frames}, and of
 generalised sampling, where a smooth interpolant read at a finer lattice
-adds no degrees of freedom~\cite{unser2000sampling}. Whether a practical
-codec approaches the bound is the empirical question of this paper.
+adds no degrees of freedom~\cite{unser2000sampling}. How much of that
+redundancy a practical codec removes is the empirical question of this
+paper.

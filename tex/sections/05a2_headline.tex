@@ -12,10 +12,17 @@ percent to a quarter of a typical scene's contrast, the median standard
 deviation of the 40 tiles, $0.04$ in reflectance. The table gives, per
 target, that ratio for the Clough--Tocher carrier the paper uses (the
 column $\gamma_\star$, since the two coincide, Section~\ref{sec:rd_main}),
-the share of the raw penalty that compression recovers, the verdict over
-a range of native-layout overheads, and the verdict at the illustrative
-$30\%$ overhead with its corrected $p$-value; $n$ is the number of regions
-whose sweeps bracket the target on both grids. The figure adds the same
+the share of the raw penalty that compression recovers, the same carrier
+against a native raster given the transfer's own smoothing
+(Section~\ref{sec:support_controls}), the verdict over a range of
+native-layout overheads, and the verdict at the illustrative $30\%$
+overhead with its corrected $p$-value; $n$ is the number of regions whose
+sweeps bracket the target on both grids. The verdict column is
+within-representation: each grid is scored against its own uncompressed
+raster. The HPX/sm.\ column is the same comparison with that asymmetry
+removed, and it stays above one at every target, so the grid alone never
+crosses parity; Section~\ref{sec:common_reference} charges the transfer
+and the read to the carrier instead, and reaches the same place. The figure adds the same
 tile rebuilt with the PSF-aware and inverse-distance transfers of
 Section~\ref{sec:transfer_cost}, on the regions all three sweeps bracket.
 Under an operational overhead $\gamma$ on the

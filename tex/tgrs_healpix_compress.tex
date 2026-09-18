@@ -16,6 +16,11 @@
 \newcommand{\Rearth}{R_{\oplus}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
+% Where the code, the per-region values and the stored results live. Defined
+% once: Section IV-A, Section VI-C and Appendix B cite it through this macro,
+% and the archived-snapshot DOI replaces the URL at proof stage.
+\newcommand{\repourl}{\todo{confirm the GitHub URL of healpix-compress}}
+
 \begin{document}
 
 \title{When Does an Oversampled HEALPix Carrier Cost Less Than Native UTM? A Rate--Distortion and Critical-Overhead Study on Sentinel-2}
@@ -72,31 +77,26 @@ Email: vincent.dumoulin@esa.int. ORCID: 0009-0005-1217-1143.}%
 Storing Sentinel-2 imagery on HEALPix forces a choice between level 19,
 whose \SI{12.4}{m} cells are coarser than the \SI{10}{m} product, and
 level 20, whose \SI{6.2}{m} cells hold $2.58$ times as many samples per
-unit area. This paper measures what the finer choice costs in storage
-once both representations are compressed. On 40 Sentinel-2 L2A B04
-regions in four land-cover classes, five established codecs (ZFP, SZ3,
-JPEG~2000, JPEG~XL and a wavelet baseline) are applied to level-20 tiles
-reshaped into ordinary rasters and to native UTM squares of equal nominal
-area, and compressed sizes are compared at equal reconstruction error.
-The result is a distortion-dependent critical overhead $\gamma_\star(e)$,
-the layout overhead a native product must carry for the carrier to be
-the smaller representation at error $e$; the illustrative $30\%$
-scenario is one point on that curve. Three conditions govern it. The
-transfer that fills the carrier matters most: a Clough--Tocher tile falls
-from $2.06$ to $0.93$ times the native square as the tolerated RMSE grows
-from $10^{-4}$ to $10^{-2}$, while a PSF-aware or inverse-distance
-transfer costs $1.2$ to $2.4$ times those bytes and never reaches parity.
-The codec matters next: four of the five reproduce the crossover, ZFP
-does not. The reference decides the sign: against the native observation
-the carrier starts from a floor of $4.0\times10^{-3}$ and native UTM
-leads at every storage budget. Two controls locate the crossover: a
-native raster read through the same interpolant compresses to $0.78$ of
-its size, and with both sides equally smooth the carrier is $1.24$ times
-the native square, within a few percent of what an analytic field
-sampled at $2.58$ times the density predicts; the level-19 carrier stays
-at $0.67$ to $0.78$ of the native square. The carrier is competitive only
-at aggressive compression, for a smooth transfer whose smoothing is
-charged to nobody.
+unit area. This paper measures what the finer choice costs once both
+representations are compressed. Five established codecs are applied to
+level-20 tiles reshaped into ordinary rasters and to native UTM squares
+of equal nominal area, over 40 Sentinel-2 L2A B04 regions in four
+land-cover classes, and compressed sizes are compared at equal
+reconstruction error. The result is a distortion-dependent critical
+overhead $\gamma_\star(e)$: the layout overhead a native product must
+carry for the carrier to be the smaller representation at error $e$. A
+Clough--Tocher tile falls from $2.06$ to $0.93$ times the native square
+as the tolerated RMSE grows from $10^{-4}$ to $10^{-2}$, while a
+PSF-aware or inverse-distance transfer costs $1.2$ to $2.5$ times those
+bytes and never reaches parity; of the five codecs, ZFP alone shows no
+crossover. Controls place the crossing in the smoothing the transfer
+gives the carrier: given that smoothing, the native raster compresses to
+$0.78$ of its size and the carrier is $1.24$ times it. Against the native
+observation the carrier starts from a floor of $4.0\times10^{-3}$ and
+native UTM leads at every storage budget. The carrier becomes
+competitive only at aggressive compression; among the transfers tested
+this happens only with Clough--Tocher, and where the crossover falls
+depends on whether the transfer-and-read error is charged to the carrier.
 \end{abstract}
 
 \begin{IEEEkeywords}

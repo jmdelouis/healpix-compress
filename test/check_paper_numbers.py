@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 
@@ -167,6 +168,7 @@ def checks(tex: str):
         out.append(("latitude | beta  [skipped: rerun update_paper_numbers.py "
                     "with support_controls_spectrum.csv present]", "", ""))
     out += level_and_reader_checks()
+    out += psf_chain_checks()
     out += gamma_continuous_checks()
     out += headline_checks()
     out += censoring_checks()
@@ -182,6 +184,63 @@ def checks(tex: str):
     out += consistency_checks(tex)
     out += wording_checks(tex)
     return out, survivors
+
+
+def psf_chain_checks():
+    """The operational chain of revision 6 (run 2.1), Section V-I.
+
+    The PSF-aware carrier read through the forward operator it was built
+    for, scored against the same observation as everything else in that
+    section. Read from reader_rescore.csv, which reader_rescore.py writes
+    from the per-reader summaries, so the prose cannot drift from the table
+    it condenses. The block is silent when the sweep is absent, and loud
+    when the psf operator fell back to the nearest read, which would make
+    the whole paragraph describe a different chain.
+    """
+    out = []
+    df = _csv("reader_rescore.csv")
+    if df is None or "reader" not in df.columns:
+        return [("PSF chain  [skipped: reader_rescore.csv absent]", "", "")]
+    d = df[df.reader == "psf_psf"]
+    if not len(d):
+        return [("PSF chain  [skipped: not in reader_rescore.csv]", "",
+                 "run_codec_bench.py --resampler psf --common-reference "
+                 "--cr-mode psf")]
+    fl = _csv("common_reference_floor__psf__psf.csv")
+    if fl is not None and "mode" in fl.columns:
+        modes = sorted(set(fl["mode"].astype(str)))
+        if any("fallback" in m for m in modes):
+            return [(f"PSF chain  [FALLBACK: the psf operator degraded to "
+                     f"{modes}]", "", "rerun with --force")]
+    where = "[in sections/05i_common_reference.tex]"
+    rep = d[d.reported & (d.kind == "budget")].sort_values("target")
+    for _, r in rep.iterrows():
+        pct = f"{100*r.target:g}"
+        med = f"${r['median']:.2f}$" if r["median"] < 10 else f"${r['median']:.1f}$"
+        out.append((f"PSF chain, error ratio at the {pct}% budget {where}", med,
+                    f"n={int(r.n)}, gamma_tile"))
+        out.append((f"PSF chain, n at the {pct}% budget {where}",
+                    f"${int(r.n)}$", ""))
+        # the conclusion quotes the same three ratios, so it is scoped too
+        out.append((f"PSF chain, error ratio at the {pct}% budget "
+                    "[in sections/07_conclusion.tex]", med, ""))
+    # no RMSE target survives the bracketing rule on this chain: the share at
+    # the loosest one is what the prose quotes
+    rm = d[d.kind == "rmse"].sort_values("target")
+    if len(rm):
+        last = rm.iloc[-1]
+        out.append((f"PSF chain, bracketed share at the loosest RMSE target {where}",
+                    f"${100*last.bracketed:.0f}\\%$",
+                    "below the 75% rule, so the target is withheld"))
+        out.append((f"PSF chain, reportable RMSE targets {where}",
+                    f"{int(rm.reported.sum())}", "of five"))
+    if fl is not None and "representation_floor_rmse" in fl.columns:
+        v = float(fl.representation_floor_rmse.median())
+        e = int(np.floor(np.log10(v)))
+        out.append((f"PSF chain, floor against the observation {where}",
+                    f"${v/10**e:.2f}\\times10^{{{e}}}$",
+                    f"median over {len(fl)} regions"))
+    return out
 
 
 def gamma_continuous_checks():
@@ -327,7 +386,8 @@ def level19_checks():
         d = d.get("nearest", {})
     if not d:
         return [("level-19 carriers  [skipped: unreadable digest]", "", str(p))]
-    where = "[in sections/05h2_level19_direct.tex]"
+    # Revision 6: the section was folded into Section V-K and Appendix B-F.
+    where = "[in sections/08_appendices.tex]"
     out = [
         (f"level-19 direct floor {where}", f"${d['floor19_direct']:.2e}$"
          .replace("e-0", r"\times10^{-").replace("$", "$", 1) + "",
@@ -634,9 +694,13 @@ def transfer_cost_prose_checks():
         out.append((f"transfer cost, {label} range {where}",
                     f"${min(v):.2f}$ to ${max(v):.2f}$", "paired medians over targets"))
     both = [rows[t][k] for t in ts for k in ("psf_over_base", "linear_over_base")]
+    # Round outwards, not to nearest: the two-decimal table shows 2.45, and a
+    # one-decimal "2.4" beside it reads as a contradiction (review R1 of v6).
+    lo = math.floor(min(both) * 10) / 10
+    hi = math.ceil(max(both) * 10) / 10
     out.append(("transfer cost, either transfer / C-T, one-decimal range (abstract, intro, conclusion)",
-                f"${min(both):.1f}$ to ${max(both):.1f}$",
-                "min and max over both transfers and all targets"))
+                f"${lo:.1f}$ to ${hi:.1f}$",
+                "min and max over both transfers and all targets, rounded outwards"))
     v = [rows[t]["deconv_over_control"] for t in ts]
     pct = f"${100*(min(v)-1):.0f}$--${100*(max(v)-1):.0f}\\%$"
     for scope in (where, "[in sections/07_conclusion.tex]",
@@ -749,6 +813,47 @@ def wording_checks(tex):
     """Report every retired phrase that has come back into the manuscript."""
     return [(f"retired phrase: {phrase!r}", "ABSENT", why)
             for phrase, why in BANNED if phrase in tex]
+
+
+def _smoothed_rows(sm, where, tag, _st):
+    """One phase of the smoothed-native control."""
+    out = []
+    ts = sorted(sm.target.unique())
+    a = {t: sm[(sm.target == t) & sm.both_bracketed] for t in ts}
+    b = {t: sm[(sm.target == t) & sm.hpx_both_bracketed] for t in ts}
+    if ts and len(a[ts[0]]) and len(a[ts[-1]]):
+        r0 = a[ts[0]].ratio_smoothed_native.median()
+        r1 = a[ts[-1]].ratio_smoothed_native.median()
+        out.append((f"smoothed/native at the tightest target{tag} {where}",
+                    f"${r0:.2f}$", "median, both bracketed"))
+        out.append((f"smoothed/native at the loosest target{tag} {where}",
+                    f"${r1:.2f}$", ""))
+        out.append((f"smoothed/native n at tightest and loosest{tag} {where}",
+                    f"${len(a[ts[0]])}$ and ${len(a[ts[-1]])}$", ""))
+        if not tag:
+            out.append((f"transfer alone buys, percent range {where}",
+                        f"${100*(1-r0):.0f}\\%$ to ${100*(1-r1):.0f}\\%$", "1 - ratio"))
+    if ts and len(b[ts[0]]) and len(b[ts[-1]]):
+        h0 = b[ts[0]].ratio_hpx_smoothed.median()
+        h1 = b[ts[-1]].ratio_hpx_smoothed.median()
+        out.append((f"HPX/smoothed at the tightest target{tag} {where}",
+                    f"${h0:.2f}$", ""))
+        out.append((f"HPX/smoothed at the loosest target{tag}"
+                    + ("" if tag else " (several places)"),
+                    f"{h1:.2f}", "abstract, V-B, V-G, discussion, conclusion"))
+        out.append((f"HPX/smoothed n at the loosest target{tag} {where}",
+                    f"${len(b[ts[-1]])}$ regions", ""))
+        pt = _st.paired_ratio_test(b[ts[-1]].ratio_hpx_smoothed)
+        pv = pt["p"]
+        if np.isfinite(pv):
+            if pv < 1e-4:
+                ptxt = "$p<10^{-4}$"
+            else:
+                e = int(np.floor(np.log10(pv)))
+                ptxt = f"$p={pv/10**e:.0f}\\times10^{{{e}}}$"
+            out.append((f"HPX/smoothed paired p at the loosest target{tag} {where}",
+                        ptxt, "signed-rank on log ratio"))
+    return out
 
 
 def consistency_checks(tex):
@@ -906,39 +1011,27 @@ def consistency_checks(tex):
     else:
         import paper_stats as _st
         where = "[in sections/05e_support.tex]"
+        # Revision 6 (run 2.3) added a second phase: the native side is read
+        # at quarter-pixel as well as at half-pixel offset. The half-pixel
+        # block keeps the labels the published text was checked against; the
+        # other phases get their own, so both are asserted.
+        phases = [(0.5, "")]
         if {"shift_x", "shift_y"} <= set(sm.columns):
-            sm = sm[np.isclose(sm.shift_x, 0.5) & np.isclose(sm.shift_y, 0.5)]
-        ts = sorted(sm.target.unique())
-        a = {t: sm[(sm.target == t) & sm.both_bracketed] for t in ts}
-        b = {t: sm[(sm.target == t) & sm.hpx_both_bracketed] for t in ts}
-        if ts and len(a[ts[0]]) and len(a[ts[-1]]):
-            r0 = a[ts[0]].ratio_smoothed_native.median()
-            r1 = a[ts[-1]].ratio_smoothed_native.median()
-            out.append((f"smoothed/native at the tightest target {where}", f"${r0:.2f}$",
-                        "median, both bracketed"))
-            out.append((f"smoothed/native at the loosest target {where}", f"${r1:.2f}$", ""))
-            out.append((f"smoothed/native n at tightest and loosest {where}",
-                        f"${len(a[ts[0]])}$ and ${len(a[ts[-1]])}$", ""))
-            out.append((f"transfer alone buys, percent range {where}",
-                        f"${100*(1-r0):.0f}\\%$ to ${100*(1-r1):.0f}\\%$", "1 - ratio"))
-        if ts and len(b[ts[0]]) and len(b[ts[-1]]):
-            h0 = b[ts[0]].ratio_hpx_smoothed.median()
-            h1 = b[ts[-1]].ratio_hpx_smoothed.median()
-            out.append((f"HPX/smoothed at the tightest target {where}", f"${h0:.2f}$", ""))
-            out.append((f"HPX/smoothed at the loosest target (several places)", f"{h1:.2f}",
-                        "abstract, V-B, V-G, discussion, conclusion"))
-            out.append((f"HPX/smoothed n at the loosest target {where}",
-                        f"${len(b[ts[-1]])}$ regions", ""))
-            pt = _st.paired_ratio_test(b[ts[-1]].ratio_hpx_smoothed)
-            pv = pt["p"]
-            if np.isfinite(pv):
-                if pv < 1e-4:
-                    ptxt = "$p<10^{-4}$"
-                else:
-                    e = int(np.floor(np.log10(pv)))
-                    ptxt = f"$p={pv/10**e:.0f}\\times10^{{{e}}}$"
-                out.append((f"HPX/smoothed paired p at the loosest target {where}", ptxt,
-                            "signed-rank on log ratio"))
+            other = sorted({(round(float(x), 3), round(float(y), 3))
+                            for x, y in zip(sm.shift_x, sm.shift_y)}
+                           - {(0.5, 0.5)})
+            phases += [(x, f", phase {x:g}") for x, y in other]
+        sm_all = sm
+        for _phase, _tag in phases:
+            if {"shift_x", "shift_y"} <= set(sm_all.columns):
+                sm = sm_all[np.isclose(sm_all.shift_x, _phase)
+                            & np.isclose(sm_all.shift_y, _phase)]
+            else:
+                sm = sm_all
+            if not len(sm):
+                continue
+            out += _smoothed_rows(sm, where, _tag, _st)
+
 
     # --- the level-19 carrier under compression (revision 5, Section V-K) --
     p19 = cfg.RESULTS_DIR / "level19_rd.json"
@@ -975,6 +1068,23 @@ def consistency_checks(tex):
             out.append((f"aggregate cheaper than direct, percent {where}",
                         f"${100*(1-1/da['median']):.0f}\\%$", "1 - 1/median"))
             out.append((f"direct/aggregate n {where}", f"${da['n']}$", ""))
+        # Revision 6 (run 2.4): why the aggregate's L19/UTM column is flat.
+        av = d19.get("aggregate_vs_direct") or {}
+        if av:
+            ts_av = sorted(float(k) for k in av)
+            lo, hi = av[f"{ts_av[0]:g}"], av[f"{ts_av[-1]:g}"]
+            out.append((f"aggregate/direct at the tightest target {where}",
+                        f"${lo['aggregate_over_direct_median']:.2f}$",
+                        "paired, regions eligible for both carriers"))
+            out.append((f"aggregate/direct at the loosest target {where}",
+                        f"${hi['aggregate_over_direct_median']:.2f}$", ""))
+            out.append((f"aggregate compressed / raw at the loosest target {where}",
+                        f"${100*hi['compact_aggregate']:.1f}\\%$",
+                        "compare with the native crop"))
+            out.append((f"native crop compressed / raw at the loosest target {where}",
+                        f"${100*hi['compact_utm']:.1f}\\%$", ""))
+            out.append((f"direct carrier compressed / raw at the loosest target {where}",
+                        f"${100*hi['compact_direct']:.1f}\\%$", ""))
 
     # --- tiling overhead from the product geometry (revision 5, IV-B) -------
     pg = cfg.RESULTS_DIR / "granule_overhead.json"
@@ -985,6 +1095,21 @@ def consistency_checks(tex):
         where = "[in sections/04_design.tex]"
         out.append((f"tile overlap overhead {where}", f"$(109.8/100)^2={g['overlap']:.2f}$",
                     "granule_overhead.py"))
+        sw = g.get("swath") or {}
+        if sw:
+            # Revision 6 (R1 3.6): a reader will redo the swath arithmetic,
+            # so every step of it is asserted, not only the product.
+            out.append((f"swath, mean tiles across track {where}",
+                        f"${sw['n_tiles_mean']:.3f}$", "averaged over the swath edge"))
+            out.append((f"swath, across-track factor {where}",
+                        f"${sw['across_track']:.2f}$",
+                        "stored raster / swath width"))
+            out.append((f"swath, along-track factor {where}",
+                        f"${sw['along_track']:.3f}$", "overlap only"))
+            out.append((f"swath, no-data share {where}",
+                        f"${100*sw['nodata_fraction_mean']:.0f}\\%$", ""))
+            out.append((f"swath, raw-byte overhead {where}",
+                        f"${sw['total']:.2f}$", "across x along"))
         out.append((f"tiled-swath raw overhead {where}", f"${g['swath']['total']:.2f}$", ""))
         out.append((f"no-data share of the tiled swath {where}",
                     f"${100*g['swath']['nodata_fraction_mean']:.0f}\\%$", ""))

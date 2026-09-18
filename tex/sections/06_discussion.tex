@@ -33,7 +33,7 @@ dependence, compatible with the expected variation of cell-shape
 anisotropy without isolating it. Three findings belong elsewhere: the
 crossover at a given overhead belongs to the transfer, since it exists
 for a Clough--Tocher carrier and for no other transfer tested and
-disappears when the native raster receives the same smoothing, and to the
+disappears when the native raster is given that smoothing, and to the
 codec, since four of the five reproduce it and ZFP does not; a
 substantial part of the transfer-and-read floor is caused by the read,
 since changing the reading operator alone removes two thirds of its mean
@@ -50,7 +50,20 @@ multi-chunk hierarchy and boundary handling across the 12 base faces of
 level 0; a single base face carried down to level 20 would hold
 $4^{20}\approx10^{12}$ cells, far too large to compress as one array.
 
+One architectural option follows from Section~\ref{sec:redundancy} and is
+not measured here. The carrier holds no more information than the native
+window it was built from, so a store that keeps the native product and
+applies the transfer at read time carries no storage penalty at all: the
+HEALPix index becomes a view over native chunks rather than a second copy
+of the data. Every ratio in this paper is about the other choice, a
+carrier materialised on disk, which is what a DGGS archive buys latency
+and simplicity with. Which of the two is right is a question about read
+patterns and compute budgets that this study does not address, and a
+hybrid, storing the native product and materialising the carrier only for
+the levels and regions that are read often, sits between them.
+
 \subsection{Reproducibility}
+\label{sec:reproducibility}
 Every figure quoted in the text is produced by a script from the stored
 results, and an assertion harness recomputes each one and refuses to let
 the manuscript state a value the current run does not support; the sizes
@@ -59,25 +72,27 @@ decoder (Appendix~\ref{app:codec_audit}). Each sweep records the codec
 library versions and the tagged checkout of the shared resampling
 package~\cite{delouis2026resample} it ran against, and the harness
 refuses a run whose instrument response falls outside the band of the
-sensor.
+sensor. The code, the stored results and the per-region
+values this paper does not print are at \repourl, at the tag it was
+submitted from.
 
 \subsection{Current Limitations}
 \label{sec:limitations}
 Five groups, detailed in Appendix~\ref{app:limitations}. \emph{Transfer}:
-the crossover is a result for a carrier filled by a transfer as smooth as
-Clough--Tocher and scored against its own smooth tile; the smoothed-native
-control gives the native side that smoothing at one phase, the strongest,
-so the equal-smoothing ratio at the loosest target is bracketed between
-$0.93$ and $1.24$; a non-deconvolving transfer of the
-same smoothness has not been tested, and the data are consistent with
-energy compaction playing an important role, short of a demonstration.
+the crossover is a result for a carrier filled by Clough--Tocher, of the
+transfers tested, and scored against its own smooth tile; the
+smoothed-native control gives the native side that smoothing at two
+phases, so the equal-smoothing ratio at the loosest target is bracketed
+between $0.93$ and $1.24$; a non-deconvolving transfer of the same
+smoothness has not been tested, and the data are consistent with energy
+compaction playing an important role, short of a demonstration.
 \emph{Reference and reader}: the two reconstruction references disagree
 at the crossover and both are reported; the common-reference sweep has
 been re-scored through an interpolating read, the $3\times10^{-3}$ target
 remains withheld at $57\%$ bracketing, and a read matched to the PSF
 transfer has not been swept. \emph{Footprint and orientation}: the
 equal-area crop and the rotated tile overlap over $74$--$83\%$ of their
-extent, and the mismatch is bounded by three controls, one analytic and
+extent, and the mismatch is constrained by three controls, one analytic and
 two on subsets; the raster's axes run at about $45^\circ$ to the native
 ones, and the cost of that orientation to row-and-column codecs is not
 measured. \emph{Dataset}: Sentinel-2 B04 at \SI{10}{m}, one acquisition

@@ -8,8 +8,15 @@ four children of one level-19 cell. Because the cells are equal-area,
 this is the exact quadtree Haar transform of the tile, and the aggregate
 is the cell-average of the carrier over each level-19 cell. It differs
 from the carrier the same transfer would build at level 19, which stores
-point evaluations at cell centres; Section~\ref{sec:level19_direct}
-shows the two cost the same.
+point evaluations at cell centres. Both were built and read identically
+against the same observation, on the 39 regions the window audit of
+Appendix~\ref{app:window_radiometry} admits: they are different arrays,
+differing by $6.0\%$ of a scene's standard deviation, yet their floors
+agree to a median ratio of $1.002$ and cost $2.25$ and $2.24$ times the
+level-20 floor, so what follows holds for either reading of ``the
+level-19 carrier'' (Appendix~\ref{app:level19_direct} gives the
+comparison and the one region it excludes). The figure quoted below is
+the aggregate's.
 
 Two quantities are separated, because a coarser carrier is charged twice
 and only one charge concerns information. The first is what the
@@ -64,4 +71,14 @@ level-20 tile costs $1.13$ times the level-19 carrier at $10^{-2}$ and
 $3.1$ times at $10^{-4}$. The cost of the finer carrier is the cost of its density, largest where
 the codec keeps every sample and nearly gone where it keeps few. The cell-averaged carrier is $9\%$ cheaper than the
 direct one at equal error (median over $195$ region--target pairs), the
-price of the sharper point evaluations the transfer keeps.
+price of the sharper point evaluations the transfer keeps, and it is
+cheaper on every region at the four tightest targets. Its advantage grows
+with the target, from $0.95$ to $0.83$ of the direct carrier's size,
+which is why its column against the native crop is flat where the direct
+carrier's rises: at the loosest target the aggregate compresses to
+$0.9\%$ of its own raw size against $0.8\%$ for the native crop and
+$1.1\%$ for the direct carrier, so the aggregate and the crop gain
+compressibility at nearly the same rate as the target loosens. A $2\times2$
+mean of a Clough--Tocher tile behaves, per stored value, much like the
+native raster it came from; the directly evaluated carrier keeps the
+sharper point values and pays for them.

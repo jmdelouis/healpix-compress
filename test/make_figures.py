@@ -414,7 +414,12 @@ def main(argv=None) -> int:
           + (f" and {cfg.TEX_FIGURES}" if publish else ""))
 
     ratios = ratios_per_target(hpx, utm, scenes, codecs, rmse_col)
-    fig_ratio_boxplots(ratios, index, publish)
+    # The boxplots were dropped from the manuscript in revision 6 (review R1:
+    # illegible at column width, and Fig. rd_comparison carries the same
+    # message). The figure is still produced for the record and the class
+    # medians it showed are quoted in Section V-D from the digest, so nothing
+    # in the paper depends on it being included.
+    fig_ratio_boxplots(ratios, index, publish=False)
     fig_rd_comparison(hpx, utm, scenes, codecs, rmse_col, publish)
     fp = args.footprint_regions or scenes
     fig_footprints([s for s in fp if (cfg.TILE_DIR / f"{s}.npz").exists()],

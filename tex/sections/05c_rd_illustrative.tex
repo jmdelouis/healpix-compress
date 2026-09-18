@@ -44,27 +44,19 @@ the native product under the illustrative overhead, and at the tightest
 budget ($2\%$) the order reverses and HEALPix reaches $0.83\times$ the UTM
 RMSE over all 40 regions (Holm-adjusted $p<10^{-4}$).
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig_ratio_boxplots}
-\caption{Per-scene HPX/UTM ratio distributions underlying Tables~\ref{tab:synthesis} and~\ref{tab:error_at_size}, at the illustrative $\gamma_{\mathrm{tile}}=1.30$ of this subsection (oracle-best codec chosen independently per scene, per grid). Left: compressed-size ratio at each target RMSE. Right: RMSE ratio at each target storage budget (log scale). The dashed line at $1.0$ marks parity; values below it favour HEALPix.}
-\label{fig:ratio_boxplots}
-\end{figure}
-
-Figure~\ref{fig:ratio_boxplots} shows the region-to-region spread behind
-each median. Urban regions are the most favourable to UTM at tight
-targets (median $1.67$ at $10^{-4}$) and, with agriculture, the most
-favourable to HEALPix at the loosest one ($0.70$ and $0.69$ at
-$10^{-2}$); water regions produce nearly all the extreme ratios in either
-direction, because over near-constant water the compressed files fall
-below \SI{10}{kB}, where container overhead and resampling artefacts
-dominate, which is why medians are reported.
-Figure~\ref{fig:rd_comparison} shows the absolute-value curves, medians
-over scenes at each target.
+The region-to-region spread behind each median follows the scene class.
+Urban regions are the most favourable to UTM at tight targets (median
+$1.67$ at $10^{-4}$) and, with agriculture, the most favourable to
+HEALPix at the loosest one ($0.70$ and $0.69$ at $10^{-2}$); water
+regions produce nearly all the extreme ratios in either direction,
+because over near-constant water the compressed files fall below
+\SI{10}{kB}, where container overhead and resampling artefacts dominate,
+which is why medians are reported. Figure~\ref{fig:rd_comparison} shows
+the absolute-value curves, medians over scenes at each target.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_storage_at_constant_rmse}
-\caption{Rate--distortion curves per codec, native UTM (solid, with the illustrative overhead) and HEALPix level 20 (dashed), one marker per codec: median absolute compressed size at each target RMSE (top, as a fraction of the shared raw tile size) and median RMSE at each storage budget (bottom), over the 40 regions. The lossless codecs are the isolated hollow points.}
+\caption{Rate--distortion curves per codec, native UTM (solid, with the illustrative overhead) and HEALPix level 20 (dashed), one marker per codec: median absolute compressed size at each target RMSE (top, as a fraction of the shared raw tile size) and median RMSE at each storage budget (bottom), over the 40 regions. The isolated hollow points are the two lossless codecs, which have a single operating point each.}
 \label{fig:rd_comparison}
 \end{figure}

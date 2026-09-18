@@ -48,8 +48,10 @@ is bracketed on both grids.
 With no content difference between the two supports, the direct ratio
 falls monotonically from $2.17$ at $10^{-4}$ to $1.16$ at $10^{-2}$,
 against $2.06$ to $0.93$ on the imagery. The control thus reproduces the
-decline of the gap and its approximate magnitude, tracking the measured
-ratio to within $5$--$24\%$ at the five targets, closely at the tight end
+decline of the gap and its approximate magnitude: read directly, it
+tracks the measured ratio to within $5$--$24\%$ at the five targets
+(the control passed through the transfer, below, tracks it to within
+$1$--$19\%$), closely at the tight end
 and less so at the loose end, where its own sweep is partly censored
 ($n=38$ and $32$). Under $\gamma_{\mathrm{tile}}=1.30$ it reaches $0.89$
 at the loosest target where the imagery reaches $0.72$. The synthetic
@@ -62,32 +64,41 @@ The transfer changes nothing at the three tightest targets, where the
 codec keeps every sample, and removes $18\%$ of the ratio at the loosest,
 where the ratio falls from $2.17$ to $0.94$ against $0.93$ measured: the
 crossover appears in the control as soon as the control contains the
-transfer. Over the five targets the transferred control tracks the
-measurement to within $1$--$19\%$, the remainder lying at the two middle
+transfer. Over the five targets this transferred control tracks the
+measurement to within $1$--$19\%$, against $5$--$24\%$ for the direct
+one, the remainder lying at the two middle
 targets, where the scene content that a one-parameter spectrum cannot
 carry matters most.
 
-The smoothed-native rows confirm this from the other side. Read through
-the carrier's own interpolant at half-pixel phase, the native raster
-compresses to $0.94$ of its size at the tightest target and $0.78$ at the
-loosest (median over $40$ and $34$ regions), so the transfer alone buys
-$6\%$ to $22\%$ of the bytes at equal error, more as the target loosens.
-Charged with the same smoothing, the native side is smaller than the
-carrier at every target: HEALPix over smoothed native falls from $2.23$
-to $1.24$, with $32$ regions at the loosest target and the paired test
-rejecting parity there ($p=1\times10^{-4}$). These values sit within
-$7\%$ of the direct synthetic control ($2.17$ to $1.16$) at every target,
-so once both sides carry the same smoothing, what remains of the
-carrier's cost is what sampling the same field at $2.58$ times the
-density predicts. The crossover of Section~\ref{sec:rd_main} is
-therefore the smoothing the transfer gives the carrier and the reference
-charges to nobody, the conclusion the common reference reaches from the
-other side (Section~\ref{sec:common_reference}). Half a pixel is the
-phase at which the interpolant departs most from the samples; the
-carrier's cells sit at every phase, so the native side receives here at
-least the smoothing the carrier averages, and the equal-smoothing ratio
-at the loosest target lies between the $0.93$ of the raw comparison and
-this $1.24$. Two controls on subsets agree
+The smoothed-native rows confirm this from the other side. They are a
+strong-smoothing control, not a matched experiment: the native raster is
+read through the carrier's own interpolant at a fixed phase, on the
+native lattice and at the native density, while the carrier samples a
+different lattice at every phase. Two phases are reported. At half a
+pixel, the phase at which the interpolant departs most from the samples,
+the native raster compresses to $0.94$ of its size at the tightest target
+and $0.78$ at the loosest (median over $40$ and $34$ regions), so the
+transfer alone buys $6\%$ to $22\%$ of the bytes at equal error, more as
+the target loosens; at a quarter of a pixel it compresses to $0.96$ and
+$0.87$. Given that smoothing, the native side is smaller than the carrier
+at every target and at both phases: HEALPix over smoothed native falls
+from $2.23$ to $1.24$ at half a pixel, with $32$ regions at the loosest
+target and the paired test rejecting parity there
+($p=1\times10^{-4}$), and from $2.20$ to $1.10$ at a quarter of a pixel
+($p=4\times10^{-3}$). The half-pixel values sit within $7\%$ of the
+direct synthetic control ($2.17$ to $1.16$) at every target: what remains
+of the carrier's cost, once the native side carries the transfer's
+smoothing, is what sampling the same field at $2.58$ times the density
+predicts. The carrier's cells sit at every phase, including phases near
+zero where the interpolant returns the samples themselves and the ratio
+returns to the $0.93$ of the raw comparison, so the equal-smoothing ratio
+at the loosest target lies between $0.93$ and $1.24$, with the two
+measured phases at $1.10$ and $1.24$. These controls show that the
+smoothing the transfer gives the carrier is enough to remove the
+crossover, and that it accounts for the residual between the
+geometry-only control and the measurement; the common reference reaches
+the same place from the other side
+(Section~\ref{sec:common_reference}). Two controls on subsets agree
 (Appendix~\ref{app:support}): a common-support comparison on ten
 regions, and re-cutting the UTM crop at shifted positions on four
 regions, which moves the ratio by about $1\%$ of the effect.

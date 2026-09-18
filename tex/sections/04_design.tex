@@ -6,8 +6,8 @@
 The evaluation uses 40 Sentinel-2 L2A \SI{10}{m} regions, ten in each of
 four land-cover classes (urban, water, forest, agriculture), from
 $43.5^\circ$S to $64.1^\circ$N (Fig.~\ref{fig:region_map}; the per-region
-list, with product identifiers and window sizes, is in the data
-repository). The sites are those of the companion study of
+list, with product identifiers and window sizes, is in the code and data
+repository, \repourl). The sites are those of the companion study of
 PSF-aware resampling onto HEALPix~\cite{delouis2026resample}, whose
 $256\times256$-pixel patches are archived under a public dataset DOI. A
 level-20 carrier tile needs a much larger native window, so each region is
@@ -96,16 +96,22 @@ tiles (MGRS granules with overlap bands), whose padding, overlap and
 per-tile metadata add storage beyond the area needed. This overhead
 belongs to the product organisation: UTM as a coordinate reference system
 carries none of it, and a native UTM COG or Zarr archive need not either.
-The tiling geometry bounds it from both sides. Sentinel-2 granules are nominally \SI{110}{km} squares laid on a
-\SI{100}{km} step~\cite{esa_s2_products}; a \SI{10}{m} band holds
-$10980$ pixels per side, \SI{109.8}{km}, so a fully covered area is
-stored $(109.8/100)^2=1.21$ times: real pixels held twice, a cost that survives
-compression and is a floor for $\gamma_{\mathrm{tile}}$. Cutting the
-\SI{290}{km} swath into such tiles takes four across track wherever the
-swath edge falls, the edge tiles are partly no-data ($34\%$ of the stored
-raster on average), and the raw-byte overhead of the tiled swath is
-$1.66$; no-data compresses to almost nothing, so under compression the
-overhead falls back towards the floor. We use $\gamma_{\mathrm{tile}}=1.30$
+The tiling geometry constrains it from both sides. Sentinel-2 granules
+are nominally \SI{110}{km} squares laid on a \SI{100}{km}
+step~\cite{esa_s2_products}; a \SI{10}{m} band holds $10980$ pixels per
+side, \SI{109.8}{km}, so the archive stores a fully covered area
+$(109.8/100)^2=1.21$ times. That is a duplication of sample area, real
+pixels held twice. What it costs in \emph{compressed} bytes is not
+measured here: the duplicated bands are ordinary image content, but a
+codec encodes each tile independently and the duplicate is coded in its
+own context, so the byte overhead need not equal the area overhead. The
+swath gives the raw figure. Across track, $3.998$ tiles on average over
+the position of the swath edge store $3.998\times\SI{109.8}{km}$ of
+raster for a \SI{290}{km} swath, a factor of $1.51$, of which $34\%$ is
+no-data; along track the overlap alone gives $1.098$, and the product is
+the raw-byte overhead of the tiled swath, $1.66$. No-data compresses to
+almost nothing, so under compression the figure falls back towards the
+area duplication. We use $\gamma_{\mathrm{tile}}=1.30$
 as an illustrative point on the decision curve of
 Section~\ref{sec:rd_main}, between the measured floor and the raw
 figure, never as a measurement of a complete product file

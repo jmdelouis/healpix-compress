@@ -31,7 +31,7 @@ CTRL = "#666666"      # controls
 FILL = "#F4F4F4"
 
 
-def box(ax, xy, w, h, text, color=INK, lw=0.8, fs=6.5, fill=FILL, style="round,pad=0.02,rounding_size=0.08"):
+def box(ax, xy, w, h, text, color=INK, lw=0.8, fs=7.2, fill=FILL, style="round,pad=0.02,rounding_size=0.08"):
     x, y = xy
     p = FancyBboxPatch((x, y), w, h, boxstyle=style, linewidth=lw,
                        edgecolor=color, facecolor=fill)
@@ -58,51 +58,51 @@ def draw():
     ax.axis("off")
 
     # --- source ------------------------------------------------------------
-    src = box(ax, (2.6, 9.7), 4.8, 1.0,
+    src = box(ax, (2.0, 9.7), 6.0, 1.0,
               "Sentinel-2 L2A B04, 10 m\n40 regions, $\\approx$11 km native window",
-              color=INK, fs=6.5)
+              color=INK, fs=7.2)
 
     # --- two branches ------------------------------------------------------
-    utm = box(ax, (0.3, 7.4), 4.1, 1.35,
+    utm = box(ax, (0.1, 7.4), 4.5, 1.35,
               "Native UTM square\n637$^2$ px, equal nominal area\n(never resampled)",
-              color=GRID, fs=6.3)
-    hpx = box(ax, (5.6, 7.4), 4.1, 1.35,
-              "HEALPix level-20 tile\n1024$^2$ cells, 2.58$\\times$ the samples\nMorton de-interleave to a raster",
-              color=CARRIER, fs=6.3)
+              color=GRID, fs=7.0)
+    hpx = box(ax, (5.3, 7.4), 4.6, 1.35,
+              "HEALPix level-20 tile\n1024$^2$ cells, 2.58$\\times$ the samples\nde-interleaved to a raster",
+              color=CARRIER, fs=7.0)
     arrow(ax, (4.0, 9.7), (2.35, 8.75), color=GRID, text="crop", dx=-0.55, dy=0.05)
     arrow(ax, (6.0, 9.7), (7.65, 8.75), color=CARRIER,
           text="transfer\nC\u2013T / PSF / IDW", dx=0.95, dy=0.1)
 
     # --- codec sweep ----------------------------------------------------------
-    cod = box(ax, (1.5, 5.45), 7.0, 1.2,
+    cod = box(ax, (1.0, 5.45), 8.0, 1.2,
               "Five codecs, full quality ladders\n"
               "ZFP, SZ3, JPEG 2000, JPEG XL, DWT+zstd\n"
               "size and RMSE at every setting",
-              color=INK, fs=6.3)
+              color=INK, fs=7.0)
     arrow(ax, (2.35, 7.4), (3.2, 6.65), color=GRID)
     arrow(ax, (7.65, 7.4), (6.8, 6.65), color=CARRIER)
 
     # --- references -----------------------------------------------------------
-    ref1 = box(ax, (0.3, 3.55), 4.4, 1.25,
+    ref1 = box(ax, (0.1, 3.55), 4.6, 1.25,
                "Within-representation reference\neach raster vs its own\nuncompressed form",
-               color=INK, fs=6.0)
-    ref2 = box(ax, (5.3, 3.55), 4.4, 1.25,
+               color=INK, fs=6.8)
+    ref2 = box(ax, (5.3, 3.55), 4.6, 1.25,
                "Common reference\nread back on native pixels\nvs the observation",
-               color=INK, fs=6.0)
+               color=INK, fs=6.8)
     arrow(ax, (3.6, 5.45), (2.5, 4.8), color=INK)
     arrow(ax, (6.4, 5.45), (7.5, 4.8), color=INK)
 
     # --- outcome --------------------------------------------------------------
-    out = box(ax, (1.0, 1.55), 8.0, 1.35,
+    out = box(ax, (0.6, 1.55), 8.8, 1.35,
               "Sizes at equal RMSE, oracle-best codec, log\u2013log interpolation\n"
               "HPX/UTM ratio, critical overhead $\\gamma_\\star(e)$, recovered fraction $f(e)$\n"
               "paired tests over regions, Holm-corrected",
-              color=INK, fs=6.0, fill="#E8EEF7")
+              color=INK, fs=6.8, fill="#E8EEF7")
     arrow(ax, (2.5, 3.55), (3.6, 2.9), color=INK)
     arrow(ax, (7.5, 3.55), (6.4, 2.9), color=INK)
 
     # --- controls, side column ------------------------------------------------
-    ctl = box(ax, (0.3, 0.05), 9.4, 1.1,
+    ctl = box(ax, (0.1, 0.05), 9.8, 1.1,
               "Controls: analytic field on both lattices (direct, via the transfer),\n"
               "smoothed native, level-19 carrier compressed, same codec on both grids,\n"
               "tiling overhead from the product geometry",

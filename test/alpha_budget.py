@@ -408,14 +408,17 @@ def latex_table(df, e_res, e_other, denominator, provenance, other_prov,
         # A short title above the table, as IEEE asks; what the columns
         # mean is in the paragraph that introduces it in the appendix.
         "\\caption{The storage verdict against the error the product already carries}\n"
+        # "crosses parity" is wider than the "HPX wins" it replaced, and the
+        # row overflowed the text block by a fraction of a point.
         "\\label{tab:alpha_budget}\n\\footnotesize\n"
+        "\\setlength{\\tabcolsep}{4pt}\n"
         "\\begin{tabular}{@{}lrrc rrr rrr@{}}\n\\toprule\n"
         " & \\multicolumn{3}{c}{Crossover} & "
         "\\multicolumn{3}{c}{Own estimand} & "
         "\\multicolumn{3}{c}{Latent scene} \\\\\n"
         "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}\\cmidrule(lr){8-10}\n"
         "Class & Target & HPX/UTM at "
-        f"$\\gamma_{{\\mathrm{{tile}}}}{{=}}{cfg.GAMMA_UTM}$ & HPX wins & "
+        f"$\\gamma_{{\\mathrm{{tile}}}}{{=}}{cfg.GAMMA_UTM}$ & crosses parity & "
         "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% meas.\\ (orth.) & "
         "$e_{\\mathrm{resample}}$ & $\\kappa$ & Infl.\\ \\% meas.\\ (orth.) \\\\\n"
         "\\midrule\n"
