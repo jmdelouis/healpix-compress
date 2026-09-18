@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\caption{Same-codec comparison at constant reconstruction RMSE}
+\label{tab:fixed_codec}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Codec & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ & $3\times10^{-3}$ & $10^{-2}$ \\
+\midrule
+ZFP & -- & -- & 2.89 (4) & 2.17 (14) & 1.89 (28) \\
+SZ3 & -- & -- & 2.41 (3) & 2.72 (11) & 1.56 (24) \\
+JPEG 2000 & -- & -- & 1.20 (3) & 1.30 (11) & 0.95 (20) \\
+JPEG XL & -- & -- & 0.85 (3) & 0.82 (11) & 0.83 (19) \\
+DWT + zstd & -- & -- & 4.75 (4) & 1.83 (14) & 1.18 (25) \\
+\bottomrule
+\end{tabular}
+\end{table}

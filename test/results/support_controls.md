@@ -50,10 +50,15 @@ Transfer error on the analytic field (RMSE against the exact cell values, in uni
 
 The native crop read through the same Clough-Tocher operator at points shifted by a fraction of a pixel, at the native density (operator: healpix_resample). Smoothed/native is what the transfer alone buys at each target; HPX/smoothed is what remains of the carrier's cost once both sides carry the same smoothing. Sizes are per sample (the shifted lattice has one row and one column fewer).
 
-- std ratio smoothed/native: median 0.9854
+- std ratio smoothed/native: median 0.9868
 
 | phase, target | n | smoothed/native | range | n | HPX/smoothed | range | HPX/native |
 |---|---|---|---|---|---|---|---|
+| (0.25,0.25) 0.0001 | 40 | 0.955 | [0.853, 0.986] | 40 | 2.196 | [0.978, 2.347] | 2.063 |
+| (0.25,0.25) 0.0003 | 40 | 0.945 | [0.579, 0.983] | 40 | 2.064 | [0.779, 2.320] | 1.936 |
+| (0.25,0.25) 0.001 | 40 | 0.912 | [0.285, 1.050] | 39 | 1.739 | [0.458, 9.476] | 1.595 |
+| (0.25,0.25) 0.003 | 39 | 0.888 | [0.238, 0.993] | 37 | 1.340 | [0.261, 3.027] | 1.195 |
+| (0.25,0.25) 0.01 | 34 | 0.867 | [0.790, 0.994] | 32 | 1.102 | [0.316, 1.500] | 0.933 |
 | (0.5,0.5) 0.0001 | 40 | 0.943 | [0.855, 0.967] | 40 | 2.228 | [0.971, 2.394] | 2.063 |
 | (0.5,0.5) 0.0003 | 40 | 0.916 | [0.512, 0.957] | 40 | 2.110 | [0.780, 2.403] | 1.936 |
 | (0.5,0.5) 0.001 | 40 | 0.890 | [0.037, 1.002] | 39 | 1.837 | [0.471, 17.974] | 1.595 |
