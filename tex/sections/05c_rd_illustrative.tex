@@ -3,56 +3,56 @@
 
 The last block of Table~\ref{tab:synthesis} and Table~\ref{tab:error_at_size}
 evaluate the comparison at $\gamma_{\mathrm{tile}}=1.30$, the
-illustrative overhead scenario of Section~\ref{sec:overhead}. Every
+illustrative \term{overhead} scenario of Section~\ref{sec:overhead}. Every
 verdict in them is the curve of Section~\ref{sec:rd_main} read at one
 abscissa: HEALPix is the smaller representation exactly where $1.30$
-exceeds that target's $\gamma_\star$, which is why the sign changes
+exceeds that \term{target}'s $\gamma_\star$, which is why the sign changes
 between $10^{-3}$ and $3\times10^{-3}$ and nowhere else. In sizes: if the
-native product is stored with an illustrative $30\%$ layout overhead, the
-Clough--Tocher carrier is $1.59$ times its size at the tightest tolerance
+native product is stored with an illustrative $30\%$ layout \term{overhead}, the
+Clough--Tocher \term{carrier} is $1.59$ times its size at the tightest tolerance
 and $0.72$ times at the loosest. Each entry is a per-region HPX/UTM ratio
 with the oracle-best codec chosen per region and per grid, the UTM side
 carrying $\gamma_{\mathrm{tile}}=1.3$, so a value below one favours
-HEALPix; the median is over the $n$ evaluable regions, and
-$p^{\mathrm{Holm}}$ is a two-sided Wilcoxon test on the log ratio
-corrected over the family of eight targets the two tables report
-together. A target the corrected test does not separate at the $5\%$
+HEALPix. The median is over the $n$ evaluable regions.
+$p^{\mathrm{Holm}}$ is a two-sided Wilcoxon test on the log ratio,
+corrected over the family of eight \term{targets} the two tables report
+together. A \term{target} the corrected test does not separate at the $5\%$
 level is marked inconclusive whatever the side of its median.
 
-At matched RMSE (Table~\ref{tab:synthesis}), native UTM is ahead at
-the three tightest targets: HEALPix needs $1.23$--$1.59\times$ the size of
-the native product under the illustrative overhead from $10^{-3}$ to
+At \term{matched RMSE} (Table~\ref{tab:synthesis}), native UTM is ahead at
+the three tightest \term{targets}: HEALPix needs $1.23$--$1.59\times$ the size of
+the native product under the illustrative \term{overhead} from $10^{-3}$ to
 $10^{-4}$, with Holm-adjusted $p\le0.016$. The order reverses at
 $10^{-2}$, where HEALPix needs $0.72\times$ that size over the 32 regions
-whose contrast admits the target (Holm-adjusted $p<10^{-4}$). Between
+whose contrast admits the \term{target} (Holm-adjusted $p<10^{-4}$). Between
 them, $3\times10^{-3}$ lies near parity (median $0.92$, $n=37$) and is the
-only reported target that fails correction ($p^{\mathrm{Holm}}=0.14$); it
+only reported \term{target} that fails correction ($p^{\mathrm{Holm}}=0.14$); it
 is inconclusive, since no equivalence margin has been defined. Keeping
 the excluded regions as bounds would change no verdict
 (Appendix~\ref{app:censoring}). In
 Table~\ref{tab:error_at_size} the budget is a fraction of the shared raw
-HEALPix tile size, \SI{4194304}{\byte}, the UTM side receives that budget
+HEALPix \term{tile} size, \SI{4194304}{\byte}, the UTM side receives that budget
 divided by $\gamma_{\mathrm{tile}}$, and the ratio compared is of
 reconstruction errors.
 
 \input{tables/table_error_at_constant_size}
 
-At matched budget the same regime-dependent pattern holds and every
-target survives correction: at the $10\%$ and $5\%$ budgets the
+At \term{matched budget} the same regime-dependent pattern holds, and every
+\term{target} survives correction. At the $10\%$ and $5\%$ budgets the
 reconstruction RMSE of HEALPix is $4.01\times$ and $1.33\times$ that of
-the native product under the illustrative overhead, and at the tightest
-budget ($2\%$) the order reverses and HEALPix reaches $0.83\times$ the UTM
-RMSE over all 40 regions (Holm-adjusted $p<10^{-4}$).
+the native product under the illustrative \term{overhead}. At the tightest
+budget ($2\%$) the order reverses, and HEALPix reaches $0.83\times$ the
+UTM RMSE over all 40 regions (Holm-adjusted $p<10^{-4}$).
 
 The region-to-region spread behind each median follows the scene class.
-Urban regions are the most favourable to UTM at tight targets (median
+Urban regions are the most favourable to UTM at tight \term{targets} (median
 $1.67$ at $10^{-4}$) and, with agriculture, the most favourable to
-HEALPix at the loosest one ($0.70$ and $0.69$ at $10^{-2}$); water
-regions produce nearly all the extreme ratios in either direction,
-because over near-constant water the compressed files fall below
-\SI{10}{kB}, where container overhead and resampling artefacts dominate,
-which is why medians are reported. Figure~\ref{fig:rd_comparison} shows
-the absolute-value curves, medians over scenes at each target.
+HEALPix at the loosest one ($0.70$ and $0.69$ at $10^{-2}$). Water
+regions produce nearly all the extreme ratios in either direction. Over
+near-constant water the compressed files fall below \SI{10}{kB}, where
+container \term{overhead} and resampling artefacts dominate; this is why
+medians are reported. Figure~\ref{fig:rd_comparison} shows
+the absolute-value curves, medians over scenes at each \term{target}.
 
 \begin{figure}[t]
 \centering

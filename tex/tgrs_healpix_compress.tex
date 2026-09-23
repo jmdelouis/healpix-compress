@@ -16,6 +16,13 @@
 \newcommand{\Rearth}{R_{\oplus}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
+% The terms defined in Table II (carrier, tile, native UTM square, transfer,
+% read, size ratio, target RMSE, overhead, critical overhead, reference,
+% matched error, matched budget) are wrapped in \term{} at every occurrence
+% in the body, so that a reader sees they refer to that table. One line
+% switches the typography: \textbf for bold, \emph for italics, #1 for none.
+\newcommand{\term}[1]{\textbf{#1}}
+
 % Where the code, the per-region values and the stored results live. Defined
 % once: Section IV-A, Section VI-C and Appendix B cite it through this macro,
 % and the archived-snapshot DOI replaces the URL at proof stage.
@@ -86,9 +93,13 @@ reconstruction error. The result is a distortion-dependent critical
 overhead $\gamma_\star(e)$: the layout overhead a native product must
 carry for the carrier to be the smaller representation at error $e$. A
 Clough--Tocher tile falls from $2.06$ to $0.93$ times the native square
-as the tolerated RMSE grows from $10^{-4}$ to $10^{-2}$, while a
-PSF-aware or inverse-distance transfer costs $1.2$ to $2.5$ times those
-bytes and never reaches parity; of the five codecs, ZFP alone shows no
+as the tolerated RMSE grows from $10^{-4}$ to $10^{-2}$. Clough--Tocher
+keeps the resolution of the product, so this ratio isolates the cost of
+the grid. A PSF-aware transfer restores small-scale content by design,
+and its tile costs $1.2$ to $2.5$ times those bytes at equal coding
+error, as does an inverse-distance control that restores none: the
+surcharge prices what a transfer adds and does not rank the transfers.
+Of the five codecs, ZFP alone shows no
 crossover. Fixed-phase smoothing controls remove the crossover,
 implicating transfer-induced smoothing as a major contributor. Against the native
 observation the carrier starts from a floor of $4.0\times10^{-3}$ and
@@ -112,7 +123,7 @@ Earth observation, HEALPix, discrete global grid systems, data compression, rate
 \appendices
 \input{sections/08_appendices}
 \section*{Acknowledgment}
-This work was conducted mainly under the ESA-funded GRID4EARTH project, “ESA Digital Twin Earth Framework: Common DGGS for DestinE and Copernicus Sentinel Data,” ESA contract 4000147951/25/I-NS.
+This work was conducted mainly under the ESA-funded GRID4EARTH project, “ESA Digital Twin Earth Framework: Common DGGS for DestinE and Copernicus Sentinel Data,” ESA contract 4000147951/25/I-NS. Computations were carried out on the Pangeo-EOSC platform (EGI-ACE and C-SCALE, Horizon 2020).
 
 A. K. additionally receives support from the Estonian Research Agency under grant agreements PRG1764 and PSG841; from the Estonian Ministry of Education and Research via the Centre of Excellence for Sustainable Land Use, TK232; and from the European Commission through the ERC project WaterSmartLand, grant 101125476.
 

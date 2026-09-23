@@ -1,115 +1,123 @@
 \section{Discussion}
 
 \subsection{A Regime-Dependent Trade-off}
-The dyadic hierarchy of HEALPix has a real cost: stored raw, the level-20
-tile is about twice the UTM crop under the illustrative
-$\gamma_{\mathrm{tile}}=1.30$ (Table~\ref{tab:storage_accounting}), and
-after compression native UTM stays the more compressible representation
-at every quality tested except the loosest. Compression narrows the gap
-steadily, from $+106\%$ to $-7\%$, so the operational verdict is decided
-by whether the residual gap exceeds the overhead a given native layout
-carries, the critical overhead $\gamma_\star$ of Table~\ref{tab:synthesis}:
-far above the overheads examined here at high fidelity, $1.19$ at
+The dyadic hierarchy of HEALPix has a real cost. Stored raw, the
+level-20 \term{tile} is about twice the \term{UTM crop} under the illustrative
+$\gamma_{\mathrm{tile}}=1.30$ (Table~\ref{tab:storage_accounting}).
+After compression, native UTM stays the more compressible
+representation at every quality tested except the loosest. Compression
+narrows the gap steadily, from $+106\%$ to $-7\%$. The operational
+verdict is therefore decided by whether the residual gap exceeds the
+\term{overhead} a given native layout carries, the \term{critical overhead}
+$\gamma_\star$ of Table~\ref{tab:synthesis}. That threshold is far
+above the \term{overheads} examined here at high fidelity. It is $1.19$ at
 $3\times10^{-3}$, where the verdict depends on the layout, and $0.93$ at
-$10^{-2}$, where the carrier is smaller at equal layout overhead. A
-HEALPix carrier pays less for its oversampling than raw byte counts
-suggest, and compression does not make it free; it becomes competitive in
-the regime of highest storage pressure, where the redundancy it carries is
-efficiently discarded by several of the tested codecs as the distortion
-constraint is relaxed.
+$10^{-2}$, where the \term{carrier} is smaller at equal layout \term{overhead}. A
+HEALPix \term{carrier} pays less for its oversampling than raw byte counts
+suggest, and compression does not make it free. It becomes competitive
+in the regime of highest storage pressure, where the redundancy it
+carries is efficiently discarded by several of the tested codecs as the
+distortion constraint is relaxed.
 
 \subsection{What Is a Property of the Grid}
 One result is purely geometric: the raw $2.584\times$ sampling-density
 ratio, which the illustrative $\gamma_{\mathrm{tile}}=1.30$ turns into a
 product-architecture quantity of $1.99\times$. A second behaviour is
 reproduced by geometry alone under the measured signal model: the
-monotone decrease of the overhead-free size ratio with the target, which
-an analytic field sampled
-on both lattices reproduces in shape and to within $5$--$24\%$ in
-magnitude, matches to within $7\%$ once the native side is read through
-the same interpolant, and whose crossover it reproduces once the field
-itself passes through the transfer (Section~\ref{sec:support_controls});
-the level-19 carrier swept under the same protocol says the same from
-below (Section~\ref{sec:level_choice}). Sampling geometry is therefore
+monotone decrease of the overhead-free \term{size ratio} with the \term{target}. An
+analytic field sampled on both lattices reproduces its shape and, to
+within $5$--$24\%$, its magnitude. It matches to within $7\%$ once the
+native side is read through the same interpolant, and it reproduces the
+crossover once the field itself passes through the \term{transfer}
+(Section~\ref{sec:support_controls}). The level-19 \term{carrier} swept under
+the same protocol says the same from below
+(Section~\ref{sec:level_choice}). Sampling geometry is therefore
 sufficient to generate this trend under the conditions tested. The
 exploratory latitude dependence is consistent with HEALPix cell-shape
-anisotropy, and has not been isolated as a grid property.
-Three findings belong elsewhere: the
-crossover at a given overhead belongs to the transfer, since it exists
-for a Clough--Tocher carrier and for no other transfer tested and
-disappears when the native raster is given that smoothing, and to the
-codec, since four of the five reproduce it and ZFP does not; a
-substantial part of the transfer-and-read floor is caused by the read,
-since changing the reading operator alone removes two thirds of its mean
-squared error (Section~\ref{sec:operator}); and the codec ranking is a
-property of these codecs on this imagery, identical on both grids, with
-no demonstrated quadtree effect (Section~\ref{sec:why_quadtree}). A
-reader interested in HEALPix as such should keep the first three; a
-product designer should keep all six, because a product is the complete
-chain. Full-sphere behaviour has not been measured: every result is on
-one level-10 parent tile per scene ($1024\times1024$ level-20 cells),
-large enough to amortise per-chunk codec overhead and small enough to
-remain a practical chunking unit. A global product would need a
+anisotropy, and has not been isolated as a grid property. Three
+findings belong elsewhere. The crossover at a given \term{overhead} belongs to
+the \term{transfer}, since it exists for a Clough--Tocher \term{carrier} and for no
+other \term{transfer} tested and disappears when the native raster is given
+that smoothing; it also belongs to the codec, since four of the five
+reproduce it and ZFP does not. A substantial part of the
+transfer-and-read floor is caused by the \term{read}, since changing the
+\term{read}ing operator alone removes two thirds of its mean squared error
+(Section~\ref{sec:operator}). The codec ranking is a property of these
+codecs on this imagery, identical on both grids, with no demonstrated
+quadtree effect (Section~\ref{sec:why_quadtree}). A reader interested
+in HEALPix as such should keep the first three; a product designer
+should keep all six, because a product is the complete chain.
+Full-sphere behaviour has not been measured. Every result is on one
+level-10 parent tile per scene ($1024\times1024$ level-20 cells), large
+enough to amortise per-chunk codec overhead and small enough to remain
+a practical chunking unit. A global product would need a
 multi-chunk hierarchy and boundary handling across the 12 base faces of
 level 0; a single base face carried down to level 20 would hold
 $4^{20}\approx10^{12}$ cells, far too large to compress as one array.
 
 One architectural option follows from Section~\ref{sec:redundancy} and is
-not measured here. The carrier holds no more information than the native
-window it was built from, so a store that keeps the native product and
-applies the transfer at read time carries no storage penalty at all: the
-HEALPix index becomes a view over native chunks rather than a second copy
-of the data. Every ratio in this paper is about the other choice, a
-carrier materialised on disk, which is what a DGGS archive buys latency
-and simplicity with. Which of the two is right is a question about read
-patterns and compute budgets that this study does not address, and a
-hybrid, storing the native product and materialising the carrier only for
-the levels and regions that are read often, sits between them.
+not measured here. The Clough--Tocher \term{carrier} holds no more information
+than the native window it was built from. A store that keeps the native
+product and applies that \term{transfer} at read time therefore carries no
+storage penalty at all: the HEALPix index becomes a view over native
+chunks rather than a second copy of the data. The same option is not
+established for the PSF-aware \term{transfer}. Its deconvolution amplifies the
+small scales of its input, and a native product stored with lossy
+compression may have lost exactly those scales; whether the restored
+content survives a compressed input would need a dedicated test. Every
+ratio in this paper is about the other choice, a \term{carrier} materialised
+on disk, which is what a DGGS archive buys latency and simplicity with.
+Which of the two is right is a question about read patterns and compute
+budgets that this study does not address. A hybrid, storing the native
+product and materialising the \term{carrier} only for the levels and regions
+that are read often, sits between them.
 
 \subsection{Reproducibility}
 \label{sec:reproducibility}
 Every figure quoted in the text is produced by a script from the stored
-results, and an assertion harness recomputes each one and refuses to let
-the manuscript state a value the current run does not support; the sizes
-reported are those of files written, closed and re-read by an independent
-decoder (Appendix~\ref{app:codec_audit}). Each sweep records the codec
-library versions and the tagged checkout of the shared resampling
-package~\cite{delouis2026resample} it ran against, and the harness
-refuses a run whose instrument response falls outside the band of the
-sensor. The code, the stored results and the per-region
+results. An assertion harness recomputes each one and refuses to let
+the manuscript state a value the current run does not support. The
+sizes reported are those of files written, closed and re-read by an
+independent decoder (Appendix~\ref{app:codec_audit}). Each sweep
+records the codec library versions and the tagged checkout of the
+shared resampling package~\cite{delouis2026resample} it ran against,
+and the harness refuses a run whose instrument response falls outside
+the band of the sensor. The code, the stored results and the per-region
 values this paper does not print are at \repourl, at the tag it was
 submitted from.
 
 \subsection{Current Limitations}
 \label{sec:limitations}
-Five groups, detailed in Appendix~\ref{app:limitations}. \emph{Transfer}:
-the crossover is a result for a carrier filled by Clough--Tocher, of the
-transfers tested, and scored against its own smooth tile; the
-smoothed-native control gives the native side that smoothing at two fixed
-phases, and across the original comparison and these two controls the
-loose-target ratio spans $0.93$--$1.24$, sensitivity controls rather than
-formal limits on a phase-matched experiment; a non-deconvolving transfer of the same
-smoothness has not been tested, and the data are consistent with energy
-compaction playing an important role, short of a demonstration.
-\emph{Reference and reader}: the two reconstruction references disagree
-at the crossover and both are reported; the common-reference sweep has
-been re-scored through an interpolating read, and the PSF-aware carrier
-has also been evaluated through its matched forward operator. What stays
-open is the $3\times10^{-3}$ target, bracketed for only $57\%$ of the
-regions under the interpolating read, and a latent-field reference for
-the PSF-aware carrier. \emph{Footprint and orientation}: the
-equal-area crop and the rotated tile overlap over $74$--$83\%$ of their
-extent, and the mismatch is constrained by three controls, one analytic and
-two on subsets; the raster's axes run at about $45^\circ$ to the native
-ones, and the cost of that orientation to row-and-column codecs is not
-measured. \emph{Dataset}: Sentinel-2 B04 at \SI{10}{m}, one acquisition
-per region, one tile per region, 40 regions in four classes; nothing is
+Five groups, detailed in Appendix~\ref{app:limitations}.
+\emph{Transfer}. The crossover is a result for a \term{carrier} filled by
+Clough--Tocher, of the \term{transfers} tested, and scored against its own
+smooth \term{tile}. The smoothed-native control gives the native side that
+smoothing at two fixed phases; across the original comparison and these
+two controls the loose-\term{target} ratio spans $0.93$--$1.24$, sensitivity
+controls rather than formal limits on a phase-matched experiment. A
+non-deconvolving \term{transfer} of the same smoothness has not been tested,
+and the data are consistent with energy compaction playing an important
+role, short of a demonstration.
+\emph{Reference and reader}. The two \term{reconstruction references} disagree
+at the crossover and both are reported; the \term{common-reference} sweep has
+been re-scored through an interpolating \term{read}. What stays open is the
+$3\times10^{-3}$ \term{target}, bracketed for only $57\%$ of the regions under
+the interpolating \term{read}. Also open is a synthetic-scene comparison of the
+Clough--Tocher and PSF-aware \term{transfers} against a known latent field,
+since the observation is the estimand of only the first.
+\emph{Footprint and orientation}. The \term{equal-area crop} and the rotated
+\term{tile} overlap over $74$--$83\%$ of their extent, and the mismatch is
+constrained by three controls, one analytic and two on subsets. The
+raster's axes run at about $45^\circ$ to the native ones, and the cost
+of that orientation to row-and-column codecs is not measured.
+\emph{Dataset}. Sentinel-2 B04 at \SI{10}{m}, one acquisition per
+region, one \term{tile} per region, 40 regions in four classes; nothing is
 claimed for other bands, sensors, temporal cubes, model output,
 flux-conservative fields or the full sphere. \emph{Compression and
-operational assumptions}: the oracle-best-codec comparison is optimistic
-by construction; codecs are swept over their own quality parameters; the
-loosest targets carry censored observations; the overhead is a parameter
-because the container component is measured in bytes, while the overlap
-sample-area duplication is computed from the published tiling geometry
-and its corresponding compressed-byte cost is not measured; learned
-codecs are not evaluated; and the byte audit covers two regions.
+operational assumptions}. The oracle-best-codec comparison is optimistic
+by construction. Codecs are swept over their own quality parameters. The
+loosest \term{targets} carry censored observations. The \term{overhead} is a
+parameter: the container component is measured in bytes, while the
+overlap sample-area duplication is computed from the published tiling
+geometry and its corresponding compressed-byte cost is not measured.
+Learned codecs are not evaluated. The byte audit covers two regions.

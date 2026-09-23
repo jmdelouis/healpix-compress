@@ -17,7 +17,9 @@ of this one keeps the merged table in step:
 
     table_floors.tex      every transfer-and-read floor against the native
                           observation: by class for the main chain, by reader
-                          for both transfers, and the two level-19 carriers.
+                          for the Clough--Tocher tiles, and the two level-19
+                          carriers (the PSF-aware tiles are not scored
+                          against the observation since revision 7).
                           Replaces the representation-floor, reader-floor and
                           level-19-direct tables.
                           Sources: results/common_reference_floor.csv,
@@ -172,9 +174,11 @@ def table_floors():
     rows.append("\\midrule")
     rf = pd.read_csv(cfg.RESULTS_DIR / "reader_floor.csv")
     rf = rf[rf.error.isna()] if "error" in rf else rf
+    # Revision 7: the PSF-transferred tiles are no longer scored against the
+    # observation. Their estimand is the latent field, so a floor against the
+    # observation ranks nothing; only the Clough--Tocher reads are tabulated.
     names = {"clough_tocher": "C--T", "psf": "PSF"}
-    order = [("clough_tocher", "nearest"), ("clough_tocher", "bilinear"),
-             ("psf", "nearest"), ("psf", "bilinear"), ("psf", "psf")]
+    order = [("clough_tocher", "nearest"), ("clough_tocher", "bilinear")]
     for k, rd in order:
         g = rf[(rf.kernel == k) & (rf.reader == rd)]
         if not len(g):

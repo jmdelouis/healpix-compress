@@ -9,7 +9,11 @@ HEALPix chunk here. This locality matters for cloud object storage, where chunk 
 sets I/O performance, and for compression, where every chunk is one
 quadtree rooted at a single parent cell. Equal-area cells avoid the
 latitude bias of plate-carr\'ee-like grids, and one spherical index eases
-the fusion of products with different map projections. Sensor ground
+the fusion of products with different map projections. Earth observation
+data sit on the WGS84 ellipsoid, and feeding geodetic latitude into
+spherical HEALPix breaks the equal-area property by up to about $0.9\%$;
+the \texttt{healpix-geo} package used here restores it through an
+authalic-latitude mapping~\cite{odaka2026grid4earth}. Sensor ground
 sampling distances, however, fall between the dyadic levels
 (Table~\ref{tab:levels}).
 
@@ -50,12 +54,13 @@ compressed; that is the empirical question of Section~\ref{sec:results}.
 
 \subsection{Terms Used in This Paper}
 \label{sec:glossary}
-Table~\ref{tab:glossary} gives the terms used here. Two of them decide
-the result: the \emph{transfer}, which fills the HEALPix tile from the
-native pixels and has no counterpart on the UTM side, and the
-\emph{reference}, the field against which reconstruction error is
-measured, since against the tile itself the transfer costs nothing and
-against the native observation it is charged to HEALPix.
+Table~\ref{tab:glossary} gives the terms used here; they are set in
+bold throughout the paper. Two of them decide the result. The
+\term{transfer} fills the HEALPix \term{tile} from the native pixels and has
+no counterpart on the UTM side. The \term{reference} is the field
+against which reconstruction error is measured: against the \term{tile} itself
+the \term{transfer} costs nothing, and against the native observation it is
+charged to HEALPix.
 
 \begin{table*}[t]
 \centering
@@ -66,15 +71,15 @@ against the native observation it is charged to HEALPix.
 \toprule
 Term & Meaning in this paper \\
 \midrule
-Carrier grid, tile & The HEALPix level-20 grid on which the imagery is stored, and the unit of storage on it: the $1024\times1024$ cells descending from one level-10 cell, about \SI{6.4}{km} across. \\
-Native UTM square & The $637\times637$-pixel square of the original Sentinel-2 raster with the same nominal projected area as one tile (Section~\ref{sec:utm_crop}); the native side is never resampled. \\
-Transfer & The operation that fills the tile from the native pixels. Three are compared. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it adds no information that was not in the native pixels, though it does smooth them, and is the carrier used throughout. \emph{PSF-aware} also undoes part of the instrument blur, so the tile aims at a sharper field than the product it came from. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
-Read & The operation that returns a value on a native pixel from a decoded tile, needed only when the tile is compared with the observation; nearest cell, or interpolation within the tile. \\
-Size ratio & Compressed bytes of the HEALPix tile divided by compressed bytes of the native square, at the same reconstruction error. Above one, the HEALPix representation is larger. Uncompressed, the ratio is $2.58$ by geometry. \\
-Target RMSE & The tolerated reconstruction error, in reflectance units. Sentinel-2 reflectances are of order $0.1$ and a typical tile has a standard deviation, its contrast, of $0.04$; an RMSE of $10^{-4}$ is a quarter of a percent of that contrast and $10^{-2}$ a quarter of it. Five targets from $10^{-4}$ to $10^{-2}$ are used. \\
-Overhead $\gamma$, critical overhead $\gamma_\star$ & $\gamma$ is the factor by which the native product's tiling layout (padding, overlap, metadata) inflates its stored size; $1.30$ is used as an illustrative value, never as a fact. $\gamma_\star(e)$ is the value of $\gamma$ at which the two representations are the same size at error $e$; it equals the size ratio with no overhead, so a reader with a known $\gamma$ divides every ratio by it. \\
-Reference & The field against which the reconstruction error is measured. \emph{Within-representation}: each grid against its own uncompressed raster, so the transfer costs HEALPix nothing. \emph{Common}: both grids against the same native observation, so the transfer and the read are charged to HEALPix. \\
-Matched error, matched budget & Two ways of comparing rate--distortion curves: at the same error, compare sizes; at the same size (a fraction of the raw tile), compare errors. \\
+\term{Carrier grid, tile} & The HEALPix level-20 grid on which the imagery is stored, and the unit of storage on it: the $1024\times1024$ cells descending from one level-10 cell, about \SI{6.4}{km} across. \\
+\term{Native UTM square} & The $637\times637$-pixel square of the original Sentinel-2 raster with the same nominal projected area as one tile (Section~\ref{sec:utm_crop}); the native side is never resampled. \\
+\term{Transfer} & The operation that fills the tile from the native pixels. Three are compared, and they answer different questions. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it keeps the resolution and the instrument response of the product, adds no information that was not in the native pixels, though it does smooth them, and is the carrier used throughout, so that the comparison isolates what the grid costs. \emph{PSF-aware} also undoes part of the instrument blur, so the tile aims at a sharper field than the product it came from; its extra bytes pay for content the product gains, and its error is meaningful only against that sharper field. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
+\term{Read} & The operation that returns a value on a native pixel from a decoded tile, needed only when the tile is compared with the observation; nearest cell, or interpolation within the tile. \\
+\term{Size ratio} & Compressed bytes of the HEALPix tile divided by compressed bytes of the native square, at the same reconstruction error. Above one, the HEALPix representation is larger. Uncompressed, the ratio is $2.58$ by geometry. \\
+\term{Target RMSE} & The tolerated reconstruction error, in reflectance units. Sentinel-2 reflectances are of order $0.1$ and a typical tile has a standard deviation, its contrast, of $0.04$; an RMSE of $10^{-4}$ is a quarter of a percent of that contrast and $10^{-2}$ a quarter of it. Five targets from $10^{-4}$ to $10^{-2}$ are used. \\
+\term{Overhead $\gamma$, critical overhead $\gamma_\star$} & $\gamma$ is the factor by which the native product's tiling layout (padding, overlap, metadata) inflates its stored size; $1.30$ is used as an illustrative value, at the level of the published spatial overhead of the Sentinel-2 grid~\cite{bauer2023wasting}, never as a measured byte count. $\gamma_\star(e)$ is the value of $\gamma$ at which the two representations are the same size at error $e$; it equals the size ratio with no overhead, so a reader with a known $\gamma$ divides every ratio by it. \\
+\term{Reference} & The field against which the reconstruction error is measured. \emph{Within-representation}: each grid against its own uncompressed raster, so the transfer costs HEALPix nothing. \emph{Common}: both grids against the same native observation, so the transfer and the read are charged to HEALPix. \\
+\term{Matched error, matched budget} & Two ways of comparing rate--distortion curves: at the same error, compare sizes; at the same size (a fraction of the raw tile), compare errors. \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -85,7 +90,7 @@ Level 20 avoids the nominal undersampling of level 19, whose \SI{12.4}{m}
 cells are coarser than the \SI{10}{m} product (what level 19 loses is
 measured in Section~\ref{sec:level_choice}), at the nominal storage cost
 of \eqref{eq:alpha}. The question is whether this cost survives
-compression and a realistic accounting of native-grid overhead, or
+compression and a realistic accounting of native-grid \term{overhead}, or
 whether it is redundant, and therefore compressible, structure. We do not
 claim that the sensor carries no information at the finer scale, or that
 the signal is strictly band-limited; neither is needed. The level-20
@@ -97,24 +102,24 @@ persistence used by zerotree coders make this expectation precise
 (Appendix~\ref{app:literatures}).
 
 One bound follows from information alone. For a fixed complete source
-window, the carrier is a deterministic function of the native samples:
-the tile is a known transfer applied to that window. A coder that stored
-those samples and the name of the transfer would reproduce the tile
-without loss, so the information content of the carrier cannot exceed
-that of the complete input samples by more than the description of the
-transfer. This does not give a unit upper bound on the HEALPix/native-crop
-ratio measured here. The equal-area crop and the carrier do not cover
-identical supports, and the transfer reads native samples from outside
-the crop, so the crop is not the input from which the tile is a function
-(Section~\ref{sec:utm_crop}). What the bound says is that the carrier
+window, the \term{carrier} is a deterministic function of the native samples:
+the \term{tile} is a known \term{transfer} applied to that window. A coder that stored
+those samples and the name of the \term{transfer} would reproduce the \term{tile}
+without loss. The information content of the \term{carrier} therefore cannot
+exceed that of the complete input samples by more than the description
+of the \term{transfer}. This does not give a unit upper bound on the HEALPix/native-crop
+ratio measured here. The \term{equal-area crop} and the \term{carrier} do not cover
+identical supports, and the \term{transfer} reads native samples from outside
+the crop, so the crop is not the input from which the \term{tile} is a function
+(Section~\ref{sec:utm_crop}). What the bound says is that the \term{carrier}
 holds no more information than the window it came from, and that the
 ratios measured in Section~\ref{sec:results} are a property of
-general-purpose codecs applied to an oversampled representation. This is
-the situation of oversampled
-analogue-to-digital conversion, where the redundant samples form a frame
-and a consistent decoder can recover part of the oversampling
-gain~\cite{thao1994oversampled,christensen2016frames}, and of
-generalised sampling, where a smooth interpolant read at a finer lattice
-adds no degrees of freedom~\cite{unser2000sampling}. How much of that
+general-purpose codecs applied to an oversampled representation. Two
+classical settings describe the same situation. In oversampled
+analogue-to-digital conversion the redundant samples form a frame, and a
+consistent decoder can recover part of the oversampling
+gain~\cite{thao1994oversampled,christensen2016frames}. In generalised
+sampling a smooth interpolant read at a finer lattice adds no degrees of
+freedom~\cite{unser2000sampling}. How much of that
 redundancy a practical codec removes is the empirical question of this
 paper.

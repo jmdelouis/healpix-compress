@@ -168,7 +168,6 @@ def checks(tex: str):
         out.append(("latitude | beta  [skipped: rerun update_paper_numbers.py "
                     "with support_controls_spectrum.csv present]", "", ""))
     out += level_and_reader_checks()
-    out += psf_chain_checks()
     out += gamma_continuous_checks()
     out += headline_checks()
     out += censoring_checks()
@@ -183,64 +182,11 @@ def checks(tex: str):
     out += appendix_table_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
+    # Revision 7: the PSF-aware carrier is no longer scored against the
+    # observation (its estimand is the latent field), so the PSF-chain and
+    # matched-reader blocks of revision 6 are gone with the prose they guarded.
     return out, survivors
 
-
-def psf_chain_checks():
-    """The operational chain of revision 6 (run 2.1), Section V-I.
-
-    The PSF-aware carrier read through the forward operator it was built
-    for, scored against the same observation as everything else in that
-    section. Read from reader_rescore.csv, which reader_rescore.py writes
-    from the per-reader summaries, so the prose cannot drift from the table
-    it condenses. The block is silent when the sweep is absent, and loud
-    when the psf operator fell back to the nearest read, which would make
-    the whole paragraph describe a different chain.
-    """
-    out = []
-    df = _csv("reader_rescore.csv")
-    if df is None or "reader" not in df.columns:
-        return [("PSF chain  [skipped: reader_rescore.csv absent]", "", "")]
-    d = df[df.reader == "psf_psf"]
-    if not len(d):
-        return [("PSF chain  [skipped: not in reader_rescore.csv]", "",
-                 "run_codec_bench.py --resampler psf --common-reference "
-                 "--cr-mode psf")]
-    fl = _csv("common_reference_floor__psf__psf.csv")
-    if fl is not None and "mode" in fl.columns:
-        modes = sorted(set(fl["mode"].astype(str)))
-        if any("fallback" in m for m in modes):
-            return [(f"PSF chain  [FALLBACK: the psf operator degraded to "
-                     f"{modes}]", "", "rerun with --force")]
-    where = "[in sections/05i_common_reference.tex]"
-    rep = d[d.reported & (d.kind == "budget")].sort_values("target")
-    for _, r in rep.iterrows():
-        pct = f"{100*r.target:g}"
-        med = f"${r['median']:.2f}$" if r["median"] < 10 else f"${r['median']:.1f}$"
-        out.append((f"PSF chain, error ratio at the {pct}% budget {where}", med,
-                    f"n={int(r.n)}, gamma_tile"))
-        out.append((f"PSF chain, n at the {pct}% budget {where}",
-                    f"${int(r.n)}$", ""))
-        # the conclusion quotes the same three ratios, so it is scoped too
-        out.append((f"PSF chain, error ratio at the {pct}% budget "
-                    "[in sections/07_conclusion.tex]", med, ""))
-    # no RMSE target survives the bracketing rule on this chain: the share at
-    # the loosest one is what the prose quotes
-    rm = d[d.kind == "rmse"].sort_values("target")
-    if len(rm):
-        last = rm.iloc[-1]
-        out.append((f"PSF chain, bracketed share at the loosest RMSE target {where}",
-                    f"${100*last.bracketed:.0f}\\%$",
-                    "below the 75% rule, so the target is withheld"))
-        out.append((f"PSF chain, reportable RMSE targets {where}",
-                    f"{int(rm.reported.sum())}", "of five"))
-    if fl is not None and "representation_floor_rmse" in fl.columns:
-        v = float(fl.representation_floor_rmse.median())
-        e = int(np.floor(np.log10(v)))
-        out.append((f"PSF chain, floor against the observation {where}",
-                    f"${v/10**e:.2f}\\times10^{{{e}}}$",
-                    f"median over {len(fl)} regions"))
-    return out
 
 
 def gamma_continuous_checks():
@@ -1165,10 +1111,6 @@ def consistency_checks(tex):
                     ("bilinear floor, absolute",
                      f"{b.floor.median():.1e}".replace("e-0", "\\times10^{-").replace("e-", "\\times10^{-") + "}",
                      "as $x.x\\times10^{-3}$")]
-        ps = ok[ok.kernel == "psf"].pivot_table(index="scene", columns="reader", values="floor")
-        if "psf" in ps and "bilinear" in ps:
-            out.append(("psf / bilinear floor, PSF tiles",
-                        _fmt((ps.psf / ps.bilinear).dropna().median(), 3), "paired median"))
 
     # --- the transfer ablation (Table kernel_ablation) ---------------------------
     ka = _csv("kernel_ablation.csv")
@@ -1317,33 +1259,6 @@ def level_and_reader_checks():
              _fmt(g.transmission.median()), "must read 1.00"),
             ("nearest read: rate saved by product target, %",
              _fmt(100 * g.gain_product_target.median(), 1) + "\\%", ""),
-        ]
-
-    # --- the matched reader: PSF operator on the PSF tiles --------------------
-    rp = _csv("interscale_reader_psf.csv")
-    if rp is None:
-        out.append(("matched PSF reader  [skipped: "
-                    "results/interscale_reader_psf.csv absent]", "",
-                    "run interscale.py --kernel psf"))
-    else:
-        if "error" in rp:
-            rp = rp[rp["error"].fillna("").astype(str).str.len() == 0]
-        g = rp[rp.reader == "psf"]
-        piv = rp.pivot_table(index="scene", columns="reader",
-                             values="reader_floor", aggfunc="median")
-        q = pd.qcut(np.log10(g.rmse_cell), 4, labels=list("abcd"))
-        gq = g.groupby(q, observed=True).gain_product_target.median()
-        out += [
-            ("PSF reader floor / nearest floor, PSF tiles",
-             _fmt((piv.psf / piv.nearest).median(), 3),
-             f"lower on {(piv.psf < piv.nearest).sum()}/{len(piv)} regions"),
-            ("PSF reader: transmission", _fmt(g.transmission.median()), ""),
-            ("PSF reader: rate saved by product target, %",
-             f"{100 * g.gain_product_target.median():.0f}\\%", "median"),
-            ("PSF reader: saved at tightest quartile, %",
-             _fmt(100 * gq.iloc[0], 1) + "\\%", ""),
-            ("PSF reader: saved at loosest quartile, %",
-             f"{100 * gq.iloc[-1]:.0f}\\%", ""),
         ]
 
     # --- the quadtree test of Section III-E ------------------------------------

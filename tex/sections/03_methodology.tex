@@ -22,47 +22,48 @@ verdict; the subsections below describe each step.
 \subsection{From a Nested Chunk to a 2-D Raster}
 \label{sec:morton}
 Every codec used here is a generic 2-D array or image compressor with no
-knowledge of HEALPix, so a chunk must first become an ordinary raster in
-which horizontal and vertical neighbours are spatial neighbours. A nested
-chunk of $4^{\delta}$ cells (all descendants, $\delta$ levels down, of one
-parent) is a 1-D array indexed by a Morton (Z-order) code: bit $b$ of the
-local $x$ coordinate sits at bit $2b$ of the index, bit $b$ of $y$ at bit
-$2b+1$. De-interleaving the bits recovers $(x,y)$ for every cell and
-scatters the array into a $2^{\delta}\times2^{\delta}$ raster, exactly
-invertibly. We use $\delta=10$: the $1024\times1024$ level-20 descendants
-of one level-10 parent form one carrier tile, large enough to amortise
+knowledge of HEALPix. A chunk must therefore first become an ordinary
+raster in which horizontal and vertical neighbours are spatial
+neighbours. A nested chunk of $4^{\delta}$ cells (all descendants,
+$\delta$ levels down, of one parent) is a 1-D array indexed by a Morton
+(Z-order) code. Bit $b$ of the local $x$ coordinate sits at bit $2b$ of
+the index, and bit $b$ of $y$ at bit $2b+1$. De-interleaving the bits
+recovers $(x,y)$ for every cell and scatters the array into a
+$2^{\delta}\times2^{\delta}$ raster, exactly invertibly. We use $\delta=10$: the $1024\times1024$ level-20 descendants
+of one level-10 parent form one \term{carrier} \term{tile}, large enough to amortise
 per-chunk codec overhead and small enough to stay a practical storage
 unit. This reshaping is the only HEALPix-specific step; all later steps
 work on a plain float32 raster. That raster still carries three marks of
-its origin: the kernel that filled it from the sensor grid and the shape
-anisotropy of equal-area HEALPix cells (a local axis-length ratio of up
-to $\sim\!1.7$ between the raster axes), which both affect
-compressibility (Section~\ref{sec:resampler}), and its axes, which in
-the UTM zone of a scene run at about $45^\circ$ to north
-(Fig.~\ref{fig:utm_crop_footprints}), so the row and column predictors
-of the codecs follow diagonals of the native raster; what that
-orientation costs or saves has not been measured
+its origin. The first is the kernel that filled it from the sensor grid.
+The second is the shape anisotropy of equal-area HEALPix cells, a local
+axis-length ratio of up to $\sim\!1.7$ between the raster axes. Both
+affect compressibility (Section~\ref{sec:resampler}). The third is its
+orientation: in the UTM zone of a scene its axes run at about $45^\circ$
+to north (Fig.~\ref{fig:utm_crop_footprints}), so the row and column
+predictors of the codecs follow diagonals of the native raster. What
+that orientation costs or saves has not been measured
 (Section~\ref{sec:limitations}).
 
 \subsection{Equal-Area Native UTM Comparison}
 \label{sec:utm_crop}
-Both sides must cover the same nominal area, and a carrier tile
+Both sides must cover the same nominal area, and a \term{carrier} \term{tile}
 projected into the UTM zone of a scene is a rotated square. An
 axis-aligned bounding box around it holds about twice the pixel count of
 the true footprint and would penalise the native side. Each grid is
-therefore compared in its own geometry, matched by ground area. HEALPix is equal-area, so the ground area of a level-20 tile is a
+therefore compared in its own geometry, matched by ground area. HEALPix is equal-area, so the ground area of a level-20 \term{tile} is a
 geometric constant: by \eqref{eq:healpix_width}, a $1024\times1024$-cell
-tile covers a square of side $1024\,\Delta_{\mathrm{eq}}(20)\approx\SI{6.37}{km}$,
+\term{tile} covers a square of side $1024\,\Delta_{\mathrm{eq}}(20)\approx\SI{6.37}{km}$,
 about $636.7$ native \SI{10}{m} pixels, rounded to $637$. For each scene a
 $637\times637$-pixel axis-aligned square is cut from the native Sentinel-2
-B04 raster, centred on the native pixel nearest to the mean longitude and
-latitude of the tile's cells, computed with \texttt{healpix\_geo} on the
-WGS84 ellipsoid. ``Equal-area'' is shorthand for equal \emph{nominal
-projected} area: UTM is conformal, and rounding $636.7$ to $637$ alone
-adds about $0.1\%$ of area; these terms are small next to the
-$2.58\times$ oversampling under study. Both representations have a fixed
-raw size across regions, \SI{1.623}{MB} for the native crop
-($637^2\times\SI{4}{B}$) and \SI{4.194}{MB} for the HEALPix tile, with no
+B04 raster. It is centred on the native pixel nearest to the mean
+longitude and latitude of the \term{tile}'s cells, computed with
+\texttt{healpix\_geo} on the WGS84 ellipsoid~\cite{odaka2026grid4earth}.
+``Equal-area'' is shorthand for equal \emph{nominal projected} area: UTM
+is conformal, and rounding $636.7$ to $637$ alone adds about $0.1\%$ of
+area. These terms are small next to the $2.58\times$ oversampling under
+study. Both representations have a fixed
+raw size across regions, \SI{1.623}{MB} for the \term{native crop}
+($637^2\times\SI{4}{B}$) and \SI{4.194}{MB} for the HEALPix \term{tile}, with no
 fill value on either side.
 
 Matching by area means each grid is compressed in the frame it is stored
@@ -75,9 +76,9 @@ differ over a fifth of their extent can have different entropies.
 Section~\ref{sec:support_controls} constrains the effect with an analytic
 field that both geometries sample identically; that control reproduces
 the decline of the measured gap to within $5$--$24\%$, and the crossover
-itself once the field passes through the transfer. The mismatch matters
+itself once the field passes through the \term{transfer}. The mismatch matters
 more for cross-grid comparisons of reconstruction \emph{error}, which is
-why the common-reference evaluation of
+why the \term{common-reference} evaluation of
 Section~\ref{sec:common_reference} is restricted to the intersection.
 
 \begin{figure}[t]
@@ -89,70 +90,72 @@ Section~\ref{sec:common_reference} is restricted to the intersection.
 
 \subsection{The Resampling Kernel Is Part of the Result}
 \label{sec:resampler}
-Filling the level-20 tile means resampling the native raster onto the
+Filling the level-20 \term{tile} means resampling the native raster onto the
 HEALPix cell centres, a step with no counterpart on the UTM side, and the
 kernel decides what the codec sees. Cell anisotropy already matters: at
 fixed area the two local sample spacings scale as $\sqrt{1.7}$ and
 $1/\sqrt{1.7}$, which brings the shorter spacing closer to the native
 \SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests. The
-carrier used throughout is a Clough--Tocher piecewise-cubic interpolant
-over a Delaunay triangulation, distinct from bicubic interpolation
+\term{carrier} used throughout is a Clough--Tocher piecewise-cubic
+interpolant~\cite{clough1965plate} over a Delaunay triangulation, distinct
+from bicubic interpolation
 (\texttt{scipy.interpolate.griddata} with \texttt{method="cubic"}); it
 brings the HEALPix spectrum close to the native one. A Shepard-type
-inverse-distance average over the four nearest neighbours, with a kernel
-width set to the HEALPix \emph{output} scale ($\sim\SI{6.2}{m}$) instead
-of the \SI{10}{m} \emph{input} spacing, is kept as a control: it leaves
-no excess power in the top octave ($0.92$ of the observation's), but it
-is $9.5$ times less accurate than Clough--Tocher against an analytic
-field and its output costs about twice the bytes at equal error
-(Section~\ref{sec:transfer_cost}). Kernels are compared with the
+inverse-distance average over the four nearest neighbours is kept as a
+control, with a kernel width set to the HEALPix \emph{output} scale
+($\sim\SI{6.2}{m}$) instead of the \SI{10}{m} \emph{input} spacing. It
+leaves no excess power in the top octave ($0.92$ of the observation's).
+It is, however, $9.5$ times less accurate than Clough--Tocher against an
+analytic field, and its output costs about twice the bytes at equal
+error (Section~\ref{sec:transfer_cost}). Kernels are compared with the
 approximation-order framework of~\cite{blu1999fourier} and the kernel
 comparison of~\cite{thevenaz2000interpolation}, by scoring each against
-an analytic field: Section~\ref{sec:transfer_cost} rebuilds the carrier
-with the PSF-aware and inverse-distance transfers and repeats the sweep
-on the 40 regions, and Section~\ref{sec:support_controls} scores five
+an analytic field. Section~\ref{sec:transfer_cost} rebuilds the \term{carrier}
+with the PSF-aware and inverse-distance \term{transfers} and repeats the sweep
+on the 40 regions. Section~\ref{sec:support_controls} scores five
 kernels on the 39 regions the window audit of
 Appendix~\ref{app:window_radiometry} admits. The crossover reported
-below is a property of the carrier built with this transfer: the kernel
+below is a property of the \term{carrier} built with this \term{transfer}. The kernel
 that fills a HEALPix grid from a sensor grid is a scientific choice, and
 a kernel mismatched to the source sampling can change which of two grids
 looks more storage-efficient once compressed.
 
-The PSF-aware transfer is described here so that this paper stands on its
+The PSF-aware \term{transfer} is described here so that this paper stands on its
 own. It models each native pixel as a Gaussian-weighted sum of the latent
 field at the level-20 cell centres, with the instrument's response as the
-weight (nominal B04 width \SI{12.5}{m} FWHM), assembles that forward
-operator as a sparse matrix from cells to samples, and estimates the cell
-values by damped least squares, solved by conjugate gradients on the
-normal equations with a damping of $\lambda=10^{-3}$, the value at which
-the companion study reports its accuracy. Its estimand is therefore the
-latent field before the instrument blur; the companion study measures
-that it recovers $15.4\%$ to $19.6\%$ of the blur on noise-free fields,
-and Section~\ref{sec:transfer_cost} prices the bytes this sharper
-estimand costs. The PSF-aware transfer and the forward operator of
-Section~\ref{sec:operator} come from the \texttt{healpix-resample}
-package at its tag \texttt{jstars-submission}, the version the companion
-paper describes; the environment record written with every sweep names
-the checkout it ran against, because the package's PSF width convention
-changed once between versions during this work.
+weight (nominal B04 width \SI{12.5}{m} FWHM). It assembles that forward
+operator as a sparse matrix from cells to samples. It then estimates the
+cell values by damped least squares, solved by conjugate gradients on
+the normal equations with a damping of $\lambda=10^{-3}$, the value at
+which the companion study reports its accuracy. Its estimand is
+therefore the latent field before the instrument blur. The companion
+study measures that it recovers $15.4\%$ to $19.6\%$ of the blur on
+noise-free fields, and Section~\ref{sec:transfer_cost} prices the bytes
+this sharper estimand costs. The PSF-aware \term{transfer} comes from the
+\texttt{healpix-resample} package at its tag
+\texttt{jstars-submission}, the version the companion paper describes.
+The environment record written with every sweep names the checkout it
+ran against, because the package's PSF width convention changed once
+between versions during this work.
 
 \subsection{Codecs Compared}
 \label{sec:codecs}
 No custom or HEALPix-aware codec is used. We evaluate established,
 independently maintained codecs, so that any redundancy that survives
 compression can be exploited with tools a practitioner can already
-install. Learned codecs are absent by design: they have reshaped the
+install. Learned codecs are absent by design. They have reshaped the
 rate--distortion frontier for natural images since~\cite{balle2017endtoend}
-and reached remote sensing, including on-board use~\cite{valsesia2019onboard},
-but their performance depends on the training distribution, and no pair
-of models trained symmetrically on the two grids exists. Compression
-practice for optical space imagery is surveyed
-in~\cite{blanes2014tutorial}; the mission-side standards there, the CCSDS
-wavelet coder and its multispectral successor~\cite{hernandez2021ccsds123},
-target the on-board bandwidth problem, where complexity, memory and channel
-errors constrain the coder as much as its rate~\cite{abrardo2010onboard},
-while the question here is archive-side. Five general-purpose compressors
-are applied identically on both grids:
+and reached remote sensing, including on-board
+use~\cite{valsesia2019onboard}. Their performance, however, depends on
+the training distribution, and no pair of models trained symmetrically
+on the two grids exists. Compression practice for optical space imagery
+is surveyed in~\cite{blanes2014tutorial}. The mission-side standards
+there, the CCSDS wavelet coder and its multispectral
+successor~\cite{hernandez2021ccsds123}, \term{target} the on-board bandwidth
+problem, where complexity, memory and channel errors constrain the coder
+as much as its rate~\cite{abrardo2010onboard}. The question here is
+archive-side. Five general-purpose compressors are applied identically
+on both grids:
 \begin{itemize}
     \item \textbf{ZFP}~\cite{lindstrom2014zfp}: a fixed-accuracy compressed floating-point array codec based on a near-orthogonal block transform;
     \item \textbf{SZ3}~\cite{liang2022sz3}: a modular, prediction-based, error-bounded lossy compressor for scientific floating-point data;
@@ -160,22 +163,23 @@ are applied identically on both grids:
     \item \textbf{JPEG~XL}~\cite{alakuijala2019jpegxl}, lossy and lossless: a multiscale (\emph{Squeeze}) modular mode for lossless and near-lossless coding and a block-DCT (\emph{VarDCT}) mode for lossy coding;
     \item \textbf{DWT+Zstandard}: a textbook baseline, a multi-level 2-D wavelet transform~\cite{antonini1992wavelet} with uniform scalar quantisation, entropy-coded with Zstandard~\cite{rfc8878zstd}.
 \end{itemize}
-Each codec is swept over its own quality parameter (tolerance for ZFP,
-absolute error bound for SZ3, quality/rate for JPEG~2000, distance/level
-for JPEG~XL, quantisation depth for DWT+Zstandard) to trace a full
-rate--distortion curve; JPEG~2000 and JPEG~XL add one lossless point each.
-Each ladder runs from near-lossless to settings coarse enough that the
-loosest target of Section~\ref{sec:rd_protocol} is exceeded on every
-region whose contrast permits it (ZFP tolerance up to $3$, SZ3 error bound
-up to $1$, JPEG~2000 compression ratio up to $4000$, JPEG~XL down to its
-coarsest quality level and largest Butteraugli distance, DWT+Zstandard
-down to two quantisation bits): 71 operating points per region and grid.
-Sweeping the parameter bypasses each codec's rate control on purpose (in
-JPEG~2000 the quality layers and the post-compression optimisation that
-fills them, a research subject in itself~\cite{auli2008scalability}): a
-rate controller targets a budget, and this comparison needs an
-\emph{achieved} error or size on both grids, so the matching is done
-afterwards (Section~\ref{sec:rd_protocol}).
+Each codec is swept over its own quality parameter to trace a full
+rate--distortion curve: tolerance for ZFP, absolute error bound for SZ3,
+quality/rate for JPEG~2000, distance/level for JPEG~XL, quantisation
+depth for DWT+Zstandard. JPEG~2000 and JPEG~XL add one lossless point
+each. Each ladder runs from near-lossless to settings coarse enough that
+the loosest \term{target} of Section~\ref{sec:rd_protocol} is exceeded on every
+region whose contrast permits it: ZFP tolerance up to $3$, SZ3 error
+bound up to $1$, JPEG~2000 compression ratio up to $4000$, JPEG~XL down
+to its coarsest quality level and largest Butteraugli distance,
+DWT+Zstandard down to two quantisation bits. This gives 71 operating
+points per region and grid. Sweeping the parameter bypasses each codec's
+rate control on purpose; in JPEG~2000 that means the quality layers and
+the post-compression optimisation that fills them, a research subject in
+itself~\cite{auli2008scalability}. A rate controller targets a budget,
+while this comparison needs an \emph{achieved} error or size on both
+grids, so the matching is done afterwards
+(Section~\ref{sec:rd_protocol}).
 
 \subsection{Codec Preference Is Empirical}
 \label{sec:why_quadtree}

@@ -2,18 +2,18 @@
 \label{sec:same_codec}
 
 Tables~\ref{tab:synthesis} and~\ref{tab:error_at_size} let the codec
-be chosen for each region, grid and target, and the answer is an
+be chosen for each region, grid and \term{target}, and the answer is an
 envelope: no archive selects its codec region by region after the fact.
 Table~\ref{tab:fixed_codec} holds the codec fixed on both grids, the
 operational form of the comparison. Each cell is the median per-region
-HPX/UTM compressed-size ratio at that target with the \emph{same} codec
-on both grids, the UTM side carrying $\gamma_{\mathrm{tile}}$, and the
-number of qualifying regions in parentheses; a region enters a cell only
-if that codec brackets the target with two measured points on both
-grids. This is a codec-by-codec sensitivity table, so every cell is shown
-with its own $n$ and none is withheld, even where fewer than three
-quarters of the regions qualify (at the loosest target JPEG~XL qualifies
-on 26 regions and JPEG~2000 on 30); the verdicts of
+HPX/UTM compressed-\term{size ratio} at that \term{target} with the \emph{same} codec
+on both grids, the UTM side carrying $\gamma_{\mathrm{tile}}$, with the
+number of qualifying regions in parentheses. A region enters a cell only
+if that codec brackets the \term{target} with two measured points on both
+grids. This is a codec-by-codec sensitivity table, so every cell is
+shown with its own $n$ and none is withheld, even where fewer than three
+quarters of the regions qualify; at the loosest \term{target} JPEG~XL qualifies
+on 26 regions and JPEG~2000 on 30. The verdicts of
 Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative} rest on the
 withheld rule.
 
@@ -21,25 +21,25 @@ withheld rule.
 
 Two observations follow. First, the codec ranking and the grid comparison
 are different results. JPEG~2000 and JPEG~XL lead on both grids alike
-(Section~\ref{sec:codec_choice}), and at $10^{-2}$ the oracle selects one
+(Section~\ref{sec:codec_choice}). At $10^{-2}$ the oracle selects one
 of the two on 30 of the 32 qualifying regions on the HEALPix side and on
 31 on the native side, so the oracle ratios are close to what either
 codec gives on its own: $0.77$ and $0.71$ against $0.72$ for the
 envelope. Codec selection does not create the crossover. Second, the
 crossover is codec-dependent in a way the envelope hides. Four of the
-five codecs show the same directional crossover, JPEG~XL and JPEG~2000
+five codecs show the same directional crossover: JPEG~XL and JPEG~2000
 most strongly ($0.71$ and $0.77$ at $10^{-2}$, $p<10^{-7}$), then
-DWT+Zstandard ($0.81$) and SZ3 ($0.93$, $p=0.02$); these codec-specific
+DWT+Zstandard ($0.81$) and SZ3 ($0.93$, $p=0.02$). These codec-specific
 $p$-values are descriptive and uncorrected, since this table is a
 sensitivity analysis and not a family of tests the paper draws a verdict
-from. Under ZFP the HEALPix tile costs $1.54$--$1.72$ times the native
-product at every target, with no decline as the target loosens. This is
+from. Under ZFP the HEALPix \term{tile} costs $1.54$--$1.72$ times the native
+product at every \term{target}, with no decline as the \term{target} loosens. This is
 consistent with ZFP's fixed-accuracy block coding and its rate
 allocation, and the experiment does not isolate the mechanism; SZ3,
 which reproduces the crossover, is prediction-based, so the successful
 family cannot be defined by the transform alone. An archive that
-standardised on ZFP would see no regime in which the carrier is the
-smaller representation. The scope of the crossover is thus a carrier
-filled by the Clough--Tocher transfer, of those tested
+standardised on ZFP would see no regime in which the \term{carrier} is the
+smaller representation. The scope of the crossover is thus a \term{carrier}
+filled by the Clough--Tocher \term{transfer}, of those tested
 (Section~\ref{sec:transfer_cost}), \emph{and} coded by one of the other
 four, and the second condition binds as much as the first.

@@ -1,7 +1,7 @@
 \subsection{The Support Mismatch Does Not Drive the Result}
 \label{sec:support_controls}
 
-Section~\ref{sec:utm_crop} left an objection open: the rotated tile and
+Section~\ref{sec:utm_crop} left an objection open: the rotated \term{tile} and
 the axis-aligned crop overlap over only $81\%$ of their equal areas, so
 every ratio above compares rasters that cover partly different ground.
 The control removes the content difference and keeps the mismatch. The control is an
@@ -13,14 +13,14 @@ native pixel centres of the same region, with both samplings compressed,
 both sides see the same function, so whatever ratio survives comes from
 the sampling geometry alone.
 
-Both parameters are measured. Fitting
-$\log P(k)=c-\beta\log k-k^2\sigma^2$ to the radially averaged spectrum of
-each of the 40 crops, from four fundamental wavenumbers to the native
-Nyquist frequency, gives a median slope of $1.9$ and a median response of
-\SI{11.9}{m} FWHM, against a nominal Sentinel-2 B04 response near
-\SI{12.5}{m}. Natural images have power-law spectra with exponents near
+Both parameters are measured. The model
+$\log P(k)=c-\beta\log k-k^2\sigma^2$ is fitted to the radially averaged
+spectrum of each of the 40 crops, from four fundamental wavenumbers to
+the native Nyquist frequency. The fit gives a median slope of $1.9$ and a
+median response of \SI{11.9}{m} FWHM, against a nominal Sentinel-2 B04
+response near \SI{12.5}{m}. Natural images have power-law spectra with exponents near
 two~\cite{tolhurst1992amplitude,vanderschaaf1996powerspectra}. The same
-fit gives the spectral evidence that a level-20 carrier is affordable at
+fit gives the spectral evidence that a level-20 \term{carrier} is affordable at
 all: a median of $0.21\%$ of each crop's variance lies above half the
 native Nyquist frequency. That band, $0.025$--$\SI{0.05}{m^{-1}}$,
 differs from the octave level~20 adds over level~19,
@@ -31,16 +31,16 @@ hold content the product cannot show.
 Table~\ref{tab:support_controls} collects four controls. The synthetic
 rows evaluate the analytic field at the sample positions of both
 lattices, so the ratio is the sampling geometry alone. The smoothed-native
-rows give the native side the carrier's smoothing and nothing else: the
+rows give the native side the \term{carrier}'s smoothing and nothing else. The
 crop is read through the same Clough--Tocher operator at points shifted
 by half a pixel in both axes, at the native density, and that raster is
 compressed like the crop. The common-support rows compress the largest
 common-ground region on each native lattice and normalise by the ground
 area each covers. The shifted-crop rows report how far the ratio moves
-when the UTM crop is re-cut at eight offsets of up to sixteen native
+when the \term{UTM crop} is re-cut at eight offsets of up to sixteen native
 pixels with the HEALPix side fixed; for those rows the \emph{Median}
 column is that spread. All ratios are overhead-free
-($\gamma_{\mathrm{tile}}=1$), and $n$ counts the regions where the target
+($\gamma_{\mathrm{tile}}=1$), and $n$ counts the regions where the \term{target}
 is bracketed on both grids.
 
 \input{tables/table_support_controls}
@@ -48,63 +48,62 @@ is bracketed on both grids.
 With no content difference between the two supports, the direct ratio
 falls monotonically from $2.17$ at $10^{-4}$ to $1.16$ at $10^{-2}$,
 against $2.06$ to $0.93$ on the imagery. The control thus reproduces the
-decline of the gap and its approximate magnitude: read directly, it
-tracks the measured ratio to within $5$--$24\%$ at the five targets
-(the control passed through the transfer, below, tracks it to within
-$1$--$19\%$), closely at the tight end
-and less so at the loose end, where its own sweep is partly censored
-($n=38$ and $32$). Under $\gamma_{\mathrm{tile}}=1.30$ it reaches $0.89$
-at the loosest target where the imagery reaches $0.72$. The synthetic
-ratio lies above the measured one at all five targets, by $5\%$ to $24\%$,
-and the gap grows as the target loosens. The rows marked via C--T say why. There the same field is
-sampled on the native lattice and carried to the cells by the paper's
-own transfer, as in the real chain (its error against the exact field is
-$8.8\%$ of the scene's standard deviation, median over the 40 regions).
-The transfer changes nothing at the three tightest targets, where the
-codec keeps every sample, and removes $18\%$ of the ratio at the loosest,
-where the ratio falls from $2.17$ to $0.94$ against $0.93$ measured: the
-crossover appears in the control as soon as the control contains the
-transfer. Over the five targets this transferred control tracks the
-measurement to within $1$--$19\%$, against $5$--$24\%$ for the direct
-one, the remainder lying at the two middle
-targets, where the scene content that a one-parameter spectrum cannot
-carry matters most.
+decline of the gap and its approximate magnitude. Read directly, it
+tracks the measured ratio to within $5$--$24\%$ at the five \term{targets};
+the control passed through the \term{transfer}, below, tracks it to within
+$1$--$19\%$. Agreement is close at the tight end and looser at the loose
+end, where the control's own sweep is partly censored ($n=38$ and $32$).
+Under $\gamma_{\mathrm{tile}}=1.30$ it reaches $0.89$ at the loosest
+\term{target} where the imagery reaches $0.72$. The synthetic ratio lies above
+the measured one at all five \term{targets}, by $5\%$ to $24\%$, and the gap
+grows as the \term{target} loosens. The rows marked via C--T identify the
+cause. There the same field is sampled on the native lattice and carried
+to the cells by the paper's own \term{transfer}, as in the real chain; its
+error against the exact field is $8.8\%$ of the scene's standard
+deviation, median over the 40 regions. The \term{transfer} changes nothing at
+the three tightest \term{targets}, where the codec keeps every sample. At the
+loosest it removes $18\%$ of the ratio, which falls from $2.17$ to
+$0.94$ against $0.93$ measured: the crossover appears in the control as
+soon as the control contains the \term{transfer}. Over the five \term{targets} this
+transferred control tracks the measurement to within $1$--$19\%$,
+against $5$--$24\%$ for the direct one. The remainder lies at the two
+middle \term{targets}, where the scene content that a one-parameter spectrum
+cannot carry matters most.
 
 The smoothed-native rows confirm this from the other side. They are a
-strong-smoothing control, not a matched experiment: the native raster is
-read through the carrier's own interpolant at a fixed phase, on the
-native lattice and at the native density, while the carrier samples a
-different lattice at every phase. Two phases are reported. At half a
-pixel, the phase at which the interpolant departs most from the samples,
-the native raster compresses to $0.94$ of its size at the tightest target
-and $0.78$ at the loosest (median over $40$ and $34$ regions), so this
-fixed-phase smoothing control reduces the native compressed size by
-$6\%$ to $22\%$ at equal error, more as
-the target loosens; at a quarter of a pixel it compresses to $0.96$ and
-$0.87$. Given that smoothing, the native side is smaller than the carrier
-at every target and at both phases: HEALPix over smoothed native falls
-from $2.23$ to $1.24$ at half a pixel, with $32$ regions at the loosest
-target and the paired test rejecting parity there
-($p=1\times10^{-4}$), and from $2.20$ to $1.10$ at a quarter of a pixel
-($p=4\times10^{-3}$). The half-pixel values sit within $7\%$ of the
-direct synthetic control ($2.17$ to $1.16$) at every target: what remains
-of the carrier's cost, once the native side carries the transfer's
-smoothing, is what sampling the same field at $2.58$ times the density
-predicts. The carrier's cells sit at every phase, including phases near
-zero where the interpolant returns the samples themselves and the ratio
-returns to the $0.93$ of the raw comparison. Across the original
-comparison and the two measured fixed-phase smoothing controls, the
-loose-target ratio spans $0.93$--$1.24$, with the two measured phases at
-$1.10$ and $1.24$. These values are sensitivity controls rather than
-formal limits on a phase-matched experiment, since the real carrier
-carries a distribution of phases and a different geometry, and
-compression is not linear in that phase. These controls show that the
-smoothing the transfer gives the carrier is enough to remove the
-crossover, and that it is sufficient to account for a residual of the
-observed magnitude between the
-geometry-only control and the measurement; the common reference reaches
-the same place from the other side
+strong-smoothing control, not a matched experiment. The native raster is
+read through the \term{carrier}'s own interpolant at a fixed phase, on the
+native lattice and at the native density, while the \term{carrier} samples a
+different lattice at every phase. Two phases are reported. Half a pixel
+is the phase at which the interpolant departs most from the samples.
+There the native raster compresses to $0.94$ of its size at the tightest
+\term{target} and $0.78$ at the loosest (median over $40$ and $34$ regions), so
+this fixed-phase smoothing control reduces the native compressed size by
+$6\%$ to $22\%$ at equal error, more as the \term{target} loosens. At a
+quarter of a pixel it compresses to $0.96$ and $0.87$. Given that
+smoothing, the native side is smaller than the \term{carrier} at every \term{target}
+and at both phases. HEALPix over smoothed native falls from $2.23$ to
+$1.24$ at half a pixel, with $32$ regions at the loosest \term{target} and the
+paired test rejecting parity there ($p=1\times10^{-4}$). It falls from
+$2.20$ to $1.10$ at a quarter of a pixel ($p=4\times10^{-3}$). The
+half-pixel values sit within $7\%$ of the direct synthetic control
+($2.17$ to $1.16$) at every \term{target}. What remains of the \term{carrier}'s cost,
+once the native side carries the \term{transfer}'s smoothing, is what sampling
+the same field at $2.58$ times the density predicts. The \term{carrier}'s cells
+sit at every phase, including phases near zero where the interpolant
+returns the samples themselves and the ratio returns to the $0.93$ of
+the raw comparison. Across the original comparison and the two measured
+fixed-phase smoothing controls, the loose-\term{target} ratio spans
+$0.93$--$1.24$, with the two measured phases at $1.10$ and $1.24$. These
+values are sensitivity controls rather than formal limits on a
+phase-matched experiment: the real \term{carrier} carries a distribution of
+phases and a different geometry, and compression is not linear in that
+phase. These controls show that the smoothing the \term{transfer} gives the
+\term{carrier} is enough to remove the crossover. They also show that it is
+sufficient to account for a residual of the observed magnitude between
+the geometry-only control and the measurement. The \term{common reference}
+reaches the same place from the other side
 (Section~\ref{sec:common_reference}). Two controls on subsets agree
 (Appendix~\ref{app:support}): a common-support comparison on ten
-regions, and re-cutting the UTM crop at shifted positions on four
+regions, and re-cutting the \term{UTM crop} at shifted positions on four
 regions, which moves the ratio by about $1\%$ of the effect.

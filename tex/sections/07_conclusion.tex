@@ -1,38 +1,38 @@
 \section{Conclusion}
 This paper asked whether Sentinel-2 imagery stored on the HEALPix level
-next finer than its native resolution, which oversamples the data by
-$\approx2.58$ in cell area, costs more to store once compression and the
-storage layout of the native product are both counted. With established
-compressors only, no HEALPix-specific coding, and an equal-area protocol
-on 40 regions in four land-cover classes, the answer separates into four
-statements.
+next finer than its native resolution costs more to store once
+compression and the storage layout of the native product are both
+counted. That level oversamples the data by $\approx2.58$ in cell area.
+With established compressors only, no HEALPix-specific coding, and an
+equal-area protocol on 40 regions in four land-cover classes, the answer
+separates into four statements.
 
 \emph{Geometry.} Level 20 carries a fixed sampling-density penalty of
 $2.584\times$ relative to the native \SI{10}{m} raster, exact for every
-region, which $30\%$ of native-layout overhead reduces to $1.99\times$.
+region, which $30\%$ of native-layout \term{overhead} reduces to $1.99\times$.
 
 \emph{Compression.} Most of that penalty is redundancy that lossy coding
-removes (Table~\ref{tab:synthesis}). With no overhead charged to either
-side, the Clough--Tocher tile falls from $2.06\times$ the native square
+removes (Table~\ref{tab:synthesis}). With no \term{overhead} charged to either
+side, the Clough--Tocher \term{tile} falls from $2.06\times$ the \term{native square}
 at an RMSE of $10^{-4}$ to $0.93\times$ at $10^{-2}$, so the critical
-overhead $\gamma_\star$ falls with it. Two controls say where that
+\term{overhead} $\gamma_\star$ falls with it. Two controls say where that
 decline comes from. An analytic field sampled by both lattices with no
-transfer follows it to within $5$--$24\%$; and when the native side is
-given a strong Clough--Tocher smoothing control the carrier costs $2.23$
-to $1.24$ times the native square, within $7\%$ of that control. The
-controls show that transfer-induced smoothing is sufficient to account
-for the remaining crossover under the tested conditions, and in these
-controls geometry alone does not cross parity.
-The coarser level-19 carrier is smaller, at $0.67$ to $0.78$ of the
-native square, but carries a transfer-and-read floor about $2.25$ times
+\term{transfer} follows it to within $5$--$24\%$. When the native side is
+given a strong Clough--Tocher smoothing control, the \term{carrier} costs
+$2.23$ to $1.24$ times the \term{native square}, within $7\%$ of that control.
+The controls show that transfer-induced smoothing is sufficient to
+account for the remaining crossover under the tested conditions, and in
+these controls geometry alone does not cross parity.
+The coarser level-19 \term{carrier} is smaller, at $0.67$ to $0.78$ of the
+\term{native square}, but carries a transfer-and-read floor about $2.25$ times
 that of level 20.
 
-\emph{Processing chain.} The crossover holds for one transfer and is
+\emph{Processing chain.} The crossover holds for one \term{transfer} and is
 codec-dependent: four of the five codecs tested reproduce the
-regime-dependent pattern, while ZFP does not. Rebuilding the same tiles
+regime-dependent pattern, while ZFP does not. Rebuilding the same \term{tiles}
 with a PSF-aware or an
-inverse-distance transfer costs $1.2$ to $2.5$ times the bytes at the
-same coding RMSE and leaves HEALPix ahead at no target
+inverse-distance \term{transfer} costs $1.2$ to $2.5$ times the bytes at the
+same coding RMSE and leaves HEALPix ahead at no \term{target}
 (Section~\ref{sec:transfer_cost}). The PSF/IDW differential is only
 $3$--$13\%$, so deconvolution alone is unlikely to explain the two-fold
 surcharge. The split survives when the codec is held fixed on both grids,
@@ -40,36 +40,37 @@ and the four that reproduce the pattern span wavelet, multiscale and
 prediction-based designs (Section~\ref{sec:same_codec}).
 
 \emph{Reference.} Against the same Sentinel-2 observation, the
-uncompressed carrier already differs from the native product by
+uncompressed \term{carrier} already differs from the native product by
 $4.0\times10^{-3}$ in median under the nearest-cell read, about $10\%$ of
 a scene's standard deviation, and the $2\%$-budget ratio moves from
-$0.83$ to $1.44$ in favour of native UTM. A read that interpolates within
-the carrier lattice removes $66\%$ of that floor's mean squared error;
+$0.83$ to $1.44$ in favour of native UTM. A \term{read} that interpolates within
+the \term{carrier} lattice removes $66\%$ of that floor's mean squared error;
 re-scored through it, the lead of native UTM at the $2\%$ budget narrows
-to $1.12$ without reversing. The operational chain answers the same way:
-the PSF-aware carrier read through the forward operator it was built for
-needs $1.34$, $4.58$ and $43.5$ times the native product's error at the
-$2\%$, $5\%$ and $10\%$ budgets, and reaches no RMSE target on three
-quarters of the regions (Section~\ref{sec:common_reference}). A HEALPix
-carrier is therefore competitive at aggressive compression when the
-HEALPix cube is itself the reference product, while native UTM remains
-ahead at all three reportable matched-storage budgets when the native
-Sentinel-2 observation remains the reference field.
+to $1.12$ without reversing (Section~\ref{sec:common_reference}). This
+\term{reference} applies to the Clough--Tocher \term{carrier}, which aims at the
+observation; the PSF-aware \term{carrier} aims at the latent field, and its
+comparison at equal reconstruction error awaits a synthetic scene with a
+known latent field. A HEALPix
+\term{carrier} is therefore competitive at aggressive compression when the
+HEALPix cube is itself the \term{reference} product, while native UTM remains
+ahead at all three reportable \term{matched-storage} budgets when the native
+Sentinel-2 observation remains the \term{reference} field.
 
-In summary, whether the carrier is the smaller archive is a comparison
-between the overhead the native product carries and $\gamma_\star(e)$ at
+In summary, whether the \term{carrier} is the smaller archive is a comparison
+between the \term{overhead} the native product carries and $\gamma_\star(e)$ at
 the distortion the archive tolerates. The Sentinel-2 tiling duplicates
-$21\%$ in sample area through tile overlap, at an unmeasured cost in
-compressed bytes (Section~\ref{sec:overhead}). At $10^{-2}$ the threshold
-has fallen just below one, by a margin that is small and only marginally
-significant in the nominal paired test ($p=0.03$, $95\%$ confidence
-interval $0.89$--$0.99$), and only under a reference that charges the
-transfer's smoothing to nobody; at $10^{-4}$ it stands at $2.06$, an
-overhead we know of no measurement supporting. The evidence is from
-Sentinel-2 B04 at \SI{10}{m}, one acquisition and one tile per region,
+$21\%$ in sample area through \term{tile} overlap, at an unmeasured cost in
+compressed bytes (Section~\ref{sec:overhead}). At $10^{-2}$ the
+threshold has fallen just below one. The margin is small and only
+marginally significant in the nominal paired test ($p=0.03$, $95\%$
+confidence interval $0.89$--$0.99$), and it holds only under a \term{reference}
+that charges the \term{transfer}'s smoothing to nobody. At $10^{-4}$ the
+threshold stands at $2.06$, an \term{overhead} we know of no measurement
+supporting. The evidence is from
+Sentinel-2 B04 at \SI{10}{m}, one acquisition and one \term{tile} per region,
 and the ratios should be re-measured before being applied to other bands,
 sensors, temporal stacks, model output, flux-conservative fields or a
 full-sphere product. Two measurements would sharpen the framework: the
-compressed-byte overhead of a real tiled product, and a non-deconvolving
-transfer as smooth as Clough--Tocher, which would separate smoothness
+compressed-byte \term{overhead} of a real tiled product, and a non-deconvolving
+\term{transfer} as smooth as Clough--Tocher, which would separate smoothness
 from interpolation class.

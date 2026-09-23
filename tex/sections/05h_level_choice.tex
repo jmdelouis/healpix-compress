@@ -2,51 +2,51 @@
 \label{sec:level_choice}
 
 Section~\ref{sec:redundancy} chose level 20 on a nominal argument. The
-object measured here is a stored level-20 tile aggregated in groups of
+object measured here is a stored level-20 \term{tile} aggregated in groups of
 four, which in the NESTED ordering are adjacent elements and exactly the
 four children of one level-19 cell. Because the cells are equal-area,
-this is the exact quadtree Haar transform of the tile, and the aggregate
-is the cell-average of the carrier over each level-19 cell. It differs
-from the carrier the same transfer would build at level 19, which stores
+this is the exact quadtree Haar transform of the \term{tile}, and the aggregate
+is the cell-average of the \term{carrier} over each level-19 cell. It differs
+from the \term{carrier} the same \term{transfer} would build at level 19, which stores
 point evaluations at cell centres. Both were built and read identically
 against the same observation, on the 39 regions the window audit of
-Appendix~\ref{app:window_radiometry} admits: they are different arrays,
-differing by $6.0\%$ of a scene's standard deviation, yet their floors
+Appendix~\ref{app:window_radiometry} admits. They are different arrays,
+differing by $6.0\%$ of a scene's standard deviation. Yet their floors
 agree to a median ratio of $1.002$ and cost $2.25$ and $2.24$ times the
 level-20 floor, so what follows holds for either reading of ``the
-level-19 carrier'' (Appendix~\ref{app:level19_direct} gives the
-comparison and the one region it excludes). The figure quoted below is
+level-19 \term{carrier}''; Appendix~\ref{app:level19_direct} gives the
+comparison and the one region it excludes. The figure quoted below is
 the aggregate's.
 
-Two quantities are separated, because a coarser carrier is charged twice
+Two quantities are separated, because a coarser \term{carrier} is charged twice
 and only one charge concerns information. The first is what the
 four-child aggregation discards: the intra-cell variance, the energy of
 the three detail coefficients of the quadtree Haar transform at level 20.
-It is $3.07\%$ of the variance of the tile (median over 40 regions;
+It is $3.07\%$ of the variance of the \term{tile} (median over 40 regions;
 $2.2\%$ in forest to $7.2\%$ in urban scenes), an RMS of $17.5\%$ of the
 scene's standard deviation, which is $1.82$ times the level-20 floor of
 Table~\ref{tab:floors}. The second is the floor of the
 aggregate itself, read the same way against the same observation: $2.23$
 times the level-20 floor (paired median over the 40 regions; $2.24$ over
-the 39 of Table~\ref{tab:floors}, which excludes one region). The two separate cleanly: that
-floor equals the level-20 floor and the discarded energy added in
-quadrature to within $7\%$ (median ratio of measured to quadrature
-$1.07$), and the discarded energy alone accounts for $84\%$ of the excess
-variance, so the extra error of the aggregate is the information the
-aggregation removed. $66.8\%$ of the sampled operating points in the
-extended codec sweeps lie below that floor, a share that depends on how
-far the ladders reach; a cell-averaged level-19 carrier already carries
-more error than most of the settings this study swept, and in that sense
-level 19 cannot replace level 20 here.
+the 39 of Table~\ref{tab:floors}, which excludes one region). The two
+separate cleanly. That floor equals the level-20 floor and the discarded
+energy added in quadrature to within $7\%$ (median ratio of measured to
+quadrature $1.07$), and the discarded energy alone accounts for $84\%$
+of the excess variance. The extra error of the aggregate is thus the
+information the aggregation removed. $66.8\%$ of the sampled operating
+points in the extended codec sweeps lie below that floor, a share that
+depends on how far the ladders reach. A cell-averaged level-19 \term{carrier}
+already carries more error than most of the settings this study swept,
+and in that sense level 19 cannot replace level 20 here.
 
 The result also cautions against the spectral argument that pointed the
 other way. The observed field carries $0.21\%$
 of its variance above half the native Nyquist frequency
 (Section~\ref{sec:support_controls}), and propagating the fitted spectrum
 to the level-19 Nyquist frequency places about $0.03\%$ above it, two
-orders of magnitude below what the aggregation discards. Aggregation is no
-brick-wall filter at the coarser Nyquist frequency: the residual of a
-$2\times2$ mean has response $1-\cos^2(k_x d/2)\cos^2(k_y d/2)$, which
+orders of magnitude below what the aggregation discards. Aggregation is
+no brick-wall filter at the coarser Nyquist frequency. The residual of a
+$2\times2$ mean has response $1-\cos^2(k_x d/2)\cos^2(k_y d/2)$. It
 grows as $(kd)^4$ and draws mainly on the shoulder of the spectrum
 \emph{below} the native Nyquist frequency, where the power lies. The same
 fitted spectra predict the discarded fraction well only in the ensemble
@@ -55,30 +55,31 @@ report the spectral model as an ensemble parameter only.
 
 \input{tables/table_level19_rd}
 
-What the coarser carrier costs to store is measured as well
-(Table~\ref{tab:level19_rd}): the direct level-19 carrier and its
+What the coarser \term{carrier} costs to store is measured as well
+(Table~\ref{tab:level19_rd}). The direct level-19 \term{carrier} and its
 cell-averaged twin are run through the codec sweep of
-Section~\ref{sec:rd_protocol} and compared with the native crop and the
-level-20 tile under the paper's rules. Raw, the level-19 carrier is
-$0.65$ times the native crop. Compressed to equal error it stays smaller
-than the crop at every target, on $85\%$ to $100\%$ of the regions, and
-its ratio rises from $0.67$ at the tightest target to $0.78$ at the
-loosest: compression recovers nothing for a carrier that has already
-discarded samples, and at loose targets it erodes the raw advantage
-instead. Against the level-20 tile the same carrier costs $0.32$ of the
-bytes at the tightest target and $0.88$ at the loosest, so the
-level-20 tile costs $1.13$ times the level-19 carrier at $10^{-2}$ and
-$3.1$ times at $10^{-4}$. The cost of the finer carrier is the cost of its density, largest where
-the codec keeps every sample and nearly gone where it keeps few. The cell-averaged carrier is $9\%$ cheaper than the
-direct one at equal error (median over $195$ region--target pairs), the
-price of the sharper point evaluations the transfer keeps, and it is
-cheaper on every region at the four tightest targets. Its advantage grows
-with the target, from $0.95$ to $0.83$ of the direct carrier's size,
-which is why its column against the native crop is flat where the direct
-carrier's rises: at the loosest target the aggregate compresses to
-$0.9\%$ of its own raw size against $0.8\%$ for the native crop and
-$1.1\%$ for the direct carrier, so the aggregate and the crop gain
-compressibility at nearly the same rate as the target loosens. A $2\times2$
-mean of a Clough--Tocher tile behaves, per stored value, much like the
-native raster it came from; the directly evaluated carrier keeps the
-sharper point values and pays for them.
+Section~\ref{sec:rd_protocol} and compared with the \term{native crop} and the
+level-20 \term{tile} under the paper's rules. Raw, the level-19 \term{carrier} is
+$0.65$ times the \term{native crop}. Compressed to equal error it stays smaller
+than the crop at every \term{target}, on $85\%$ to $100\%$ of the regions. Its
+ratio rises from $0.67$ at the tightest \term{target} to $0.78$ at the loosest:
+compression recovers nothing for a \term{carrier} that has already discarded
+samples, and at loose \term{targets} it erodes the raw advantage instead.
+Against the level-20 \term{tile} the same \term{carrier} costs $0.32$ of the bytes at
+the tightest \term{target} and $0.88$ at the loosest, so the level-20 \term{tile}
+costs $1.13$ times the level-19 \term{carrier} at $10^{-2}$ and $3.1$ times at
+$10^{-4}$. The cost of the finer \term{carrier} is the cost of its density,
+largest where the codec keeps every sample and nearly gone where it
+keeps few. The cell-averaged \term{carrier} is $9\%$ cheaper than the direct
+one at equal error (median over $195$ region--\term{target} pairs), the price
+of the sharper point evaluations the \term{transfer} keeps, and it is cheaper
+on every region at the four tightest \term{targets}. Its advantage grows with
+the \term{target}, from $0.95$ to $0.83$ of the direct \term{carrier}'s size. This is
+why its column against the \term{native crop} is flat where the direct
+\term{carrier}'s rises: at the loosest \term{target} the aggregate compresses to
+$0.9\%$ of its own raw size, against $0.8\%$ for the \term{native crop} and
+$1.1\%$ for the direct \term{carrier}, so the aggregate and the crop gain
+compressibility at nearly the same rate as the \term{target} loosens. A
+$2\times2$ mean of a Clough--Tocher \term{tile} behaves, per stored value, much
+like the native raster it came from; the directly evaluated \term{carrier}
+keeps the sharper point values and pays for them.

@@ -2,24 +2,25 @@
 \input{tables/table_storage_accounting}
 
 Table~\ref{tab:storage_accounting} gives the raw storage accounting. The
-HEALPix level-20 tile and the equal-area UTM crop are both fixed-size
+HEALPix level-20 \term{tile} and the equal-area \term{UTM crop} are both fixed-size
 representations of the same nominal ground area, so their raw byte
-counts are geometric constants. At $\gamma_{\mathrm{tile}}=1$ the HEALPix tile is
+counts are geometric constants. At $\gamma_{\mathrm{tile}}=1$ the HEALPix \term{tile} is
 $2.584\times$ larger than the crop, exactly $1024^2/637^2$ on every region
 (its range over the 40 regions is $2.584$ to $2.584$). It matches the
 analytic factor $\alpha_{\mathrm{HPX/native}}\approx2.58$ of
-\eqref{eq:alpha} because the crop side was derived from it; this is the
-only exact result in the paper. Under the illustrative
-$\gamma_{\mathrm{tile}}=1.30$ scenario the uncompressed tile is still
+\eqref{eq:alpha} because the crop side was derived from it: this ratio
+is fixed by geometry and identical for every region. Under the illustrative
+$\gamma_{\mathrm{tile}}=1.30$ scenario the uncompressed \term{tile} is still
 $1.99\times$ the size of the crop scaled by $\gamma_{\mathrm{tile}}$: a
-$30\%$ overhead cannot offset a $2.58\times$ oversampling. The three rows compare float32 rasters, the
-form the codecs sweep; the native product is distributed as 16-bit
-integers, and stored in that form the crop is half the size again, so the
-tile is $5.17\times$ the product as it ships (last row). The sweeps stay
-in float32, which the audit of Appendix~\ref{app:codec_audit} shows is
-not the decisive choice: the image codecs are indifferent to the input
-type within $0.3\%$, lossless JPEG~XL is $34\%$ smaller on integer
-digital numbers, and converting the carrier to those integers costs it a
-quantisation of $2.9\times10^{-5}$ that the native product never pays.
+$30\%$ \term{overhead} cannot offset a $2.58\times$ oversampling. The three
+rows compare float32 rasters, the form the codecs sweep. The native
+product is distributed as 16-bit integers; stored in that form the crop
+is half the size again, so the \term{tile} is $5.17\times$ the product as it
+ships (last row). The sweeps stay in float32. The audit of
+Appendix~\ref{app:codec_audit} shows this is not the decisive choice:
+the image codecs are indifferent to the input type within $0.3\%$,
+lossless JPEG~XL is $34\%$ smaller on integer digital numbers, and
+converting the \term{carrier} to those integers costs it a quantisation of
+$2.9\times10^{-5}$ that the native product never pays.
 Only compression, by exploiting the redundancy that oversampling
 represents, can make HEALPix competitive.

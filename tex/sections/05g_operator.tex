@@ -2,47 +2,42 @@
 \label{sec:operator}
 
 The floor of Table~\ref{tab:floors} is the error of two operators
-together, the Clough--Tocher transfer that places the data on the carrier
+together: the Clough--Tocher \term{transfer} that places the data on the \term{carrier}
 and the nearest-cell read that retrieves them. Appendix~\ref{app:operator}
-characterises the read alone, on analytic single-frequency fields placed
-on the cell centres with nothing resampled: it is registered to well
-under a cell, its amplitude response is $0.99$ or higher beyond
-\SI{100}{m}, and almost all of its error is a residual that no
-amplitude-and-phase model describes. Reading the containing cell acts as
+characterises the \term{read} alone, on analytic single-frequency fields placed
+on the cell centres with nothing resampled. It is registered to well
+under a cell. Its amplitude response is $0.99$ or higher beyond
+\SI{100}{m}. Almost all of its error is a residual that no
+amplitude-and-phase model describes: reading the containing cell acts as
 a sub-pixel positional jitter of about \SI{2.1}{m} on a \SI{10}{m} native
 pixel, and that jitter is most of what the floor is made of. The floor is
-thus an upper bound on the cost of the representation, and a read that
-interpolates within the carrier lattice can lower it.
+thus an upper bound on the cost of the representation, and a \term{read} that
+interpolates within the \term{carrier} lattice can lower it.
 
-The middle block of Table~\ref{tab:floors} reports three reads of the
-same uncompressed carriers, scored on the native pixels of the
-intersection against the observation: \emph{nearest} is the containing
-cell; \emph{bilinear} places each native pixel in the carrier lattice at
-sub-cell precision and takes the bilinear combination of the four
-bracketing centres; \emph{psf} is the companion study's forward operator,
-reported only on the tiles it is matched to. Ratios are paired per region
-before the median is taken. On the same tiles, mask and observation, the
-bilinear floor is $0.582$ times that of the nearest read, lower on every
-region, so changing the read alone removes $66\%$ of the mean squared
-error of the transfer-and-read floor: it drops from $10.0\%$ to $5.9\%$
-of a scene's standard deviation. On the PSF-transferred tiles the same
-read lies within $4\%$ of the companion study's forward operator
-($0.957$). A substantial part of the floor is therefore caused by the
-reading operator. This is a measured difference between two chains and no
-variance decomposition: the transfer and read errors need not be
+The middle block of Table~\ref{tab:floors} reports two \term{reads} of the
+same uncompressed Clough--Tocher \term{carriers}, scored on the native pixels of
+the intersection against the observation. \emph{Nearest} is the
+containing cell. \emph{Bilinear} places each native pixel in the \term{carrier}
+lattice at sub-cell precision and takes the bilinear combination of the
+four bracketing centres. Ratios are paired per region before the median
+is taken. On the same \term{tiles}, mask and observation, the bilinear floor is
+$0.582$ times that of the nearest \term{read}, lower on every region. Changing
+the \term{read} alone therefore removes $66\%$ of the mean squared error of the
+transfer-and-read floor: it drops from $10.0\%$ to $5.9\%$ of a scene's
+standard deviation. A substantial part of the floor is caused by the
+\term{read}ing operator. This is a measured difference between two chains and no
+variance decomposition: the \term{transfer} and read errors need not be
 orthogonal, and what the residual $1.9\times10^{-3}$ owes to each is not
-separated here.
+separated here. The PSF-aware \term{tiles} are not scored in this table. Their
+estimand is the latent field, so a floor against the observation would
+measure their distance to a field they do not aim at
+(Section~\ref{sec:transfer_cost}).
 
-The read has a second consequence, on rate. A nearest-cell read of a
-$1024^2$ tile by the $637^2$ crop touches only $30.8\%$ of the cells; the
+The \term{read} has a second consequence, on rate. A nearest-cell read of a
+$1024^2$ \term{tile} by the $637^2$ crop touches only $30.8\%$ of the cells. The
 rest form the kernel of the operator, and whatever a codec writes there
 never reaches the product. That misallocation does not lower the product
 error, and a coarser quantisation step does not exploit it
-(Appendix~\ref{app:operator}). The matched case behaves differently: on
-the PSF-transferred tiles read through the forward operator they were
-built for, setting the distortion target on the product instead of the
-carrier reaches the same product distortion with $20\%$ fewer bytes. That
-gain belongs to the reader, not to the grid, and holds only for a product
-consumed through that operator. The distortion a carrier-grid study
-should target is the one its reader transmits, and on this carrier the
+(Appendix~\ref{app:operator}). The distortion a carrier-grid study
+should \term{target} is the one its reader transmits, and on this \term{carrier} the
 two differ.

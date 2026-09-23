@@ -3,35 +3,37 @@
 
 \subsection{Two Literatures Behind the Expectation}
 \label{app:literatures}
-Approximation theory: the $L_2$ error of representing a continuous field
-by samples on a grid of step $T$ is set, to leading order, by an error
-kernel whose decay follows the representation's approximation order, so
-refining the step buys a predictable and bounded amount of
-accuracy~\cite{blu1999fourier,blu1999approximation,unser2000sampling}; on
-a field the instrument has already band-limited, the added samples are
-almost determined by their neighbours. Coding: wavelet coefficient
-magnitudes persist across scales, and zerotree
-coders~\cite{shapiro1993ezw,said1996spiht}, hidden Markov
+Approximation theory says the following. The $L_2$ error of
+representing a continuous field by samples on a grid of step $T$ is
+set, to leading order, by an error kernel whose decay follows the
+representation's approximation order. Refining the step therefore buys
+a predictable and bounded amount of
+accuracy~\cite{blu1999fourier,blu1999approximation,unser2000sampling}.
+On a field the instrument has already band-limited, the added samples
+are almost determined by their neighbours. Coding theory adds the
+second half. Wavelet coefficient magnitudes persist across scales, and
+zerotree coders~\cite{shapiro1993ezw,said1996spiht}, hidden Markov
 trees~\cite{crouse1998hmt} and parent-conditioned
 coding~\cite{buccigrossi1999joint} turn that persistence into bits
-saved; an added octave that carries almost no variance is the case those
-models handle best, which is why the oversampling penalty is expected to
-be much smaller than the factor of~\eqref{eq:alpha}. The native product
-shows only part of that octave: a median of $0.21\%$ of each scene's
-variance lies above half the native Nyquist
+saved. An added octave that carries almost no variance is the case
+those models handle best, which is why the oversampling penalty is
+expected to be much smaller than the factor of~\eqref{eq:alpha}. The
+native product shows only part of that octave. A median of $0.21\%$ of
+each scene's variance lies above half the native Nyquist
 (Section~\ref{sec:support_controls}), while the octave level~20 adds
-over level~19 lies mostly above the native Nyquist; on the carrier it
-holds $3.07\%$ of the tile's variance
+over level~19 lies mostly above the native Nyquist. On the \term{carrier} that
+octave holds $3.07\%$ of the \term{tile}'s variance
 (Section~\ref{sec:level_choice}), two orders of magnitude more than a
 spectral extrapolation of the $0.21\%$ suggests.
 
 \subsection{A Direct Test of a Quadtree-Native Coder}
 \label{app:quadtree}
-The ideal-entropy rate of a pyramid built on the quadtree itself, coded
-with a parent-conditioned context model in the spirit
-of~\cite{buccigrossi1999joint}, is $1.08\times$ the bytes the best generic
-codec spends at equal distortion on the same 40 tiles with the exact
-quadtree Haar, and $0.93\times$ with a quadtree-native CDF~5/3 lifting.
+A pyramid was built on the quadtree itself and coded with a
+parent-conditioned context model in the spirit
+of~\cite{buccigrossi1999joint}. Its ideal-entropy rate is $1.08\times$
+the bytes the best generic codec spends at equal distortion on the same
+40 \term{tiles} with the exact quadtree Haar, and $0.93\times$ with a
+quadtree-native CDF~5/3 lifting.
 Both are bounds that charge nothing for coding, and both lie within what
 an implementation loses to its own bound. The link between scales is real
 (conditioning on the parent saves $5.9\%$ of an order-0 rate, twice the
@@ -43,13 +45,13 @@ already run a better wavelet on this very quadtree.
 The coverage and datacube model behind a chunked archive sets what a
 container must hold beyond the samples~\cite{baumann2025datacube}. One
 level-20 chunk in a Zarr~v3 store~\cite{moore2023zarr} costs
-\SI{737}{\byte} of group and array metadata, $0.018\%$ of the raw tile;
+\SI{737}{\byte} of group and array metadata, $0.018\%$ of the raw \term{tile};
 the cell identifiers of a contiguous NESTED block are implicit. A
-single-tile deflate Cloud-Optimized GeoTIFF~\cite{ogc_cog2023} of the
-equal-area crop costs \SI{8461}{\byte} of header, tag directory and
+single-\term{tile} deflate Cloud-Optimized GeoTIFF~\cite{ogc_cog2023} of the
+\term{equal-area crop} costs \SI{8461}{\byte} of header, tag directory and
 near-empty payload, $0.52\%$ of its raw size. Container format therefore
 accounts for at most half a percent on either side; a major remaining
-contribution to a layout overhead is granule geometry, whose sample-area
+contribution to a layout \term{overhead} is granule geometry, whose sample-area
 effect Section~\ref{sec:overhead} constrains.
 
 \section{Supplementary Controls}
@@ -57,25 +59,25 @@ effect Section~\ref{sec:overhead} constrains.
 
 \subsection{Common-Support and Shifted-Crop Controls}
 \label{app:support}
-Restricting each grid to the largest block of its own lattice whose
-ground lies inside the intersection (an axis-aligned pixel rectangle on
-the UTM side, a Morton-aligned cell block on the HEALPix side) and
-normalising by the ground area each covers gives, over ten regions,
+Each grid is restricted to the largest block of its own lattice whose
+ground lies inside the intersection: an axis-aligned pixel rectangle on
+the UTM side, a Morton-aligned cell block on the HEALPix side. Sizes are
+normalised by the ground area each covers. Over ten regions this gives
 ratios of $2.13$, $1.98$, $1.62$, $1.38$ and $1.35$ bytes per square
 kilometre, against $2.06$, $1.94$, $1.59$, $1.19$ and $0.93$ over the
-full footprints (Table~\ref{tab:support_controls}). Agreement is close at
-the three tightest targets and drifts at the two loosest, as the
-construction predicts: Morton alignment is restrictive, so the HEALPix
-block is $256\times256$ cells (\SI{2.5}{\kilo\metre\squared}) against a
-$405\times401$ pixel rectangle (\SI{17.6}{\kilo\metre\squared}), and where
-files fall to a few kilobytes the fixed container cost weighs more on the
-smaller raster, so this control is biased against HEALPix at the loose
-end. Re-cutting the UTM crop at eight offsets of up to 16 native pixels,
-with the HEALPix side fixed, changes each region's content by about as
-much as the footprint mismatch does; over four regions and nine crops
-each, the median spread of the ratio across offsets is $0.008$ at the
-tightest target and $0.030$ at the loosest, between $1\%$ and $13\%$ of
-the effect measured.
+full footprints (Table~\ref{tab:support_controls}). Agreement is close
+at the three tightest \term{targets} and drifts at the two loosest, as the
+construction predicts. Morton alignment is restrictive, so the HEALPix
+block is $256\times256$ cells (\SI{2.5}{\kilo\metre\squared}) against
+a $405\times401$ pixel rectangle (\SI{17.6}{\kilo\metre\squared}).
+Where files fall to a few kilobytes the fixed container cost weighs more
+on the smaller raster, so this control is biased against HEALPix at the
+loose end. Re-cutting the \term{UTM crop} at eight offsets of up to 16 native
+pixels, with the HEALPix side fixed, changes each region's content by
+about as much as the footprint mismatch does. Over four regions and
+nine crops each, the median spread of the ratio across offsets is
+$0.008$ at the tightest \term{target} and $0.030$ at the loosest, between
+$1\%$ and $13\%$ of the effect measured.
 
 \paragraph{Caveats on the spectral fit of Section~\ref{sec:support_controls}.}
 Slope and response width trade against each other over a band of this
@@ -114,12 +116,12 @@ third, since a \SI{6.2}{m} cell need not contain any \SI{10}{m} pixel
 centre: this operator can drop a stored cell entirely. On a band-limited
 field with the spectrum of the imagery ($0.19\%$ of its variance above
 half the native Nyquist frequency, against the $0.21\%$ measured on the
-crops), the read alone produces an RMSE of $14.0$--$14.4\%$ of the
+crops), the \term{read} alone produces an RMSE of $14.0$--$14.4\%$ of the
 field's standard deviation, against a floor of about $10\%$ on the real
-tiles; the two agree, because the Clough--Tocher smoothing of the tile
+\term{tiles}; the two agree, because the Clough--Tocher smoothing of the \term{tile}
 removes the gradients a jitter turns into error.
 
-What the kernel of that read costs in rate is the other half of
+What the kernel of that \term{read} costs in rate is the other half of
 Section~\ref{sec:operator}. With a uniform dead-zone quantiser in an
 orthonormal wavelet domain as error source, whose error is close to white
 in cell space, $68.9\%$ of the error energy lies in cells the product
@@ -131,92 +133,89 @@ bits spent on cells nothing depends on, with a bound of
 $1/0.308\approx3.2\times$ that a uniform quantiser cannot reach. Seen
 from the sweep, $54.0\%$ of the $2\,800$ lossy operating points of the
 extended ladders reach a cell-space RMSE below the floor of
-Table~\ref{tab:floors}. The matched reader behaves differently: on the
-PSF-transferred tiles read through the forward operator they were built
-for (floor $0.558$ times that of the nearest read, lower on all 40
-regions), the operator attenuates a white coding error to $0.67$ of its
-cell-space RMS, and targeting the product instead of the carrier saves
-$20\%$ of the bytes in median, $4.6\%$ at the tightest quartile of
-targets and $36\%$ at the loosest. Three qualifications keep this from
-being a recommendation: it is a property of the reader, whose kernel is
-large precisely because the carrier is oversampled relative to it; white
-error is the most favourable case for attenuation; and the gain holds
-only for a product consumed through that operator, since noise shaped
-into its stop-band stays visible to anyone who reads the carrier as an
-image.
+Table~\ref{tab:floors}. A \term{read} whose kernel attenuates coding error, such
+as the forward operator of the PSF-aware \term{transfer}, would let a codec
+target the product's distortion instead of the \term{carrier}'s and save bytes.
+That gain would belong to the reader, whose kernel is large precisely
+because the \term{carrier} is oversampled relative to it, and would hold only
+for a product consumed through that operator, since noise shaped into
+its stop-band stays visible to anyone who reads the \term{carrier} as an image.
+It is not measured here, because scoring the PSF-aware \term{carrier} against
+the observation is not meaningful (Section~\ref{sec:common_reference}).
 
 \subsection{Codec Audit}
 \label{app:codec_audit}
 The JPEG~XL sweep extends beyond its quality-level ladder, which
 saturates near RMSE $10^{-3}$ on Sentinel-2 B04, with Butteraugli-distance
 operating points; without them JPEG~XL is absent from the high-fidelity
-targets. Every operating point was written to a file, closed, re-opened
+\term{targets}. Every operating point was written to a file, closed, re-opened
 and decoded by a reader written independently of the encoder. Over 424 audited points
 (two regions, both grids, both input scenarios, the full sweeps) the
 re-read bytes were identical to those written, and the independently
 decoded array was identical to the encoder's to the last bit. Three
-qualifications follow. Only ZFP writes a self-contained file: the image
-codecs need a float32 minimum and span carried out of band (eight bytes
+qualifications follow. Only ZFP writes a self-contained file. The image
+codecs need a float32 minimum and span carried out of band, eight bytes
 the reported sizes do not charge, at most $0.17\%$ of the smallest size
-reported here), and the DWT baseline charges four bytes for a scale it
-never writes. ``Lossless'' JPEG~2000 and JPEG~XL are bit-identical to the
-16-bit renormalization they are handed; that renormalization imposes a
-floor of $5.7\times10^{-6}$ in median, equal on both grids and more than
-an order of magnitude under the tightest target, which is why we write
-\emph{lossless after requantization}. Byte counts depend on the input
+reported here; the DWT baseline charges four bytes for a scale it never
+writes. ``Lossless'' JPEG~2000 and JPEG~XL are bit-identical to the
+16-bit renormalization they are handed. That renormalization imposes a
+floor of $5.7\times10^{-6}$ in median, equal on both grids and more
+than an order of magnitude under the tightest \term{target}, which is why we
+write \emph{lossless after requantization}. Byte counts depend on the input
 type: the image codecs are indifferent within $0.3\%$, lossless JPEG~XL
 is $34\%$ \emph{smaller} on integer digital numbers, and the two
 absolute-error codecs move by two orders of magnitude, because an error
 bound of $10^{-5}$ means one thing on reflectance in $[0,1]$ and another
 on digital numbers in $[0,10^{4}]$; both grids are fed identically
 everywhere, so no comparison is affected. A fourth observation belongs
-to the grid comparison: converting to integer DN costs the native crop
+to the grid comparison: converting to integer DN costs the \term{native crop}
 essentially nothing (its values already sit on the DN lattice, within
-$4\times10^{-9}$ to $9\times10^{-8}$ RMSE) and costs the HEALPix carrier
+$4\times10^{-9}$ to $9\times10^{-8}$ RMSE) and costs the HEALPix \term{carrier}
 $2.9\times10^{-5}$, the uniform quantisation error of the $10^{-4}$ step,
-because interpolation places the carrier's values off that lattice. An
-archive that stores integer DN must therefore keep the carrier in
+because interpolation places the \term{carrier}'s values off that lattice. An
+archive that stores integer DN must therefore keep the \term{carrier} in
 floating point or accept a quantisation the native product never pays,
-$29\%$ of the tightest target.
+$29\%$ of the tightest \term{target}.
 
 \subsection{What the Verdict Owes to Censored Sweep Points}
 \label{app:censoring}
-A target that a codec's coarsest setting already satisfies is met
+A \term{target} that a codec's coarsest setting already satisfies is met
 without being measured: the size of that setting bounds what the codec
 could have reached with a coarser one. Kept in the paired tests as if
 they were estimates, such bounds can decide a verdict: with the original
 ladders, the oracle codec was censored on 16 of the 40 regions at the
-loosest RMSE target. Every ladder is therefore extended at its coarse end
+loosest \term{RMSE target}. Every ladder is therefore extended at its coarse end
 (Section~\ref{sec:codecs}) and the rule of Section~\ref{sec:rd_protocol}
 applies. Table~\ref{tab:censoring} reports the verdict under three
-readings of the extended sweeps: the ratios with every censored pair kept
-as a bound, the ratios on the qualifying pairs alone (the values reported
-in the paper), and the interval that bounds the median of all 40 regions
-once each censored value is taken in the only direction it can move (a
-censored HEALPix value can only fall, a censored UTM value only rise). At
-every reported target the three readings agree in sign, the two medians
+readings of the extended sweeps. The first keeps every censored pair as
+a bound. The second uses the qualifying pairs alone; these are the
+values reported in the paper. The third is the interval that bounds the
+median of all 40 regions once each censored value is taken in the only
+direction it can move: a censored HEALPix value can only fall, a
+censored UTM value only rise. At
+every reported \term{target} the three readings agree in sign, the two medians
 differ by at most $0.01$, and the interval lies on one side of parity
 except at $3\times10^{-3}$, where the paper reports no verdict. The
 \emph{Sure} columns count the regions whose side of parity holds under
 any reading of the bounds; the sign test in the last column assigns every
 undetermined region to the side least favourable to the reported verdict
-and separates the grids at every reported target but $3\times10^{-3}$.
-The UTM side carries $\gamma_{\mathrm{tile}}=1.3$; RMSE targets compare
-sizes, budget targets compare errors.
+and separates the grids at every reported \term{target} but $3\times10^{-3}$.
+The UTM side carries $\gamma_{\mathrm{tile}}=1.3$; \term{RMSE targets} compare
+sizes, budget \term{targets} compare errors.
 
 \input{tables/table_censoring}
 
 \subsection{Is Each Window Still the Product Its Tile Came From?}
 \label{app:window_radiometry}
-A stored tile and the native window it was transferred from are two
-files, and two files drift apart. Three measurements re-run a transfer
-from the window, and for those the window must be the product the tile
+A stored \term{tile} and the native window it was transferred from are two
+files, and two files drift apart. Three measurements re-run a \term{transfer}
+from the window, and for those the window must be the product the \term{tile}
 came from. The geometric check that the window still \emph{covers} the
-tile passes whatever the pixels contain, so a radiometric test is needed
+\term{tile} passes whatever the pixels contain, so a radiometric test is needed
 (per-region values in the repository of
-Section~\ref{sec:reproducibility}). Each stored tile is compared with
-its own window sampled at the tile's cell centres by nearest pixel. That
-sampling is cruder than the transfer which built the tile, so the two
+Section~\ref{sec:reproducibility}). Each stored \term{tile} is compared with
+its own window sampled at the \term{tile}'s cell centres by nearest pixel. That
+sampling is cruder than the \term{transfer} which built the \term{tile}, so the two
 differ even when the window is the right product, and the difference is
 additive noise on the regressor. For noise uncorrelated with the signal,
 the classical errors-in-variables case, it attenuates the regression
@@ -236,74 +235,74 @@ offset would also flag the two lowest-contrast lakes, because in a scene
 of standard deviation $1.4\times10^{-3}$ any small offset is many
 standard deviations; the identity above has neither failure mode.
 
-A second test, exact and free of statistics, confirms it. Each tile's
-file also holds the equal-area UTM crop it is compared against, written
+A second test, exact and free of statistics, confirms it. Each \term{tile}'s
+file also holds the equal-area \term{UTM crop} it is compared against, written
 in the same call, so that crop and the window's own pixels over the same
-ground must agree to the bit. Over the 198 stored tiles 197 do, and the
-one that does not is the Clough--Tocher tile of Lake Geneva, where
+ground must agree to the bit. Over the 198 stored \term{tiles} 197 do, and the
+one that does not is the Clough--Tocher \term{tile} of Lake Geneva, where
 $405\,764$ of the $405\,769$ pixels differ. It carries a warning about
 how the comparison must be made: the crop box recorded in each file is a pair of
-pixel indices into the window the tile was built from, and
+pixel indices into the window the \term{tile} was built from, and
 36 of the 40 windows have since been re-acquired at a smaller size, hence
 with a different pixel origin. Comparing at the recorded indices
 reports 39 mismatched tiles, an artefact of the indexing; recomputing
-the box from the tile's centroid, a position on the Earth that survives
+the box from the \term{tile}'s centroid, a position on the Earth that survives
 any re-cutting of the window, leaves one.
 
 
 \subsection{The Two Level-19 Carriers}
 \label{app:level19_direct}
-A carrier built by Clough--Tocher at level 19 holds the interpolant
+A \term{carrier} built by Clough--Tocher at level 19 holds the interpolant
 evaluated at the level-19 cell centres; the aggregate holds the mean of
 the interpolant at the four level-20 centres inside each cell. The two
 coincide only for a function that is affine over a cell, so the gap
 between them is the curvature of the interpolant at the \SI{12.4}{m}
-scale. The direct carrier uses the same native sub-window each stored
-tile was transferred from, the same parent, the same Clough--Tocher
+scale. The direct \term{carrier} uses the same native sub-window each stored
+\term{tile} was transferred from, the same parent, the same Clough--Tocher
 operator and the same checks; only the output level differs. Rebuilding
 from the window makes this the one measurement in the paper that depends
-on the window still holding the product its tile was built from, which
+on the window still holding the product its \term{tile} was built from, which
 Appendix~\ref{app:window_radiometry} tests.
 
-The two carriers are different arrays: they differ by $6.0\%$ of a
+The two \term{carriers} are different arrays: they differ by $6.0\%$ of a
 scene's standard deviation in RMS, $0.27$ times the level-19 floor
 itself, so the curvature term is real and of the predicted order. Their
 floors against the observation are nevertheless the same,
-$8.72\times10^{-3}$ for the direct carrier against $8.69\times10^{-3}$
+$8.72\times10^{-3}$ for the direct \term{carrier} against $8.69\times10^{-3}$
 for the aggregate, a median ratio of $1.002$, within $5\%$ on 38 of the
-39 regions, with the direct carrier lower on 15 of them and a widest
-departure of $1.051$. The difference between the two carriers moves cell
+39 regions, with the direct \term{carrier} lower on 15 of them and a widest
+departure of $1.051$. The difference between the two \term{carriers} moves cell
 values without moving the error against the scene; we have not measured
 an inner product between that difference and the observation, so we do
 not call it orthogonal. Against the level-20 floor the two coarser
-carriers cost $2.25$ and $2.24$.
+\term{carriers} cost $2.25$ and $2.24$.
 
-The excluded region is Lake Geneva. Rebuilt at level 19 its carrier
+The excluded region is Lake Geneva. Rebuilt at level 19 its \term{carrier}
 misses the aggregate by twice the scene's standard deviation, which looks
-like a failure of the transfer at the coarser level. The cause lies
+like a failure of the \term{transfer} at the coarser level. The cause lies
 upstream: asked for level 20, where the rebuild must return the stored
-tile, the same operator on the same samples misses it by the same amount,
+\term{tile}, the same operator on the same samples misses it by the same amount,
 an RMS of $1.97$ standard deviations at a correlation of $0.585$. The
-window and the tile are related by a gain and an offset of their own, a
+window and the \term{tile} are related by a gain and an offset of their own, a
 radiometric difference between two products
 (Appendix~\ref{app:window_radiometry}). Kept, the region would leave the
 median ratio at $1.002$; it is excluded because its input is no longer
 the input the comparison assumes. One safeguard follows for anyone
-rebuilding a carrier at a new level: a geometric check that the window
-still covers the tile does not catch a window that has been re-acquired
-(it passes on all 40 regions, this one included), while a transfer asked
-for the level its tile is already stored at must return that tile.
+rebuilding a \term{carrier} at a new level: a geometric check that the window
+still covers the \term{tile} does not catch a window that has been re-acquired
+(it passes on all 40 regions, this one included), while a \term{transfer} asked
+for the level its \term{tile} is already stored at must return that \term{tile}.
 
 \section{Reading a Target Against the Error the Product Already Carries}
 \label{app:error_budget}\label{sec:error_budget}
-Whether an RMSE target is an aggressive or a conservative place to
+Whether an \term{RMSE target} is an aggressive or a conservative place to
 compress depends on how far the stored product already sits from what it
 claims to represent. Clough--Tocher reproduces the \emph{observed} field,
 the scene as the instrument's response left it; a PSF-aware
-transfer~\cite{delouis2026resample} represents the \emph{latent} field,
+\term{transfer}~\cite{delouis2026resample} represents the \emph{latent} field,
 the scene before the blur, and hands the codec more high-frequency
-content to pay for. This appendix measures each transfer against the
-reference it answers to, then re-expresses the results of
+content to pay for. This appendix measures each \term{transfer} against the
+\term{reference} it answers to, then re-expresses the results of
 Section~\ref{sec:results} in units of that error.
 
 The measurement is synthetic, because the latent field is not
@@ -311,27 +310,27 @@ observable. For each region an analytic random field is built from that
 region's own fitted spectral slope and response width
 (Section~\ref{sec:support_controls}), convolved exactly with that
 response and sampled at the native pixel positions to give the
-observation. The truth at each carrier cell is the average of the field
-over that cell's sixteen level-22 children, the cell-average estimand the
-companion study reconstructs (a reconstruction agrees $2.36$ to $2.52$
-times better with a cell-average reference than with a point-sample one
-in that study); averaging four level-21 children instead moves the blur
-by $2\%$ and the recovery fraction by less than a point. White noise is
-added at the level Immerkaer's $3\times3$ estimator reads off each
-region's own imagery, $6.2$--$13.4\%$ of the field's standard deviation
-by class, because a deconvolving transfer amplifies noise as it amplifies
-structure; the damping is $\lambda=10^{-3}$. In
+observation. The truth at each \term{carrier} cell is the average of the field
+over that cell's sixteen level-22 children, the cell-average estimand
+the companion study reconstructs; in that study a reconstruction agrees
+$2.36$ to $2.52$ times better with a cell-average \term{reference} than with a
+point-sample one. Averaging four level-21 children instead moves the
+blur by $2\%$ and the recovery fraction by less than a point. White
+noise is added at the level Immerkaer's $3\times3$ estimator reads off
+each region's own imagery, $6.2$--$13.4\%$ of the field's standard
+deviation by class, because a deconvolving \term{transfer} amplifies noise as
+it amplifies structure. The damping is $\lambda=10^{-3}$. In
 Table~\ref{tab:resampling_error}, \emph{Blur} is the RMSE between the
 observed and latent fields; Clough--Tocher is scored against the observed
-field and the PSF-aware transfer against the latent field; the last two
+field and the PSF-aware \term{transfer} against the latent field; the last two
 columns give the recovery fraction $1 - e_{\mathrm{psf}}/e_{\mathrm{blur}}$
 at the measured noise level and in the noiseless control.
 
 \input{tables/table_resampling_error}
 
-Clough--Tocher's error against the observed field is small ($5.0\%$ to
-$11.0\%$ of a scene's standard deviation, median $1.9\times10^{-3}$ in
-reflectance) and dominated by the noise it faithfully transfers; the
+Clough--Tocher's error against the observed field is small, $5.0\%$ to
+$11.0\%$ of a scene's standard deviation (median $1.9\times10^{-3}$ in
+reflectance), and dominated by the noise it faithfully \term{transfers}. The
 noiseless control puts the interpolation itself at $0.8\%$ to $1.5\%$.
 Its error against the \emph{latent} field is an order of magnitude
 larger, $1.7\times10^{-2}$ in median, because the whole instrument blur
@@ -344,8 +343,8 @@ cube as ``the data'' compares it to the scene and already carries the
 blur.
 
 Table~\ref{tab:alpha_budget} reports both readings. $\kappa$ is the
-compression target as a fraction of the denominator, at the tightest
-reported target where HEALPix is the smaller representation; the
+compression \term{target} as a fraction of the denominator, at the tightest
+reported \term{target} where HEALPix is the smaller representation; the
 inflation columns give the \emph{measured} growth of the product's total
 error, with the orthogonal value $\sqrt{1+\kappa^2}-1$ in parentheses.
 The choice of denominator moves $\kappa$ at the crossing by a factor of
@@ -369,7 +368,7 @@ the archive.
 
 \input{tables/table_alpha_budget}
 
-The deconvolving transfer does not yet support the same accounting. In
+The deconvolving \term{transfer} does not yet support the same accounting. In
 this harness the PSF-aware reconstruction recovers no blur consistently
 at the measured noise level: by class the recovery runs from $-5.9\%$
 over forest to $+6.0\%$ over water (Table~\ref{tab:resampling_error}),
@@ -378,23 +377,23 @@ but systematic $+3.0\%$ to $+6.5\%$, positive on 38 of the 39. The
 companion study reports $15.4\%$ to $19.6\%$, noise-free, under the same
 recovery definition and damping, on a synthetic observation averaged over
 a \SI{10}{m} square detector aperture that the scalar Gaussian inverse
-does not model. Three candidates on our side: the noise is the largest
-term, since a deconvolution amplifies it at the frequencies it tries to
-restore, which is why the noiseless control moves from about zero to
-$+5.4\%$ in median; the latent field is the second, since a power law
-extrapolated to the level-20 Nyquist places $2.3\%$ (forest) to $31.1\%$
-(urban) of the latent variance above the \emph{native} Nyquist, in a band
-the fitted response attenuates to a few percent of its amplitude, so most
-of the blur we charge is unrecoverable by any damping (this is also why
-the blur is $22$ to $74\%$ of the latent standard deviation here, and
-why urban scenes recover least); the depth of the cell average, the
-third, we tested and exclude. A residual gap remains unattributed, so the
-super-resolution surcharge at equal $\kappa$ cannot be quantified from
-the present measurements.
+does not model. Three candidates lie on our side. The noise is the
+largest term, since a deconvolution amplifies it at the frequencies it
+tries to restore; this is why the noiseless control moves from about
+zero to $+5.4\%$ in median. The latent field is the second. A power law
+extrapolated to the level-20 Nyquist places $2.3\%$ (forest) to
+$31.1\%$ (urban) of the latent variance above the \emph{native}
+Nyquist, in a band the fitted response attenuates to a few percent of
+its amplitude, so most of the blur we charge is unrecoverable by any
+damping. This is also why the blur is $22$ to $74\%$ of the latent
+standard deviation here, and why urban scenes recover least. The depth
+of the cell average, the third, we tested and exclude. A residual gap
+remains unattributed, so the super-resolution surcharge at equal
+$\kappa$ cannot be quantified from the present measurements.
 
 \section{Is the Compression Error Orthogonal to the Transfer Error?}
 \label{app:cross_term}\label{sec:cross_term}
-Writing $e_0 = x - \text{truth}$ for the transfer error on the carrier
+Writing $e_0 = x - \text{truth}$ for the \term{transfer} error on the \term{carrier}
 cells and $e_c = \tilde{x} - x$ for the compression error, the exact
 relation is
 \begin{equation}
@@ -414,17 +413,17 @@ error as measured and as quadrature predicts it.
 
 \input{tables/table_cross_term}
 
-The sign depends on the reference. Against the \emph{observed} field,
+The sign depends on the \term{reference}. Against the \emph{observed} field,
 $\rho$ is negative and grows in magnitude with $\kappa$, reaching $-0.33$
-at $\kappa=1$: there the transfer error is dominated by the sensor noise
-the transfer faithfully carried (what takes Clough--Tocher from
+at $\kappa=1$: there the \term{transfer} error is dominated by the sensor noise
+the \term{transfer} faithfully carried (what takes Clough--Tocher from
 $0.8$--$1.5\%$ of a scene's standard deviation without noise to
 $5.0$--$11.0\%$ with it), and a lossy coder discards part of that noise
 with everything else it discards at high frequency. The two errors partly
 cancel, and quadrature \emph{overstates} the damage, by $11$ percentage
 points at $\kappa=0.5$ and $24$ at $\kappa=1$. Against the \emph{latent}
 scene the sign reverses, $\rho$ rising to $+0.17$ at $\kappa=0.2$: there
-the transfer error is the blur the transfer did not remove, a
+the \term{transfer} error is the blur the \term{transfer} did not remove, a
 \emph{deficit} of high-frequency content, and a wavelet coder's error is
 another such deficit. The two align, and the orthogonal formula
 \emph{understates} the inflation, by $2.5$ percentage points at
@@ -434,7 +433,7 @@ wavelet coder carries the entire effect ($\rho = -0.18$ against the
 observed field and $+0.16$ to $+0.29$ against the latent scene at the
 crossing values of $\kappa$), while ZFP, whose block-floating-point
 quantisation does not sort by spatial frequency, stays orthogonal under
-both references ($|\rho| \le 0.03$). This is consistent with the
+both \term{references} ($|\rho| \le 0.03$). This is consistent with the
 frequency-selective nature of the wavelet coder; two codecs do not
 establish a rule for coders in general. The sign of $\rho$ does not
 depend on the synthetic field; its magnitude does, because the blur here
@@ -445,21 +444,21 @@ Table~\ref{tab:alpha_budget} reports a measured inflation in each cell.
 \section{Detailed Limitations}
 \label{app:limitations}
 \begin{itemize}
-    \item \textbf{The verdict is conditional on the transfer, by about a factor of two.} Rebuilding the carrier with a PSF-aware or an inverse-distance transfer costs $1.2$ to $2.5$ times the bytes at the same coding RMSE (Section~\ref{sec:transfer_cost}), more than the margin by which HEALPix leads at the loosest targets. The argument does not extend to transfers we have not swept, and a non-deconvolving transfer as smooth as Clough--Tocher, which would isolate deconvolution from smoothness, has not been tested;
+    \item \textbf{The verdict is conditional on the transfer, by about a factor of two.} Rebuilding the \term{carrier} with a PSF-aware or an inverse-distance \term{transfer} costs $1.2$ to $2.5$ times the bytes at the same coding RMSE (Section~\ref{sec:transfer_cost}), more than the margin by which HEALPix leads at the loosest \term{targets}. The argument does not extend to \term{transfers} we have not swept, and a non-deconvolving \term{transfer} as smooth as Clough--Tocher, which would isolate deconvolution from smoothness, has not been tested;
     \item \textbf{The equal-area UTM square matches the tile's nominal projected area}, neither its exact geodesic area (UTM is conformal, and $636.7$ pixels were rounded to $637$) nor its shape (Section~\ref{sec:utm_crop}); the fixed $2.58\times$ oversampling would not change under a footprint-exact crop;
-    \item \textbf{The overhead is a parameter because only part of it is measured.} The container cost of each side is measured at under half a percent and the overlap of the Sentinel-2 tiling at $21\%$ from its published geometry, while padding and metadata are assumed. $\gamma_{\mathrm{tile}}$ has not been measured from complete tiled product files, nor swept over $[1.0,1.5]$ for the matched-budget protocol, and for compressed storage the overhead is assumed to apply proportionally to the compressed byte count;
-    \item \textbf{The level-19 comparison was made on a cell-averaged carrier; the directly evaluated one agrees.} Appendix~\ref{app:level19_direct} finds the two within $0.2\%$ in floor against the observation, with the widest departure at $1.051$, on 39 regions; including Lake Geneva moves the median ratio by less than $0.001$. The kernel ablation and the resampling-error study, which also re-run a transfer, rest on the same 39; no measurement read from a stored tile is affected;
-    \item \textbf{The loosest targets rest on fewer regions.} The failing pairs are the lowest-contrast scenes: none at the two tightest RMSE targets, one at $10^{-3}$, three at $3\times10^{-3}$ and eight at $10^{-2}$, with no urban scene among the absent. The $40\%$ and $20\%$ budgets qualify on $0\%$ and $65\%$ of the regions and are withheld;
-    \item \textbf{Neither reconstruction reference is the whole story.} The floor of Table~\ref{tab:floors} is an upper bound on what the representation costs, since the read alone can account for it (Section~\ref{sec:operator}). The sweep read through the operator matched to the PSF transfer has since been run and is reported in Section~\ref{sec:common_reference}; what stays open is the $3\times10^{-3}$ target, bracketed for $57\%$ of regions under the interpolating read, and a reference that scores the PSF-aware carrier on the latent field it aims at rather than on the observation;
-    \item \textbf{The super-resolution surcharge is measured; our deconvolution control does not reproduce the companion's recovery.} The deconvolved carrier costs $1.27$ to $2.45$ times the Clough--Tocher one, and the PSF/IDW differential of $3$--$13\%$ suggests that deconvolution alone is unlikely to account for that surcharge; because the two transfers are not matched in smoothness or interpolation class, the differential does not isolate or bound the deconvolution contribution. In our harness the PSF-aware reconstruction recovers $+3.0\%$ to $+6.5\%$ of the blur without noise and nothing at the measured noise level, against the $15.4\%$ to $19.6\%$ the companion study reports noise-free; the added noise and a latent spectrum extrapolated to the level-20 Nyquist contribute, and a residual gap remains unattributed. The storage price is reportable; the quality it buys is established only by the companion study;
+    \item \textbf{The overhead is a parameter because only part of it is measured.} The container cost of each side is measured at under half a percent and the overlap of the Sentinel-2 tiling at $21\%$ from its published geometry, while padding and metadata are assumed. $\gamma_{\mathrm{tile}}$ has not been measured from complete tiled product files, nor swept over $[1.0,1.5]$ for the \term{matched-budget} protocol, and for compressed storage the \term{overhead} is assumed to apply proportionally to the compressed byte count;
+    \item \textbf{The level-19 comparison was made on a cell-averaged carrier; the directly evaluated one agrees.} Appendix~\ref{app:level19_direct} finds the two within $0.2\%$ in floor against the observation, with the widest departure at $1.051$, on 39 regions; including Lake Geneva moves the median ratio by less than $0.001$. The kernel ablation and the resampling-error study, which also re-run a \term{transfer}, rest on the same 39; no measurement read from a stored \term{tile} is affected;
+    \item \textbf{The loosest targets rest on fewer regions.} The failing pairs are the lowest-contrast scenes: none at the two tightest \term{RMSE targets}, one at $10^{-3}$, three at $3\times10^{-3}$ and eight at $10^{-2}$, with no urban scene among the absent. The $40\%$ and $20\%$ budgets qualify on $0\%$ and $65\%$ of the regions and are withheld;
+    \item \textbf{Neither reconstruction reference is the whole story.} The floor of Table~\ref{tab:floors} is an upper bound on what the representation costs, since the \term{read} alone can account for it (Section~\ref{sec:operator}). What stays open is the $3\times10^{-3}$ \term{target}, bracketed for $57\%$ of regions under the interpolating \term{read}. The PSF-aware \term{carrier} is not scored against the observation at all: its estimand is the latent field, so such a score would charge it for the content it was built to restore. A comparison of the two \term{transfers} at equal reconstruction error needs a synthetic scene with a known latent field, degraded by the instrument response, transferred by both, compressed, and scored against that field; it is the first experiment a follow-up should run;
+    \item \textbf{The super-resolution surcharge is measured; our deconvolution control does not reproduce the companion's recovery.} The deconvolved \term{carrier} costs $1.27$ to $2.45$ times the Clough--Tocher one, and the PSF/IDW differential of $3$--$13\%$ suggests that deconvolution alone is unlikely to account for that surcharge; because the two \term{transfers} are not matched in smoothness or interpolation class, the differential does not isolate or bound the deconvolution contribution. In our harness the PSF-aware reconstruction recovers $+3.0\%$ to $+6.5\%$ of the blur without noise and nothing at the measured noise level, against the $15.4\%$ to $19.6\%$ the companion study reports noise-free; the added noise and a latent spectrum extrapolated to the level-20 Nyquist contribute, and a residual gap remains unattributed. The storage price is reportable; the quality it buys is established only by the companion study;
     \item \textbf{The oracle-best-codec comparison is an envelope, and the crossover is codec-dependent.} Four of the five codecs held fixed on both grids reproduce the regime-dependent pattern; ZFP does not (Section~\ref{sec:same_codec});
     \item \textbf{The byte and type audit covers two regions.} Over 424 points it found no gap between reported and on-disk sizes and no disagreement with an independent decoder; it tests the adapters, which do not vary by region. The image codecs' eight-byte scale-and-offset sidecar is not charged to their sizes, and the DWT baseline charges four bytes for a scale it never writes;
     \item \textbf{The footprint mismatch is constrained, not bounded in the strict sense}: the three controls that address it run on 40, ten and four regions, so they show the mismatch is too small to explain the main trend rather than bounding it mathematically. The intersection fractions come from the convex hull of the cell centres, and geodesic areas have not been computed;
     \item \textbf{Codecs are swept over their own quality parameter}, so residual convention effects cannot be excluded;
-    \item \textbf{Single band, single sensor, one epoch.} Only Sentinel-2 B04 at \SI{10}{m} is evaluated, with no derived product: how the measured errors propagate into an index such as NDVI needs B08 and a common mask, and lossy compression is documented to change downstream land-cover classification at ratios inside the range studied here~\cite{zabala2011lossy}. Gridded model output is a different problem: it is already a cell average, so there is no transfer error to charge; its dominant redundancy is temporal, which none of the codecs favoured here exploits; its HEALPix level is a free design parameter; and conservation adds a constraint an RMSE budget does not enforce;
-    \item \textbf{The HEALPix side uses a deliberately simple resampling.} Clough--Tocher is PSF-agnostic; the operational PSF-aware resampler~\cite{delouis2026resample} places more high-frequency detail in the carrier, so the HEALPix-side ratios here are optimistic relative to it. Low power in the observed field bounds nothing about the latent one: the fitted spectra put $2.3\%$ (forest) to $31.1\%$ (urban) of the latent variance above the native Nyquist (Appendix~\ref{app:error_budget});
-    \item \textbf{Forty regions, one tile each.} Independent replicate tiles within a region would be needed to separate scene-to-scene from tile-to-tile variability. The image codecs receive a 16-bit requantization with an RMSE floor of $5.7\times10^{-6}$ in median, so the reported lossless points are bit-identical after that step only;
-    \item \textbf{Ratios over near-constant scenes are fragile.} Over deep water at the loosest targets, compressed files fall below \SI{10}{kB} and individual ratios range from $0.07$ to $6.1$, though the class medians behave like the others;
+    \item \textbf{Single band, single sensor, one epoch.} Only Sentinel-2 B04 at \SI{10}{m} is evaluated, with no derived product: how the measured errors propagate into an index such as NDVI needs B08 and a common mask, and lossy compression is documented to change downstream land-cover classification at ratios inside the range studied here~\cite{zabala2011lossy}. Gridded model output is a different problem: it is already a cell average, so there is no \term{transfer} error to charge; its dominant redundancy is temporal, which none of the codecs favoured here exploits; its HEALPix level is a free design parameter; and conservation adds a constraint an RMSE budget does not enforce;
+    \item \textbf{The HEALPix side uses a deliberately simple resampling.} Clough--Tocher is PSF-agnostic; the operational PSF-aware resampler~\cite{delouis2026resample} places more high-frequency detail in the \term{carrier}, so the HEALPix-side ratios here are optimistic relative to it. Low power in the observed field bounds nothing about the latent one: the fitted spectra put $2.3\%$ (forest) to $31.1\%$ (urban) of the latent variance above the native Nyquist (Appendix~\ref{app:error_budget});
+    \item \textbf{Forty regions, one tile each.} Independent replicate \term{tiles} within a region would be needed to separate scene-to-scene from tile-to-\term{tile} variability. The image codecs receive a 16-bit requantization with an RMSE floor of $5.7\times10^{-6}$ in median, so the reported lossless points are bit-identical after that step only;
+    \item \textbf{Ratios over near-constant scenes are fragile.} Over deep water at the loosest \term{targets}, compressed files fall below \SI{10}{kB} and individual ratios range from $0.07$ to $6.1$, though the class medians behave like the others;
     \item \textbf{Learned compression is not evaluated.} Comparing two grids with a neural codec~\cite{balle2017endtoend,valsesia2019onboard} needs models trained symmetrically on both, a study of its own;
     \item \textbf{Codec choice was evaluated on compression efficiency alone.} JPEG~2000 and JPEG~XL support partial, range-based reads of a chunk, ZFP at the block level, SZ3 and the DWT baseline neither; where partial access is required, the strongest compressor may be the wrong choice;
     \item \textbf{Global-sphere behaviour is not measured} (Section~\ref{sec:limitations}).
