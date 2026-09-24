@@ -178,6 +178,7 @@ def checks(tex: str):
     out += level19_checks()
     out += window_radiometry_checks()
     out += resampling_error_checks()
+    out += target_scale_checks()
     out += tile_crop_checks()
     out += appendix_table_checks()
     out += consistency_checks(tex)
@@ -468,6 +469,54 @@ def tile_crop_checks():
         out.append((f"tile/crop audit, mismatches at recorded indices {where}",
                     f"reports {n_rows:d} mismatched tiles",
                     "rows, i.e. (region, transfer) pairs"))
+    return out
+
+
+def target_scale_checks():
+    """Section IV-B: the RMSE targets read against each transfer's own error.
+
+    Revision 7. The Clough--Tocher error against the observed field and the
+    blur the PSF-aware transfer is charged against the latent field both come
+    from resampling_error.csv (resampling_error.py). The compression error
+    that would cancel the companion's recovery is derived here: with recovery
+    r = 1 - e_psf/e_blur and an orthogonal compression error e_c, the total
+    returns to e_blur when e_c = e_blur * sqrt(2r - r^2); r is the companion
+    study's lower figure, 15.4%, which the prose quotes next to it.
+    """
+    p = cfg.RESULTS_DIR / "resampling_error.csv"
+    if not p.exists():
+        return [("target scale  [skipped: resampling_error.csv absent]", "",
+                 "run resampling_error.py")]
+    import pandas as pd
+    d = pd.read_csv(p)
+    d["cls"] = d.scene.str.split("__").str[1]
+    where = "[in sections/04_design.tex]"
+    e_ct = d[d.kernel == "clough_tocher"].e_resample.median()
+    targets = (1e-4, 3e-3, 1e-2)
+    out = [
+        (f"C-T error vs observed, median {where}",
+         f"${e_ct*1e3:.1f}\\times10^{{-3}}$", "same value as Appendix D"),
+        (f"tightest target / C-T error, percent {where}",
+         f"${100*targets[0]/e_ct:.0f}\\%$", ""),
+        (f"3e-3 target / C-T error {where}", f"${targets[1]/e_ct:.1f}$ times", ""),
+        (f"loosest target / C-T error {where}", f"${targets[2]/e_ct:.1f}$ times", ""),
+    ]
+    psf = d[d.kernel == "psf"]
+    if len(psf):
+        b = psf.groupby("cls").blur_error.median()
+        def sci(x):
+            e = int(np.floor(np.log10(x)))
+            return f"${x/10**e:.1f}\\times10^{{{e}}}$"
+        out += [(f"PSF blur vs latent, smallest class median {where}", sci(b.min()),
+                 f"class {b.idxmin()}"),
+                (f"PSF blur vs latent, largest class median {where}", sci(b.max()),
+                 f"class {b.idxmax()}")]
+        r = 0.154
+        cancel = b * np.sqrt(2 * r - r * r)
+        out += [(f"compression error cancelling the 15.4% recovery, smallest {where}",
+                 sci(cancel.min()), f"class {cancel.idxmin()}"),
+                (f"compression error cancelling the 15.4% recovery, largest {where}",
+                 sci(cancel.max()), f"class {cancel.idxmax()}")]
     return out
 
 

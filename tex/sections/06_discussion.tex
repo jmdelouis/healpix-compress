@@ -2,17 +2,17 @@
 
 \subsection{A Regime-Dependent Trade-off}
 The dyadic hierarchy of HEALPix has a real cost. Stored raw, the
-level-20 \term{tile} is about twice the \term{UTM crop} under the illustrative
+level-20 tile is about twice the \term{UTM crop} under the illustrative
 $\gamma_{\mathrm{tile}}=1.30$ (Table~\ref{tab:storage_accounting}).
 After compression, native UTM stays the more compressible
 representation at every quality tested except the loosest. Compression
 narrows the gap steadily, from $+106\%$ to $-7\%$. The operational
 verdict is therefore decided by whether the residual gap exceeds the
-\term{overhead} a given native layout carries, the \term{critical overhead}
+overhead a given native layout carries, the \term{critical overhead}
 $\gamma_\star$ of Table~\ref{tab:synthesis}. That threshold is far
-above the \term{overheads} examined here at high fidelity. It is $1.19$ at
+above the overheads examined here at high fidelity. It is $1.19$ at
 $3\times10^{-3}$, where the verdict depends on the layout, and $0.93$ at
-$10^{-2}$, where the \term{carrier} is smaller at equal layout \term{overhead}. A
+$10^{-2}$, where the \term{carrier} is smaller at equal layout overhead. A
 HEALPix \term{carrier} pays less for its oversampling than raw byte counts
 suggest, and compression does not make it free. It becomes competitive
 in the regime of highest storage pressure, where the redundancy it
@@ -35,7 +35,7 @@ the same protocol says the same from below
 sufficient to generate this trend under the conditions tested. The
 exploratory latitude dependence is consistent with HEALPix cell-shape
 anisotropy, and has not been isolated as a grid property. Three
-findings belong elsewhere. The crossover at a given \term{overhead} belongs to
+findings belong elsewhere. The crossover at a given overhead belongs to
 the \term{transfer}, since it exists for a Clough--Tocher \term{carrier} and for no
 other \term{transfer} tested and disappears when the native raster is given
 that smoothing; it also belongs to the codec, since four of the five
@@ -91,7 +91,7 @@ submitted from.
 Five groups, detailed in Appendix~\ref{app:limitations}.
 \emph{Transfer}. The crossover is a result for a \term{carrier} filled by
 Clough--Tocher, of the \term{transfers} tested, and scored against its own
-smooth \term{tile}. The smoothed-native control gives the native side that
+smooth tile. The smoothed-native control gives the native side that
 smoothing at two fixed phases; across the original comparison and these
 two controls the loose-\term{target} ratio spans $0.93$--$1.24$, sensitivity
 controls rather than formal limits on a phase-matched experiment. A
@@ -106,17 +106,17 @@ the interpolating \term{read}. Also open is a synthetic-scene comparison of the
 Clough--Tocher and PSF-aware \term{transfers} against a known latent field,
 since the observation is the estimand of only the first.
 \emph{Footprint and orientation}. The \term{equal-area crop} and the rotated
-\term{tile} overlap over $74$--$83\%$ of their extent, and the mismatch is
+tile overlap over $74$--$83\%$ of their extent, and the mismatch is
 constrained by three controls, one analytic and two on subsets. The
 raster's axes run at about $45^\circ$ to the native ones, and the cost
 of that orientation to row-and-column codecs is not measured.
 \emph{Dataset}. Sentinel-2 B04 at \SI{10}{m}, one acquisition per
-region, one \term{tile} per region, 40 regions in four classes; nothing is
+region, one tile per region, 40 regions in four classes; nothing is
 claimed for other bands, sensors, temporal cubes, model output,
 flux-conservative fields or the full sphere. \emph{Compression and
 operational assumptions}. The oracle-best-codec comparison is optimistic
 by construction. Codecs are swept over their own quality parameters. The
-loosest \term{targets} carry censored observations. The \term{overhead} is a
+loosest \term{targets} carry censored observations. The overhead is a
 parameter: the container component is measured in bytes, while the
 overlap sample-area duplication is computed from the published tiling
 geometry and its corresponding compressed-byte cost is not measured.

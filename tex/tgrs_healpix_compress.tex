@@ -16,12 +16,14 @@
 \newcommand{\Rearth}{R_{\oplus}}
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
-% The terms defined in Table II (carrier, tile, native UTM square, transfer,
-% read, size ratio, target RMSE, overhead, critical overhead, reference,
-% matched error, matched budget) are wrapped in \term{} at every occurrence
-% in the body, so that a reader sees they refer to that table. One line
-% switches the typography: \textbf for bold, \emph for italics, #1 for none.
-\newcommand{\term}[1]{\textbf{#1}}
+% The terms defined in Table II (carrier, native UTM square, transfer, read,
+% size ratio, target RMSE, critical overhead, reference, matched error,
+% matched budget; the everyday words tile and overhead are left plain) are
+% wrapped in \term{} at every occurrence in the body, by
+% test/bold_glossary_terms.py, so that a reader sees they refer to that
+% table. One line switches the typography: \emph for italics, \textbf for
+% bold, #1 for none. The first occurrence carries a footnote (Section I).
+\newcommand{\term}[1]{\emph{#1}}
 
 % Where the code, the per-region values and the stored results live. Defined
 % once: Section IV-A, Section VI-C and Appendix B cite it through this macro,
@@ -84,29 +86,28 @@ Email: vincent.dumoulin@esa.int. ORCID: 0009-0005-1217-1143.}%
 Storing Sentinel-2 imagery on HEALPix forces a choice between level 19,
 whose \SI{12.4}{m} cells are coarser than the \SI{10}{m} product, and
 level 20, whose \SI{6.2}{m} cells hold $2.58$ times as many samples per
-unit area. This paper measures what the finer choice costs once both
-representations are compressed. Five established codecs are applied to
-level-20 tiles reshaped into ordinary rasters and to native UTM squares
-of equal nominal area, over 40 Sentinel-2 L2A B04 regions in four
-land-cover classes, and compressed sizes are compared at equal
-reconstruction error. The result is a distortion-dependent critical
-overhead $\gamma_\star(e)$: the layout overhead a native product must
-carry for the carrier to be the smaller representation at error $e$. A
-Clough--Tocher tile falls from $2.06$ to $0.93$ times the native square
-as the tolerated RMSE grows from $10^{-4}$ to $10^{-2}$. Clough--Tocher
-keeps the resolution of the product, so this ratio isolates the cost of
-the grid. A PSF-aware transfer restores small-scale content by design,
-and its tile costs $1.2$ to $2.5$ times those bytes at equal coding
-error, as does an inverse-distance control that restores none: the
-surcharge prices what a transfer adds and does not rank the transfers.
-Of the five codecs, ZFP alone shows no
-crossover. Fixed-phase smoothing controls remove the crossover,
-implicating transfer-induced smoothing as a major contributor. Against the native
-observation the carrier starts from a floor of $4.0\times10^{-3}$ and
-native UTM leads at all three reportable matched-storage budgets. The carrier becomes
-competitive only at aggressive compression; among the transfers tested
-this happens only with Clough--Tocher, and where the crossover falls
-depends on whether the transfer-and-read error is charged to the carrier.
+unit area. This paper measures what the finer choice costs once both are
+compressed. Level-20 tiles are reshaped into
+ordinary rasters and compared with native UTM squares of equal area at
+equal reconstruction error, over 40 Sentinel-2 B04 regions in four
+land-cover classes and five established codecs. The result is the
+layout overhead a native product must carry, at each tolerated error,
+for the HEALPix copy to be the smaller one. Filled by
+Clough--Tocher interpolation, which keeps the resolution of the product,
+the tile falls from $2.06$ to $0.93$ times the compressed size of the
+native square as the tolerated RMSE grows from $10^{-4}$ to $10^{-2}$:
+the HEALPix copy is smaller only at the loosest tolerance. A PSF-aware
+transfer instead
+restores small-scale content the product does not hold. Its tile costs
+$1.2$ to $2.5$ times the Clough--Tocher bytes at equal coding error, or
+$2.3$--$2.6$ times the native square, close to the raw $2.58$ and below
+it only at loose tolerances: this surcharge prices what a transfer adds
+and does not rank the transfers.
+Scored against the native observation instead, native UTM leads at all
+three reportable matched-storage budgets. The finer level is therefore
+competitive only at aggressive compression, only with Clough--Tocher
+among the transfers tested, and only when its own tile is the
+reference.
 \end{abstract}
 
 \begin{IEEEkeywords}

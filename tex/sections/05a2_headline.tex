@@ -3,21 +3,21 @@
 
 The rest of this section builds the comparison one factor at a time; its
 outcome is in Table~\ref{tab:synthesis} and Fig.~\ref{fig:headline}. Both
-start from one quantity: the compressed size of the HEALPix \term{tile} divided by
+start from one quantity: the compressed size of the HEALPix tile divided by
 the compressed size of the area-matched \term{native UTM square}, at the same
-reconstruction error, with no storage \term{overhead} charged to either side. A
+reconstruction error, with no storage overhead charged to either side. A
 value of $2$ means the HEALPix representation takes twice the bytes; $1$
 means the two are the same size. The five \term{targets} run from a quarter of a
 percent to a quarter of a typical scene's contrast, the median standard
-deviation of the 40 \term{tiles}, $0.04$ in reflectance. The table gives five
+deviation of the 40 tiles, $0.04$ in reflectance. The table gives five
 things per \term{target}. The first is that ratio for the Clough--Tocher
 \term{carrier} the paper uses; it is the column $\gamma_\star$, since the two
 coincide (Section~\ref{sec:rd_main}). The second is the share of the raw
 penalty that compression recovers. The third is the same \term{carrier} against
 a native raster subjected to the half-pixel Clough--Tocher fixed-phase
 smoothing control of Section~\ref{sec:support_controls}. The fourth is
-the verdict over a range of native-layout \term{overheads}. The fifth is the
-verdict at the illustrative $30\%$ \term{overhead} with its corrected
+the verdict over a range of native-layout overheads. The fifth is the
+verdict at the illustrative $30\%$ overhead with its corrected
 $p$-value. $n$ is the number of regions whose sweeps bracket the \term{target}
 on both grids. The verdict column is within-representation: each grid is
 scored against its own uncompressed raster. The HPX/sm.\ column is the
@@ -27,9 +27,9 @@ a phase-matched experiment. It stays above one at every \term{target}, so in
 these controls geometry alone does not cross parity.
 Section~\ref{sec:common_reference} charges the \term{transfer} and the \term{read} to
 the \term{carrier} instead, and reaches the same place. The figure adds the
-same \term{tile} rebuilt with the PSF-aware and inverse-distance \term{transfers} of
+same tile rebuilt with the PSF-aware and inverse-distance \term{transfers} of
 Section~\ref{sec:transfer_cost}, on the regions all three sweeps
-bracket. Under an operational \term{overhead} $\gamma$ on the native product
+bracket. Under an operational overhead $\gamma$ on the native product
 every ratio at $\gamma=1$ divides by $\gamma$.
 
 \input{tables/table_synthesis}
@@ -49,38 +49,38 @@ overhead on the native product.}
 \end{figure}
 
 Three things follow. First, the tolerated error sets the ratio.
-Uncompressed, the \term{tile} is $2.58$ times the square. Compressed, the ratio
+Uncompressed, the tile is $2.58$ times the square. Compressed, the ratio
 is $2.06$ when the reconstruction must stay within $10^{-4}$ of the stored
 values, a quarter of a percent of a typical scene's contrast. It falls
 steadily to $0.93$ at $10^{-2}$, a quarter of the contrast, where the
-HEALPix \term{tile} is the smaller one before any \term{overhead} is charged. The
+HEALPix tile is the smaller one before any overhead is charged. The
 oversampling penalty is then more than recovered by the codec, though
 only at an error that is large for a reflectance product. Second, the
 kind of scene moves the ratio less than the tolerated error does. Across
 the four classes the medians span $2.01$--$2.17$ at the tightest \term{target}
 and $0.89$--$1.10$ at the loosest, and no class changes the picture.
-Third, the way the \term{tile} was filled matters as much as everything else
+Third, the way the tile was filled matters as much as everything else
 combined, and the three \term{transfers} are not interchangeable. The
 Clough--Tocher \term{transfer} adds no information that was not in the native
 pixels; it does smooth them. The PSF-aware \term{transfer} of the companion
 study~\cite{delouis2026resample} is designed to undo part of the
 instrument blur and estimate a sharper latent field, whose
 reconstruction gain that study establishes under its own conditions. A
-codec asked to preserve the content it places on the \term{tile} must spend
-bytes on it. The \term{tile} compresses to $2.3$--$2.6$ times the \term{UTM square} at
+codec asked to preserve the content it places on the tile must spend
+bytes on it. The tile compresses to $2.3$--$2.6$ times the \term{UTM square} at
 every \term{target}, close to the uncompressed ratio, and the gap remains large
-over the range of native-layout \term{overheads} examined here, the
+over the range of native-layout overheads examined here, the
 illustrative $\gamma_{\mathrm{tile}}=1.30$ included. Those bytes buy
-content the Clough--Tocher \term{tile} does not hold, so the two ratios answer
+content the Clough--Tocher tile does not hold, so the two ratios answer
 different questions (Section~\ref{sec:transfer_cost}). The
 inverse-distance average, which restores no detail at all, costs nearly
 as much ($2.1$--$2.5$), so the extra bytes are consistent with the price
 of leaving the smooth interpolant. With a Clough--Tocher \term{carrier}, the
 storage question is therefore a question of the tolerated error.
 Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative} show where the
-answer changes sign: at $10^{-2}$ at equal layout \term{overhead}, more exactly
-for any relative \term{overhead} $\gamma\ge0.93$, and one \term{target} earlier once
-a $30\%$ \term{overhead} is charged to the native product. A reader whose
-product carries an illustrative $30\%$ layout \term{overhead} reads the
+answer changes sign: at $10^{-2}$ at equal layout overhead, more exactly
+for any relative overhead $\gamma\ge0.93$, and one \term{target} earlier once
+a $30\%$ overhead is charged to the native product. A reader whose
+product carries an illustrative $30\%$ layout overhead reads the
 Clough--Tocher ratio as $1.59$ down to $0.72$ (last block of
 Table~\ref{tab:synthesis}), and the PSF-aware one as $1.8$ to $2.0$.

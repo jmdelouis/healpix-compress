@@ -2,19 +2,19 @@
 \label{sec:transfer_cost}
 This section prices the \term{transfer} itself. The three \term{transfers} are not
 alternatives for the same purpose. Clough--Tocher keeps the resolution
-and the instrument response of the product, so its \term{tile} carries the
+and the instrument response of the product, so its tile carries the
 same information as the native raster and the comparison isolates what
 the grid costs. The PSF-aware \term{transfer} is designed to restore
-small-scale structure, so its \term{tile} carries content the native raster
+small-scale structure, so its tile carries content the native raster
 does not, and its bytes pay for that content. The inverse-distance
 average over the four nearest cells of Section~\ref{sec:resampler} (the
 library's \texttt{linear} kernel) restores none and serves as the
-control. The control is needed because a deconvolved \term{tile} costing more
-than a Clough--Tocher \term{tile} would establish nothing on its own: every
+control. The control is needed because a deconvolved tile costing more
+than a Clough--Tocher tile would establish nothing on its own: every
 property of a deconvolving \term{transfer} is confounded with its not being
 Clough--Tocher. The same rate--distortion protocol is run on \term{carrier}
-\term{tiles} rebuilt from the same native windows by the two further
-\term{transfers}. The PSF \term{tiles} are built at the damping at which the
+tiles rebuilt from the same native windows by the two further
+\term{transfers}. The PSF tiles are built at the damping at which the
 reconstruction error was measured ($\lambda=10^{-3}$) and at the nominal
 \SI{12.5}{m} response width. Coverage is 40 regions for the PSF \term{transfer}
 and 39 for the inverse-distance average.
@@ -28,18 +28,18 @@ the \term{target} on the C--T, PSF and IDW \term{carriers} and on the \term{nati
 extra sweeps remove one region at the tight \term{targets} and two at the
 loosest, where $n$ falls to 30. In block (a), the three columns under
 $\gamma=1$ give each \term{carrier} against the equal-area \term{native crop} with no
-\term{overhead}, composed per region, so a value below one favours HEALPix. The
+overhead, composed per region, so a value below one favours HEALPix. The
 three columns under ``relative to C--T'' give the compressed size
-relative to the Clough--Tocher \term{tile} of the same region at the same
+relative to the Clough--Tocher tile of the same region at the same
 absolute RMSE; the last of them sets the deconvolving \term{transfer} against
-the non-deconvolving one. Under the illustrative \term{overhead} every value of
+the non-deconvolving one. Under the illustrative overhead every value of
 the first three columns divides by $1.3$.
 
 \input{tables/table_transfer}
 
 The control is informative. At the same coding RMSE, each measured
-against that \term{transfer}'s own uncompressed \term{carrier}, the deconvolved \term{tile}
-costs $1.27$ to $2.45$ times the Clough--Tocher \term{tile} of the same region,
+against that \term{transfer}'s own uncompressed \term{carrier}, the deconvolved tile
+costs $1.27$ to $2.45$ times the Clough--Tocher tile of the same region,
 increasing with the \term{target}. The inverse-distance average costs
 $1.20$ to $2.18$, very nearly the same. Relative to each other the two exceed
 parity by only $1.03$ to $1.13$, separable at the three tightest \term{targets}
@@ -60,9 +60,9 @@ that lossless size, so the entropy difference between rasters divides
 out. The lossless sizes are within $9\%$ of each other: \SI{1.31}{MB},
 \SI{1.36}{MB} and \SI{1.41}{MB} for Clough--Tocher, PSF and
 inverse-distance. The rate--distortion curves have very different
-slopes. At the $10^{-2}$ \term{target} the Clough--Tocher \term{tile} compresses to
-$1.0\%$ of its own lossless size, the deconvolved \term{tile} to $2.5\%$, the
-inverse-distance \term{tile} to $3.1\%$ and the native raster to $3.6\%$. Scene
+slopes. At the $10^{-2}$ \term{target} the Clough--Tocher tile compresses to
+$1.0\%$ of its own lossless size, the deconvolved tile to $2.5\%$, the
+inverse-distance tile to $3.1\%$ and the native raster to $3.6\%$. Scene
 complexity does not explain the surcharge. Correlating each region's
 lossless size on the Clough--Tocher raster with the surcharge it pays
 (the median over the \term{targets} both sweeps bracket) gives a Spearman
@@ -84,19 +84,19 @@ The consequence for the headline result is one of the largest
 sensitivities measured in this study. Under Clough--Tocher the HEALPix
 \term{carrier} is the cheaper representation at the two loosest \term{targets}
 ($0.93$ and $0.72$ against the native product under the illustrative
-\term{overhead}).
+overhead).
 Under either other \term{transfer} it is cheaper at none: $2.01$ and $1.75$ for
 the PSF \term{transfer}, $1.90$ and $1.63$ for the inverse-distance average. A
 factor of two in the storage cost of the \term{transfer} exceeds the whole
 margin, so the regime-dependent verdict of Section~\ref{sec:rd_main} is
 a statement about a \term{carrier} filled by this \term{transfer}. In final sizes with
-no \term{overhead} (Tables~\ref{tab:synthesis} and~\ref{tab:transfer}), the
-Clough--Tocher \term{tile} compresses to between $2.06$ and $0.93$ times the
-\term{native square} as the tolerated error grows, the PSF-aware \term{tile} to
-between $2.62$ and $2.28$ times, and the inverse-distance \term{tile} to between
+no overhead (Tables~\ref{tab:synthesis} and~\ref{tab:transfer}), the
+Clough--Tocher tile compresses to between $2.06$ and $0.93$ times the
+\term{native square} as the tolerated error grows, the PSF-aware tile to
+between $2.62$ and $2.28$ times, and the inverse-distance tile to between
 $2.49$ and $2.11$ times. The last two barely move with the tolerated
 error. Their content resists lossy coding, while the content of the
-Clough--Tocher \term{tile} is mostly the smooth redundancy a codec is built to
+Clough--Tocher tile is mostly the smooth redundancy a codec is built to
 remove.
 
 Block (c) of Table~\ref{tab:transfer} rebuilds the \term{carrier} with five
@@ -108,11 +108,11 @@ it is the only measure in the table that gives a \term{transfer} no credit for
 copying its input samples. \emph{Over} counts the cells a \term{transfer}
 places outside the range of the data it was given, how a diverging
 interpolant shows itself to a check that a constant field passes.
-\emph{Floor} is the error of the uncompressed \term{tile} read back on the
+\emph{Floor} is the error of the uncompressed tile read back on the
 native pixels, as a fraction of the scene's standard deviation, and
 \emph{rel.} its per-region ratio to Clough--Tocher; both reward a
 \term{transfer} for staying close to the identity on the native lattice.
-\emph{log-PSD} is the RMS distance in $\log_{10}$ between the \term{tile}'s
+\emph{log-PSD} is the RMS distance in $\log_{10}$ between the tile's
 radial power spectrum and the observation's up to the native Nyquist
 frequency, and \emph{top oct.} the ratio of their power in the highest
 octave. The last three columns are compressed-\term{size ratios} to
@@ -137,7 +137,7 @@ On real reduced-resolution Sentinel-2 imagery it has the smallest RMSE
 in all 40 regions, improving on the best of nearest, bilinear, bicubic
 and Richardson--Lucy by $11.0\%$ to $17.9\%$, with the restored power at
 low and intermediate frequencies~\cite{delouis2026resample}. Whether
-the particular \term{tiles} whose bytes are counted here realise it is not
+the particular tiles whose bytes are counted here realise it is not
 established, and our own harness does not reproduce the magnitude of
 the recovery (Appendix~\ref{app:limitations}). With this reservation,
 the two-fold surcharge has two meanings. On the deconvolved \term{carrier} it

@@ -1,10 +1,11 @@
-\subsection{The Support Mismatch Does Not Drive the Result}
+\subsection{Controls: Support Mismatch, Sampling Geometry and Smoothing}
 \label{sec:support_controls}
 
-Section~\ref{sec:utm_crop} left an objection open: the rotated \term{tile} and
+Section~\ref{sec:utm_crop} left an objection open: the rotated tile and
 the axis-aligned crop overlap over only $81\%$ of their equal areas, so
 every ratio above compares rasters that cover partly different ground.
-The control removes the content difference and keeps the mismatch. The control is an
+The main control keeps the mismatch and takes the scene content out of
+the comparison. It is an
 analytic random field, a sum of plane waves with power spectrum
 $P(k)\propto k^{-\beta}$ multiplied by a Gaussian instrument response of
 width $\sigma$; its instrument convolution is exact and it can be
@@ -105,5 +106,10 @@ the geometry-only control and the measurement. The \term{common reference}
 reaches the same place from the other side
 (Section~\ref{sec:common_reference}). Two controls on subsets agree
 (Appendix~\ref{app:support}): a common-support comparison on ten
-regions, and re-cutting the \term{UTM crop} at shifted positions on four
-regions, which moves the ratio by about $1\%$ of the effect.
+regions, with blocks of different area on the two lattices, and
+re-cutting the \term{UTM crop} at shifted positions on four regions,
+which moves the ratio by about $1\%$ of the effect. Together these
+controls suggest that the support mismatch, over footprints that overlap
+by $74$--$83\%$, is unlikely to explain the overall decline in the
+\term{size ratio}; they do not isolate its contribution to the narrow
+crossover at the loosest \term{target}.

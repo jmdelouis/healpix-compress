@@ -2,10 +2,10 @@
 \label{sec:level_choice}
 
 Section~\ref{sec:redundancy} chose level 20 on a nominal argument. The
-object measured here is a stored level-20 \term{tile} aggregated in groups of
+object measured here is a stored level-20 tile aggregated in groups of
 four, which in the NESTED ordering are adjacent elements and exactly the
 four children of one level-19 cell. Because the cells are equal-area,
-this is the exact quadtree Haar transform of the \term{tile}, and the aggregate
+this is the exact quadtree Haar transform of the tile, and the aggregate
 is the cell-average of the \term{carrier} over each level-19 cell. It differs
 from the \term{carrier} the same \term{transfer} would build at level 19, which stores
 point evaluations at cell centres. Both were built and read identically
@@ -22,7 +22,7 @@ Two quantities are separated, because a coarser \term{carrier} is charged twice
 and only one charge concerns information. The first is what the
 four-child aggregation discards: the intra-cell variance, the energy of
 the three detail coefficients of the quadtree Haar transform at level 20.
-It is $3.07\%$ of the variance of the \term{tile} (median over 40 regions;
+It is $3.07\%$ of the variance of the tile (median over 40 regions;
 $2.2\%$ in forest to $7.2\%$ in urban scenes), an RMS of $17.5\%$ of the
 scene's standard deviation, which is $1.82$ times the level-20 floor of
 Table~\ref{tab:floors}. The second is the floor of the
@@ -59,14 +59,14 @@ What the coarser \term{carrier} costs to store is measured as well
 (Table~\ref{tab:level19_rd}). The direct level-19 \term{carrier} and its
 cell-averaged twin are run through the codec sweep of
 Section~\ref{sec:rd_protocol} and compared with the \term{native crop} and the
-level-20 \term{tile} under the paper's rules. Raw, the level-19 \term{carrier} is
+level-20 tile under the paper's rules. Raw, the level-19 \term{carrier} is
 $0.65$ times the \term{native crop}. Compressed to equal error it stays smaller
 than the crop at every \term{target}, on $85\%$ to $100\%$ of the regions. Its
 ratio rises from $0.67$ at the tightest \term{target} to $0.78$ at the loosest:
 compression recovers nothing for a \term{carrier} that has already discarded
 samples, and at loose \term{targets} it erodes the raw advantage instead.
-Against the level-20 \term{tile} the same \term{carrier} costs $0.32$ of the bytes at
-the tightest \term{target} and $0.88$ at the loosest, so the level-20 \term{tile}
+Against the level-20 tile the same \term{carrier} costs $0.32$ of the bytes at
+the tightest \term{target} and $0.88$ at the loosest, so the level-20 tile
 costs $1.13$ times the level-19 \term{carrier} at $10^{-2}$ and $3.1$ times at
 $10^{-4}$. The cost of the finer \term{carrier} is the cost of its density,
 largest where the codec keeps every sample and nearly gone where it
@@ -80,6 +80,6 @@ why its column against the \term{native crop} is flat where the direct
 $0.9\%$ of its own raw size, against $0.8\%$ for the \term{native crop} and
 $1.1\%$ for the direct \term{carrier}, so the aggregate and the crop gain
 compressibility at nearly the same rate as the \term{target} loosens. A
-$2\times2$ mean of a Clough--Tocher \term{tile} behaves, per stored value, much
+$2\times2$ mean of a Clough--Tocher tile behaves, per stored value, much
 like the native raster it came from; the directly evaluated \term{carrier}
 keeps the sharper point values and pays for them.

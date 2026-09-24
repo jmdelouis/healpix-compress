@@ -55,10 +55,10 @@ compressed; that is the empirical question of Section~\ref{sec:results}.
 \subsection{Terms Used in This Paper}
 \label{sec:glossary}
 Table~\ref{tab:glossary} gives the terms used here; they are set in
-bold throughout the paper. Two of them decide the result. The
-\term{transfer} fills the HEALPix \term{tile} from the native pixels and has
+italics throughout the paper. Two of them decide the result. The
+\term{transfer} fills the HEALPix tile from the native pixels and has
 no counterpart on the UTM side. The \term{reference} is the field
-against which reconstruction error is measured: against the \term{tile} itself
+against which reconstruction error is measured: against the tile itself
 the \term{transfer} costs nothing, and against the native observation it is
 charged to HEALPix.
 
@@ -90,7 +90,7 @@ Level 20 avoids the nominal undersampling of level 19, whose \SI{12.4}{m}
 cells are coarser than the \SI{10}{m} product (what level 19 loses is
 measured in Section~\ref{sec:level_choice}), at the nominal storage cost
 of \eqref{eq:alpha}. The question is whether this cost survives
-compression and a realistic accounting of native-grid \term{overhead}, or
+compression and a realistic accounting of native-grid overhead, or
 whether it is redundant, and therefore compressible, structure. We do not
 claim that the sensor carries no information at the finer scale, or that
 the signal is strictly band-limited; neither is needed. The level-20
@@ -103,14 +103,14 @@ persistence used by zerotree coders make this expectation precise
 
 One bound follows from information alone. For a fixed complete source
 window, the \term{carrier} is a deterministic function of the native samples:
-the \term{tile} is a known \term{transfer} applied to that window. A coder that stored
-those samples and the name of the \term{transfer} would reproduce the \term{tile}
+the tile is a known \term{transfer} applied to that window. A coder that stored
+those samples and the name of the \term{transfer} would reproduce the tile
 without loss. The information content of the \term{carrier} therefore cannot
 exceed that of the complete input samples by more than the description
 of the \term{transfer}. This does not give a unit upper bound on the HEALPix/native-crop
 ratio measured here. The \term{equal-area crop} and the \term{carrier} do not cover
 identical supports, and the \term{transfer} reads native samples from outside
-the crop, so the crop is not the input from which the \term{tile} is a function
+the crop, so the crop is not the input from which the tile is a function
 (Section~\ref{sec:utm_crop}). What the bound says is that the \term{carrier}
 holds no more information than the window it came from, and that the
 ratios measured in Section~\ref{sec:results} are a property of

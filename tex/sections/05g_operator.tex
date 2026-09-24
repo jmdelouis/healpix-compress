@@ -20,7 +20,7 @@ the intersection against the observation. \emph{Nearest} is the
 containing cell. \emph{Bilinear} places each native pixel in the \term{carrier}
 lattice at sub-cell precision and takes the bilinear combination of the
 four bracketing centres. Ratios are paired per region before the median
-is taken. On the same \term{tiles}, mask and observation, the bilinear floor is
+is taken. On the same tiles, mask and observation, the bilinear floor is
 $0.582$ times that of the nearest \term{read}, lower on every region. Changing
 the \term{read} alone therefore removes $66\%$ of the mean squared error of the
 transfer-and-read floor: it drops from $10.0\%$ to $5.9\%$ of a scene's
@@ -28,13 +28,13 @@ standard deviation. A substantial part of the floor is caused by the
 \term{read}ing operator. This is a measured difference between two chains and no
 variance decomposition: the \term{transfer} and read errors need not be
 orthogonal, and what the residual $1.9\times10^{-3}$ owes to each is not
-separated here. The PSF-aware \term{tiles} are not scored in this table. Their
+separated here. The PSF-aware tiles are not scored in this table. Their
 estimand is the latent field, so a floor against the observation would
 measure their distance to a field they do not aim at
 (Section~\ref{sec:transfer_cost}).
 
 The \term{read} has a second consequence, on rate. A nearest-cell read of a
-$1024^2$ \term{tile} by the $637^2$ crop touches only $30.8\%$ of the cells. The
+$1024^2$ tile by the $637^2$ crop touches only $30.8\%$ of the cells. The
 rest form the kernel of the operator, and whatever a codec writes there
 never reaches the product. That misallocation does not lower the product
 error, and a coarser quantisation step does not exploit it

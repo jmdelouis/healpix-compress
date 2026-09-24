@@ -14,10 +14,14 @@ community tooling for DGGS data cubes such as
 Processing Framework, which republishes the Sentinel archive as Zarr.
 
 HEALPix was designed for astronomical data on the
-sphere~\cite{gorski2005healpix}. Its cells have equal area, its refinement
-is dyadic, and in its nested index all descendants of a cell form one
-contiguous block. These properties suit Earth observation as well, with
-one practical limit: HEALPix resolution changes only by powers of two, so
+sphere~\cite{gorski2005healpix}. Its cells have equal area and refine
+dyadically: whatever the ordering, every cell contains exactly four
+cells of the next level. The nested index adds a storage property to
+this geometry, since it places all descendants of a cell in one
+contiguous block; that is what lets a tile be compressed on its own,
+where the ring ordering would force compression by whole rings of
+latitude. These properties suit Earth observation as well, with one
+practical limit: HEALPix resolution changes only by powers of two, so
 the native sampling of an instrument almost never matches a level. The
 \SI{10}{m} bands of Sentinel-2~\cite{drusch2012sentinel2} fall between
 level 19 (\SI{12.4}{m}, too coarse) and level 20 (\SI{6.2}{m},
@@ -29,32 +33,38 @@ content the sensor response still limits. If this redundancy compresses
 well, storing the data at level 20 could cost no more than keeping the
 same information on the native UTM grid. The native product has a cost
 of its own. Under an operational tiling layout such as the MGRS granules
-of Sentinel-2 it carries padding, overlap and per-\term{tile} metadata beyond
+of Sentinel-2 it carries padding, overlap and per-tile metadata beyond
 the area needed: a survey of that grid finds that it enlarges the stored
 land area by $33\%$, about one petabyte per year of
-products~\cite{bauer2023wasting}. This paper uses a $30\%$ \term{overhead} as
-an illustrative value at the level of that spatial \term{overhead}
+products~\cite{bauer2023wasting}. This paper uses a $30\%$ overhead as
+an illustrative value at the level of that spatial overhead
 (Section~\ref{sec:overhead}).
 
 The answer, in a data manager's terms, is given in
-Section~\ref{sec:headline}. Before compression, a level-20 \term{tile} takes $2.58$
+Section~\ref{sec:headline}. Before compression, a level-20 tile takes $2.58$
 times the bytes of the area-matched native raster. After compression to
 the same reconstruction error, it takes $2.06$ times as many when the
 tolerated error is a quarter of a percent of a typical scene's contrast.
 It takes $0.93$ times as many, a bare crossing, marginal in significance
 (Section~\ref{sec:rd_main}), when the tolerated error is a quarter of
-that contrast.
+that contrast. These ratios compare each raster with its own uncompressed
+version. Scored against the Sentinel-2 observation instead
+(Section~\ref{sec:common_reference}), native UTM leads at every
+reportable storage budget, while the size advantage at the loosest error
+survives under an interpolating read.
 
-Two \term{transfers} can fill the \term{tile}, and they answer different questions.
+Two \term{transfers}\footnote{Terms in italics are defined in
+Table~\ref{tab:glossary}, Section~\ref{sec:glossary}.} can fill the
+tile, and they answer different questions.
 The main results use Clough--Tocher
 interpolation~\cite{clough1965plate}, which passes a smooth surface
 through the observed pixels and reads it at the HEALPix cell centres. It
-keeps the resolution of the product, so the \term{tile} and the native raster
+keeps the resolution of the product, so the tile and the native raster
 carry the same information at the same instrument response, and the
 comparison isolates what the grid costs in compressed bytes. The
 PSF-aware \term{transfer} of the companion study~\cite{delouis2026resample}
 also undoes part of the instrument blur and aims at a sharper latent
-field. Its \term{tile} carries small-scale content that the native raster does
+field. Its tile carries small-scale content that the native raster does
 not, by design, and costs $2.3$--$2.6$ times the native raster at every
 error. Those bytes pay for content the product gains, whose benefit that
 study establishes, and this paper prices them without ranking the two
@@ -68,25 +78,25 @@ libraries and no HEALPix-specific coding. The finer HEALPix level is
 treated as a plain 2-D raster, obtained by Morton (Z-order) de-interleaving
 of the nested chunk, and passed to standard codecs as an ordinary image.
 The comparison covers matched ground area: the centroid of the HEALPix
-\term{tile} defines an axis-aligned, \term{equal-area square} cut from the native UTM
+tile defines an axis-aligned, \term{equal-area square} cut from the native UTM
 raster (Section~\ref{sec:utm_crop}), so the UTM side is always the
 untouched native product. The contributions are:
 \begin{itemize}
     \item a storage--distortion formulation of the resolution mismatch
     between native Sentinel-2 sampling and the next finer HEALPix level,
     with a geometric accounting: the $2.58\times$ oversampling of level 20
-    makes the raw HEALPix \term{tile} the \emph{larger} representation by
-    $\approx\!1.99$ under the illustrative $30\%$ \term{overhead}, so only
+    makes the raw HEALPix tile the \emph{larger} representation by
+    $\approx\!1.99$ under the illustrative $30\%$ overhead, so only
     compression can make HEALPix competitive;
     \item an equal-area rate--distortion protocol that separates the
-    overhead-free \term{carrier}/native \term{size ratio} from the \term{overhead} of the native
-    layout through a critical-\term{overhead} $\gamma_\star$ analysis, at matched
+    overhead-free \term{carrier}/native \term{size ratio} from the overhead of the native
+    layout through a critical-overhead $\gamma_\star$ analysis, at matched
     error and \term{matched budget}, against a \term{native UTM square} of the same
     nominal area;
     \item an evaluation over 40 Sentinel-2 regions, four land-cover
     classes, latitudes from $43.5^\circ$S to $64.1^\circ$N (both HEALPix
     cell-shape regimes) and five general-purpose codecs. It includes
-    sensitivity analyses on codec, \term{target}, \term{transfer} and assumed \term{overhead},
+    sensitivity analyses on codec, \term{target}, \term{transfer} and assumed overhead,
     and a multiple-testing correction that seven of the eight per-\term{target}
     comparisons survive. Two controls explain the result: an
     analytic-field control shows that sampling geometry alone reproduces
@@ -101,7 +111,7 @@ untouched native product. The contributions are:
 \end{itemize}
 
 The competitive regime reported below belongs to the complete chain.
-It depends on four quantities: the \term{overhead} of the native product,
+It depends on four quantities: the overhead of the native product,
 carried as $\gamma_\star(e)$ so that no value is assumed; the \term{transfer}
 (Section~\ref{sec:transfer_cost}); the codec
 (Section~\ref{sec:same_codec}); and the \term{reconstruction reference}
