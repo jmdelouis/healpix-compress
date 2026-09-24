@@ -281,7 +281,15 @@ def table_transfer():
         cells = "".join(f" & {sizes[t].loc[k, 'median']:.2f}"
                         if t in sizes and k in sizes[t].index else " & --"
                         for t in cfg.TARGET_RMSE[:3])
-        krow.append(f"{kname[k]} & {len(g)} & {tf} & {ovr} & "
+        label = kname[k]
+        if k == "bicubic":
+            # Revision 8: the radial KNN variant of the Keys kernel fails to
+            # reproduce a constant on ~1.6% of the cells (diag_bicubic.py), so
+            # its transfer error measures an operator defect, not bicubic
+            # interpolation. The row stays, marked, so the omission is explicit.
+            label = "bicubic$^{\\dagger}$"
+            tf = f"({tf})"
+        krow.append(f"{label} & {len(g)} & {tf} & {ovr} & "
                     f"{100*g.floor_frac_of_std.median():.1f} & {rel} & "
                     f"{g.logpsd_rms.median():.2f} & {g.logpsd_top_octave.median():.2f}"
                     + cells + " \\\\")
@@ -292,7 +300,12 @@ def table_transfer():
         "\\multicolumn{3}{c}{Size / C--T at target RMSE} \\\\\n"
         "\\cmidrule(lr){9-11}\n"
         f"Kernel & $n$ & (\\% std) & (\\%) & (\\% std) & rel.\\ C--T & log-PSD & oct. & {heads3} \\\\\n"
-        "\\midrule\n" + "\n".join(krow) + "\n\\bottomrule\n\\end{tabular}")
+        "\\midrule\n" + "\n".join(krow) + "\n\\bottomrule\n\\end{tabular}\n"
+        "\\par\\smallskip\n{\\footnotesize "
+        "$^{\\dagger}$Not a valid measurement of bicubic interpolation: the "
+        "radial nearest-neighbour variant of the Keys kernel used here does not "
+        "reproduce a constant field on about $1.6\\%$ of the cells, and those "
+        "cells carry almost all of its transfer error (Section~\\ref{sec:transfer_cost}).\\par}")
 
     return (
         "\\begin{table*}[t]\n\\centering\n"
