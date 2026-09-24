@@ -1,0 +1,1429 @@
+scene,label,codec,config,total_bytes,rmse,n_samples
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 1e-05}",2076176,6.560464924769929e-07,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1814032,2.622414792677361e-06,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1551888,1.0492959192833687e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1289744,4.193803684826427e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1158664,8.401266836736804e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",896368,0.00033586125089596407,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",632520,0.0013384631708001913,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 0.1}",376616,0.004898099022680027,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 0.3}",205720,0.013812872880146331,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 1.0}",142144,0.028243548266015984,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,zfp,"{""tolerance"": 3.0}",125200,0.0467971291008805,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 1e-05}",1515371,5.771904637677963e-06,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1238407,2.153408041973725e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",974954,8.019140920606026e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",703125,0.0002991827716042504,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",443539,0.001114951801632654,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",217463,0.0041265264309555,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",65495,0.010957138497026016,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 0.1}",12055,0.03059397656509487,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 0.3}",923,0.06484091517254154,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,sz3,"{""abs_error"": 1.0}",407,0.05527079586997863,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",1649160,3.583205644585382e-06,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048277,4.2990302126820835e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",698943,0.000247155452546882,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",419288,0.0011020618040120077,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",261837,0.002616620157356025,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",174549,0.004583812279497297,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",104859,0.006683920767130558,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",59411,0.009639761071773943,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",34772,0.012986030166966308,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",20738,0.0162911038200875,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",13635,0.01800795305270492,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",8347,0.021169146565298225,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",5063,0.023855221555379873,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",2655,0.027444419953830124,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2110,0.028478546056246386,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1014,0.032742426192849915,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",519,0.03566181231713483,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 10}",9824,0.01994625563364781,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 25}",26843,0.013416216422845037,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 40}",35736,0.011762279596344486,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 55}",46441,0.010137722889613275,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 68}",62934,0.007455141151913536,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 78}",84552,0.005752594206429013,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 86}",114157,0.004061505300824155,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 92}",178845,0.0031113619289403504,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 96}",262966,0.002057159584590801,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 99}",394092,0.001004353637728305,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",87343,0.005570848409255659,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",149226,0.003500156875477089,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",251983,0.00219549630830817,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",350761,0.0012644881781961005,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",498569,0.0005925860705299262,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",618865,0.00032595234942957714,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",921280,6.72355396300576e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 5}",8246,0.021253909198124418,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 1}",5946,0.023121636183734764,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9958,0.019857136619766153,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5661,0.023321751268620988,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",2667,0.030813974532337113,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",23332,0.017937091411403063,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",97977,0.007680096367006796,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",333801,0.002587652802405028,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",639888,0.0006886979457175732,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",956706,0.00017206402683161355,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1262802,4.2998906913572246e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",923,0.041434684829112084,1048576
+region__agriculture__mato_grosso,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",784,0.12281877385358637,1048576
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 1e-05}",853376,6.557396642379477e-07,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",751416,2.624694929545696e-06,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",649456,1.0491908040099907e-05,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",547496,4.194864268989624e-05,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",496520,8.380229084683198e-05,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",394560,0.0003359555093201602,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",292536,0.0013421240913761134,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 0.1}",189544,0.005345775266289885,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 0.3}",94176,0.017154651119727565,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 1.0}",56064,0.0317084036868051,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,zfp,"{""tolerance"": 3.0}",49248,0.04889854420958912,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 1e-05}",710249,5.448757011876311e-06,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",531057,2.1515610049160398e-05,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",418725,8.013378902871524e-05,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",317681,0.00029943511487409523,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",219687,0.001114913393649332,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",123568,0.004150241928646674,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",47396,0.014646575738658968,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 0.1}",5520,0.031415174123681416,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 0.3}",975,0.04797097775281351,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,sz3,"{""abs_error"": 1.0}",249,0.0657486934041072,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",701283,3.5363450910953345e-06,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",405312,9.515375243603506e-05,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",270417,0.0005527578872403893,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",162207,0.002402948277589672,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",101292,0.0053046369602193924,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",67169,0.008534913927400307,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",40407,0.011856407000059082,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",23199,0.015073174965491726,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",13350,0.018773078131788076,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",8048,0.021305380582095964,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",5070,0.024081073292199256,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",3189,0.02639750833438198,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",2007,0.028498798151611656,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",1162,0.031664447991589934,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",716,0.03415706368410694,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",415,0.036946027302584644,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",234,0.046576979984308514,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 10}",4419,0.024396442577659494,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 25}",11833,0.018852566767692924,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 40}",15469,0.017226474438465478,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 55}",20100,0.01556851169562081,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 68}",27272,0.012410318383852089,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 78}",39284,0.00980297406210957,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 86}",59980,0.007258064246857169,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 92}",101255,0.004690580123608921,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 96}",137792,0.00323612625550624,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 99}",206061,0.0014538718445097736,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",40815,0.009523122948957914,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",87235,0.005575484132406714,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",131785,0.003475175602848107,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",184277,0.0018754312289995,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",255936,0.0007831761812567096,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",309357,0.00038087957878928737,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",428908,7.315586834044837e-05,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 5}",3662,0.0255963991059713,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""level"": 1}",2653,0.027371545142461425,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",4468,0.02430573387154183,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",2552,0.027534932292236344,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",1371,0.03356080645303012,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",13499,0.021033056065383516,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",73605,0.009094869295826171,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",200403,0.0025053580366440876,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",325107,0.0006246881471345378,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",447003,0.0001559868489805713,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",559377,3.899975477324047e-05,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",376,0.04154032810767449,405769
+region__agriculture__mato_grosso,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",312,0.10497609243996588,405769
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1e-05}",2067552,6.555686625047906e-07,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1805408,2.6234404836502436e-06,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1543264,1.0481533069694e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1281120,4.196230038086375e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1150048,8.392672815063677e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",887840,0.0003356403360070329,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",624440,0.001343366568259442,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.1}",365032,0.004825245428798061,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.3}",200496,0.013094272493752583,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1.0}",141736,0.02733335653136564,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.0}",124928,0.04642090619415698,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1e-05}",1480149,5.776120758285756e-06,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1189191,2.1521328137545537e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",925234,8.019390390265622e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",670559,0.0002990803866945487,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",411245,0.0011136624421558953,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",195273,0.004030181211221098,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",57147,0.010562265440586447,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.1}",9079,0.039090071116269706,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.3}",408,0.054254097549378925,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1.0}",407,0.054254097549378925,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1}",1651819,3.5608970753161637e-06,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048106,4.335721950363979e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 3}",698660,0.0002488111279922055,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 5}",419379,0.0011007204153558896,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 8}",261932,0.002585257518992452,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 12}",174567,0.004105118949968654,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 20}",104743,0.005671558996971146,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 35}",59889,0.008145939905621145,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 60}",34862,0.011305211869125326,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 100}",20822,0.014714984302810782,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 150}",13785,0.016501871569748926,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 250}",8262,0.019968241975393958,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 400}",5032,0.02274293400101998,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 700}",2652,0.026434238073605246,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1000}",1763,0.028653224436287275,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1018,0.03187979755979054,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 4000}",519,0.03488370976468928,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 10}",9792,0.018610828845910952,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 25}",25384,0.01221056726683511,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 40}",33282,0.0106423489121117,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 55}",44858,0.008906751603674072,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 68}",58727,0.006713833810329893,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 78}",78682,0.005236604128354087,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 86}",104979,0.003964547182053711,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 92}",168171,0.003079102341573183,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 96}",255634,0.002112084697529014,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 99}",394198,0.0010334834237072162,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 2.0}",80915,0.005104657878224329,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 1.0}",135215,0.0034280782564105956,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.5}",243808,0.002250560382372536,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.25}",349173,0.0012951661844607123,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.1}",502233,0.000618679319169871,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.05}",631014,0.00033141315131858165,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.01}",943828,6.313778884916854e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 5}",8257,0.019978050246043204,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 1}",5804,0.02192043971358674,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9926,0.01851035949671891,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5513,0.022168445867225328,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",2655,0.029935382346740605,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",21586,0.016846558472032685,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",87773,0.007126139094466048,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",324162,0.0026648063274740076,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",612574,0.0006890178076354783,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",941045,0.00017211196267703433,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1247816,4.301628592730971e-05,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",923,0.04077904769253268,1048576
+region__agriculture__mato_grosso,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",783,0.12258444413961571,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 1e-05}",2155296,6.56651271626422e-07,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1893152,2.6270159361608742e-06,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1631008,1.0502951164800734e-05,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1368856,4.2004270080032726e-05,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1237784,8.395571132304237e-05,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",975592,0.0003360982462507011,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",712624,0.0013431027606345478,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 0.1}",448768,0.005188706738926691,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 0.3}",237560,0.01601418764626432,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 1.0}",146496,0.035849624018408584,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,zfp,"{""tolerance"": 3.0}",126832,0.049632075466152246,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 1e-05}",1631273,5.771077127491855e-06,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1319676,2.1517457017892105e-05,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",1047701,8.025737234359133e-05,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",789098,0.0002990878500837691,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",535255,0.0011146105791030193,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",285851,0.0041537134903545676,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",110444,0.012296663257823151,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 0.1}",18978,0.03239967873580071,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 0.3}",2374,0.06582078722795788,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,sz3,"{""abs_error"": 1.0}",407,0.09398838514734242,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",1647501,5.750975268321612e-06,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048101,6.8456969733207e-05,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",698787,0.00039331028282511566,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",419385,0.0017592280346755422,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",261745,0.0042093774574727605,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",174735,0.007228847249337068,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",104869,0.010451211614427894,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",59695,0.014832753169406987,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",34639,0.019852973799144177,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",20893,0.02507799768776777,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",13789,0.028106000111514925,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",8202,0.03335624372524586,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",5151,0.03699558576318752,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",2683,0.042616689384634414,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2092,0.044252060988518895,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1036,0.0503804136247541,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",526,0.054893352719216686,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 10}",9735,0.03117394253619083,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 25}",26535,0.020677719861325328,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 40}",35001,0.018301281563856728,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 55}",45802,0.015908701568268405,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 68}",63013,0.01180174267814711,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 78}",84863,0.009091894054366965,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 86}",115770,0.006442852152748416,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 92}",181391,0.004864671250055489,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 96}",265302,0.0032149112783915004,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 99}",397580,0.001585262541760268,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",87625,0.008803610610271583,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",153419,0.005535182616007605,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",254274,0.0034309572999150825,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",353648,0.0019907903169765467,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",503884,0.0009376834010402457,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",626198,0.0005104435589717175,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",929149,0.00010421325439100949,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 5}",8177,0.033198100741536,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 1}",5711,0.036151597037604004,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9895,0.031052151362979254,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5426,0.03642040931113923,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",3301,0.04536908261176918,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",29470,0.025621828269504043,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",115649,0.010914987621686753,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",374112,0.0035098693702150094,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",686551,0.0009056937555539466,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1005834,0.0002265178266237256,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1306511,5.6622164244185514e-05,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1027,0.05931981857129795,1048576
+region__agriculture__nile_delta,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",798,0.16302109480599059,1048576
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 1e-05}",882256,6.55574489257814e-07,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",780296,2.624878331141187e-06,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",678336,1.0494458709201452e-05,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",576376,4.191137932894644e-05,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",525400,8.39050510303572e-05,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",423440,0.00033559932576500623,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",321464,0.0013396738391271508,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 0.1}",219000,0.005373476046401781,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 0.3}",117392,0.019430003564865066,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 1.0}",58704,0.041820228419822594,405769
+region__agriculture__nile_delta,utm_synth_b1.9,zfp,"{""tolerance"": 3.0}",50080,0.05412255369411939,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 1e-05}",775889,5.452777256103608e-06,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",573851,2.153523404844999e-05,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",454907,8.021893466756456e-05,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",349287,0.0002988477644348714,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",251077,0.001113591917566531,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",155774,0.004155124457680205,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",69955,0.015346618833304689,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 0.1}",13789,0.03714875867055321,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 0.3}",1839,0.0770480861001108,405769
+region__agriculture__nile_delta,utm_synth_b1.9,sz3,"{""abs_error"": 1.0}",287,0.10315036806900718,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",701306,5.471958237947107e-06,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",405772,0.0001461968246783785,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",270439,0.0008548997899899591,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",162181,0.00372291853242147,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",101177,0.008194226864427124,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",67521,0.013134530899849652,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",40542,0.018243793834324114,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",23006,0.023361878777823353,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",13279,0.029096287265801418,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",8056,0.032983005984970025,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",5308,0.03685399093693286,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",3199,0.04078510291353004,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",2009,0.04400773336855273,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",1155,0.04900164463144418,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",683,0.05308499151532267,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",415,0.05713341192673756,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",234,0.07239070203044555,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 10}",4346,0.03775072037868613,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 25}",11885,0.02905112450841382,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 40}",15615,0.02655305202441502,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 55}",20160,0.024043814478077134,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 68}",27311,0.019163906843859123,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 78}",39176,0.015188135357033585,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 86}",59891,0.011190080037824353,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 92}",101510,0.0072352425428780795,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 96}",137912,0.00499828038814853,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 99}",206261,0.0022403380379994262,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",40800,0.014731955318487873,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",87737,0.008577823461051142,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",131808,0.005371613044662311,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",184375,0.0028933028260548343,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",256318,0.0012063478419601541,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",309714,0.0005874034320013384,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",429096,0.00011329667470498862,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 5}",3624,0.03957972457949869,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""level"": 1}",2694,0.042228321289927796,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",4427,0.037606677673338494,405769
+region__agriculture__nile_delta,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",2550,0.04247927086814656,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",2059,0.048675493391064646,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",19487,0.028871211545150845,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",90482,0.011204441558475326,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",225025,0.002979626929821962,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",349832,0.0007437384971456024,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",467203,0.00018583955554237684,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",578113,4.644131182331616e-05,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",558,0.060221953128697145,405769
+region__agriculture__nile_delta,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",422,0.1383020505850772,405769
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1e-05}",2144240,6.5572832326275e-07,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1882096,2.621666435647094e-06,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1619952,1.0497958904769986e-05,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1357808,4.196472121082915e-05,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1226736,8.402847119281751e-05,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",964568,0.000335786965155102,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",701920,0.0013425932563148884,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.1}",436656,0.005166968754554017,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.3}",228472,0.01529382055958632,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1.0}",145704,0.03442578278967046,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.0}",126456,0.04857359425272761,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1e-05}",1593482,5.774371323460216e-06,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1284140,2.1500789632928235e-05,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",1034699,8.02284271530089e-05,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",756043,0.0002990526560988936,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",500887,0.0011138727666361245,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",254754,0.004114656703375346,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",96534,0.011712332567863094,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.1}",16269,0.03150677079742967,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.3}",1096,0.08304852714137453,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1.0}",407,0.09301423233809375,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1}",1648241,5.7128456696737005e-06,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048190,6.811734559837378e-05,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 3}",698923,0.00039124832948345193,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 5}",419352,0.0017263406015281411,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 8}",262043,0.004101612145943927,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 12}",174610,0.006404405921065616,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 20}",104705,0.008829386763235006,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 35}",59912,0.012496636220610747,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 60}",34938,0.01739071869455742,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 100}",20570,0.022846283532405285,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 150}",13767,0.025966169732320767,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 250}",8169,0.031490407698967895,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 400}",5141,0.03522310440576522,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 700}",2692,0.04107117247924069,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2105,0.04272834987157737,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1043,0.04898882370167394,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 4000}",526,0.05373064941629365,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 10}",9788,0.02913142225834708,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 25}",25516,0.018666132936480236,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 40}",33109,0.016388110809080658,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 55}",44516,0.013856097913308843,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 68}",58928,0.010544813656573374,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 78}",79163,0.008236685652618028,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 86}",106654,0.0062386189493464465,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 92}",171742,0.004804846359338908,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 96}",258310,0.003295926274647208,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 99}",398865,0.0016148879169463621,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 2.0}",81540,0.008028803995346183,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 1.0}",139360,0.005390048759591757,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.5}",246265,0.0035118831881232582,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.25}",353154,0.002027956307386012,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.1}",508053,0.000962580984627728,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.05}",637607,0.0005103291661562407,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.01}",950488,9.688152354326916e-05,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 5}",8247,0.03117988347539375,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 1}",5613,0.03425977436625127,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 15.0}",10003,0.028925774124905785,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5336,0.03457732950294628,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",3276,0.04394542104849161,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",27004,0.024090290295873826,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",101022,0.01009500466427148,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",360479,0.0035649016685927407,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",660957,0.000905210241943649,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",981361,0.00022633313619701805,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1285956,5.653247174452115e-05,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1029,0.05822254402996675,1048576
+region__agriculture__nile_delta,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",798,0.16260184829658772,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 1e-05}",2022240,6.558836386919822e-07,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1760096,2.6231102489004335e-06,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1497952,1.0491655389749864e-05,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1235808,4.194102811189996e-05,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1104720,8.391766370481762e-05,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",842376,0.00033551014417500263,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",578000,0.0013338782698810382,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 0.1}",327288,0.004756979043409994,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 0.3}",174568,0.012631668526975321,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 1.0}",120632,0.025068852698719456,1048576
+region__agriculture__punjab,hpx_synth_b1.9,zfp,"{""tolerance"": 3.0}",102424,0.047923056861413085,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 1e-05}",1464643,5.771140623872505e-06,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1192283,2.1511311186912564e-05,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",915142,8.02549474255795e-05,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",660855,0.00029909937788932204,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",401831,0.0011153365546313957,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",186032,0.004069034679312107,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",49068,0.010353458354869024,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 0.1}",5826,0.026279618756160996,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 0.3}",551,0.04317646693845713,1048576
+region__agriculture__punjab,hpx_synth_b1.9,sz3,"{""abs_error"": 1.0}",407,0.043181984797008036,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",1644658,2.9849997221489663e-06,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048548,3.495944852211545e-05,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",699040,0.00020074937322482316,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",419008,0.0009018026558270723,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",261762,0.002165932146482398,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",174590,0.0037141831083504907,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",104789,0.005361989884357167,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",59846,0.007590343277370028,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",34696,0.01014258855330967,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",20762,0.012886544762041397,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",13843,0.014357708463064731,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",8207,0.01705306438714212,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",5088,0.019038939360533275,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",2589,0.02191210027570256,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2032,0.022721898320052905,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1014,0.025957836460984124,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",538,0.02831342595000602,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 10}",9576,0.016097352548035293,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 25}",26137,0.010706223402695964,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 40}",34590,0.009464444029289951,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 55}",45457,0.008210709476975128,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 68}",62556,0.006087171031538571,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 78}",84278,0.004684730409977636,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 86}",114421,0.0033488714464429943,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 92}",179585,0.0025210276479472253,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 96}",263399,0.0016603768316298185,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 99}",395321,0.000820061868636637,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",87073,0.004532476970657561,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",151875,0.002870213250956661,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",252574,0.0017701400735789425,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",351342,0.001029706029416886,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",501221,0.00048523898296936544,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",623325,0.00026457412036480385,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",926010,5.398174204339494e-05,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 5}",8093,0.017111471007303695,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 1}",5629,0.018547314273596807,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9726,0.016005445743525085,1048576
+region__agriculture__punjab,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5324,0.018744566564359116,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4042,0.022432810437945747,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",34686,0.012213662518687872,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",135519,0.005140003341594819,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",404704,0.001588777437601138,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",719982,0.0004039927473876982,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1036861,0.00010101999700940525,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1336886,2.5236116725129843e-05,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1169,0.02865911406862734,1048576
+region__agriculture__punjab,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",739,0.06876422097643477,1048576
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 1e-05}",830624,6.552611008084887e-07,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",728672,2.6217212831121705e-06,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",626712,1.046289335412237e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",524752,4.188476050502208e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",473768,8.392092528449477e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",371808,0.00033534070640084987,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",269728,0.001341401732839938,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 0.1}",166432,0.00530423728692421,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 0.3}",77440,0.015636744431321344,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 1.0}",47576,0.02760878741604417,405769
+region__agriculture__punjab,utm_synth_b1.9,zfp,"{""tolerance"": 3.0}",40952,0.0514191726341267,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 1e-05}",676408,5.453628035288184e-06,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",511295,2.1549739508740417e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",400363,8.033416175201836e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",300851,0.0002992998452627988,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",202672,0.001114168812134336,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",108739,0.004158879964172884,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",37664,0.014027095853280575,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 0.1}",3255,0.02845515812176064,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 0.3}",477,0.06029489114723314,405769
+region__agriculture__punjab,utm_synth_b1.9,sz3,"{""abs_error"": 1.0}",249,0.05052171184738372,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",701640,2.797160965995972e-06,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",405597,7.49255736740414e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",270484,0.00043853690397155896,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",162294,0.0019057791729015204,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",101445,0.004197124183794235,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",67435,0.0067358949227063454,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",40349,0.009401391101583282,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",22824,0.012016124407863522,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",13306,0.014891756584473262,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",8119,0.016897239830230112,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",5078,0.019111146588331136,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",3192,0.020959405077742715,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",2042,0.022540520640126852,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",1166,0.025110585919194805,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",727,0.027081517309749652,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",413,0.029427617998103422,405769
+region__agriculture__punjab,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",234,0.036345833076718896,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 10}",4344,0.019475394402936653,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 25}",11764,0.014997793543000876,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 40}",15408,0.013731013589381492,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 55}",19959,0.01240457425472819,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 68}",27022,0.00988900479395156,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 78}",39223,0.007776086326447336,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 86}",58976,0.005791863383875566,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 92}",100703,0.0037350137564977183,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 96}",137154,0.0025835183575985397,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 99}",205354,0.001161495884234921,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",40553,0.007570076627401465,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",87178,0.004433538016363039,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",131180,0.0027741851109475413,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",183327,0.0014993654266950195,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",254969,0.0006278434706933656,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",308095,0.0003044257984765766,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",427773,5.866647119334942e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 5}",3609,0.02039020403125676,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""level"": 1}",2613,0.021836315025457832,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",4444,0.01935301586090434,405769
+region__agriculture__punjab,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",2554,0.0219030954792586,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",2596,0.024101608093602386,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",22631,0.013846291708994434,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",99548,0.005093567940479709,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",237904,0.0013289161525120669,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",361372,0.00033150519026832654,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",477960,8.30307610819888e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",604449,2.0762518944363883e-05,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",655,0.029695882710016136,405769
+region__agriculture__punjab,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",393,0.06137288150233278,405769
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1e-05}",2002960,6.566846849228953e-07,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1740816,2.6239696699690775e-06,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1478672,1.0503473894562885e-05,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1216528,4.1963427909959024e-05,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1085456,8.390943942094611e-05,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",823144,0.00033580870206250735,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",558856,0.001338425399431215,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.1}",309960,0.004597302471240493,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.3}",170944,0.011982665588403286,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1.0}",120288,0.02449217148334849,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.0}",101728,0.04741555079466464,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1e-05}",1421093,5.774619721345882e-06,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1139180,2.151552985182151e-05,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",876180,8.014424140178102e-05,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",643827,0.00029917101492836474,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",368993,0.0011120538988965232,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",164852,0.003947005592414325,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",44377,0.01001789091708964,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.1}",5269,0.025889702905705452,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.3}",517,0.04273537326777515,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1.0}",409,0.04249755849972663,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1}",1646303,2.8862158696071755e-06,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048368,3.399179382084941e-05,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 3}",698887,0.00019568200858360412,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 5}",419440,0.0008605473254924908,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 8}",261944,0.002055682618614536,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 12}",174629,0.0031954483309334127,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 20}",104766,0.004525564236976381,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 35}",59914,0.006431311949364662,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 60}",34775,0.009069655818829602,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 100}",20781,0.011792128458923546,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 150}",13865,0.013363061608072326,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 250}",8314,0.01604215953797201,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 400}",5222,0.01807715325097062,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 700}",2679,0.0210146575821453,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2110,0.021804791299402947,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1015,0.02536320051338867,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 4000}",529,0.027735333797999716,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 10}",9811,0.014995694972117347,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 25}",25634,0.009665449191742484,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 40}",33417,0.008464101408090409,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 55}",44788,0.00713966257726304,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 68}",59062,0.005430553596134605,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 78}",80093,0.004179974037808433,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 86}",106626,0.003147144001416789,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 92}",170534,0.002426359063841104,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 96}",255740,0.001661113428315473,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 99}",394131,0.0008206782648031064,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 2.0}",82388,0.004065736212332202,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 1.0}",139827,0.002724106660040144,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.5}",243981,0.0017676547731901126,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.25}",348828,0.0010271753520153483,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.1}",502990,0.0004938643909666485,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.05}",632628,0.0002632757622140304,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.01}",945529,4.983176658969436e-05,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 5}",8269,0.0160652354283282,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 1}",5702,0.017609674383132136,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9923,0.014940148351979477,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5428,0.017778242588640577,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4003,0.021741345497292144,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",31958,0.01151246273047575,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",115983,0.004758378300418621,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",390987,0.0015995044508236524,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",706096,0.00040394025292496443,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1017405,0.00010098637144534035,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1307090,2.5245216395467036e-05,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1169,0.028112442112835746,1048576
+region__agriculture__punjab,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",739,0.06854196822597858,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 1e-05}",2119448,6.560261159100093e-07,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1857304,2.624618183842868e-06,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1595160,1.0505221245374248e-05,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1333016,4.202152816137919e-05,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1201936,8.396110217994368e-05,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",939728,0.00033594291596500685,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",676552,0.001342653668013444,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 0.1}",414048,0.005119609180797387,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 0.3}",216168,0.015229053910503521,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 1.0}",136000,0.03253744322139422,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,zfp,"{""tolerance"": 3.0}",117632,0.04670399508935059,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 1e-05}",1587265,5.769690051417953e-06,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1283230,2.1535853662659614e-05,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",1028881,8.014978396556097e-05,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",759120,0.0002989867093705784,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",489073,0.0011141917188278825,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",255700,0.004153120304732259,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",91148,0.011765320223176702,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 0.1}",14293,0.030895310727843957,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 0.3}",776,0.07395150428319092,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,sz3,"{""abs_error"": 1.0}",407,0.07529499724134804,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",1648013,4.865157930935463e-06,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048102,5.801118195460767e-05,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",698887,0.00033332162110806356,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",419183,0.0014934168700020134,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",261822,0.00357758828343799,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",174639,0.006128495858267283,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",104843,0.008858077491081253,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",59657,0.012556179465884472,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",34941,0.016633354614746892,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",20912,0.0211673192239161,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",13842,0.023675168604085035,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",8325,0.028028717319456147,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",5129,0.03135030459479108,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",2504,0.036374467999503474,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2043,0.03750384382959432,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1022,0.04265936057530706,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",532,0.04651758188664602,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 10}",9668,0.026474807222926704,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 25}",26404,0.017552826755449797,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 40}",34884,0.015517932698963911,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 55}",45625,0.013512177789579803,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 68}",62852,0.010041675637771549,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 78}",84737,0.007743628697788904,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 86}",115727,0.0055141004452677325,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 92}",181100,0.004139458779921414,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 96}",264707,0.002734177917080637,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 99}",396958,0.0013526500373133236,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",87345,0.007499362748340164,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",153704,0.0047399199787559855,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",253647,0.0029156020363084517,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",352865,0.0016979930999948567,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",503521,0.0008013485000641322,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",626654,0.0004348540539661622,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",929568,8.837781153880835e-05,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 5}",8140,0.028199525102390516,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 1}",5573,0.030636618077487878,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9867,0.026287831251304163,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5303,0.03099648764101169,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4234,0.03666783253830442,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",36124,0.019829169440028178,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",140468,0.00834389683602818,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",412180,0.002562763749120039,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",724912,0.0006492222053287978,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1044790,0.00016224542260037317,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1341607,4.055698181184901e-05,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1195,0.047016032618644774,1048576
+region__agriculture__western_australia,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",763,0.11405506847559756,1048576
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 1e-05}",867920,6.546650315597921e-07,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",765960,2.6178779701488295e-06,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",664000,1.0478102372263261e-05,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",562048,4.187550635559852e-05,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",511064,8.385270240100645e-05,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",409104,0.0003354032024238309,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",307112,0.001340759091564788,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 0.1}",204456,0.005367962825129609,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 0.3}",104688,0.018629087275354145,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 1.0}",54104,0.03754414956280417,405769
+region__agriculture__western_australia,utm_synth_b1.9,zfp,"{""tolerance"": 3.0}",46360,0.05022177017743741,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 1e-05}",745369,5.453481209742693e-06,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",556782,2.1532118182893078e-05,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",440995,8.022195346015125e-05,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",338153,0.00029910979975571444,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",239223,0.001114435630730467,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",144013,0.004154921047935049,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",60727,0.015143149898191917,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 0.1}",9967,0.034839862586172825,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 0.3}",613,0.08164465153043036,405769
+region__agriculture__western_australia,utm_synth_b1.9,sz3,"{""abs_error"": 1.0}",249,0.0895885848334363,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",701947,4.589559519189528e-06,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",405439,0.00012424202271058381,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",270505,0.0007230339937377954,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",162114,0.003143169575811989,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",101278,0.006928271835469729,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",67470,0.011116269868425033,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",40418,0.01548324385984054,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",22974,0.019766657533652126,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",13294,0.024571492982771632,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",8061,0.027875745550793456,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",5210,0.03131576388415862,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",3203,0.03451945358911081,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",2013,0.03723608198305987,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",1161,0.041472280435267544,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",724,0.044639770994524056,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",418,0.04831368342390462,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",234,0.0610306925821653,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 10}",4414,0.0318684495668204,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 25}",12055,0.024543809851042712,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 40}",15873,0.022442656210012065,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 55}",20261,0.020311078611827692,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 68}",27325,0.016183673250948258,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 78}",39348,0.01281930156542533,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 86}",60185,0.009475599239660718,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 92}",101768,0.006097102287487038,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 96}",138228,0.004214149776838654,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 99}",206536,0.0018948264250976535,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",40812,0.012490936638498942,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",88026,0.00724880281879506,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",132206,0.004529101718457225,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",184587,0.0024409567303159438,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",256771,0.001016574608240636,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",309911,0.00049431811109484,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",429294,9.512977267341698e-05,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 5}",3672,0.03356400576289397,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""level"": 1}",2770,0.03564282882860938,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",4536,0.03170714092199872,405769
+region__agriculture__western_australia,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",2629,0.03598806148936168,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",2412,0.04008557284559725,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",21266,0.023270052480075052,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",97412,0.008659091382196282,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",234560,0.0022753821285791233,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",358361,0.000567321604031079,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",475285,0.00014210350350020085,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",599109,3.5488252033632716e-05,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",632,0.049418503365243,405769
+region__agriculture__western_australia,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",388,0.1055374413304243,405769
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1e-05}",2099888,6.560707565236128e-07,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1837744,2.6235329518506224e-06,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1575600,1.04946263252319e-05,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1313456,4.191749022976208e-05,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1182384,8.389662196678139e-05,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",920184,0.00033597411992597096,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",657128,0.0013414223539132907,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.1}",394496,0.005041257615407558,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.3}",208648,0.014445969807947349,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1.0}",135448,0.0313687849183377,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.0}",117320,0.04580807748874513,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1e-05}",1544255,5.773598954013474e-06,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1278270,2.1530528491521798e-05,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",994344,8.021020366229819e-05,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",738792,0.0002989796038055002,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",461784,0.0011147548581153857,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",227512,0.004081039730705468,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",79854,0.01127875708997239,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.1}",12876,0.030085432778235076,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.3}",752,0.07327614085644041,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1.0}",407,0.07437054237122942,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1}",1648965,4.7146245737990365e-06,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048533,5.640027502385707e-05,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 3}",699034,0.00032425599064875505,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 5}",419230,0.0014298425313022864,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 8}",261928,0.0033965416866288184,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 12}",174614,0.005281236579982373,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 20}",104773,0.0074786713575325375,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 35}",59917,0.010605870416015656,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 60}",34702,0.014866883920844618,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 100}",20913,0.01936770648804219,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 150}",13919,0.021927916784462927,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 250}",8390,0.02641743310915031,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 400}",5244,0.029810374306729667,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 700}",2584,0.034941922001367566,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1000}",1802,0.03742170854027574,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1028,0.041487410891379944,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 4000}",533,0.04552659207473751,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 10}",10094,0.024577366678288293,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 25}",26118,0.015796505093661865,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 40}",33906,0.013844050593144393,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 55}",44837,0.011752882064654982,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 68}",59734,0.008907860114716776,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 78}",80489,0.006899288603143593,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 86}",108260,0.005173780727407381,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 92}",171833,0.003988288248819797,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 96}",257113,0.00272690516361306,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 99}",396125,0.0013505290119473054,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 2.0}",82909,0.006710365459277508,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 1.0}",141688,0.004482318530536991,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.5}",245550,0.002902134885138228,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.25}",350860,0.0016890412692387089,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.1}",505467,0.0008094383850399945,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.05}",635772,0.00043022812742316615,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.01}",948476,8.146584770717208e-05,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 5}",8350,0.026467884227664544,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 1}",5709,0.029062611031173136,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 15.0}",10234,0.0244544535212438,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5447,0.029326489029161122,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4181,0.035521242713237,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",33196,0.018694839700797956,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",118462,0.007734884926636534,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",398359,0.0025749971330586863,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",712266,0.0006492002684025254,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1021873,0.00016223470389161365,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1313695,4.0560674828565835e-05,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1195,0.046111583869847615,1048576
+region__agriculture__western_australia,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",763,0.11369290210105559,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 1e-05}",2108016,6.568267872102098e-07,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1845872,2.621473015939016e-06,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1583728,1.0499297245686883e-05,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1321576,4.196088887880904e-05,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1190504,8.383796075493735e-05,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",928272,0.00033573679084682076,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",664888,0.0013414840138364994,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 0.1}",404464,0.005060788633989136,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 0.3}",213312,0.015036971763383256,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 1.0}",134632,0.032109480807619495,1048576
+region__urban__mexico_city,hpx_synth_b1.9,zfp,"{""tolerance"": 3.0}",116392,0.04631186468959712,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 1e-05}",1577967,5.773003271126373e-06,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1274718,2.1516862111290873e-05,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",1022879,8.023744063405536e-05,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",751405,0.00029892613138028,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",486683,0.0011143894839450738,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",249827,0.00415118712924858,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",88617,0.01165223729449128,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 0.1}",13556,0.030625781364949672,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 0.3}",759,0.07374431494496603,1048576
+region__urban__mexico_city,hpx_synth_b1.9,sz3,"{""abs_error"": 1.0}",407,0.07578934842725425,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",1639110,4.7758137179594365e-06,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048245,5.4198118546414335e-05,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",698858,0.00031154012926638055,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",419104,0.0014008722477532429,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",261863,0.003354673127448651,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",174493,0.005849303818866538,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",104671,0.008493277611834483,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",59903,0.012132119565071103,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",34795,0.016301125904159885,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",20661,0.02068838778982362,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",13930,0.02283693877028146,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",8077,0.02726411056178452,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",5036,0.03058613447330379,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",2527,0.035272422554787006,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2066,0.036449862584452715,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1013,0.04181074876662491,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",524,0.045607658328317334,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 10}",9690,0.02556649323842967,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 25}",26429,0.017219927886591962,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 40}",35055,0.015102659232386392,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 55}",46218,0.013011206927371791,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 68}",62760,0.009583754759724563,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 78}",84531,0.00734853345337411,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 86}",113808,0.005196022386411149,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 92}",178108,0.003984775930224944,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 96}",261652,0.0026240072460141962,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 99}",392366,0.0012810665308763773,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",87082,0.007124406302677578,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",148063,0.004463330962205154,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",250714,0.0027990717687613807,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",349366,0.0016126473390625903,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",496374,0.0007533442691665445,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",615500,0.0004140884459170735,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",916691,8.648155303942696e-05,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 5}",8197,0.027238055005450252,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 1}",5752,0.029671445534175025,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9856,0.025410954762229706,1048576
+region__urban__mexico_city,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5461,0.02995835275298831,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4221,0.03579881368600379,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",36797,0.01934702888482062,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",138154,0.008059711303114756,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",400864,0.002472722554235738,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",713233,0.0006342905845275923,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1031137,0.00015854644533250072,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1330175,3.9654820251980294e-05,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1201,0.04576814101611645,1048576
+region__urban__mexico_city,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",826,0.110347601669427,1048576
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 1e-05}",865856,6.552987604459934e-07,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",763896,2.623063193092389e-06,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",661936,1.0489376370793966e-05,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",559976,4.195520005059433e-05,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",509000,8.382186412705714e-05,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",407040,0.0003349563059294977,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",305040,0.0013413278488172697,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 0.1}",202352,0.0053724762876857434,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 0.3}",102880,0.018516704721664768,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 1.0}",53528,0.03684899787425237,405769
+region__urban__mexico_city,utm_synth_b1.9,zfp,"{""tolerance"": 3.0}",45896,0.04982550129921216,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 1e-05}",744241,5.457654038029598e-06,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",553578,2.152235774171817e-05,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",439981,8.014651252858956e-05,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",335385,0.00029878534925839345,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",237023,0.0011148567141759421,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",142790,0.004159289839435529,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",59342,0.015122721148221168,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 0.1}",9326,0.034605437266058296,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 0.3}",620,0.08092687505945749,405769
+region__urban__mexico_city,utm_synth_b1.9,sz3,"{""abs_error"": 1.0}",249,0.0898158964320387,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",700065,4.56437644683884e-06,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",405762,0.00012078183004062938,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",270091,0.0007074263789324677,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",162188,0.003061556342502397,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",101225,0.006778108476137637,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",67603,0.010838004128612145,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",40489,0.015075340034565454,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",23091,0.019254390452122065,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",13541,0.023828161544011895,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",7971,0.027286085050627122,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",5285,0.03044736930383243,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",3140,0.03384167970934901,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",2031,0.03629618779895065,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",1142,0.04055686327289137,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",653,0.044066574449952635,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",409,0.0472815002577001,405769
+region__urban__mexico_city,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",234,0.05888304177208549,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 10}",4239,0.031271875947930794,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 25}",11491,0.024212834774625838,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 40}",15230,0.022133600444692366,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 55}",19690,0.020010009315133883,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 68}",26762,0.01597777918669061,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 78}",38944,0.012582793202587343,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 86}",58696,0.009345116759568837,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 92}",100329,0.006045221196955033,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 96}",136892,0.004165746945718476,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 99}",204958,0.001872603900714509,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",40563,0.012205756144128175,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",86425,0.007184078977747297,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",130859,0.004480852851848412,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",182892,0.0024200330988195474,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",254783,0.0010118662653176584,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",307970,0.0004922095470329396,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",427542,9.493890059272604e-05,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 5}",3545,0.03287563463152814,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""level"": 1}",2609,0.03499313808016905,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",4285,0.031185467862700496,405769
+region__urban__mexico_city,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",2530,0.035251200642952674,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",2479,0.039025518940367085,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",21484,0.02256744885534609,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",97014,0.008394415067886914,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",233470,0.0022038720864313967,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",359678,0.0005500403649691616,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",486602,0.00013734218897035758,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",592123,3.435317302352475e-05,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",628,0.048097081806148786,405769
+region__urban__mexico_city,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",413,0.10206102456509476,405769
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1e-05}",2099128,6.560437609011242e-07,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1836984,2.623465287047957e-06,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1574840,1.0487415375266804e-05,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1312696,4.1963561991831684e-05,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1181616,8.395407199143479e-05,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",919440,0.0003360087077358877,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",656472,0.0013425954697695074,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.1}",393328,0.005010513162862018,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.3}",206080,0.014326215023961562,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1.0}",134032,0.03081328014888718,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.0}",116024,0.04537786154135185,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1e-05}",1541136,5.773650904662405e-06,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1239076,2.1522403903077588e-05,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",971436,8.020073409851937e-05,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",715524,0.0002990781585324133,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",458419,0.0011138297715484005,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",225772,0.004088436960922012,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",79897,0.013225508776331567,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.1}",12057,0.029763371843028057,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.3}",770,0.07341344399133294,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1.0}",407,0.07506878428744168,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1}",1642333,4.710545409327433e-06,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048574,5.439568838026259e-05,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 3}",698819,0.0003128144561966315,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 5}",419398,0.0013859281048409747,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 8}",261834,0.0033139190434891366,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 12}",174624,0.005192356674357191,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 20}",104820,0.007205164107437138,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 35}",59871,0.010285559379878828,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 60}",34935,0.014311628605306154,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 100}",20772,0.01865631479336349,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 150}",13803,0.021043633765914366,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 250}",8044,0.025692558882461074,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 400}",5072,0.029130904051095623,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 700}",2539,0.03389628251576428,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2081,0.03512896948529531,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1014,0.04069574208252749,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 4000}",528,0.04466112443805413,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 10}",9868,0.023739860723116027,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 25}",25326,0.015556541846712957,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 40}",33505,0.013512367961543105,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 55}",45036,0.011356653735458454,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 68}",58900,0.008574688688803398,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 78}",78950,0.0066924723998521085,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 86}",105305,0.005068693171813215,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 92}",170172,0.003911566461097443,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 96}",256216,0.0026663775470230165,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 99}",393525,0.0012978853069823893,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 2.0}",81266,0.006519024260443532,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 1.0}",136366,0.004382053966416056,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.5}",244438,0.002844380376776554,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.25}",349241,0.001628870612881633,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.1}",501030,0.0007788470741113047,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.05}",629019,0.00042034961364196123,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.01}",942237,8.061761555033946e-05,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 5}",8267,0.0255089430570304,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 1}",5754,0.02803059009745216,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 15.0}",10001,0.023607567245413418,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5504,0.028290299325602244,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4238,0.03458214356296484,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",33160,0.01824055190438475,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",117688,0.007515169799649634,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",387778,0.0025122972965513943,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",692459,0.0006344288100866526,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1016325,0.0001585997897290245,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1315051,3.960135992891223e-05,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1204,0.044804195844593504,1048576
+region__urban__mexico_city,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",826,0.10996377665849383,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 1e-05}",2113992,6.5639572756547e-07,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1851848,2.6241180975124984e-06,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1589704,1.0485960038563836e-05,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1327560,4.196704021203379e-05,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1196488,8.395145201174857e-05,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",934256,0.0003362648495833109,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",670992,0.0013421004602139398,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 0.1}",409568,0.005089615581698931,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 0.3}",213320,0.015301517729614722,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 1.0}",130984,0.03312300017544723,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,zfp,"{""tolerance"": 3.0}",112464,0.04787050424846969,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 1e-05}",1592014,5.7733097731523304e-06,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1302092,2.1514943975383966e-05,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",1032501,8.02353567035013e-05,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",761793,0.000299139624633264,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",491990,0.0011140262195652058,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",257401,0.004154372634703979,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",94101,0.01179914247431842,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 0.1}",15229,0.031131911627575143,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 0.3}",1674,0.061322618358958976,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,sz3,"{""abs_error"": 1.0}",407,0.07928747022295109,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",1639948,5.03830243181162e-06,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048490,5.726676814748889e-05,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",699062,0.0003301079859851751,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",419441,0.0014851812338884803,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",261950,0.0035626241357689793,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",174741,0.00619364979728629,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",104872,0.00899032551379809,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",59851,0.012812202240387868,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",34809,0.01722669843588238,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",20674,0.02194140332265388,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",13931,0.024252446183333186,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",8159,0.028828949771201116,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",5084,0.032304289331099065,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",2638,0.03707493945839545,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2072,0.0384305576388668,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",956,0.044358564547729414,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",522,0.04825354391382093,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 10}",9725,0.027013561681821473,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 25}",26366,0.01817066652197026,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 40}",35021,0.015984555916683834,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 55}",46020,0.013781552028143552,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 68}",62870,0.010179823271017246,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 78}",84637,0.007823494791134093,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 86}",114136,0.005513689942805773,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 92}",178705,0.004213143269969162,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 96}",261947,0.0027820626458351172,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 99}",393072,0.0013551002978333165,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",87385,0.007571404742556677,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",149684,0.004760471868268885,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",251004,0.002966345013497034,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",349796,0.0017077389881085057,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",497182,0.0007965013927639289,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",616568,0.000436917458772182,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",917318,9.133313024576e-05,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 5}",8212,0.02875867011834111,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 1}",5777,0.031481285050226966,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9904,0.02688014251626009,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5519,0.031677083551514745,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4609,0.03706658340650553,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",39647,0.019705121444280178,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",147645,0.008206334306106492,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",415183,0.002476788425713203,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",727124,0.0006316561202145648,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1046681,0.00015767596683252238,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1345252,3.9438472186014014e-05,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1292,0.04738474926707261,1048576
+region__urban__sao_paulo,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",662,0.10346799343411801,1048576
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 1e-05}",867952,6.561915953152386e-07,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",765992,2.6210742453784143e-06,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",664032,1.0476096903475218e-05,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",562072,4.195424127446648e-05,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",511096,8.38623833424385e-05,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",409136,0.00033517322341695044,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",307144,0.0013415033989293951,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 0.1}",204504,0.005366975781093996,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 0.3}",104288,0.018786709500720887,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 1.0}",52248,0.038498182627355,405769
+region__urban__sao_paulo,utm_synth_b1.9,zfp,"{""tolerance"": 3.0}",44376,0.052239068048739866,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 1e-05}",753467,5.448184615625411e-06,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",561035,2.1475572129936445e-05,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",444299,8.017227001029692e-05,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",339575,0.00029922203265748303,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",240902,0.001115113067216687,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",146312,0.004151774955870754,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",62287,0.015183734664088483,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 0.1}",10710,0.03533191028669282,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 0.3}",627,0.08352549352989695,405769
+region__urban__sao_paulo,utm_synth_b1.9,sz3,"{""abs_error"": 1.0}",249,0.09170910060529035,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",700801,4.7932266739731415e-06,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",405333,0.00012809097707243693,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",270472,0.0007453345672135458,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",162266,0.0032353649495449575,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",101345,0.007152861385381942,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",67610,0.011457190833983458,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",40373,0.01595527476825169,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",23109,0.020346097178374538,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",13337,0.025314508604399575,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",8107,0.02870018114982454,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",5055,0.03247512488392898,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",3164,0.03562242786283076,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",2033,0.03827881778822544,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",1139,0.042857791361418755,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",673,0.046354447252846286,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",414,0.04979579765022409,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",234,0.06293113280487257,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 10}",4293,0.0330219651042209,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 25}",11696,0.02543738471611951,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 40}",15485,0.023236200640044558,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 55}",20023,0.021026624636799482,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 68}",27070,0.016783885109560345,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 78}",39266,0.013215023521340914,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 86}",59384,0.009820360459351207,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 92}",100992,0.006336711687526167,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 96}",137357,0.004377969315094867,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 99}",206091,0.0019618502575020325,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",40654,0.012886370094053476,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",87437,0.0075092747739836305,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",131435,0.004699291214986585,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",184004,0.0025340033873322526,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",255827,0.0010587722131819087,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",308836,0.0005150426375724799,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",428500,9.910541189593813e-05,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 5}",3593,0.03459897325506926,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""level"": 1}",2621,0.036927753532523866,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",4352,0.03290258316646975,405769
+region__urban__sao_paulo,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",2569,0.037253841934077665,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",2862,0.04014674662820538,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",24778,0.02265569943561596,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",104773,0.008092789578333221,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",242902,0.0020968758599625797,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",367863,0.0005233706905428642,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",509981,0.00013072337563096987,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",606356,3.272246685208386e-05,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",752,0.04951202498983911,405769
+region__urban__sao_paulo,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",389,0.09522056705712915,405769
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1e-05}",2096176,6.555750280724499e-07,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1834032,2.6225283044643478e-06,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1571888,1.0494971172736858e-05,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1309744,4.197060933962495e-05,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1178664,8.399078476288029e-05,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",916464,0.00033578568904052815,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",653392,0.0013438325685969652,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.1}",391160,0.0050224782449067515,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.3}",205528,0.014545978204008651,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1.0}",130344,0.031900658920007555,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.0}",112016,0.0469124947037797,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1e-05}",1549659,5.770342425447402e-06,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1283170,2.1518032840552492e-05,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",1015884,8.024280465346426e-05,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",759999,0.0002992722783504362,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",463972,0.001113993498723376,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",229655,0.004081350152368592,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",81135,0.011306606369292024,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.1}",13389,0.030296260566422942,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.3}",2572,0.0809698876951685,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1.0}",407,0.07838923890720277,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1}",1637368,4.997542922803508e-06,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048330,5.60655024183216e-05,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 3}",698947,0.00032274477197046127,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 5}",419285,0.0014321509736228524,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 8}",261796,0.0034304841130533004,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 12}",174770,0.0053064846471761965,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 20}",104849,0.007596196305975535,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 35}",59877,0.010881213008317774,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 60}",34779,0.015376363037038364,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 100}",20787,0.020008076604071806,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 150}",13914,0.022493699065606835,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 250}",8069,0.02737395731144651,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 400}",5085,0.030752162912343985,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 700}",2543,0.0359990152138453,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2092,0.037135241417207164,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1015,0.042917542249410065,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 4000}",540,0.04728681466449778,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 10}",9869,0.025276888357061374,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 25}",25185,0.016581092089518867,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 40}",33394,0.014340903749502816,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 55}",45023,0.012044923304387669,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 68}",58871,0.009131042440800607,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 78}",79394,0.007047429932778712,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 86}",105966,0.005284191251868481,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 92}",168586,0.004090983331971199,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 96}",253197,0.0027892988097511615,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 99}",389723,0.0013720445543052113,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 2.0}",81654,0.006867119913383203,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 1.0}",137299,0.004571066783063232,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.5}",241719,0.0029672684288789297,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.25}",345239,0.0017185915818287542,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.1}",497518,0.0008265860199538682,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.05}",625596,0.00044673514914426055,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.01}",938667,8.560538763757614e-05,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 5}",8277,0.02711036212586303,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 1}",5792,0.029874396012037646,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 15.0}",10007,0.025131724373923227,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5471,0.03022832748590826,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4603,0.03586440989678641,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",35352,0.018597527714582417,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",125529,0.00762866621908321,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",404436,0.002501630439333346,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",719827,0.0006309325447719973,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1025859,0.00015774855867538672,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1322286,3.946915919749828e-05,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1286,0.04642782721943934,1048576
+region__urban__sao_paulo,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",665,0.10302954708133509,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 1e-05}",1496848,6.565836781453231e-07,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1234696,2.6231542322482765e-06,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",972480,1.0499023726829965e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",709200,4.1907124873454944e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",576656,8.284116083054108e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",334280,0.0002861211174011815,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",196232,0.0007416593342140513,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 0.1}",148888,0.0015153689444529343,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 0.3}",116096,0.0021599208553734063,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 1.0}",51344,0.014918736294860882,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,zfp,"{""tolerance"": 3.0}",8208,0.014918736294860882,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 1e-05}",857272,5.776320419386691e-06,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",603199,2.150666042482223e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",343102,8.025136038410834e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",149549,0.00028319485313483146,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",33540,0.0006906353177621341,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",1750,0.0023000374607313632,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",412,0.00243072673646416,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 0.1}",409,0.00243072673646416,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 0.3}",408,0.00243072673646416,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,sz3,"{""abs_error"": 1.0}",407,0.00243072673646416,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",1648594,1.532656757709421e-07,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048249,1.8321488186274761e-06,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",698810,1.0547165313830486e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",419302,4.707641524752043e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",262074,0.00011187617941199165,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",174653,0.00019638882248198053,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",104800,0.00028633460604409903,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",59861,0.00041092076742601006,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",34731,0.0005546769963464088,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",20539,0.0006991627292480822,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",13626,0.0007732646818075676,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",8382,0.0009064748481714858,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",5019,0.0010241672778011361,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",2655,0.0011752866106426217,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",1857,0.0012620365126300853,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1038,0.0014000609508675796,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",529,0.0015264383002625021,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 10}",9863,0.0008537430276729171,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 25}",26963,0.000574228289339902,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 40}",35896,0.000503300595306675,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 55}",46544,0.0004346487299320985,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 68}",63041,0.00031963003308789435,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 78}",84991,0.0002455296570965598,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 86}",114483,0.00017378973623485605,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 92}",179359,0.00013291256844557856,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 96}",263092,8.773154399647066e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 99}",394052,4.287258182725931e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",87516,0.00023810279398156042,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",150389,0.00014985550675907828,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",252168,9.356738316550682e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",351034,5.39336635330667e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",498636,2.5206951725228824e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",618536,1.3856649832916558e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",920141,2.872265970711037e-06,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 5}",8269,0.0009111626184513781,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 1}",5938,0.0009904726140236443,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9959,0.0008502482815746405,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5659,0.0009974945223041474,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",1414,0.0014906667290717345,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",12669,0.0009284312653310167,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",68226,0.00042791587527888595,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",261388,0.0001635584321488297,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",537865,4.5491790764775304e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",861940,1.1384782006819287e-05,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1172580,2.8431171580472222e-06,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",533,0.002191852334716701,1048576
+region__water__lake_titicaca,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",86,0.005747642514187436,1048576
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 1e-05}",628112,6.56146894403962e-07,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",526160,2.6204643387619715e-06,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",424200,1.0477808098123407e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",322208,4.187343945850472e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",271096,8.397191723903248e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",167792,0.0003288080755130028,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",83392,0.0009098053044184769,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 0.1}",58704,0.0016568839403673606,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 0.3}",45872,0.002144596908335488,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 1.0}",22368,0.014864021893323155,405769
+region__water__lake_titicaca,utm_synth_b1.9,zfp,"{""tolerance"": 3.0}",3216,0.014864021893323155,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 1e-05}",378195,5.77683098098574e-06,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",279885,2.153095710066158e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",180935,8.013771723120505e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",91339,0.00029928894682283843,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",24945,0.0008177937151970995,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",1227,0.002363322851890784,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",253,0.002905543302742333,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 0.1}",249,0.002905543302742333,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 0.3}",248,0.002905543302742333,405769
+region__water__lake_titicaca,utm_synth_b1.9,sz3,"{""abs_error"": 1.0}",249,0.002905543302742333,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",702033,1.5005127573766563e-07,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",405543,4.0631304685575e-06,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",270488,2.3666480674054277e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",162234,0.00010283494366307158,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",101375,0.0002266043176473252,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",67603,0.00036389148127398294,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",40476,0.0005072798591333618,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",23200,0.0006454337215672926,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",13494,0.000801889062722207,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",8067,0.000913717477342315,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",5339,0.0010201491567686885,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",3216,0.0011287462049962066,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",2001,0.001222869968478932,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",1163,0.0013557621028979397,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",685,0.001471540218500802,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",416,0.001583101701971355,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",234,0.001986164947964402,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 10}",4375,0.0010465144430494538,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 25}",12024,0.0008054479842257491,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 40}",15626,0.0007378478694644333,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 55}",20240,0.0006661789314461053,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 68}",27370,0.000531339674460622,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 78}",39309,0.0004202248285583374,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 86}",60158,0.0003101069217730492,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 92}",101645,0.0002004103056926847,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 96}",138044,0.0001382742417801816,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 99}",206387,6.201356262742297e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",40903,0.00040859955593067194,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",87835,0.00023818934518755763,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",132063,0.0001485200450821264,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",184407,8.024196478492469e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",256147,3.352250879634691e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",309254,1.6330956736300055e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",429185,3.134604507988146e-06,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 5}",3644,0.001098865134632337,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""level"": 1}",2700,0.0011672487579172579,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",4440,0.0010430992784046535,405769
+region__water__lake_titicaca,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",2574,0.0011763513420529543,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",649,0.0016130928839647827,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",6666,0.0010774834933193935,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",47364,0.0005542332226689401,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",159305,0.00017055107658732338,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",284361,4.2851833505386306e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",404745,1.0720308919875958e-05,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",528100,2.672635865658605e-06,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",371,0.0024752491281206128,405769
+region__water__lake_titicaca,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",47,0.004674101893357727,405769
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1e-05}",1479328,6.559344954678393e-07,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1217176,2.6242239031272906e-06,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",954984,1.0494654665758585e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",691920,4.19501501903887e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",559000,8.333153049321003e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",319672,0.0002765830800837212,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",193704,0.0007070294284412873,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.1}",148568,0.001484804429426356,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 0.3}",115784,0.0021387763390775557,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 1.0}",49936,0.014915693436946455,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,zfp,"{""tolerance"": 3.0}",8208,0.014915693436946455,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1e-05}",817500,5.776745597283499e-06,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",567509,2.1524352258792247e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",315664,7.982696272171024e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",131380,0.00027461399754735087,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",29567,0.0006701818673082656,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",1598,0.0022835361203010656,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",412,0.002417741068338185,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.1}",409,0.002417741068338185,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 0.3}",408,0.002417741068338185,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,sz3,"{""abs_error"": 1.0}",407,0.002417741068338185,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1}",1648831,1.511157304127223e-07,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048287,1.8078012051252824e-06,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 3}",698652,1.0399939764862449e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 5}",419226,4.5800365905755885e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 8}",261651,0.00010794080505894037,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 12}",174656,0.00017007085942603303,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 20}",104708,0.0002428105020026152,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 35}",59624,0.0003517734156689086,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 60}",34722,0.0004890768910589711,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 100}",20695,0.0006382141942906438,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 150}",13896,0.000713566136663962,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 250}",8334,0.0008579462036945176,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 400}",5059,0.0009775064342989485,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 700}",2689,0.0011318083479151953,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 1000}",1811,0.001229283423056772,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1043,0.0013645198555012439,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpeg2000_lossy,"{""quality"": 4000}",529,0.0014950907421419015,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 10}",9852,0.0008013546807222543,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 25}",25746,0.000522974371787555,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 40}",33899,0.0004553015434000971,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 55}",45547,0.00038000105632394495,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 68}",59686,0.00028483128488043243,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 78}",79550,0.0002219505261729578,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 86}",106778,0.0001665555210083516,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 92}",169164,0.00012864216251323024,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 96}",254284,8.82418200787893e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 99}",391829,4.3595646428736106e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 2.0}",81977,0.00021589311630934533,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 1.0}",137169,0.00014279528234701543,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.5}",242770,9.384560476343099e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.25}",346799,5.461059396721391e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.1}",500090,2.627897939567021e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.05}",629067,1.4107717481240363e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 0.01}",941735,2.6838377290079346e-06,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 5}",8324,0.000858145415337146,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""level"": 1}",5916,0.000938759637435964,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 15.0}",9978,0.0007969901674729737,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,jpegxl_lossy,"{""distance"": 25.0}",5664,0.0009462589331887528,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",1413,0.0014599196093525513,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",12415,0.0008846829519947156,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",62403,0.0004026114484930255,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",241041,0.00016272346157750553,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",528875,4.550798137748107e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",850391,1.1369788005772678e-05,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1147018,2.8440389169425693e-06,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",533,0.002171109311719597,1048576
+region__water__lake_titicaca,hpx_synth_clough_tocher_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",86,0.005739393713352244,1048576

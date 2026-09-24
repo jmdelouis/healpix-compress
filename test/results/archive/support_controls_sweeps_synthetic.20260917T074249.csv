@@ -1,0 +1,137 @@
+scene,label,codec,config,total_bytes,rmse,n_samples
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 1e-05}",2193936,6.562267880968141e-07,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",1931792,2.626338049384321e-06,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",1669648,1.0489584217398866e-05,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",1407496,4.197397867544438e-05,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",1276432,8.398854525915733e-05,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",1014272,0.00033566858634838793,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",751856,0.0013432180191802106,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 0.1}",486760,0.00529653763387066,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 0.3}",251728,0.01707774189687236,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 1.0}",142904,0.03740920588946153,1048576
+region__agriculture__beauce,hpx_synth_b1.9,zfp,"{""tolerance"": 3.0}",122592,0.051210297328516695,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 1e-05}",1654816,5.778355372886204e-06,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",1339875,2.151812447428333e-05,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",1067499,8.024873017458671e-05,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",819073,0.00029899665351526035,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",570621,0.0011143349455400508,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",310772,0.004152422070244784,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",124062,0.014251718682151651,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 0.1}",22043,0.03365262206682424,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 0.3}",2609,0.066972937595419,1048576
+region__agriculture__beauce,hpx_synth_b1.9,sz3,"{""abs_error"": 1.0}",478,0.0894449890411183,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",1689767,6.081708385023938e-06,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",1048272,8.723193887116105e-05,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",698765,0.0005164173330167247,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",419067,0.002265944024013,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",261815,0.005176370454048333,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",174769,0.007934578954766626,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",104781,0.012652621548880564,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",59841,0.017276389507995944,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",34669,0.021053170476168854,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",20974,0.02665823284801379,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",13919,0.030190056594246138,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",8278,0.03512610961008047,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",5245,0.038788226796516424,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",2616,0.04459953275265867,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",2075,0.046039248997311794,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",1006,0.051780079270292184,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",508,0.05680352288909905,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 10}",8846,0.0342930343391234,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 25}",23929,0.023962534538385365,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 40}",32115,0.021451656056116257,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 55}",41258,0.019082315065217143,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 68}",57740,0.014552016568350229,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 78}",80938,0.01136817224108844,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 86}",112866,0.008230941889235142,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 92}",187616,0.006000021796488,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 96}",271110,0.0040643394747197515,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 99}",408732,0.001946122088399371,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",83823,0.011047732460669724,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",149902,0.006869089689010109,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",259209,0.004348850172738838,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",363791,0.002450867258595584,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",513916,0.0011527117475032516,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",640473,0.0006216633952525601,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",953734,0.0001191987313849743,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 5}",7454,0.03631319992304851,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""level"": 1}",4957,0.03925078344231995,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",8995,0.03410819980161448,1048576
+region__agriculture__beauce,hpx_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",4676,0.039587027097007815,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",4063,0.045072098278225496,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",32745,0.02470503394524107,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",150326,0.010330009922516379,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",438688,0.003157567981982422,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",754022,0.0007889169761757502,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",1055625,0.000197038676638784,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",1406118,4.926813577554095e-05,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",1229,0.057385939696538435,1048576
+region__agriculture__beauce,hpx_synth_b1.9,dwt_zstd,"{""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",811,0.13899811271544463,1048576
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 1e-05}",881656,6.550160528279415e-07,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 3.727593720314938e-05}",779696,2.6162781541692673e-06,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 0.00013894954943731373}",677736,1.0481925208671188e-05,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 0.0005179474679231213}",575776,4.191937824386986e-05,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 0.0019306977288832496}",524800,8.389754034311205e-05,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 0.007196856730011514}",422840,0.000335356277545063,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 0.026826957952797246}",320856,0.0013395386531180017,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 0.1}",218392,0.0053575098054509905,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 0.3}",116696,0.01948868278099707,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 1.0}",57016,0.04250397746812588,405769
+region__agriculture__beauce,utm_synth_b1.9,zfp,"{""tolerance"": 3.0}",48120,0.05484597846891108,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 1e-05}",774806,5.447424071556317e-06,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 3.727593720314938e-05}",573897,2.147519507377533e-05,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 0.00013894954943731373}",455524,8.018684457869383e-05,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 0.0005179474679231213}",351612,0.0002989736808226499,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 0.0019306977288832496}",253112,0.0011142332887037066,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 0.007196856730011514}",157693,0.004157879890957535,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 0.026826957952797246}",71083,0.015371281661215168,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 0.1}",14391,0.03746817354271404,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 0.3}",1289,0.07032328924482191,405769
+region__agriculture__beauce,utm_synth_b1.9,sz3,"{""abs_error"": 1.0}",249,0.09592189433327074,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1}",701893,5.527097425449721e-06,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2}",405488,0.00014924533041502815,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 3}",270504,0.0008696366749963377,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 5}",162137,0.0037885472761450996,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 8}",101023,0.008363392806581063,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 12}",67352,0.0134173125602497,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 20}",40523,0.018638570760214548,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 35}",23056,0.023771765295902685,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 60}",13447,0.029470884779332837,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 100}",8106,0.033546638347459724,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 150}",5417,0.037375793849653456,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 250}",3237,0.04156841960437227,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 400}",2013,0.04494925858831593,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 700}",1135,0.050023384400874275,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 1000}",735,0.053673171022594834,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 2000}",416,0.05833334971714874,405769
+region__agriculture__beauce,utm_synth_b1.9,jpeg2000_lossy,"{""quality"": 4000}",234,0.07232396538267398,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 10}",4378,0.03853017965383234,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 25}",11787,0.029735250759764287,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 40}",15643,0.02712835018210567,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 55}",20015,0.024557605630938614,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 68}",27180,0.019575840421612235,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 78}",39061,0.015558423355438679,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 86}",59571,0.011459800088951201,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 92}",101099,0.007387290526513746,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 96}",137407,0.0051025236085995435,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 99}",205776,0.002289452520788618,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 2.0}",40706,0.015086241261679649,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 1.0}",87536,0.00877046587415833,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.5}",131595,0.005478160302710042,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.25}",183728,0.002954211203938451,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.1}",255696,0.0012369566593695939,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.05}",308646,0.0006025677457425677,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 0.01}",428270,0.00011583493198289064,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 5}",3622,0.040450911842933444,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""level"": 1}",2704,0.04315100030434578,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 15.0}",4430,0.03844129388236509,405769
+region__agriculture__beauce,utm_synth_b1.9,jpegxl_lossy,"{""distance"": 25.0}",2610,0.04357785904551674,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 4, ""wavelet"": ""db4""}",2445,0.048168144231476244,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 6, ""wavelet"": ""db4""}",21924,0.027830575537823185,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 8, ""wavelet"": ""db4""}",98970,0.01032470262281166,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 10, ""wavelet"": ""db4""}",235596,0.0027024745636684976,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 12, ""wavelet"": ""db4""}",358427,0.0006746255821674062,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 14, ""wavelet"": ""db4""}",479615,0.0001688348367010832,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 16, ""wavelet"": ""db4""}",603324,4.2174680174350524e-05,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 3, ""wavelet"": ""db4""}",623,0.05931767126400092,405769
+region__agriculture__beauce,utm_synth_b1.9,dwt_zstd,"{""cropped_to"": [637, 637], ""decoded_shape"": [638, 638], ""levels"": 4, ""quantize_bits"": 2, ""wavelet"": ""db4""}",388,0.12530361021559674,405769
