@@ -179,6 +179,7 @@ def checks(tex: str):
     out += window_radiometry_checks()
     out += resampling_error_checks()
     out += target_scale_checks()
+    out += bicubic_diag_checks()
     out += tile_crop_checks()
     out += appendix_table_checks()
     out += consistency_checks(tex)
@@ -517,6 +518,35 @@ def target_scale_checks():
                  sci(cancel.min()), f"class {cancel.idxmin()}"),
                 (f"compression error cancelling the 15.4% recovery, largest {where}",
                  sci(cancel.max()), f"class {cancel.idxmax()}")]
+    return out
+
+
+def bicubic_diag_checks():
+    """Section V-L: why the bicubic row of Table XIII(c) is marked invalid.
+
+    Revision 8. diag_bicubic.py runs four probe fields through the radial
+    bicubic operator on one region per class and a separable bicubic
+    (scipy, order 3) on the same analytic field. The prose quotes the share
+    of cells on which a constant is not reproduced and the separable
+    kernel's transfer error; both are medians over the diagnosed regions.
+    """
+    p = cfg.RESULTS_DIR / "diag_bicubic.csv"
+    if not p.exists():
+        return [("bicubic diagnostic  [skipped: diag_bicubic.csv absent]", "",
+                 "run diag_bicubic.py")]
+    import pandas as pd
+    d = pd.read_csv(p)
+    where = "[in sections/05l_transfer_cost.tex]"
+    c = d[(d.probe == "constant") & (d.variant == "radial_default")]
+    s = d[(d.probe == "analytic") & (d.variant == "separable_scipy_order3")]
+    out = []
+    if len(c):
+        out.append((f"bicubic: cells failing the constant test, percent (several places)",
+                    f"${100*c.bad_frac_5std.median():.1f}\\%$",
+                    "V-L and the table footnote; |value - 0.3| above float noise"))
+    if len(s):
+        out.append((f"separable bicubic transfer error, percent of std {where}",
+                    f"${100*s.rmse_over_std.median():.1f}\\%$", "median over regions"))
     return out
 
 

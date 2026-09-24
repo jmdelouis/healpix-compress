@@ -46,7 +46,9 @@ C--T & 39 & 1.20 & 0.00 & 10.0 & 1.00 & 0.05 & 0.89 & 1.00 & 1.00 & 1.00 \\
 PSF & 39 & 8.15 & 0.18 & 24.0 & 2.54 & 0.44 & 2.80 & 1.27 & 1.36 & 1.64 \\
 IDW & 38 & 11.48 & 0.86 & 7.0 & 0.74 & 0.03 & 0.92 & 1.20 & 1.31 & 1.60 \\
 nearest & 39 & 10.04 & 0.00 & 0.8 & 0.11 & 0.00 & 1.00 & 1.21 & 1.31 & 1.50 \\
-bicubic & 38 & 392.34 & 2.56 & 11.7 & 0.95 & 0.16 & 1.51 & 1.65 & 1.92 & 2.84 \\
+bicubic$^{\dagger}$ & 38 & (392.34) & 2.56 & 11.7 & 0.95 & 0.16 & 1.51 & 1.65 & 1.92 & 2.84 \\
 \bottomrule
 \end{tabular}
+\par\smallskip
+{\footnotesize $^{\dagger}$Not a valid measurement of bicubic interpolation: the radial nearest-neighbour variant of the Keys kernel used here does not reproduce a constant field on about $1.6\%$ of the cells, and those cells carry almost all of its transfer error (Section~\ref{sec:transfer_cost}).\par}
 \end{table*}

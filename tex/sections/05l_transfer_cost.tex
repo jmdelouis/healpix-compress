@@ -100,8 +100,9 @@ Clough--Tocher tile is mostly the smooth redundancy a codec is built to
 remove.
 
 Block (c) of Table~\ref{tab:transfer} rebuilds the \term{carrier} with five
-kernels from the same native window (bicubic is Keys' cubic
-convolution) and reads each with the same operator, so any difference
+kernels from the same native window (bicubic is a radial
+nearest-neighbour adaptation of Keys' cubic convolution kernel) and reads
+each with the same operator, so any difference
 between rows is the \term{transfer} alone. \emph{Transfer} is the error against
 the analytic field, as a percentage of that field's standard deviation;
 it is the only measure in the table that gives a \term{transfer} no credit for
@@ -123,8 +124,17 @@ reproduce the analytic field, Clough--Tocher reaches $1.20\%$ of its
 standard deviation, against $10.04\%$ for nearest and $11.48\%$ for the
 inverse-distance average, on the 39 regions the window audit of
 Appendix~\ref{app:window_radiometry} admits (38 for the inverse-distance
-average and for bicubic). The signed kernel of Keys rings outside the
-local sample range by design. The $8.15\%$ of the PSF \term{transfer} is no
+average and for bicubic). The bicubic row is kept for completeness and
+is not a valid measurement of bicubic interpolation. A diagnostic on four
+regions, one per class, shows that the radial variant used here fails to
+reproduce a constant field on about $1.6\%$ of the cells, on which it
+returns values scaled by up to three orders of magnitude, and that those
+cells carry almost all of its transfer error; a separable bicubic
+interpolation of the same field on the source raster gives $5.8\%$ of
+the standard deviation, between Clough--Tocher and the two other
+reproducing kernels. The defect belongs to that operator, not to the
+kernel, and the row is marked rather than removed so that the omission
+is explicit. The $8.15\%$ of the PSF \term{transfer} is no
 ranking entry, since its estimand is the latent field and the analytic
 field here is the observation-resolution one. The extra bytes of the
 inverse-distance average buy \term{transfer} error, tenfold.
