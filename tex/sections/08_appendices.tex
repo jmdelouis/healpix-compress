@@ -328,16 +328,17 @@ at the measured noise level and in the noiseless control.
 
 \input{tables/table_resampling_error}
 
-Clough--Tocher's error against the observed field is small, $5.0\%$ to
-$11.0\%$ of a scene's standard deviation (median $1.9\times10^{-3}$ in
-reflectance), and dominated by the noise it faithfully \term{transfers}. The
-noiseless control puts the interpolation itself at $0.8\%$ to $1.5\%$.
-Its error against the \emph{latent} field is an order of magnitude
-larger, $1.7\times10^{-2}$ in median, because the whole instrument blur
-stays in place: $22.1\%$ of the latent standard deviation over forest and
-$73.8\%$ over urban scenes. These are the two denominators. The strict
-reading is the first: Clough--Tocher promised the observed field and
-delivered it to $1.9\times10^{-3}$. The operative reading for a DGGS
+Clough--Tocher's error against the observed field is small, $7.1\%$ to
+$14.8\%$ of a scene's standard deviation by class (median
+$3.0\times10^{-3}$ in reflectance), and largely the noise it faithfully
+\term{transfers}: the noiseless control puts the interpolation itself at
+$3.9\%$ to $10.3\%$. Its error against the \emph{latent} field is
+several times larger, $1.1\times10^{-2}$ in median, because the whole
+instrument blur stays in place: $12.5\%$ of the latent standard
+deviation over forest and $53.8\%$ over urban scenes. These are the two
+denominators. The strict reading is the first: Clough--Tocher promised
+the observed field and delivered it to $3.0\times10^{-3}$. The
+operative reading for a DGGS
 archive is often the second, because a reader who treats the HEALPix
 cube as ``the data'' compares it to the scene and already carries the
 blur.
@@ -348,48 +349,52 @@ reported \term{target} where HEALPix is the smaller representation; the
 inflation columns give the \emph{measured} growth of the product's total
 error, with the orthogonal value $\sqrt{1+\kappa^2}-1$ in parentheses.
 The choice of denominator moves $\kappa$ at the crossing by a factor of
-five at the most expensive class ($0.50$ against $2.28$). In general
+three to five ($0.22$ against $0.70$ over water, $0.30$ against $1.07$
+over agriculture). In general
 $D_{\mathrm{total}}/D_0=\sqrt{1+\kappa^2+2\rho\kappa}$ with $\rho$ the
 normalised inner product of the two errors, and
 Appendix~\ref{app:cross_term} finds $\rho$ neither zero nor of one sign.
 Against the latent scene, HEALPix becomes the smaller representation at
-$\kappa=0.13$ over urban scenes and $\kappa=0.19$ over agriculture (total
-error inflated by a measured $2.5\%$ and $5.1\%$ for a $30\%$ and a
-$12\%$ saving in bytes), at $\kappa=0.50$ over forest, for $16.0\%$
-inflation and a $17\%$ saving, and at $\kappa=0.14$ over water, for
-$3.0\%$ inflation and only a $2\%$ saving; each is about twice the
-orthogonal value ($0.9\%$, $1.8\%$, $11.9\%$, $1.0\%$). Against the own
-estimand the same crossings cost $\kappa=1.54$, $2.28$, $1.59$ and
-$1.22$, measured inflations of $37\%$, $115\%$, $40\%$ and $19\%$
-($84\%$, $149\%$, $88\%$ and $58\%$ under the orthogonal formula, which
-overstates them here): on that yardstick no crossing is cheap. The
-choice between the two readings is a statement about the intended use of
-the archive.
+$\kappa=0.23$ over urban scenes, $0.30$ over agriculture, $0.22$ over
+water and $0.76$ over forest, where the orthogonal formula puts the
+inflation of the total error at $2.6\%$, $4.3\%$, $2.4\%$ and
+$25.5\%$; the measured values, where the cross term of
+Appendix~\ref{app:cross_term} is available, are $6.9\%$, $10.5\%$ and
+$6.4\%$, about twice the orthogonal ones. Against the own estimand the
+same crossings cost $\kappa=1.23$, $1.07$, $0.70$ and $1.57$: three of
+the four lie above one, so on that yardstick the compression error at the
+crossing exceeds the transfer error itself, and no crossing is cheap.
+The choice between the two readings is a statement about the intended
+use of the archive.
 
 \input{tables/table_alpha_budget}
 
-The deconvolving \term{transfer} does not yet support the same accounting. In
-this harness the PSF-aware reconstruction recovers no blur consistently
-at the measured noise level: by class the recovery runs from $-5.9\%$
-over forest to $+6.0\%$ over water (Table~\ref{tab:resampling_error}),
-positive on 16 of the 39 regions; in a noiseless control it is a small
-but systematic $+3.0\%$ to $+6.5\%$, positive on 38 of the 39. The
-companion study reports $15.4\%$ to $19.6\%$, noise-free, under the same
-recovery definition and damping, on a synthetic observation averaged over
-a \SI{10}{m} square detector aperture that the scalar Gaussian inverse
-does not model. Three candidates lie on our side. The noise is the
-largest term, since a deconvolution amplifies it at the frequencies it
-tries to restore; this is why the noiseless control moves from about
-zero to $+5.4\%$ in median. The latent field is the second. A power law
-extrapolated to the level-20 Nyquist places $2.3\%$ (forest) to
-$31.1\%$ (urban) of the latent variance above the \emph{native}
-Nyquist, in a band the fitted response attenuates to a few percent of
-its amplitude, so most of the blur we charge is unrecoverable by any
-damping. This is also why the blur is $22$ to $74\%$ of the latent
-standard deviation here, and why urban scenes recover least. The depth
-of the cell average, the third, we tested and exclude. A residual gap
-remains unattributed, so the super-resolution surcharge at equal
-$\kappa$ cannot be quantified from the present measurements.
+The deconvolving \term{transfer} is measured on the same scenes. Without
+noise, the PSF-aware reconstruction recovers $+13.8\%$ of the blur over
+agriculture, $+15.6\%$ over urban scenes and $+13.6\%$ over water
+(class medians of the per-region fraction,
+Table~\ref{tab:resampling_error}), the range the companion study
+reports, $15.4\%$ to $19.6\%$, under the same recovery definition and
+damping. Over forest the median is $-3.5\%$. The split is not one of
+land cover but of response width. The synthetic scene of each region
+carries the width fitted to that region's imagery, and the fit returns
+narrow responses over the smoothest scenes, down to \SI{7.4}{m} FWHM.
+On the 28 regions whose fitted width is \SI{11}{m} or more, every
+reconstruction recovers, by $8\%$ to $20\%$; on the 11 regions below
+\SI{11}{m}, where the blur is a few $10^{-4}$ and the inversion's own
+error exceeds it, the best recovers $+3\%$ and the rest lose
+(Spearman $\rho=0.87$ between fitted width and recovery). The companion
+fixes the width at the nominal \SI{12.5}{m} on every scene, which is
+why its figure is uniform across classes and ours is not. With the
+measured noise added, recovery is positive on 18 of the 39 regions
+against 30 of the 39 without it, and the class medians fall to between
+$-52.3\%$ over forest and $+3.5\%$ over urban scenes: a deconvolution
+amplifies noise at the frequencies it restores, and the companion's
+headline figure is a noise-free one. Two differences with the companion's
+protocol remain untested here, its \SI{10}{m} square detector aperture,
+which the scalar Gaussian inverse does not model, and its high-resolution
+image textures in place of a power-law field; at the nominal width and
+without noise the two harnesses agree without them.
 
 \section{Is the Compression Error Orthogonal to the Transfer Error?}
 \label{app:cross_term}\label{sec:cross_term}
@@ -450,7 +455,7 @@ Table~\ref{tab:alpha_budget} reports a measured inflation in each cell.
     \item \textbf{The level-19 comparison was made on a cell-averaged carrier; the directly evaluated one agrees.} Appendix~\ref{app:level19_direct} finds the two within $0.2\%$ in floor against the observation, with the widest departure at $1.051$, on 39 regions; including Lake Geneva moves the median ratio by less than $0.001$. The kernel ablation and the resampling-error study, which also re-run a \term{transfer}, rest on the same 39; no measurement read from a stored tile is affected;
     \item \textbf{The loosest targets rest on fewer regions.} The failing pairs are the lowest-contrast scenes: none at the two tightest \term{RMSE targets}, one at $10^{-3}$, three at $3\times10^{-3}$ and eight at $10^{-2}$, with no urban scene among the absent. The $40\%$ and $20\%$ budgets qualify on $0\%$ and $65\%$ of the regions and are withheld;
     \item \textbf{Neither reconstruction reference is the whole story.} The floor of Table~\ref{tab:floors} is an upper bound on what the representation costs, since the \term{read} alone can account for it (Section~\ref{sec:operator}). What stays open is the $3\times10^{-3}$ \term{target}, bracketed for $57\%$ of regions under the interpolating \term{read}. The PSF-aware \term{carrier} is not scored against the observation at all: its estimand is the latent field, so such a score would charge it for the content it was built to restore. A comparison of the two \term{transfers} at equal reconstruction error needs a synthetic scene with a known latent field, degraded by the instrument response, transferred by both, compressed, and scored against that field; it is the first experiment a follow-up should run;
-    \item \textbf{The super-resolution surcharge is measured; our deconvolution control does not reproduce the companion's recovery.} The deconvolved \term{carrier} costs $1.27$ to $2.45$ times the Clough--Tocher one, and the PSF/IDW differential of $3$--$13\%$ suggests that deconvolution alone is unlikely to account for that surcharge; because the two \term{transfers} are not matched in smoothness or interpolation class, the differential does not isolate or bound the deconvolution contribution. In our harness the PSF-aware reconstruction recovers $+3.0\%$ to $+6.5\%$ of the blur without noise and nothing at the measured noise level, against the $15.4\%$ to $19.6\%$ the companion study reports noise-free; the added noise and a latent spectrum extrapolated to the level-20 Nyquist contribute, and a residual gap remains unattributed. The storage price is reportable; the quality it buys is established only by the companion study;
+    \item \textbf{The super-resolution surcharge is measured; the recovery it buys is reproduced only without noise.} The deconvolved \term{carrier} costs $1.27$ to $2.45$ times the Clough--Tocher one, and the PSF/IDW differential of $3$--$13\%$ suggests that deconvolution alone is unlikely to account for that surcharge; because the two \term{transfers} are not matched in smoothness or interpolation class, the differential does not isolate or bound the deconvolution contribution. In our synthetic harness the PSF-aware reconstruction recovers the companion's $15.4\%$ to $19.6\%$ of the blur on the regions whose fitted response width is at or above \SI{11}{m}, loses on the narrower ones, and keeps little of it once noise is added at the level measured on the imagery (Appendix~\ref{app:error_budget}). The companion's square detector aperture and image textures are not modelled here. The storage price is reportable; the quality it buys on real tiles is established only by the companion study;
     \item \textbf{The oracle-best-codec comparison is an envelope, and the crossover is codec-dependent.} Four of the five codecs held fixed on both grids reproduce the regime-dependent pattern; ZFP does not (Section~\ref{sec:same_codec});
     \item \textbf{The byte and type audit covers two regions.} Over 424 points it found no gap between reported and on-disk sizes and no disagreement with an independent decoder; it tests the adapters, which do not vary by region. The image codecs' eight-byte scale-and-offset sidecar is not charged to their sizes, and the DWT baseline charges four bytes for a scale it never writes;
     \item \textbf{The footprint mismatch is constrained, not bounded in the strict sense}: the three controls that address it run on 40, ten and four regions, so they suggest that the mismatch is unlikely to explain the main trend rather than bounding it mathematically, and they do not isolate what it contributes to the crossover at $10^{-2}$. The intersection fractions come from the convex hull of the cell centres, and geodesic areas have not been computed;

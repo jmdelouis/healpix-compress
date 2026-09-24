@@ -110,23 +110,25 @@ The \term{targets} should be read against the error the \term{transfer}
 itself leaves, which is how the companion study sets the acceptable
 reconstruction error on synthetic scenes~\cite{delouis2026resample}.
 Appendix~\ref{app:error_budget} measures that error here on synthetic
-fields built with each region's own spectrum and instrument response.
-For the Clough--Tocher tile, scored against the observed field it
-reproduces, the median error is $1.9\times10^{-3}$. The tightest
-\term{target} is $5\%$ of it, the $3\times10^{-3}$ \term{target} is
-$1.6$ times it and the loosest is $5.2$ times it: the three tightest
-\term{targets} compress well below the resampling error, and the two
-loosest at or above it. For the PSF-aware tile, scored against the
-latent field it estimates, the error is set by the blur it does not
-remove: by class median, $5.7\times10^{-3}$ over forest to
-$7.5\times10^{-2}$ over urban scenes. The companion study reports that
-this \term{transfer} recovers $15.4\%$ to $19.6\%$ of that blur on
-noise-free fields. An orthogonal compression error of $3.0\times10^{-3}$
-(forest) to $4.0\times10^{-2}$ (urban) would cancel the smaller of those
-recoveries, so on the PSF-aware tile only the \term{targets} below
-$3\times10^{-3}$ preserve, in every class, what the \term{transfer}
-restores. Appendix~\ref{app:error_budget} carries the same accounting to
-the crossings of Section~\ref{sec:results}.
+fields built with each region's own spectrum, instrument response and
+noise level. For the Clough--Tocher tile, scored against the observed
+field it reproduces, the median error is $3.0\times10^{-3}$. The
+tightest \term{target} is $3\%$ of it, the $3\times10^{-3}$
+\term{target} is $1.0$ times it and the loosest is $3.4$ times it: the
+three tightest \term{targets} compress well below the resampling error,
+the fourth at its level and the loosest above it. For the PSF-aware
+tile, scored against the latent field it estimates, the error is set by
+the blur it does not remove: by class median, $2.8\times10^{-3}$ over
+forest to $4.0\times10^{-2}$ over urban scenes. The companion study
+reports that this \term{transfer} recovers $15.4\%$ to $19.6\%$ of that
+blur on noise-free fields, and Appendix~\ref{app:error_budget} finds the
+same range here at the nominal response width. An orthogonal
+compression error of $1.5\times10^{-3}$ (forest) to $2.2\times10^{-2}$
+(urban) would cancel the smaller of those recoveries, so on the
+PSF-aware tile only the \term{targets} up to $10^{-3}$ preserve, in
+every class, what the \term{transfer} restores.
+Appendix~\ref{app:error_budget} carries the same accounting to the
+crossings of Section~\ref{sec:results}.
 
 \subsection{Operational UTM Storage}
 \label{sec:overhead}

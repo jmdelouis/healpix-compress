@@ -131,8 +131,8 @@ reproduce a constant field on about $1.6\%$ of the cells, on which it
 returns values scaled by up to three orders of magnitude, and that those
 cells carry almost all of its transfer error; a separable bicubic
 interpolation of the same field on the source raster gives $5.8\%$ of
-the standard deviation, between Clough--Tocher and the two other
-reproducing kernels. The defect belongs to that operator, not to the
+the standard deviation with no such tail. The defect belongs to that
+operator, not to the
 kernel, and the row is marked rather than removed so that the omission
 is explicit. The $8.15\%$ of the PSF \term{transfer} is no
 ranking entry, since its estimand is the latent field and the analytic
@@ -146,10 +146,12 @@ reconstruction recovers $15.4\%$ to $19.6\%$ of the imposed blur error.
 On real reduced-resolution Sentinel-2 imagery it has the smallest RMSE
 in all 40 regions, improving on the best of nearest, bilinear, bicubic
 and Richardson--Lucy by $11.0\%$ to $17.9\%$, with the restored power at
-low and intermediate frequencies~\cite{delouis2026resample}. Whether
-the particular tiles whose bytes are counted here realise it is not
-established, and our own harness does not reproduce the magnitude of
-the recovery (Appendix~\ref{app:limitations}). With this reservation,
+low and intermediate frequencies~\cite{delouis2026resample}. Our own
+synthetic harness reproduces that recovery at the nominal response width
+without noise, and loses most of it at the noise level measured on the
+imagery (Appendix~\ref{app:error_budget}); whether the particular tiles
+whose bytes are counted here realise it is not established. With this
+reservation,
 the two-fold surcharge has two meanings. On the deconvolved \term{carrier} it
 is the price of small-scale content placed there by a validated method.
 On the inverse-distance \term{carrier} it is the price of content ten times

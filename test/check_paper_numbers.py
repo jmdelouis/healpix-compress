@@ -411,11 +411,15 @@ def appendix_table_checks():
         out += [
             (f"alpha budget, {cls}: latent kappa {where}", latent_k,
              "crossover kappa against the latent scene"),
-            (f"alpha budget, {cls}: latent inflation {where}",
-             f"{latent_i}\\%", "measured, not orthogonal"),
             (f"alpha budget, {cls}: own-estimand kappa {where}", own_k,
              "crossover kappa against the own estimand"),
         ]
+        # The measured inflation needs the cross term of cross_term.py; a
+        # class the table leaves as "---" has none and the prose quotes only
+        # the orthogonal value there.
+        if latent_i not in ("---", ""):
+            out.append((f"alpha budget, {cls}: latent inflation {where}",
+                        f"{latent_i}\\%", "measured, not orthogonal"))
         del own_i
 
     # Table XXV: the psf recovery columns, whose class range the prose quotes.
@@ -429,6 +433,59 @@ def appendix_table_checks():
             (f"psf recovery, best class {where}",
              f"${meas[-1]:+.1f}\\%$", "measured noise"),
         ]
+        ctrl = [float(n.replace("+", "")) for _c, _m, n in rec if n not in ("---", "")]
+        if ctrl:
+            ctrl.sort()
+            out += [
+                (f"psf recovery, noiseless, worst class {where}",
+                 f"${ctrl[0]:+.1f}\\%$".replace("+-", "-"), "noiseless control"),
+                (f"psf recovery, noiseless, best class {where}",
+                 f"${ctrl[-1]:+.1f}\\%$", "noiseless control"),
+            ]
+    out += psf_recovery_checks()
+    return out
+
+
+def psf_recovery_checks():
+    """Appendix D: the recovery per region against the fitted response width.
+
+    Revision 8. With the harness corrected (field blurred at the right sigma,
+    inverse handed the operator scale s = 2 sigma), the noiseless recovery
+    splits cleanly on the region's fitted FWHM: at or above 11 m every region
+    recovers, below it the blur is a few 1e-4 and the inversion's own error
+    exceeds it. The prose quotes that split, the counts of regions recovering
+    with and without noise, and the rank correlation.
+    """
+    import pandas as pd
+    q = cfg.RESULTS_DIR / "resampling_error_noise0.csv"
+    m = cfg.RESULTS_DIR / "resampling_error.csv"
+    if not q.exists() or not m.exists():
+        return [("psf recovery per region  [skipped: resampling_error CSVs absent]", "", "")]
+    where = "[in sections/08_appendices.tex]"
+    def rec(path):
+        d = pd.read_csv(path)
+        d = d[(d.kernel == "psf")].dropna(subset=["e_resample", "blur_error"]).copy()
+        d["rec"] = 1.0 - d.e_resample / d.blur_error
+        return d
+    n0, nm = rec(q), rec(m)
+    wide, narrow = n0[n0.psf_fwhm_m >= 11.0], n0[n0.psf_fwhm_m < 11.0]
+    out = [
+        (f"noiseless recovery, regions with FWHM >= 11 m, count {where}", f"{len(wide)}", ""),
+        (f"noiseless recovery, regions with FWHM >= 11 m, low {where}",
+         f"${100*wide.rec.min():.0f}\\%$", ""),
+        (f"noiseless recovery, regions with FWHM >= 11 m, high {where}",
+         f"${100*wide.rec.max():.0f}\\%$", ""),
+        (f"noiseless recovery, regions with FWHM < 11 m, count {where}", f"{len(narrow)}", ""),
+        (f"noiseless recovery, regions with FWHM < 11 m, high {where}",
+         f"${100*narrow.rec.max():+.0f}\\%$", "the best of them"),
+        (f"noiseless recovery, positive regions {where}",
+         f"{int((n0.rec > 0).sum())} of the {len(n0)}", ""),
+        (f"measured-noise recovery, positive regions {where}",
+         f"{int((nm.rec > 0).sum())} of the {len(nm)}", ""),
+        (f"noiseless recovery vs FWHM, Spearman rho {where}",
+         f"$\\rho={n0[['psf_fwhm_m', 'rec']].corr(method='spearman').iloc[0, 1]:.2f}$", ""),
+        (f"narrowest fitted FWHM {where}", f"\\SI{{{n0.psf_fwhm_m.min():.1f}}}{{m}}", ""),
+    ]
     return out
 
 
@@ -595,11 +652,6 @@ def resampling_error_checks():
             if c in b.index:
                 out.append((f"blur / latent std, {c} {where}",
                             f"${b[c]:.1f}\\%$", "PSF rows: truth_std is latent"))
-        # The same quantity is also quoted as a range, rounded, further down;
-        # it had drifted there independently of the two class values above.
-        out.append((f"blur / latent std, class range {where}",
-                    f"${b.min():.0f}$ to ${b.max():.0f}\\%$",
-                    "same quantity, rounded, as a range"))
     q = cfg.RESULTS_DIR / "resampling_error_noise0.csv"
     if q.exists():
         n = pd.read_csv(q)

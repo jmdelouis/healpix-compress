@@ -334,13 +334,17 @@ def latex_table(df, control=None):
         if not len(ct) or not len(ps):
             continue
         blur = float(ps.blur_error.median())
-        rec = 100.0 * (1.0 - float(ps.e_resample.median()) / blur)
+        # The recovery fraction is formed per region, as the companion's
+        # Eq. (24) does, and the class value is the median of those fractions.
+        # A ratio of class medians pairs the median error of one region with
+        # the median blur of another; over water it read -16% where every
+        # region but two recovers (revision 8).
+        rec = 100.0 * float((1.0 - ps.e_resample / ps.blur_error).median())
         rec0 = float("nan")
         if ctrl is not None:
             c = ctrl[(ctrl.cls == cls) & (ctrl.kernel == "psf")]
             if len(c):
-                rec0 = 100.0 * (1.0 - float(c.e_resample.median())
-                                / float(c.blur_error.median()))
+                rec0 = 100.0 * float((1.0 - c.e_resample / c.blur_error).median())
         rows.append(
             f"{cls.capitalize()} & {float(g.beta.median()):.2f} & "
             f"{float(g.psf_fwhm_m.median()):.1f} & "
@@ -377,8 +381,9 @@ def latex_table(df, control=None):
         "what a non-deconvolving transfer leaves on the table by construction. "
         "\\texttt{clough\\_tocher} is scored against the observed field it "
         "claims to represent, \\texttt{psf} against the latent field it claims "
-        "to recover; the last two columns are the companion study's recovery "
-        "fraction $1-e_{\\mathrm{psf}}/e_{\\mathrm{blur}}$ at the measured noise "
+        "to recover; the last two columns are the median over regions of the "
+        "companion study's per-region recovery fraction "
+        "$1-e_{\\mathrm{psf}}/e_{\\mathrm{blur}}$, at the measured noise "
         "and in a noiseless control"
         + ("" if have_control else
            ", the latter left blank because no control at the same "
