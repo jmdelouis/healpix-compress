@@ -168,14 +168,24 @@ def _cell_average_from_fine(fine, geo):
     return v.reshape(-1, CHILDREN).mean(axis=1)
 
 
-def _run_psf(geo, obs_flat, sigma_m, mask=None):
+def _run_psf(geo, obs_flat, sigma, mask=None, cell_sel=None):
+    """Run the PSF-aware transfer; `sigma` is the response's standard deviation.
+
+    PSFResampler's `sigma_m` is the operator scale s = 2 sigma of the
+    companion's Eq. (2), the quantity build_tiles passes for the real tiles
+    (fwhm_to_scale). The first run of this script passed sigma itself, which
+    gave the inverse a response half as wide as the blur, dropped 3-22% of the
+    cells for lack of kernel weight and returned negative recoveries.
+    """
     sub_lon, sub_lat = geo["sub_lon"], geo["sub_lat"]
     cell_ids = geo["cand"]["cell_ids"]
+    if cell_sel is not None:
+        cell_ids = cell_ids[cell_sel]
     if mask is not None:
         sub_lon, sub_lat = sub_lon[mask], sub_lat[mask]
         obs_flat = obs_flat[mask]
     op = build_tiles.make_resampler("psf", sub_lon, sub_lat, cell_ids,
-                                    verbose=False, sigma_m=float(sigma_m))
+                                    verbose=False, sigma_m=2.0 * float(sigma))
     res = op.resample(np.asarray(obs_flat, dtype=np.float64), lam=LAM)
     val, _n = build_tiles.complete_block(
         np.asarray(res.cell_ids, dtype=np.int64).ravel(),
@@ -241,8 +251,14 @@ def variant_texture(geo, fine, aperture: bool, fwhm_m=NOMINAL_FWHM_M, patch=None
         kc = kcol.reshape(-1, CHILDREN).mean(axis=1)
         margin = 20  # native pixels kept clear of the patch edge, as the companion does
         sel = (np.abs(kr - rc) < patch // 2 - margin) & (np.abs(kc - cc0) < patch // 2 - margin)
-    rec = _run_psf(geo, obs.ravel(), sup.psf_sigma_from_fwhm(fwhm_m), mask=mask)
-    out = _recovery(rec, blurred_cells, latent_cells, sel=sel)
+        if sel.sum() < 1000:
+            raise RuntimeError(f"only {int(sel.sum())} cells inside the {patch}-pixel patch")
+    rec = _run_psf(geo, obs.ravel(), sup.psf_sigma_from_fwhm(fwhm_m), mask=mask,
+                   cell_sel=sel)
+    if sel is not None:
+        out = _recovery(rec, blurred_cells[sel], latent_cells[sel])
+    else:
+        out = _recovery(rec, blurred_cells, latent_cells)
     out.update(fwhm_m=fwhm_m, n_cells=int(sel.sum()) if sel is not None else int(rec.size))
     return out
 

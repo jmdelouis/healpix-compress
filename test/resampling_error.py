@@ -189,9 +189,18 @@ def synthetic_case(scene: str, store: Path, spectrum, noise_scale=1.0,
 
 def transfer_cells(case, kernel: str, lam: float = 1e-3):
     """Run one transfer on the case's observation; return (cells, n_filled)."""
+    # `case.sigma` is the Gaussian standard deviation of the response (FWHM /
+    # 2 sqrt(2 ln 2)); PSFResampler's `sigma_m` is the operator *scale* s of the
+    # companion's Eq. (2), exp(-2 d^2 / s^2), i.e. s = 2 sigma, which is what
+    # build_tiles passes for the real tiles through fwhm_to_scale. Passing
+    # sigma here handed the inverse a response half as wide as the one that
+    # blurred the field (revision 8 diagnosis, diag_psf_matched.py): under the
+    # library convention in force before 17 September the two coincided by
+    # accident, because psf_sigma_from_fwhm then returned s. The stored
+    # results of 16 September must be regenerated with this line in place.
     op = build_tiles.make_resampler(kernel, case.sub_lon, case.sub_lat,
                                     case.cand["cell_ids"], verbose=False,
-                                    sigma_m=case.sigma)
+                                    sigma_m=2.0 * case.sigma)
     # PSFResampler defaults to lam=0, i.e. an undamped solve; the companion
     # study's reported recovery uses lam=1e-3, and running the two at different
     # damping compares different estimators.
