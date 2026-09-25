@@ -20,7 +20,7 @@ TERMS = [
     (r"\b(common(?:-| )references?|reconstruction references?)\b", r"\\term{\1}"),
     (r"\b(carriers?)\b(?!-)", r"\\term{\1}"),
     (r"\b(transfers?)\b(?!-and-read)(?!-induced)(?!-side)", r"\\term{\1}"),
-    (r"\b(nearest|bilinear|interpolating|containing-cell|matched|same|the|The|a|A|each|Each|that|this|either|every|both|one|its|whose|which|two|per|mismatched) (reads?)\b(?!\s+(?:through|back|on|it|them|at|by|as|the|a|each|all|in|is|are|was|were|and|only|directly|identically|with|from|patterns|pixel)\b)",
+    (r"\b(nearest|bilinear|interpolating|containing-cell|matched|same|the|The|a|A|each|Each|that|this|either|every|both|one|its|whose|which|two|per|mismatched) (reads?)\b(?!\s+(?:through|back|on|it|them|at|by|as|the|a|each|all|in|is|are|was|were|and|only|directly|identically|with|from|patterns?|pixel)\b)",
      r"\1 \\term{\2}"),
     (r"(?<!nearest-cell )(?<!nearest )(?<!bilinear )\b(reading operator)\b", r"\\term{read}ing operator"),
     (r"(?<!to )\b(targets?)\b(?!-)(?!\s+(?:a |the product|on the product))", r"\\term{\1}"),  # noqa

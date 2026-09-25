@@ -92,9 +92,9 @@ margin, so the regime-dependent verdict of Section~\ref{sec:rd_main} is
 a statement about a \term{carrier} filled by this \term{transfer}. In final sizes with
 no overhead (Tables~\ref{tab:synthesis} and~\ref{tab:transfer}), the
 Clough--Tocher tile compresses to between $2.06$ and $0.93$ times the
-\term{native square} as the tolerated error grows, the PSF-aware tile to
-between $2.62$ and $2.28$ times, and the inverse-distance tile to between
-$2.49$ and $2.11$ times. The last two barely move with the tolerated
+\term{native square} as the tolerated error grows. The PSF-aware tile
+compresses to between $2.62$ and $2.28$ times, and the inverse-distance
+tile to between $2.49$ and $2.11$ times. The last two barely move with the tolerated
 error. Their content resists lossy coding, while the content of the
 Clough--Tocher tile is mostly the smooth redundancy a codec is built to
 remove.
@@ -130,9 +130,9 @@ the $3.9\%$ to $10.3\%$ by class that the noiseless control of
 Appendix~\ref{app:error_budget} finds on the same construction. The bicubic row is kept for completeness and
 is not a valid measurement of bicubic interpolation. A diagnostic on four
 regions, one per class, shows that the radial variant used here fails to
-reproduce a constant field on about $1.6\%$ of the cells, on which it
-returns values scaled by up to three orders of magnitude, and that those
-cells carry almost all of its transfer error; a separable bicubic
+reproduce a constant field on about $1.6\%$ of the cells. On those cells
+it returns values scaled by up to three orders of magnitude, and they
+carry almost all of its \term{transfer} error. A separable bicubic
 interpolation of the same field on the source raster gives $5.8\%$ of
 the standard deviation with no such tail. The defect belongs to that
 operator, not to the
@@ -142,9 +142,13 @@ ranking entry, since its estimand is the latent field and the analytic
 field here is the observation-resolution one. The extra bytes of the
 inverse-distance average buy \term{transfer} error, twofold.
 
-The extra bytes of the deconvolved \term{carrier} are of a different kind by
-design, and what they buy is established by the companion study under
-its own conditions. On a known pre-degradation texture the matched
+Nothing in this section measures the quality of the PSF-aware
+\term{transfer}. Its purpose is to estimate a field the observation does
+not contain, and a comparison at the observation's resolution can only
+charge it for that content, never credit it. What this section
+establishes is the storage price of that content. The extra bytes of the
+deconvolved \term{carrier} are of a different kind by design, and what they
+buy is established by the companion study under its own conditions. On a known pre-degradation texture the matched
 reconstruction recovers $15.4\%$ to $19.6\%$ of the imposed blur error.
 On real reduced-resolution Sentinel-2 imagery it has the smallest RMSE
 in all 40 regions, improving on the best of nearest, bilinear, bicubic
@@ -152,16 +156,15 @@ and Richardson--Lucy by $11.0\%$ to $17.9\%$, with the restored power at
 low and intermediate frequencies~\cite{delouis2026resample}. Our own
 synthetic harness reproduces that recovery at the nominal response width
 without noise, and loses most of it at the noise level measured on the
-imagery (Appendix~\ref{app:error_budget}); whether the particular tiles
+imagery (Appendix~\ref{app:error_budget}). Whether the particular tiles
 whose bytes are counted here realise it is not established. With this
-reservation,
-the two-fold surcharge has two meanings. On the deconvolved \term{carrier} it
+reservation, the two-fold surcharge has two meanings. On the deconvolved \term{carrier} it
 is the price of small-scale content placed there by a validated method.
 On the inverse-distance \term{carrier} it is the price of content twice as
 far from the truth as the \term{transfer} it replaced. Among the
 \term{transfers} that reproduce the product, Clough--Tocher is both the most
-accurate and the most compressible, and the observations are consistent
-with the two sharing a cause: a \term{transfer} that represents a band-limited
+accurate and the most compressible. The observations are consistent
+with the two sharing a cause. A \term{transfer} that represents a band-limited
 field faithfully does not invent fine-scale content, and content it
 does not invent is content the codec need not pay for. This is a
 statement about reproducing the product, not a ranking of the PSF-aware

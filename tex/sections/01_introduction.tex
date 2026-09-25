@@ -17,10 +17,10 @@ HEALPix was designed for astronomical data on the
 sphere~\cite{gorski2005healpix}. Its cells have equal area and refine
 dyadically: whatever the ordering, every cell contains exactly four
 cells of the next level. The nested index adds a storage property to
-this geometry, since it places all descendants of a cell in one
-contiguous block; that is what lets a tile be compressed on its own,
-where the ring ordering would force compression by whole rings of
-latitude. These properties suit Earth observation as well, with one
+this geometry: it places all descendants of a cell in one contiguous
+block. That is what lets a tile be compressed on its own. The ring
+ordering would instead force compression by whole rings of latitude.
+These properties suit Earth observation as well, with one
 practical limit: HEALPix resolution changes only by powers of two, so
 the native sampling of an instrument almost never matches a level. The
 \SI{10}{m} bands of Sentinel-2~\cite{drusch2012sentinel2} fall between
@@ -34,7 +34,7 @@ well, storing the data at level 20 could cost no more than keeping the
 same information on the native UTM grid. The native product has a cost
 of its own. Under an operational tiling layout such as the MGRS granules
 of Sentinel-2 it carries padding, overlap and per-tile metadata beyond
-the area needed: a survey of that grid finds that it enlarges the stored
+the area needed. A survey of that grid finds that it enlarges the stored
 land area by $33\%$, about one petabyte per year of
 products~\cite{bauer2023wasting}. This paper uses a $30\%$ overhead as
 an illustrative value at the level of that spatial overhead
@@ -51,7 +51,7 @@ that contrast. These ratios compare each raster with its own uncompressed
 version. Scored against the Sentinel-2 observation instead
 (Section~\ref{sec:common_reference}), native UTM leads at every
 reportable storage budget, while the size advantage at the loosest error
-survives under an interpolating read.
+survives under an interpolating \term{read}.
 
 Two \term{transfers}\footnote{Terms in italics are defined in
 Table~\ref{tab:glossary}, Section~\ref{sec:glossary}.} can fill the
@@ -98,9 +98,9 @@ untouched native product. The contributions are:
     cell-shape regimes) and five general-purpose codecs. It includes
     sensitivity analyses on codec, \term{target}, \term{transfer} and assumed overhead,
     and a multiple-testing correction that seven of the eight per-\term{target}
-    comparisons survive. Two controls explain the result: an
+    comparisons survive. Two controls explain the result. An
     analytic-field control shows that sampling geometry alone reproduces
-    the decline of the gap with the \term{target}, and a smoothed-native control
+    the decline of the gap with the \term{target}. A smoothed-native control
     shows that transfer-induced smoothing is sufficient to account for a
     residual of the observed magnitude
     (Section~\ref{sec:support_controls});
@@ -116,4 +116,10 @@ carried as $\gamma_\star(e)$ so that no value is assumed; the \term{transfer}
 (Section~\ref{sec:transfer_cost}); the codec
 (Section~\ref{sec:same_codec}); and the \term{reconstruction reference}
 (Section~\ref{sec:common_reference}). These four conditions belong with
-every statement of the form ``HEALPix is smaller''.
+every statement of the form ``HEALPix is smaller''. The comparison
+compresses each tile, band and date alone, as the native product is
+stored. It therefore does not count what a shared grid adds: coding
+across dates, bands and sensors that sit on the same cells, and chunks
+shaped to the read pattern that the nested index makes contiguous.
+That gain is discussed in Section~\ref{sec:shared_grid}; the ratios
+here are the floor it starts from.

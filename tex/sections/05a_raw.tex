@@ -17,9 +17,9 @@ rows compare float32 rasters, the form the codecs sweep. The native
 product is distributed as 16-bit integers; stored in that form the crop
 is half the size again, so the tile is $5.17\times$ the product as it
 ships (last row). The sweeps stay in float32. The audit of
-Appendix~\ref{app:codec_audit} shows this is not the decisive choice:
-the image codecs are indifferent to the input type within $0.3\%$,
-lossless JPEG~XL is $34\%$ smaller on integer digital numbers, and
+Appendix~\ref{app:codec_audit} shows this is not the decisive choice.
+The image codecs are indifferent to the input type within $0.3\%$.
+Lossless JPEG~XL is $34\%$ smaller on integer digital numbers, but
 converting the \term{carrier} to those integers costs it a quantisation of
 $2.9\times10^{-5}$ that the native product never pays.
 Only compression, by exploiting the redundancy that oversampling

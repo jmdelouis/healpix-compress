@@ -38,7 +38,7 @@ its origin. The first is the kernel that filled it from the sensor grid.
 The second is the shape anisotropy of equal-area HEALPix cells, a local
 axis-length ratio of up to $\sim\!1.7$ between the raster axes. Both
 affect compressibility (Section~\ref{sec:resampler}). The third is its
-orientation: in the UTM zone of a scene its axes run at about $45^\circ$
+orientation. In the UTM zone of a scene its axes run at about $45^\circ$
 to north (Fig.~\ref{fig:utm_crop_footprints}), so the row and column
 predictors of the codecs follow diagonals of the native raster. What
 that orientation costs or saves has not been measured
@@ -69,16 +69,17 @@ fill value on either side.
 Matching by area means each grid is compressed in the frame it is stored
 in, with no resampling of the native side, the comparison a practitioner
 faces. It also means the two representations encode different ground
-over part of their extent: over the 40 regions the intersection is
+over part of their extent. Over the 40 regions the intersection is
 $74$--$83\%$ of the crop ($81\%$ median), an intersection-over-union of
-about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}), and supports that
+about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}). Supports that
 differ over a fifth of their extent can have different entropies.
 Section~\ref{sec:support_controls} constrains the effect with an analytic
 field that both geometries sample identically. That control reproduces
 the decline of the measured gap to within $5$--$24\%$, and the crossover
-itself once the field passes through the \term{transfer}, which makes it
-unlikely that the mismatch explains the decline; it does not isolate the
-mismatch's contribution to the narrow crossover at the loosest target. The mismatch matters
+itself once the field passes through the \term{transfer}. This makes it
+unlikely that the mismatch explains the decline. It does not isolate the
+mismatch's contribution to the narrow crossover at the loosest target.
+The mismatch matters
 more for cross-grid comparisons of reconstruction \emph{error}, which is
 why the \term{common-reference} evaluation of
 Section~\ref{sec:common_reference} is restricted to the intersection.

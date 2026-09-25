@@ -9,10 +9,10 @@ the comparison. It is an
 analytic random field, a sum of plane waves with power spectrum
 $P(k)\propto k^{-\beta}$ multiplied by a Gaussian instrument response of
 width $\sigma$; its instrument convolution is exact and it can be
-evaluated anywhere. Evaluated at the level-20 cell centres and at the
-native pixel centres of the same region, with both samplings compressed,
-both sides see the same function, so whatever ratio survives comes from
-the sampling geometry alone.
+evaluated anywhere. It is evaluated at the level-20 cell centres and at the
+native pixel centres of the same region, and both samplings are
+compressed. Both sides see the same function, so whatever ratio survives
+comes from the sampling geometry alone.
 
 Both parameters are measured. The model
 $\log P(k)=c-\beta\log k-k^2\sigma^2$ is fitted to the radially averaged
@@ -59,7 +59,7 @@ Under $\gamma_{\mathrm{tile}}=1.30$ it reaches $0.89$ at the loosest
 the measured one at all five \term{targets}, by $5\%$ to $24\%$, and the gap
 grows as the \term{target} loosens. The rows marked via C--T identify the
 cause. There the same field is sampled on the native lattice and carried
-to the cells by the paper's own \term{transfer}, as in the real chain; its
+to the cells by the paper's own \term{transfer}, as in the real chain. Its
 error against the exact field is $8.8\%$ of the scene's standard
 deviation, median over the 40 regions. The \term{transfer} changes nothing at
 the three tightest \term{targets}, where the codec keeps every sample. At the
@@ -78,9 +78,9 @@ native lattice and at the native density, while the \term{carrier} samples a
 different lattice at every phase. Two phases are reported. Half a pixel
 is the phase at which the interpolant departs most from the samples.
 There the native raster compresses to $0.94$ of its size at the tightest
-\term{target} and $0.78$ at the loosest (median over $40$ and $34$ regions), so
-this fixed-phase smoothing control reduces the native compressed size by
-$6\%$ to $22\%$ at equal error, more as the \term{target} loosens. At a
+\term{target} and $0.78$ at the loosest (median over $40$ and $34$ regions).
+This fixed-phase smoothing control thus reduces the native compressed
+size by $6\%$ to $22\%$ at equal error, more as the \term{target} loosens. At a
 quarter of a pixel it compresses to $0.96$ and $0.87$. Given that
 smoothing, the native side is smaller than the \term{carrier} at every \term{target}
 and at both phases. HEALPix over smoothed native falls from $2.23$ to
@@ -105,10 +105,10 @@ sufficient to account for a residual of the observed magnitude between
 the geometry-only control and the measurement. The \term{common reference}
 reaches the same place from the other side
 (Section~\ref{sec:common_reference}). Two controls on subsets agree
-(Appendix~\ref{app:support}): a common-support comparison on ten
-regions, with blocks of different area on the two lattices, and
-re-cutting the \term{UTM crop} at shifted positions on four regions,
-which moves the ratio by about $1\%$ of the effect. Together these
+(Appendix~\ref{app:support}). One is a common-support comparison on ten
+regions, with blocks of different area on the two lattices. The other
+re-cuts the \term{UTM crop} at shifted positions on four regions, which
+moves the ratio by about $1\%$ of the effect. Together these
 controls suggest that the support mismatch, over footprints that overlap
 by $74$--$83\%$, is unlikely to explain the overall decline in the
 \term{size ratio}; they do not isolate its contribution to the narrow

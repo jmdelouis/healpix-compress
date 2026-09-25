@@ -36,10 +36,10 @@ sufficient to generate this trend under the conditions tested. The
 exploratory latitude dependence is consistent with HEALPix cell-shape
 anisotropy, and has not been isolated as a grid property. Three
 findings belong elsewhere. The crossover at a given overhead belongs to
-the \term{transfer}, since it exists for a Clough--Tocher \term{carrier} and for no
-other \term{transfer} tested and disappears when the native raster is given
-that smoothing; it also belongs to the codec, since four of the five
-reproduce it and ZFP does not. A substantial part of the
+the \term{transfer}: it exists for a Clough--Tocher \term{carrier} and for no
+other \term{transfer} tested, and it disappears when the native raster is
+given that smoothing. It also belongs to the codec, since four of the
+five reproduce it and ZFP does not. A substantial part of the
 transfer-and-read floor is caused by the \term{read}, since changing the
 \term{read}ing operator alone removes two thirds of its mean squared error
 (Section~\ref{sec:operator}). The codec ranking is a property of these
@@ -52,18 +52,18 @@ level-10 parent tile per scene ($1024\times1024$ level-20 cells), large
 enough to amortise per-chunk codec overhead and small enough to remain
 a practical chunking unit. A global product would need a
 multi-chunk hierarchy and boundary handling across the 12 base faces of
-level 0; a single base face carried down to level 20 would hold
+level 0. A single base face carried down to level 20 would hold
 $4^{20}\approx10^{12}$ cells, far too large to compress as one array.
 
 One architectural option follows from Section~\ref{sec:redundancy} and is
 not measured here. The Clough--Tocher \term{carrier} holds no more information
 than the native window it was built from. A store that keeps the native
 product and applies that \term{transfer} at read time therefore carries no
-storage penalty at all: the HEALPix index becomes a view over native
+storage penalty at all. The HEALPix index becomes a view over native
 chunks rather than a second copy of the data. The same option is not
 established for the PSF-aware \term{transfer}. Its deconvolution amplifies the
 small scales of its input, and a native product stored with lossy
-compression may have lost exactly those scales; whether the restored
+compression may have lost exactly those scales. Whether the restored
 content survives a compressed input would need a dedicated test. Every
 ratio in this paper is about the other choice, a \term{carrier} materialised
 on disk, which is what a DGGS archive buys latency and simplicity with.
@@ -71,6 +71,33 @@ Which of the two is right is a question about read patterns and compute
 budgets that this study does not address. A hybrid, storing the native
 product and materialising the \term{carrier} only for the levels and regions
 that are read often, sits between them.
+
+\subsection{What a Shared Grid Adds That This Study Does Not Count}
+\label{sec:shared_grid}
+Every ratio above compresses one tile, one band and one date as an
+independent two-dimensional raster. Those are the conditions of the
+native product, and they were chosen to isolate what the grid itself
+costs. They leave out the reason a DGGS is used. On HEALPix every
+product, whatever its sensor, band or date, lands on the same cells with
+the same identifiers. A codec can then exploit the correlation between
+dates, between bands and between sensors on a shared index, where the
+native products would first have to be reprojected onto one another.
+The nested index makes that practical. All descendants of a cell form
+one contiguous range, so a block of cells is a contiguous slice. A
+spatial, temporal or spectral chunk is then one contiguous array, and
+its shape can follow the read pattern of the application: a time series
+at a point, a band stack over a region, or a global field at a coarse
+level.
+None of this has an equivalent in a stack of native products, each on
+its own projected grid, which a reader must assemble before it can use
+them. The gain measured here, a \term{carrier} that is competitive only at
+aggressive compression, is therefore a lower bound on what the grid can
+return. It prices the geometry alone and none of the coherence the grid
+was adopted for. That coherence is the next measurement. Gridded model
+output is its natural first case. It is already a cell average, so
+there is no \term{transfer} error to charge. Its dominant redundancy is
+temporal. And it is global, where the equal-area cells and the locality
+of the nested index matter most.
 
 \subsection{Reproducibility}
 \label{sec:reproducibility}
@@ -92,9 +119,9 @@ Five groups, detailed in Appendix~\ref{app:limitations}.
 \emph{Transfer}. The crossover is a result for a \term{carrier} filled by
 Clough--Tocher, of the \term{transfers} tested, and scored against its own
 smooth tile. The smoothed-native control gives the native side that
-smoothing at two fixed phases; across the original comparison and these
-two controls the loose-\term{target} ratio spans $0.93$--$1.24$, sensitivity
-controls rather than formal limits on a phase-matched experiment. A
+smoothing at two fixed phases. Across the original comparison and these
+two controls the loose-\term{target} ratio spans $0.93$--$1.24$; these are
+sensitivity controls, not formal limits on a phase-matched experiment. A
 non-deconvolving \term{transfer} of the same smoothness has not been tested,
 and the data are consistent with energy compaction playing an important
 role, short of a demonstration.

@@ -12,7 +12,7 @@ number of qualifying regions in parentheses. A region enters a cell only
 if that codec brackets the \term{target} with two measured points on both
 grids. This is a codec-by-codec sensitivity table, so every cell is
 shown with its own $n$ and none is withheld, even where fewer than three
-quarters of the regions qualify; at the loosest \term{target} JPEG~XL qualifies
+quarters of the regions qualify. At the loosest \term{target} JPEG~XL qualifies
 on 26 regions and JPEG~2000 on 30. The verdicts of
 Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative} rest on the
 withheld rule.
@@ -23,8 +23,8 @@ Two observations follow. First, the codec ranking and the grid comparison
 are different results. JPEG~2000 and JPEG~XL lead on both grids alike
 (Section~\ref{sec:codec_choice}). At $10^{-2}$ the oracle selects one
 of the two on 30 of the 32 qualifying regions on the HEALPix side and on
-31 on the native side, so the oracle ratios are close to what either
-codec gives on its own: $0.77$ and $0.71$ against $0.72$ for the
+31 on the native side. The oracle ratios are therefore close to what
+either codec gives on its own: $0.77$ and $0.71$ against $0.72$ for the
 envelope. Codec selection does not create the crossover. Second, the
 crossover is codec-dependent in a way the envelope hides. Four of the
 five codecs show the same directional crossover: JPEG~XL and JPEG~2000
@@ -35,7 +35,7 @@ sensitivity analysis and not a family of tests the paper draws a verdict
 from. Under ZFP the HEALPix tile costs $1.54$--$1.72$ times the native
 product at every \term{target}, with no decline as the \term{target} loosens. This is
 consistent with ZFP's fixed-accuracy block coding and its rate
-allocation, and the experiment does not isolate the mechanism; SZ3,
+allocation, and the experiment does not isolate the mechanism. SZ3,
 which reproduces the crossover, is prediction-based, so the successful
 family cannot be defined by the transform alone. An archive that
 standardised on ZFP would see no regime in which the \term{carrier} is the

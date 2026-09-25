@@ -12,9 +12,9 @@ erosion of its boundary. Projecting a constant field returns exactly one
 everywhere on this area, the check required before any region is
 accepted. Everything here depends on how the decoded \term{carrier} is read.
 Section~\ref{sec:operator} shows that changing the \term{read} alone removes
-two thirds of the floor's mean squared error, so the sweep was scored
-twice: through the nearest-cell read used throughout the paper, and
-through the interpolating \term{read} of that section. The UTM side is
+two thirds of the floor's mean squared error. The sweep was therefore
+scored twice: through the nearest-cell read used throughout the paper,
+and through the interpolating \term{read} of that section. The UTM side is
 identical under both.
 
 The first consequence is a floor, which belongs to the transfer-and-read
@@ -69,7 +69,7 @@ $p<10^{-4}$). The $5\%$ and $10\%$ ratios fall from $3.86$ and $32.2$
 to $2.50$ and $19.0$. At the one \term{RMSE target} this \term{read} makes reportable,
 $10^{-2}$, HEALPix is the smaller representation under the illustrative
 overhead: a median ratio of $0.93$ over the 32 qualifying regions
-(Holm-adjusted $p=1\times10^{-3}$), with an overhead-free ratio of
+(Holm-adjusted $p=1\times10^{-3}$). The overhead-free ratio there is
 $1.20$, a \term{critical overhead} below the illustrative $1.30$. That median
 coincides by chance with the overhead-free within-representation value
 of Section~\ref{sec:rd_main}; the two come from different sweeps,
@@ -122,8 +122,8 @@ Two further questions about this \term{reference} are answered in the
 appendices. The compression error can be written as a fraction $\kappa$
 of the \term{transfer} error (Appendix~\ref{app:error_budget}). On that scale
 the crossings of Section~\ref{sec:rd_illustrative} occur at
-$\kappa=0.13$ to $0.50$ against the latent scene, in all four classes,
-and inflate the product's total error by a measured $2.5$ to $16.0\%$.
+$\kappa=0.13$ to $0.50$ against the latent scene, in all four classes.
+They inflate the product's total error by a measured $2.5$ to $16.0\%$.
 The saving in bytes is $12$ to $30\%$ in three classes and about $2\%$
 over water. Against the observation the same crossings cost $37$ to
 $115\%$. The two errors do not add in quadrature

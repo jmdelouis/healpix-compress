@@ -310,6 +310,11 @@ def table_transfer():
             # interpolation. The row stays, marked, so the omission is explicit.
             label = "bicubic$^{\\dagger}$"
             tf = f"({tf})"
+        if k == "psf":
+            # Revision 8: the PSF-aware transfer estimates the latent field;
+            # its distance to the observation-resolution field prices content
+            # the observation does not hold and is not a ranking entry.
+            label = "PSF$^{\\ddagger}$"
         krow.append(f"{label} & {len(g)} & {tf} & {ovr} & "
                     f"{100*g.floor_frac_of_std.median():.1f} & {rel} & "
                     f"{g.logpsd_rms.median():.2f} & {g.logpsd_top_octave.median():.2f}"
@@ -326,7 +331,10 @@ def table_transfer():
         "$^{\\dagger}$Not a valid measurement of bicubic interpolation: the "
         "radial nearest-neighbour variant of the Keys kernel used here does not "
         "reproduce a constant field on about $1.6\\%$ of the cells, and those "
-        "cells carry almost all of its transfer error (Section~\\ref{sec:transfer_cost}).\\par}")
+        "cells carry almost all of its transfer error (Section~\\ref{sec:transfer_cost}). "
+        "$^{\\ddagger}$Not a ranking entry: the PSF-aware transfer estimates the "
+        "latent field, and its distance to the observation-resolution field "
+        "prices the content it restores (Appendix~\\ref{app:error_budget}).\\par}")
 
     return (
         "\\begin{table*}[t]\n\\centering\n"

@@ -65,7 +65,7 @@ produce a \term{target} no real configuration achieves. The analysis was
 therefore repeated with each of the 400 (region, codec) sweeps
 restricted to its Pareto frontier. This removes 44 dominated points,
 almost all at the coarse end of the extended ladders, and changes no
-reported median; at the $10^{-3}$ \term{target} it admits one more region and
+reported median. At the $10^{-3}$ \term{target} it admits one more region and
 moves the adjusted $p$-value from $0.016$ to $0.010$.
 
 Three rules govern the \term{targets}. First, the curve is the constrained
@@ -153,9 +153,9 @@ no-data. Along track the overlap alone gives $1.098$. The product, $1.66$,
 is the raw-byte overhead of the tiled swath. No-data compresses to
 almost nothing, so under compression the figure falls back towards the
 area duplication. A survey of the whole Sentinel-2 grid reaches the same
-order: over the land surface, zone overlap and the enlarged granules
+order. Over the land surface, zone overlap and the enlarged granules
 together store $33\%$ more area than the land covered ($13\%$ for the
-zone overlap alone), which inflates the yearly Level-1C and Level-2A
+zone overlap alone). This inflates the yearly Level-1C and Level-2A
 volume by about one petabyte~\cite{bauer2023wasting}. That figure is
 also a duplication of area, not a count of compressed bytes. We use
 $\gamma_{\mathrm{tile}}=1.30$ as an illustrative point on the decision
@@ -176,8 +176,8 @@ count of the \term{equal-area crop} and compare absolute bytes, with the raw siz
 of the fixed HEALPix tile ($\num{4194304}$ bytes) as the single reference
 for both grids. The survey of~\cite{bauer2023wasting} supports the
 order of magnitude of the \emph{spatial} overhead of the operational
-grid; applying that multiplier to compressed bytes is an explicit
-assumption of the decision model, not a measurement, which is why the
+grid. Applying that multiplier to compressed bytes is an explicit
+assumption of the decision model, not a measurement. This is why the
 critical-overhead curve of Section~\ref{sec:rd_main} is the general
 result and $1.30$ one point on it. The tile and the crop have different
 pixel counts ($1024\times1024$ against $637\times637$), so only absolute

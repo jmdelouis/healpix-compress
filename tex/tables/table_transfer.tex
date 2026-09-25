@@ -43,12 +43,12 @@ native UTM & 0.37 & 0.819 & 0.584 & 0.349 & 0.148 & 0.036 \\
 Kernel & $n$ & (\% std) & (\%) & (\% std) & rel.\ C--T & log-PSD & oct. & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ \\
 \midrule
 C--T & 39 & 7.97 & 0.00 & 10.0 & 1.00 & 0.05 & 0.89 & 1.00 & 1.00 & 1.00 \\
-PSF & 39 & 24.42 & 0.18 & 24.0 & 2.54 & 0.44 & 2.80 & 1.27 & 1.36 & 1.64 \\
+PSF$^{\ddagger}$ & 39 & 24.42 & 0.18 & 24.0 & 2.54 & 0.44 & 2.80 & 1.27 & 1.36 & 1.64 \\
 IDW & 38 & 16.27 & 0.86 & 7.0 & 0.74 & 0.03 & 0.92 & 1.20 & 1.31 & 1.60 \\
 nearest & 39 & 18.30 & 0.00 & 0.8 & 0.11 & 0.00 & 1.00 & 1.21 & 1.31 & 1.50 \\
 bicubic$^{\dagger}$ & 38 & (634.86) & 2.56 & 11.7 & 0.95 & 0.16 & 1.51 & 1.65 & 1.92 & 2.84 \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-{\footnotesize $^{\dagger}$Not a valid measurement of bicubic interpolation: the radial nearest-neighbour variant of the Keys kernel used here does not reproduce a constant field on about $1.6\%$ of the cells, and those cells carry almost all of its transfer error (Section~\ref{sec:transfer_cost}).\par}
+{\footnotesize $^{\dagger}$Not a valid measurement of bicubic interpolation: the radial nearest-neighbour variant of the Keys kernel used here does not reproduce a constant field on about $1.6\%$ of the cells, and those cells carry almost all of its transfer error (Section~\ref{sec:transfer_cost}). $^{\ddagger}$Not a ranking entry: the PSF-aware transfer estimates the latent field, and its distance to the observation-resolution field prices the content it restores (Appendix~\ref{app:error_budget}).\par}
 \end{table*}
