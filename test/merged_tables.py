@@ -149,6 +149,26 @@ def table_synthesis():
         + "\n\\end{table*}\n")
 
 
+def _audit_admitted(df):
+    """Drop the regions the window audit marks MISMATCH.
+
+    The kernel ablation rebuilds every carrier from the window on disk; a
+    window that is no longer the one the stored tile came from (Lake Geneva,
+    Appendix B-E) cannot be compared with that tile, so block (c) is reported
+    on the regions the audit admits, as the prose says. Revision 8: the
+    re-run of the ablation covered all 40 regions, and the filter that had
+    been implicit in a failed transfer step is now explicit.
+    """
+    p = cfg.RESULTS_DIR / "window_radiometry.csv"
+    if not p.exists() or "scene" not in df:
+        return df
+    w = pd.read_csv(p)
+    if "status" not in w:
+        return df
+    bad = set(w[w.status.astype(str).str.upper() == "MISMATCH"].scene)
+    return df[~df.scene.isin(bad)]
+
+
 # --- 2. floors ---------------------------------------------------------------
 def _sci(x):
     return f"{x:.2e}".replace("e-0", "e-")
@@ -259,6 +279,7 @@ def table_transfer():
         + "\n".join(crow) + "\n\\bottomrule\n\\end{tabular}")
 
     ka = pd.read_csv(cfg.RESULTS_DIR / "kernel_ablation.csv")
+    ka = _audit_admitted(ka)
     from kernel_ablation import paired          # same pairing as the source table
     kname = {"clough_tocher": "C--T", "psf": "PSF", "linear": "IDW",
              "nearest": "nearest", "bicubic": "bicubic"}

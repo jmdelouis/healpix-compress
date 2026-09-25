@@ -274,6 +274,11 @@ def run_region(scene: str, kernel: str, store: Path, codecs, targets,
 # --- reporting ---------------------------------------------------------------
 def paired(df, col, reference=REFERENCE_KERNEL):
     """Per-region ratio of each kernel's column to the reference kernel's."""
+    cols = ["kernel", "n", "median", "lo", "hi"]
+    if col not in df or not (df.kernel == reference).any():
+        # A run restricted to one kernel has nothing to pair against; the
+        # callers index this frame by kernel, so it must keep its columns.
+        return pd.DataFrame(columns=cols)
     ref = df[df.kernel == reference].set_index("scene")[col]
     out = []
     for kernel, g in df.groupby("kernel"):
@@ -287,7 +292,7 @@ def paired(df, col, reference=REFERENCE_KERNEL):
                         median=float(np.median(r)) if r.size else np.nan,
                         lo=float(np.min(r)) if r.size else np.nan,
                         hi=float(np.max(r)) if r.size else np.nan))
-    return pd.DataFrame(out)
+    return pd.DataFrame(out, columns=cols)
 
 
 def summarize(df, targets, do_rd):
@@ -655,6 +660,18 @@ def main(argv=None) -> int:
     df = pd.DataFrame(rows)
     cfg.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     csv = cfg.RESULTS_DIR / "kernel_ablation.csv"
+    # A partial run (one kernel, a few regions) replaces only the (region,
+    # kernel) rows it produced and keeps the rest of the stored table. Until
+    # revision 8 it overwrote the whole file, so `--kernels bicubic` alone
+    # threw away the four other kernels and then crashed in the pairing.
+    if csv.exists() and (args.regions or args.limit
+                         or set(args.kernels) != set(build_tiles.KERNELS)):
+        old = pd.read_csv(csv)
+        done = set(zip(df.scene, df.kernel))
+        keep = old[[(s, k) not in done for s, k in zip(old.scene, old.kernel)]]
+        df = pd.concat([keep, df], ignore_index=True, sort=False)
+        df = df.sort_values(["scene", "kernel"]).reset_index(drop=True)
+        print(f"merged {len(rows)} new row(s) into the {len(keep)} kept from {csv.name}")
     df.to_csv(csv, index=False)
     md = summarize(df, args.targets, args.rd)
     (cfg.RESULTS_DIR / "kernel_ablation.md").write_text(md, encoding="utf-8")

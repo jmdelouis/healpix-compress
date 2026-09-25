@@ -75,9 +75,9 @@ the mechanism is not isolated. The deconvolution puts power back into
 the small scales directly, $2.80$ times the observation's in the top
 octave against $0.89$ for Clough--Tocher, and a coder asked for a given
 RMSE must encode it. The inverse-distance average adds no such power
-($0.92$) and still pays. What is established is that its output lies ten
-times further from an analytic truth than that of Clough--Tocher, and
-that content which is neither the scene nor suppressed must be coded as
+($0.92$) and still pays. What is established is that its output lies
+twice as far from an analytic truth as that of Clough--Tocher, and that
+content which is neither the scene nor suppressed must be coded as
 content.
 
 The consequence for the headline result is one of the largest
@@ -120,11 +120,14 @@ octave. The last three columns are compressed-\term{size ratios} to
 Clough--Tocher at three \term{targets}.
 
 Equal bytes are not equal value. Among the \term{transfers} that aim to
-reproduce the analytic field, Clough--Tocher reaches $1.20\%$ of its
-standard deviation, against $10.04\%$ for nearest and $11.48\%$ for the
+reproduce the analytic field, Clough--Tocher reaches $7.97\%$ of its
+standard deviation, against $18.30\%$ for nearest and $16.27\%$ for the
 inverse-distance average, on the 39 regions the window audit of
 Appendix~\ref{app:window_radiometry} admits (38 for the inverse-distance
-average and for bicubic). The bicubic row is kept for completeness and
+average and for bicubic). The field carries the spectrum and response
+fitted to the imagery, and the Clough--Tocher figure is consistent with
+the $3.9\%$ to $10.3\%$ by class that the noiseless control of
+Appendix~\ref{app:error_budget} finds on the same construction. The bicubic row is kept for completeness and
 is not a valid measurement of bicubic interpolation. A diagnostic on four
 regions, one per class, shows that the radial variant used here fails to
 reproduce a constant field on about $1.6\%$ of the cells, on which it
@@ -134,10 +137,10 @@ interpolation of the same field on the source raster gives $5.8\%$ of
 the standard deviation with no such tail. The defect belongs to that
 operator, not to the
 kernel, and the row is marked rather than removed so that the omission
-is explicit. The $8.15\%$ of the PSF \term{transfer} is no
+is explicit. The $24.42\%$ of the PSF \term{transfer} is no
 ranking entry, since its estimand is the latent field and the analytic
 field here is the observation-resolution one. The extra bytes of the
-inverse-distance average buy \term{transfer} error, tenfold.
+inverse-distance average buy \term{transfer} error, twofold.
 
 The extra bytes of the deconvolved \term{carrier} are of a different kind by
 design, and what they buy is established by the companion study under
@@ -154,8 +157,8 @@ whose bytes are counted here realise it is not established. With this
 reservation,
 the two-fold surcharge has two meanings. On the deconvolved \term{carrier} it
 is the price of small-scale content placed there by a validated method.
-On the inverse-distance \term{carrier} it is the price of content ten times
-further from the truth than the \term{transfer} it replaced. Among the
+On the inverse-distance \term{carrier} it is the price of content twice as
+far from the truth as the \term{transfer} it replaced. Among the
 \term{transfers} that reproduce the product, Clough--Tocher is both the most
 accurate and the most compressible, and the observations are consistent
 with the two sharing a cause: a \term{transfer} that represents a band-limited

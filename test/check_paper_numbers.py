@@ -1249,6 +1249,12 @@ def consistency_checks(tex):
         out.append(("kernel ablation  [skipped: results/kernel_ablation.csv absent]",
                     "", "run kernel_ablation.py"))
     else:
+        # Same admission rule as merged_tables.table_transfer block (c): the
+        # window audit's MISMATCH regions are left out (Lake Geneva).
+        wr = _csv("window_radiometry.csv")
+        if wr is not None and "status" in wr:
+            bad = set(wr[wr.status.astype(str).str.upper() == "MISMATCH"].scene)
+            ka = ka[~ka.scene.isin(bad)]
         med = ka.groupby("kernel").agg(tr=("transfer_frac_of_std", "median"),
                                        oc=("logpsd_top_octave", "median"))
         for k in ("clough_tocher", "nearest", "linear", "psf"):
