@@ -86,7 +86,14 @@ sensors, temporal stacks, model output, flux-conservative fields or a
 full-sphere product. Two measurements would sharpen the framework: the
 compressed-byte overhead of a real tiled product, and a non-deconvolving
 \term{transfer} as smooth as Clough--Tocher, which would separate smoothness
-from interpolation class. The larger gain lies beyond this framework.
+from interpolation class. For the PSF-aware \term{transfer} the storage
+arithmetic points to a different design: keep the native pixels, whose
+halo around a tile adds about $2\%$ rather than $30\%$, and run the
+\term{transfer} at read time. The \term{carrier} then costs no storage at all
+and the cost moves to compute, which makes a fast PSF-aware read, and
+a test of the \term{transfer} on lossy-compressed input, the next questions
+for that chain (Section~\ref{sec:grid_property}). The larger gain
+lies beyond this framework.
 Each tile here was compressed alone, as the native product is. A
 shared grid puts every date, band and sensor on the same cells, and the
 nested index makes any spatial, temporal or spectral block a contiguous

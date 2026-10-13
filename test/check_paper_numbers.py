@@ -181,6 +181,8 @@ def checks(tex: str):
     out += target_scale_checks()
     out += bicubic_diag_checks()
     out += tile_crop_checks()
+    out += halo_layout_checks()
+    out += coauthor_review_checks()
     out += appendix_table_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
@@ -527,6 +529,79 @@ def tile_crop_checks():
         out.append((f"tile/crop audit, mismatches at recorded indices {where}",
                     f"reports {n_rows:d} mismatched tiles",
                     "rows, i.e. (region, transfer) pairs"))
+    return out
+
+
+def halo_layout_checks():
+    """Section VI-B (revision 8): the native pixels that build one tile.
+
+    A store that keeps the native product and runs the transfer at read time
+    needs the tile footprint plus a halo for the kernel support. The halo
+    overhead is pure geometry: (side + 2h)^2 / side^2 - 1, quoted for a halo
+    of four cells on the 1024-cell tile and four native pixels on the
+    637-pixel equal-area crop. The bounding box of the ~45-degree footprint
+    (paper_config.TILE_BBOX_PX) is the rectangle a 2-D codec would need.
+    """
+    where = "[in sections/06_discussion.tex]"
+    h = 4
+    cells = (cfg.TILE_SIDE + 2 * h) ** 2 / cfg.TILE_SIDE ** 2 - 1.0
+    px = (cfg.UTM_SIDE_PX + 2 * h) ** 2 / cfg.UTM_SIDE_PX ** 2 - 1.0
+    bbox = cfg.TILE_BBOX_PX ** 2 / cfg.UTM_SIDE_PX ** 2
+    return [
+        (f"halo of {h} cells, tile enlargement {where}",
+         f"$({cfg.TILE_SIDE + 2 * h}/{cfg.TILE_SIDE})^2-1\\approx{100 * cells:.1f}\\%$",
+         "pure geometry"),
+        (f"halo of {h} native pixels, crop enlargement {where}",
+         f"${100 * px:.1f}\\%$", f"on the {cfg.UTM_SIDE_PX}-pixel crop"),
+        (f"footprint bounding box / footprint area {where}",
+         f"${bbox:.1f}$ times its area", f"{cfg.TILE_BBOX_PX}^2 / {cfg.UTM_SIDE_PX}^2"),
+        ("halo overhead, conclusion [in sections/07_conclusion.tex]",
+         f"about ${round(100 * (cells + px) / 2):d}\\%$", "rounded midpoint of the two halos"),
+    ]
+
+
+def coauthor_review_checks():
+    """Figures rewritten after the coauthor review on Overleaf (revision 9).
+
+    Three sentences quoted a figure loosely or from an earlier run: the share
+    of regions where native UTM stays ahead at gamma = 2 and the tightest
+    target ("three quarters" -> the table's own 72 %), the area of the native
+    rectangle of the common-support control (a 405 x 401 rectangle from an
+    earlier run; the stored control has one rectangle per region), and the
+    reader-floor halving, where the paired per-region ratio (0.582) and the
+    ratio of the two medians are different statistics and are now both named.
+    """
+    out = []
+    g = _csv("gamma_analysis_self.csv")
+    if g is not None and "win_at_2" in g:
+        r = g[(g.metric == "self") & (g.target == g.target.min())]
+        if len(r):
+            out.append(("UTM ahead at gamma = 2, tightest target, % of regions "
+                        "[in sections/05b_rd_main.tex]",
+                        f"${100 * (1 - float(r.win_at_2.iloc[0])):.0f}\\%$",
+                        "1 - win_at_2 of the synthesis table"))
+    c = _csv("support_controls_common.csv")
+    if c is not None and "utm_km2" in c:
+        a = c.groupby("scene").utm_km2.first()
+        h = c.groupby("scene").hpx_km2.first()
+        where = "[in sections/08_appendices.tex]"
+        out += [(f"common-support control, native rectangle area range {where}",
+                 f"\\SIrange{{{a.min():.1f}}}{{{a.max():.1f}}}{{\\kilo\\metre\\squared}}",
+                 f"over {len(a)} regions"),
+                (f"common-support control, native rectangle median area {where}",
+                 f"\\SI{{{a.median():.1f}}}{{\\kilo\\metre\\squared}}", ""),
+                (f"common-support control, HEALPix block area {where}",
+                 f"\\SI{{{h.iloc[0]:.1f}}}{{\\kilo\\metre\\squared}}", "256 x 256 cells")]
+    rf = _csv("reader_floor.csv")
+    if rf is not None:
+        ok = rf[rf.error.fillna("").astype(str).str.len() == 0]
+        ct = ok[ok.kernel == "clough_tocher"].pivot_table(
+            index="scene", columns="reader", values="floor")
+        if "nearest" in ct and "bilinear" in ct:
+            out.append(("bilinear / nearest floor, ratio of the two medians "
+                        "[in sections/05i_common_reference.tex]",
+                        f"${ct.bilinear.median() / ct.nearest.median():.2f}$",
+                        "not the paired median, which is 0.582"))
     return out
 
 

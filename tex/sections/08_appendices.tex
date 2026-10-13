@@ -69,7 +69,8 @@ full footprints (Table~\ref{tab:support_controls}). Agreement is close
 at the three tightest \term{targets} and drifts at the two loosest, as the
 construction predicts. Morton alignment is restrictive, so the HEALPix
 block is $256\times256$ cells (\SI{2.5}{\kilo\metre\squared}) against
-a $405\times401$ pixel rectangle (\SI{17.6}{\kilo\metre\squared}).
+a native rectangle of \SIrange{10.0}{20.0}{\kilo\metre\squared}
+depending on the region (median \SI{17.6}{\kilo\metre\squared}).
 Where files fall to a few kilobytes the fixed container cost weighs more
 on the smaller raster, so this control is biased against HEALPix at the
 loose end. Re-cutting the \term{UTM crop} at eight offsets of up to 16 native

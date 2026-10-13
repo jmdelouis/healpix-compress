@@ -97,8 +97,9 @@ Filling the level-20 tile means resampling the native raster onto the
 HEALPix cell centres, a step with no counterpart on the UTM side, and the
 kernel decides what the codec sees. Cell anisotropy already matters: at
 fixed area the two local sample spacings scale as $\sqrt{1.7}$ and
-$1/\sqrt{1.7}$, which brings the shorter spacing closer to the native
-\SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests. The
+$1/\sqrt{1.7}$, so the longer spacing comes closer to the native
+\SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests, while the
+shorter one oversamples it further. The
 \term{carrier} used throughout is a Clough--Tocher piecewise-cubic
 interpolant~\cite{clough1965plate} over a Delaunay triangulation of the
 native pixel centres. It is the \texttt{CloughTocherResampler} of the

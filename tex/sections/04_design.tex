@@ -62,7 +62,7 @@ made by interpolating $\log(\text{size})$ against $\log(\text{RMSE})$,
 and the inverse, on the sorted and de-duplicated sweep points.
 Interpolating through a dominated configuration could in principle
 produce a \term{target} no real configuration achieves. The analysis was
-therefore repeated with each of the 400 (region, codec) sweeps
+therefore repeated with each of the 400 (region, codec, grid) sweeps
 restricted to its Pareto frontier. This removes 44 dominated points,
 almost all at the coarse end of the extended ladders, and changes no
 reported median. At the $10^{-3}$ \term{target} it admits one more region and
@@ -187,9 +187,12 @@ $\gamma_{\mathrm{tile}}$; the rest is taken by the operational padding.
 
 The two rasters also differ in divisibility: a power of two against an
 odd side that block and wavelet codecs must pad. Compressing each raster
-against its own central sub-blocks shows no penalty for the odd side. Per
-pixel, the $637^2$ crop costs $0.6\%$ less than the same reduction costs
-the HEALPix raster, and padding the crop to $640^2$ changes its lossless
-size by $0.2\%$. Larger rasters do cost less per pixel at loose \term{targets},
+against its own central sub-blocks shows no penalty for the odd side.
+Cutting a $637^2$ block down to its central $512^2$ block changes the
+lossless bytes per pixel by almost the same factor on both grids; the
+odd-sided \term{UTM crop} comes out $0.6\%$ cheaper per pixel than the
+$637^2$ block of the HEALPix raster does, relative to their $512^2$
+blocks. Padding the crop to $640^2$, a side the codecs divide evenly,
+changes its lossless size by $0.2\%$. Larger rasters do cost less per pixel at loose \term{targets},
 where a file's fixed cost weighs. The protocol compares whole files of
 the same area, so that cost enters both sides alike.
