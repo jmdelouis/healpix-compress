@@ -25,7 +25,12 @@ cd test
 REGIONS="paris amazon" bash reproduce.sh    # smoke test on two regions
 bash reproduce.sh                           # the 40 regions; log in results/reproduce.log
 SKIP_TEX=1 bash reproduce.sh                # everything but the pdflatex run
+FORCE=1 bash reproduce.sh                   # recompute every cached tile and sweep from the windows on disk
 ```
+
+`FORCE=1` is the run that produces the deposited state: after a new
+acquisition the cached tiles and sweeps belong to the previous windows,
+and a chain run without it would mix the two.
 
 ---
 

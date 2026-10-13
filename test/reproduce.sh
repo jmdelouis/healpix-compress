@@ -12,6 +12,8 @@
 #     bash reproduce.sh                       # the 40 regions, everything
 #     REGIONS="paris amazon" bash reproduce.sh   # smoke test on two regions
 #     SKIP_TEX=1 bash reproduce.sh            # stop before pdflatex
+#     FORCE=1 bash reproduce.sh               # ignore every cached tile and sweep: one consistent
+#                                             # run from the windows on disk (the Zenodo state)
 #
 # Every step prints its name and its wall time; the full log is written to
 # results/reproduce.log.
@@ -21,6 +23,7 @@ cd "$(dirname "$0")"
 
 REGIONS="${REGIONS:-}"          # empty = the 40 regions
 SKIP_TEX="${SKIP_TEX:-0}"
+FORCE="${FORCE:-0}"             # 1 = recompute every cached step from the windows on disk
 LOG="results/reproduce.log"
 mkdir -p results
 
@@ -30,6 +33,14 @@ R=()
 if [[ -n "$REGIONS" ]]; then
     # shellcheck disable=SC2206
     R=(--regions $REGIONS)
+fi
+# --force is honoured by the steps that cache per-region work (tiles, the
+# codec sweeps, the kernel ablation); the digest and control scripts always
+# recompute. Without FORCE=1 a tile or sweep already on disk is kept, so a
+# chain run after a new acquisition would mix old sweeps with new tiles.
+F=()
+if [[ "$FORCE" == "1" ]]; then
+    F=(--force)
 fi
 
 step() {                        # step "<label>" <command...>
@@ -54,9 +65,9 @@ step "region_sites"            python region_sites.py
 step "windows on disk"         python build_region_windows.py --check "${R[@]}"
 
 # ---- 2.3 tiles and crops --------------------------------------------------
-step "tiles: clough_tocher"    python build_tiles.py "${R[@]}"
-step "tiles: psf"              python build_tiles.py --resampler psf "${R[@]}"
-step "tiles: linear"           python build_tiles.py --resampler linear "${R[@]}"
+step "tiles: clough_tocher"    python build_tiles.py "${F[@]}" "${R[@]}"
+step "tiles: psf"              python build_tiles.py --resampler psf "${F[@]}" "${R[@]}"
+step "tiles: linear"           python build_tiles.py --resampler linear "${F[@]}" "${R[@]}"
 step "tiles: audit"            python build_tiles.py --audit "${R[@]}"
 
 # ---- 2.4 dataset audits ---------------------------------------------------
@@ -66,17 +77,17 @@ step "codec_audit"             python codec_audit.py --grid both "${R[@]}"
 step "operator_tests"          python operator_tests.py "${R[@]}"
 
 # ---- 3. sweeps ------------------------------------------------------------
-step "bench: both grids"       python run_codec_bench.py --grid both "${R[@]}"
+step "bench: both grids"       python run_codec_bench.py --grid both "${F[@]}" "${R[@]}"
 step "bench: extend ladders"   python extend_sweep.py "${R[@]}"
 step "bench: common ref, nearest"  python run_codec_bench.py --grid hpx --common-reference --force "${R[@]}"
 step "bench: common ref, bilinear" python run_codec_bench.py --grid hpx --common-reference --cr-mode bilinear --force "${R[@]}"
-step "bench: psf transfer"     python run_codec_bench.py --grid hpx --resampler psf "${R[@]}"
-step "bench: linear transfer"  python run_codec_bench.py --grid hpx --resampler linear "${R[@]}"
+step "bench: psf transfer"     python run_codec_bench.py --grid hpx --resampler psf "${F[@]}" "${R[@]}"
+step "bench: linear transfer"  python run_codec_bench.py --grid hpx --resampler linear "${F[@]}" "${R[@]}"
 
 step "resampling_error"        python resampling_error.py "${R[@]}"
 step "resampling_error noise0" python resampling_error.py --noise 0 "${R[@]}"
 step "superres_cost"           python superres_cost.py --kernel psf --control linear --tex
-step "kernel_ablation"         python kernel_ablation.py --rd --limit 0 "${R[@]}"
+step "kernel_ablation"         python kernel_ablation.py --rd --limit 0 "${F[@]}" "${R[@]}"
 
 step "level19_rd"              python level19_rd.py "${R[@]}"
 step "level19_direct"          python level19_direct.py "${R[@]}"
