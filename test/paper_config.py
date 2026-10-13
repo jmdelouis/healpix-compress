@@ -70,6 +70,17 @@ UTM_RAW = UTM_SIDE_PX * UTM_SIDE_PX * 4
 
 # --- rate-distortion protocol ------------------------------------------------
 TARGET_RMSE = [1e-4, 3e-4, 1e-3, 3e-3, 1e-2]
+
+# Regions a transfer is documented NOT to cover (Section V-L: "Coverage is 40
+# regions for the PSF transfer and 39 for the inverse-distance average").
+# build_tiles.py treats these rejections as the published state and exits 0;
+# any other rejection still fails the run. The inverse-distance kernel drops
+# the cells it cannot reach from its sample neighbourhood (0.0154 % of the
+# tile on Lake Taupo, above the 0.01 % ceiling) and the region was left out
+# rather than filled.
+KNOWN_REJECTIONS = {
+    "linear": ["region__water__lake_taupo"],
+}
 BUDGETS = [0.40, 0.20, 0.10, 0.05, 0.02]
 MIN_SCENES = 3                # minimum evaluable regions for a reported target
 # A target is only reported when this fraction of regions has it bracketed by
