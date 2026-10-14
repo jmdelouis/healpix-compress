@@ -29,3 +29,6 @@ pixi.lock
 # ci
 /ci/rattler-recipe/recipe.yaml
 /target
+
+# acquired windows and derived tiles (deposited on Zenodo, see REPRODUCE.md)
+/test/data/
