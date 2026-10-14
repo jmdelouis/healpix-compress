@@ -292,11 +292,10 @@ python level_choice.py            # what level 20 buys over level 19
 The controls (Section V-E, Appendix):
 
 ```bash
-python support_controls.py --control synthetic                        # analytic field on both lattices, no transfer
-python support_controls.py --control synthetic --transfer clough_tocher   # the same field through the paper's transfer
+python support_controls.py --control synthetic --fitted --transfer clough_tocher   # analytic field at the fitted slope and response (beta = 1.9), direct and through the paper's transfer
 python support_controls.py --control smoothed                         # smoothed-native control at half a pixel (default --smooth-shift 0.5 0.5)
 python support_controls.py --control smoothed --smooth-shift 0.25 0.25    # at a quarter of a pixel
-python support_controls.py --control common shift                     # common-support (ten regions) and shifted-crop (four regions) controls
+python support_controls.py --control common shift                     # common-support and shifted-crop controls, all regions
 python block_size_bias.py --limit 0                                   # 512^2 / 637^2 / 1024^2 per-pixel cost
 python granule_overhead.py                                            # the tiling overhead from the published MGRS geometry
 python censoring_sensitivity.py                                       # share of censored (bound) observations per target

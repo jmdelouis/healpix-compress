@@ -92,7 +92,7 @@ reported \term{target} rests on 32 to 40 regions, and Appendix~\ref{app:censorin
 shows how each verdict would change if censored pairs were kept as bounds.
 No extrapolation beyond a codec's measured range is performed.
 
-\term{Target RMSE} values run from $10^{-4}$ to $10^{-2}$ (normalised
+\term{Target} RMSE values run from $10^{-4}$ to $10^{-2}$ (normalised
 reflectance). Storage budgets run from $2\%$ to $40\%$ of one shared
 reference, the raw size of the HEALPix tile (\num{4194304}~B), for both
 grids; the UTM side receives this budget divided by $\gamma_{\mathrm{tile}}$
@@ -112,18 +112,18 @@ reconstruction error on synthetic scenes~\cite{delouis2026resample}.
 Appendix~\ref{app:error_budget} measures that error here on synthetic
 fields built with each region's own spectrum, instrument response and
 noise level. For the Clough--Tocher tile, scored against the observed
-field it reproduces, the median error is $3.0\times10^{-3}$. The
-tightest \term{target} is $3\%$ of it, the $3\times10^{-3}$
-\term{target} is $1.0$ times it and the loosest is $3.4$ times it: the
+field it reproduces, the median error is $2.8\times10^{-3}$. The
+tightest \term{target} is $4\%$ of it, the $3\times10^{-3}$
+\term{target} is $1.1$ times it and the loosest is $3.6$ times it: the
 three tightest \term{targets} compress well below the resampling error,
 the fourth at its level and the loosest above it. For the PSF-aware
 tile, scored against the latent field it estimates, the error is set by
-the blur it does not remove: by class median, $2.8\times10^{-3}$ over
+the blur it does not remove: by class median, $2.1\times10^{-3}$ over
 forest to $4.0\times10^{-2}$ over urban scenes. The companion study
 reports that this \term{transfer} recovers $15.4\%$ to $19.6\%$ of that
 blur on noise-free fields, and Appendix~\ref{app:error_budget} finds the
 same range here at the nominal response width. An orthogonal
-compression error of $1.5\times10^{-3}$ (forest) to $2.2\times10^{-2}$
+compression error of $1.1\times10^{-3}$ (forest) to $2.2\times10^{-2}$
 (urban) would cancel the smaller of those recoveries, so on the
 PSF-aware tile only the \term{targets} up to $10^{-3}$ preserve, in
 every class, what the \term{transfer} restores.
@@ -182,17 +182,16 @@ critical-overhead curve of Section~\ref{sec:rd_main} is the general
 result and $1.30$ one point on it. The tile and the crop have different
 pixel counts ($1024\times1024$ against $637\times637$), so only absolute
 bytes for the same nominal area are comparable. For a budget given as a share of the
-reference, the \term{UTM crop} receives the budget divided by
+\term{reference}, the \term{UTM crop} receives the budget divided by
 $\gamma_{\mathrm{tile}}$; the rest is taken by the operational padding.
 
 The two rasters also differ in divisibility: a power of two against an
 odd side that block and wavelet codecs must pad. Compressing each raster
 against its own central sub-blocks shows no penalty for the odd side.
 Cutting a $637^2$ block down to its central $512^2$ block changes the
-lossless bytes per pixel by almost the same factor on both grids; the
-odd-sided \term{UTM crop} comes out $0.6\%$ cheaper per pixel than the
-$637^2$ block of the HEALPix raster does, relative to their $512^2$
-blocks. Padding the crop to $640^2$, a side the codecs divide evenly,
+lossless bytes per pixel by the same factor on both grids: relative to
+their $512^2$ blocks, the odd-sided \term{UTM crop} and the $637^2$ block of
+the HEALPix raster differ in cost per pixel by $0.0\%$. Padding the crop to $640^2$, a side the codecs divide evenly,
 changes its lossless size by $0.2\%$. Larger rasters do cost less per pixel at loose \term{targets},
 where a file's fixed cost weighs. The protocol compares whole files of
 the same area, so that cost enters both sides alike.

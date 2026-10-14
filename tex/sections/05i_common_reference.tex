@@ -32,14 +32,17 @@ the representation costs.
 \input{tables/table_floors}
 
 Under the nearest \term{read} four of the five \term{RMSE targets} lie beneath this
-floor, and no \term{RMSE target} qualifies on the $75\%$ of regions required by
-Section~\ref{sec:rd_protocol}. $10^{-2}$ reaches $70\%$;
-$3\times10^{-3}$, $10^{-3}$ and $3\times10^{-4}$ reach $30\%$, $15\%$ and
-$7\%$; $10^{-4}$ is reachable nowhere. Under the interpolating read the
-median floor falls to $1.9\times10^{-3}$, and $10^{-2}$ becomes
-reportable ($80\%$). (The $66\%$ of Section~\ref{sec:operator} is a
-paired per-region figure, a median RMSE ratio of $0.582$; the ratio of
-the two medians, $0.48$, is a different statistic.) $3\times10^{-3}$ and $10^{-3}$ rise to $60\%$ and $25\%$ and
+floor, and only the loosest qualifies on the $75\%$ of regions required
+by Section~\ref{sec:rd_protocol}: $10^{-2}$ reaches $78\%$;
+$3\times10^{-3}$, $10^{-3}$ and $3\times10^{-4}$ reach $30\%$, $18\%$ and
+$5\%$; $10^{-4}$ is reachable nowhere. At $10^{-2}$ under this read the
+median ratio is $1.09$ under the illustrative overhead ($1.42$
+overhead-free) and the paired test does not separate the grids
+($p^{\mathrm{Holm}}=0.18$). Under the interpolating read the median
+floor falls to $2.0\times10^{-3}$, and $10^{-2}$ is reported on $80\%$
+of the regions. (The $66\%$ of Section~\ref{sec:operator} is a
+paired per-region figure, a median RMSE ratio of $0.584$; the ratio of
+the two medians, $0.49$, is a different statistic.) $3\times10^{-3}$ and $10^{-3}$ rise to $57\%$ and $25\%$ and
 stay withheld, since the regions that would remain are the smoothest.
 Table~\ref{tab:common_two_readers} puts the two \term{reads} side by side. Each
 cell is the median per-region ratio of the HEALPix side to the native
@@ -56,44 +59,46 @@ floor row is the uncompressed \term{carrier}'s RMSE against the observation.
 The second consequence is a reversal, the most important caveat of this
 paper. Under the \term{common reference} and the nearest \term{read}, native UTM is
 ahead at \emph{every} evaluable \term{target}, \term{matched-budget} included. The
-median RMSE ratios are $1.44$, $3.86$ and $32.2$ at the $2\%$, $5\%$ and
-$10\%$ budgets, over the 37, 36 and 34 regions that qualify
-(Holm-adjusted $p<10^{-4}$ throughout), against $0.83$, $1.33$ and $4.01$
+median RMSE ratios are $1.50$, $4.05$ and $32.5$ at the $2\%$, $5\%$ and
+$10\%$ budgets, over the 40, 39 and 38 regions that qualify
+(Holm-adjusted $p<10^{-4}$ throughout), against $0.82$, $1.33$ and $4.02$
 under the within-representation measure. The one clear HEALPix
 advantage of Section~\ref{sec:rd_illustrative} reverses under the change
 of \term{reference} for an arithmetic reason. At a $2\%$ budget the compression
 error and the \term{transfer} error are of the same order, so a measure that
 charges the second to HEALPix moves the balance by more than the codec
 does. The interpolating \term{read} changes the size of this reversal, and at
-one \term{target} its sign. The ratio at the $2\%$ budget falls from $1.44$ to
+one \term{target} its sign. The ratio at the $2\%$ budget falls from $1.50$ to
 $1.12$ over all 40 regions, still in favour of native UTM (Holm-adjusted
-$p<10^{-4}$). The $5\%$ and $10\%$ ratios fall from $3.86$ and $32.2$
-to $2.50$ and $19.0$. At the one \term{RMSE target} this \term{read} makes reportable,
-$10^{-2}$, HEALPix is the smaller representation under the illustrative
+$p<10^{-4}$). The $5\%$ and $10\%$ ratios fall from $4.05$ and $32.5$
+to $2.50$ and $19.3$. At the one reportable \term{RMSE target}, $10^{-2}$,
+HEALPix becomes the smaller representation under the illustrative
 overhead: a median ratio of $0.93$ over the 32 qualifying regions
-(Holm-adjusted $p=1\times10^{-3}$). The overhead-free ratio there is
+(Holm-adjusted $p=3\times10^{-3}$), where the nearest read gave $1.09$
+and no separation. The overhead-free ratio there is
 $1.20$, a \term{critical overhead} below the illustrative $1.30$. That median
 coincides by chance with the overhead-free within-representation value
 of Section~\ref{sec:rd_main}; the two come from different sweeps,
 \term{references} and overheads. The within-representation ratio at this
 \term{target} ($0.72$) is never recovered, and the three budgets stay with
 native UTM. Of the gap between the two \term{references} at the $2\%$ budget
-($1.44$ against $0.83$ under the nearest \term{read}, $1.12$ against $0.83$
+($1.50$ against $0.82$ under the nearest \term{read}, $1.12$ against $0.82$
 under the interpolating one), about half was the reader.
 
 Two results survive the switch of \term{reference}. JPEG~2000 leads by a wide
 margin under both \term{references} and both \term{reads}, while JPEG~XL and SZ3
 exchange second place. Under the nearest \term{read} JPEG~XL takes more
-outright wins, $49$ against $33$, and SZ3 the better mean rank, $2.54$
-against $3.01$; under the interpolating read the figures are $48$
-against $44$ and $2.54$ against $2.96$. The latitude effect keeps its
+outright wins, $49$ against $38$, and SZ3 the better mean rank,
+$2.52$ against $3.05$; under the interpolating read SZ3 takes both,
+$48$ against $50$ wins for JPEG~XL and $2.52$ against $2.97$ in mean
+rank. The latitude effect keeps its
 direction: the equatorial belt stays more favourable to HEALPix than the
-caps at the tightest budget ($1.63$ against $2.06$ under the nearest
-read, $1.31$ against $1.60$ under the interpolating one). The reader
+caps at the tightest budget ($1.63$ against $2.15$ under the nearest
+read, $1.30$ against $1.60$ under the interpolating one). The reader
 decides its significance. Under the nearest read the contrast fails the
-Holm correction of its family ($p^{\mathrm{Holm}}=0.18$). Under the
+Holm correction of its family ($p^{\mathrm{Holm}}=0.11$). Under the
 interpolating read it passes at all three budgets
-($p^{\mathrm{Holm}}=0.003$ at the tightest, $0.003$ and $0.002$ at the
+($p^{\mathrm{Holm}}=0.003$ at the tightest, $0.003$ and $0.003$ at the
 other two) and fails at the one reportable \term{RMSE target}. This is what
 one expects if the jitter of the nearest \term{read}, largest where cells are
 most anisotropic, was masking it.
@@ -106,9 +111,10 @@ native Sentinel-2 observation remains the \term{reference} product and the
 HEALPix copy is a derived
 convenience, the \term{transfer} error belongs in the accounting. On that basis
 the native grid is more efficient at all three reportable \term{matched-storage}
-budgets. Among the \term{RMSE targets}, only $10^{-2}$ becomes reportable under
-the interpolating \term{read}, and there the \term{carrier} is smaller under the
-illustrative overhead. What the two measures jointly
+budgets. Among the \term{RMSE targets}, only $10^{-2}$ is reportable: the
+nearest \term{read} does not separate the grids there, and under the
+interpolating \term{read} the \term{carrier} is smaller under the illustrative
+overhead. What the two measures jointly
 exclude is the unconditional claim that a HEALPix \term{carrier} is cheaper.
 This \term{reference} applies to the Clough--Tocher \term{carrier} only. That \term{transfer}
 keeps the observation's own resolution, so the observation is the field

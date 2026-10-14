@@ -4,13 +4,13 @@
 
 | tiles | reader | floor (median) | % of std | cells reached | regions |
 |---|---|---|---|---|---|
-| clough_tocher | nearest | 4.038e-03 | 10.0% | 30.8% | 40 |
-| clough_tocher | bilinear | 1.940e-03 | 5.9% | 78.4% | 40 |
-| psf | nearest | 7.835e-03 | 23.6% | 30.8% | 40 |
-| psf | bilinear | 4.288e-03 | 13.8% | 78.4% | 40 |
-| psf | psf | 4.444e-03 | 13.2% | 81.1% | 40 |
+| clough_tocher | nearest | 4.038e-03 | 10.1% | 30.8% | 40 |
+| clough_tocher | bilinear | 1.988e-03 | 5.9% | 78.4% | 40 |
+| psf | nearest | 7.809e-03 | 24.4% | 30.8% | 40 |
+| psf | bilinear | 4.371e-03 | 14.2% | 78.4% | 40 |
+| psf | psf | 4.468e-03 | 13.5% | 81.1% | 40 |
 
-- **clough_tocher tiles**: bilinear/nearest floor = 0.582 (paired median, q10 0.494, q90 0.750; lower on 40/40), so the read accounts for **66%** of the floor's variance on the median region
+- **clough_tocher tiles**: bilinear/nearest floor = 0.584 (paired median, q10 0.494, q90 0.750; lower on 40/40), so the read accounts for **66%** of the floor's variance on the median region
 - **psf tiles**: bilinear/nearest floor = 0.581 (paired median, q10 0.512, q90 0.611; lower on 40/40), so the read accounts for **66%** of the floor's variance on the median region
   - psf/nearest 0.558, psf/bilinear 0.957: the matched operator against the best non-deconvolving read
 

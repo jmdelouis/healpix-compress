@@ -48,7 +48,7 @@ is bracketed on both grids.
 
 With no content difference between the two supports, the direct ratio
 falls monotonically from $2.17$ at $10^{-4}$ to $1.16$ at $10^{-2}$,
-against $2.06$ to $0.93$ on the imagery. The control thus reproduces the
+against $2.07$ to $0.93$ on the imagery. The control thus reproduces the
 decline of the gap and its approximate magnitude. It lies above the
 measured ratio at all five \term{targets}, by $5\%$ to $24\%$, and the gap
 grows as the \term{target} loosens, where the control's own sweep is partly
@@ -75,15 +75,15 @@ native lattice and at the native density, while the \term{carrier} samples a
 different lattice at every phase. Two phases are reported. Half a pixel
 is the phase at which the interpolant departs most from the samples.
 There the native raster compresses to $0.94$ of its size at the tightest
-\term{target} and $0.78$ at the loosest (median over $40$ and $34$ regions).
+\term{target} and $0.78$ at the loosest (median over $40$ and $35$ regions).
 This fixed-phase smoothing control thus reduces the native compressed
 size by $6\%$ to $22\%$ at equal error, more as the \term{target} loosens. At a
-quarter of a pixel it compresses to $0.96$ and $0.87$. Given that
+quarter of a pixel it compresses to $0.96$ and $0.86$. Given that
 smoothing, the native side is smaller than the \term{carrier} at every \term{target}
-and at both phases. HEALPix over smoothed native falls from $2.23$ to
+and at both phases. HEALPix over smoothed native falls from $2.22$ to
 $1.24$ at half a pixel, with $32$ regions at the loosest \term{target} and the
-paired test rejecting parity there ($p=1\times10^{-4}$). It falls from
-$2.20$ to $1.10$ at a quarter of a pixel ($p=4\times10^{-3}$). The
+paired test rejecting parity there ($p<10^{-4}$). It falls from
+$2.19$ to $1.10$ at a quarter of a pixel ($p=4\times10^{-3}$). The
 half-pixel values sit within $7\%$ of the direct synthetic control
 ($2.17$ to $1.16$) at every \term{target}. What remains of the \term{carrier}'s cost,
 once the native side carries the \term{transfer}'s smoothing, is what sampling
@@ -102,10 +102,11 @@ sufficient to account for a residual of the observed magnitude between
 the geometry-only control and the measurement. The \term{common reference}
 reaches the same place from the other side
 (Section~\ref{sec:common_reference}). Two controls on subsets agree
-(Appendix~\ref{app:support}). One is a common-support comparison on ten
-regions, with blocks of different area on the two lattices. The other
-re-cuts the \term{UTM crop} at shifted positions on four regions, which
-moves the ratio by about $1\%$ of the effect. Together these
+(Appendix~\ref{app:support}). One is a common-support comparison, with blocks of different area on
+the two lattices. The other re-cuts the \term{UTM crop} at shifted
+positions, which moves the ratio by $1\%$ of the effect at the tightest
+\term{target} and by more than the effect at the loosest, where the ratio
+itself is close to parity. Together these
 controls suggest that the support mismatch, over footprints that overlap
 by $74$--$83\%$, is unlikely to explain the overall decline in the
 \term{size ratio}; they do not isolate its contribution to the narrow

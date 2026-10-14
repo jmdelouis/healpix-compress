@@ -3,17 +3,15 @@
 \caption{Transfer-kernel ablation}
 \label{tab:kernel_ablation}
 \footnotesize
-\begin{tabular}{@{}lrrrrrrrrr@{}}
+\begin{tabular}{@{}lrrrrrr@{}}
 \toprule
- &  &  &  &  &  &  & \multicolumn{3}{c}{Size / \texttt{clough\_tocher} at target RMSE} \\
-\cmidrule(lr){8-10}
-Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct. & $0.0001$ & $0.0003$ & $0.001$ \\
+Kernel & Transfer & Over & Floor & rel. & log-PSD & top oct. \\
 \midrule
-\texttt{bicubic} & 392.34 & 2.56 & 11.7 & 0.95 & 0.16 & 1.51 & 1.65 & 1.92 & 2.84 \\
-\texttt{clough\_tocher} & 1.20 & 0.00 & 10.0 & 1.00 & 0.05 & 0.89 & 1.00 & 1.00 & 1.00 \\
-\texttt{linear} & 11.48 & 0.86 & 7.0 & 0.74 & 0.03 & 0.92 & 1.20 & 1.31 & 1.60 \\
-\texttt{nearest} & 10.04 & 0.00 & 0.8 & 0.11 & 0.00 & 1.00 & 1.21 & 1.31 & 1.50 \\
-\texttt{psf} & 8.15 & 0.18 & 24.0 & 2.54 & 0.44 & 2.80 & 1.27 & 1.36 & 1.64 \\
+\texttt{bicubic} & 634.28 & 2.68 & 11.9 & 0.96 & 0.16 & 1.51 \\
+\texttt{clough\_tocher} & 7.97 & 0.00 & 10.1 & 1.00 & 0.05 & 0.89 \\
+\texttt{linear} & 16.20 & 0.85 & 7.2 & 0.74 & 0.03 & 0.92 \\
+\texttt{nearest} & 18.30 & 0.00 & 0.9 & 0.11 & 0.00 & 1.00 \\
+\texttt{psf} & 24.46 & 0.20 & 24.4 & 2.55 & 0.44 & 2.80 \\
 \bottomrule
 \end{tabular}
 

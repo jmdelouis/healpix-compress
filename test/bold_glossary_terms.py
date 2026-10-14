@@ -102,13 +102,25 @@ def bold(text):
     return "".join(res)
 
 
+def _strip(text):
+    text = re.sub(r"\\term\{([^{}]*)\}", r"\1", text)
+    return text.replace("\\term{read}ing operator", "reading operator")
+
+
 if __name__ == "__main__":
     for f in sys.argv[1:]:
         p = pathlib.Path(f)
         s = p.read_text(encoding="utf-8")
-        # idempotence: strip existing wrappers first
-        s = re.sub(r"\\term\{([^{}]*)\}", r"\1", s)
-        s = s.replace("\\term{read}ing operator", "reading operator")
-        t = bold(s)
+        # idempotence: strip existing wrappers first -- but only outside the
+        # environments bold() skips (tables, figures, equations), where the
+        # wrappers are set by hand (the glossary table of Section II) and
+        # must survive a re-run.
+        env = re.compile(r"\\begin\{(" + "|".join(re.escape(e) for e in SKIP_ENV)
+                         + r")\}.*?\\end\{\1\}", re.S)
+        parts, pos = [], 0
+        for m in env.finditer(s):
+            parts.append(_strip(s[pos:m.start()])); parts.append(m.group(0)); pos = m.end()
+        parts.append(_strip(s[pos:]))
+        t = bold("".join(parts))
         p.write_text(t, encoding="utf-8")
         print(f, t.count("\\term{"))
