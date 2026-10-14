@@ -80,6 +80,7 @@ TARGET_RMSE = [1e-4, 3e-4, 1e-3, 3e-3, 1e-2]
 # rather than filled.
 KNOWN_REJECTIONS = {
     "linear": ["region__water__lake_taupo"],
+    "bicubic": ["region__water__lake_taupo"],   # same neighbourhood rule, same cells (Table XIII(c): n = 38)
 }
 BUDGETS = [0.40, 0.20, 0.10, 0.05, 0.02]
 MIN_SCENES = 3                # minimum evaluable regions for a reported target
