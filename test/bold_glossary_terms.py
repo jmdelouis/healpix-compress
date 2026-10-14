@@ -15,7 +15,7 @@ TERMS = [
     (r"\b(carrier grids?)\b", r"\\term{\1}"),
     (r"\b(critical overheads?)\b", r"\\term{\1}"),
     (r"\b(size ratios?)\b", r"\\term{\1}"),
-    (r"\b(target RMSE|RMSE targets?)\b", r"\\term{\1}"),
+    (r"\b([Tt]arget RMSE|RMSE targets?)\b", r"\\term{\1}"),
     (r"\b(matched(?:-| )errors?|matched(?:-| )budgets?|matched(?:-| )storage|matched(?:-| )RMSE)\b", r"\\term{\1}"),
     (r"\b(common(?:-| )references?|reconstruction references?)\b", r"\\term{\1}"),
     (r"\b(carriers?)\b(?!-)", r"\\term{\1}"),
