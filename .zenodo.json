@@ -15,14 +15,45 @@
     "Earth observation"
   ],
   "creators": [
-    {"name": "Delouis, Jean-Marc", "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France", "orcid": "0000-0002-0713-1658"},
-    {"name": "Odaka, Tina", "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France", "orcid": "0000-0002-1500-0156"},
-    {"name": "Bovy, Benoit", "affiliation": "GEORODE, Liège, Belgium", "orcid": "0009-0001-4011-3574"},
-    {"name": "Davison, Thomas", "affiliation": "European Space Agency (ESA), ESRIN, Frascati, Italy", "orcid": "0000-0002-0917-4256"},
-    {"name": "Fouilloux, Anne", "affiliation": "LifeWatch ERIC, Seville, Spain", "orcid": "0000-0002-1784-2920"},
-    {"name": "Gueguen, Camille", "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France", "orcid": "0009-0008-3748-9395"},
-    {"name": "Magin, Justus", "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France", "orcid": "0000-0002-4254-8002"},
-    {"name": "Richard, Pablo", "affiliation": "Pablo Richard EI, Paris, France", "orcid": "0000-0002-5441-8213"},
-    {"name": "Dumoulin, Vincent", "affiliation": "European Space Agency (ESA), ESRIN, Frascati, Italy", "orcid": "0009-0005-1217-1143"}
+    {
+      "name": "Delouis, Jean-Marc",
+      "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France",
+      "orcid": "0000-0002-0713-1658"
+    },
+    {
+      "name": "Odaka, Tina",
+      "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France",
+      "orcid": "0000-0002-1500-0156"
+    },
+    {
+      "name": "Bovy, Benoit",
+      "affiliation": "GEORODE, Liège, Belgium",
+      "orcid": "0009-0001-4011-3574"
+    },
+    {
+      "name": "Davison, Thomas",
+      "affiliation": "European Space Agency (ESA), ESRIN, Frascati, Italy",
+      "orcid": "0000-0002-0917-4256"
+    },
+    {
+      "name": "Fouilloux, Anne",
+      "affiliation": "LifeWatch ERIC, Seville, Spain",
+      "orcid": "0000-0002-1784-2920"
+    },
+    {
+      "name": "Gueguen, Camille",
+      "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France",
+      "orcid": "0009-0008-3748-9395"
+    },
+    {
+      "name": "Magin, Justus",
+      "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France",
+      "orcid": "0000-0002-4254-8002"
+    },
+    {
+      "name": "Richard, Pablo",
+      "affiliation": "Pablo Richard EI, Paris, France",
+      "orcid": "0000-0002-5441-8213"
+    }
   ]
 }
