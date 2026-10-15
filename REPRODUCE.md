@@ -394,6 +394,17 @@ results; it never means that the prose is right. The manuscript is never
 edited by hand to make a check pass: the script that produces the number
 is fixed, the table regenerated, the check re-run.
 
+One part of the paper is outside this chain: the large-scale trial on
+ten whole Sentinel-2 products (Appendix on the large-scale trial). It
+ran the operational conversion (EOPF reader, converter,
+`healpix-resample`, the `hcc-sentinel2` codecs) on an object store, and
+the HEALPix products stay there. `test/validation_s2_ten_tiles.ipynb`
+is the notebook that measured its two tables and drew its two figures;
+it needs access to that store and the production environment, so it is
+not run by `reproduce.sh`, its inputs are not in the Zenodo deposit, and
+its figures are not asserted by `check_paper_numbers.py`. The paper says
+so in the appendix and in its limitations.
+
 ---
 
 ## 7. Checklist before tagging

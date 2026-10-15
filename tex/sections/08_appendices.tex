@@ -460,5 +460,6 @@ Table~\ref{tab:alpha_budget} reports a measured inflation in each cell.
     \item \textbf{Ratios over near-constant scenes are fragile.} Over deep water at the loosest \term{targets}, compressed files fall below \SI{10}{kB} and individual ratios range from $0.07$ to $6.1$, though the class medians behave like the others;
     \item \textbf{Learned compression is not evaluated.} Comparing two grids with a neural codec~\cite{balle2017endtoend,valsesia2019onboard} needs models trained symmetrically on both, a study of its own;
     \item \textbf{Codec choice was evaluated on compression efficiency alone.} JPEG~2000 and JPEG~XL support partial, range-based reads of a chunk, ZFP at the block level, SZ3 and the DWT baseline neither; where partial access is required, the strongest compressor may be the wrong choice;
-    \item \textbf{Global-sphere behaviour is not measured} (Section~\ref{sec:limitations}).
+    \item \textbf{Global-sphere behaviour is not measured} (Section~\ref{sec:limitations});
+    \item \textbf{The large-scale trial is reported, not reproduced.} Appendix~\ref{app:large_scale_trial} comes from one production run on an object store with the operational packages; its inputs are outside the data deposit and its figures outside the checker.
 \end{itemize}

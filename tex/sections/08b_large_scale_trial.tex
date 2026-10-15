@@ -66,7 +66,7 @@ measurement excluded.
 \paragraph{Size}
 Table~\ref{tab:operational_sizes} compares the HEALPix product with the
 EOPF product as distributed and with the reflectance of the UTM tile under
-lossless JPEG~2000, the SAFE reference. Over the ten products, the
+lossless JPEG~2000, the SAFE baseline. Over the ten products, the
 HEALPix reflectance is $1.50$ times the lossless JPEG~2000 reflectance
 ($1.48$ in median, $1.36$ to $1.90$ by tile) and $1.16$ times the EOPF
 reflectance; the other groups grow from 915 to 1\,043~MB;
@@ -82,7 +82,7 @@ smooth or partly empty UTM rasters compress well while the HEALPix
 
 \paragraph{Quality}
 The error is measured on the native UTM pixels of 12 random interior
-level-11 chunks per tile and resolution, with the read-back operator of the
+level-11 chunks per tile and resolution, with the observation operator of the
 \term{transfer} (Table~\ref{tab:operational_quality}). The \term{transfer}
 alone leaves $5$ to $6$~DN RMS at \SI{10}{m}, under $1\%$ of the scene's
 standard deviation; the codec adds $1.55$ times that error in median at
@@ -154,7 +154,7 @@ encoding also gives to values below $-0.1$: 227 of the sampled pixels,
 196 of them in one chunk, and a few in B03, B04 and B08; two other
 tiles have a few (16 on B08 of T30STG, 4 on B02 of T27VWL). The conversion reads them as missing and the
 \term{transfer} leaves them out. A first version of the measurement
-scored them as reflectances of $-0.1$, in its reference \term{transfer}
+scored them as reflectances of $-0.1$, in its uncompressed \term{transfer}
 and in the native pixels alike, and reported an added error of $10.2$
 times the \term{transfer} error on that band (and $1.94$ on B08 of
 T30STG). The stored product was not at fault: on the affected chunk, it
@@ -173,3 +173,14 @@ again with the fixed release ($\ge$ v2026.7.0), and the tables above come
 from that conversion. The other defects found along the way, in the
 \term{transfer}, the converter and the processing image, were reported
 to the packages concerned, with fixes.
+
+\paragraph{Scope of this appendix}
+This trial lies outside the deposited chain. It ran the operational
+packages, the EOPF reader, the converter, \texttt{healpix-resample} and
+the two codecs, on products held on an object store, and the HEALPix
+products it wrote stay on that store. The notebook that measured the two
+tables and drew the two figures is in the repository
+(\texttt{test/validation\_s2\_ten\_tiles.ipynb}); its inputs are not in
+the data deposit, \texttt{reproduce.sh} does not run it, and the checker
+of Section~\ref{sec:reproducibility} does not assert the figures quoted
+here. They are reported as the outcome of one production run.
