@@ -1,0 +1,40 @@
+\begin{table}[t]
+\centering
+\caption{Error on the native UTM pixels of the ten products, in digital numbers (1~DN $=10^{-4}$ reflectance), on 12 random interior level-11 chunks per tile and resolution: standard deviation of the native pixels, error of the PSF transfer alone, error added by \texttt{hcc-sentinel2-pyramid} (stored against uncompressed transfer, both read back with the transfer's operator) and total. RMS over the tiles; the last column is the median (min--max) over the tiles of added/transfer.}
+\label{tab:operational_quality}
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{llrrrrl}
+\toprule
+Res. & Band & $\sigma$ & Transfer & Added & Total & Added/transfer \\
+\midrule
+10m & B02 & 645 & 5.3 & 7.7 & 9.4 & 1.57 (1.40--1.61) \\
+10m & B03 & 663 & 5.2 & 7.7 & 9.3 & 1.56 (1.40--1.63) \\
+10m & B04 & 735 & 5.1 & 7.4 & 9.0 & 1.55 (1.39--1.62) \\
+10m & B08 & 822 & 6.2 & 9.4 & 11.2 & 1.52 (1.41--1.63) \\
+\midrule
+20m & B01 & 480 & 0.9 & 1.5 & 1.8 & 1.69 (1.57--2.57) \\
+20m & B02 & 617 & 8.6 & 12.7 & 15.4 & 1.55 (1.45--1.62) \\
+20m & B03 & 636 & 8.6 & 12.8 & 15.4 & 1.58 (1.46--1.63) \\
+20m & B04 & 709 & 8.7 & 13.1 & 15.7 & 1.56 (1.46--1.62) \\
+20m & B05 & 699 & 6.9 & 10.4 & 12.5 & 1.57 (1.46--1.63) \\
+20m & B06 & 716 & 7.3 & 11.1 & 13.3 & 1.56 (1.42--1.63) \\
+20m & B07 & 759 & 7.5 & 11.6 & 13.8 & 1.56 (1.42--1.62) \\
+20m & B11 & 668 & 4.2 & 6.4 & 7.6 & 1.51 (1.42--1.65) \\
+20m & B12 & 582 & 3.9 & 6.1 & 7.2 & 1.53 (1.44--1.64) \\
+20m & B8A & 773 & 7.2 & 11.0 & 13.2 & 1.55 (1.42--1.63) \\
+\midrule
+60m & B01 & 420 & 10.2 & 7.6 & 12.8 & 0.78 (0.70--0.87) \\
+60m & B02 & 475 & 29.1 & 17.3 & 33.8 & 0.64 (0.55--0.69) \\
+60m & B03 & 497 & 30.1 & 18.1 & 35.3 & 0.65 (0.55--0.69) \\
+60m & B04 & 580 & 33.4 & 20.8 & 39.6 & 0.65 (0.55--0.69) \\
+60m & B05 & 575 & 33.3 & 20.7 & 39.3 & 0.66 (0.55--0.70) \\
+60m & B06 & 600 & 36.3 & 22.7 & 42.9 & 0.64 (0.57--0.70) \\
+60m & B07 & 659 & 39.3 & 25.0 & 46.6 & 0.64 (0.57--0.69) \\
+60m & B09 & 665 & 28.3 & 19.7 & 34.5 & 0.70 (0.64--0.75) \\
+60m & B11 & 612 & 32.7 & 21.7 & 39.3 & 0.66 (0.55--0.71) \\
+60m & B12 & 540 & 29.6 & 19.7 & 35.7 & 0.65 (0.56--0.72) \\
+60m & B8A & 685 & 39.9 & 25.5 & 47.4 & 0.64 (0.58--0.69) \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering
+\caption{Whole Sentinel-2 L2A products, EOPF Zarr as distributed against the HEALPix Zarr of the operational chain (legacy-converters preset, reflectance under \texttt{hcc-sentinel2-pyramid} with $r=0.57$). Sizes in MB. JP2: the UTM reflectance under lossless JPEG~2000 per source chunk, the SAFE reference. ``Other'': masks, classification, atmosphere, probabilities, footprints, geometry, meteorology, metadata.}
+\label{tab:operational_sizes}
+\small
+\begin{tabular}{llrrrrrrrr}
+\toprule
+ & & \multicolumn{4}{c}{Reflectance (all bands, 10/20/60~m)} & \multicolumn{2}{c}{Other groups} & \multicolumn{2}{c}{Whole product} \\
+\cmidrule(lr){3-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}
+Landscape & Tile & EOPF & JP2 & HEALPix & $\times$JP2 & EOPF & HEALPix & EOPF & HEALPix \\
+\midrule
+Urban, cropland & T31UDQ & 1\,134 & 861 & 1\,169 & 1.36 & 126 & 141 & 1\,260 & 1\,310 \\
+High mountain, snow & T32TLR & 1\,148 & 877 & 1\,218 & 1.39 & 147 & 160 & 1\,295 & 1\,378 \\
+Irrigated cropland & T30STG & 1\,126 & 857 & 1\,250 & 1.46 & 130 & 173 & 1\,256 & 1\,424 \\
+Pine forest & T30TXP & 981 & 788 & 1\,126 & 1.43 & 108 & 105 & 1\,089 & 1\,232 \\
+Arid, greenhouses & T30SWF & 738 & 573 & 1\,089 & 1.90 & 33 & 43 & 771 & 1\,132 \\
+Coast, open sea & T30UUU & 785 & 620 & 1\,052 & 1.70 & 31 & 30 & 815 & 1\,082 \\
+Port, delta & T31UET & 840 & 667 & 1\,019 & 1.53 & 48 & 50 & 888 & 1\,069 \\
+Volcanic, glacier & T27VWL & 917 & 725 & 1\,118 & 1.54 & 61 & 70 & 978 & 1\,188 \\
+Wetlands, lagoons & T31TFJ & 1\,093 & 844 & 1\,154 & 1.37 & 120 & 126 & 1\,213 & 1\,280 \\
+Boreal forest, lakes & T35VNK & 1\,001 & 782 & 1\,167 & 1.49 & 111 & 145 & 1\,112 & 1\,313 \\
+\midrule
+All 10 & & 9\,763 & 7\,595 & 11\,363 & 1.50 & 915 & 1\,043 & 10\,678 & 12\,406 \\
+\multicolumn{5}{l}{Median (min--max) of $\times$JP2 over tiles} & 1.48 (1.36--1.90) & & & & \\
+\bottomrule
+\end{tabular}
+\end{table*}

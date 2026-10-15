@@ -81,7 +81,13 @@ that charges the \term{transfer}'s smoothing to nobody. At $10^{-4}$ the
 threshold stands at $2.07$, an overhead we know of no measurement
 supporting. The evidence is from
 Sentinel-2 B04 at \SI{10}{m}, one acquisition and one tile per region.
-The ratios should be re-measured before being applied to other bands,
+Appendix~\ref{app:large_scale_trial} runs the operational chain, the
+PSF-aware \term{transfer} and a codec built for Sentinel-2 digital
+numbers, on ten whole L2A products, every band and group: the HEALPix
+reflectance takes $1.50$ times the lossless JPEG~2000 reflectance and the
+whole product $1.16$ times the EOPF product, for a compression error of
+$1.55$ times the \term{transfer} error at \SI{10}{m} and \SI{20}{m},
+spectrally white. The ratios should be re-measured before being applied to other bands,
 sensors, temporal stacks, model output, flux-conservative fields or a
 full-sphere product. Two measurements would sharpen the framework: the
 compressed-byte overhead of a real tiled product, and a non-deconvolving
