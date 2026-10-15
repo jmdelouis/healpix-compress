@@ -29,3 +29,9 @@ pixi.lock
 # ci
 /ci/rattler-recipe/recipe.yaml
 /target
+
+# acquired windows and derived tiles (deposited on Zenodo, see REPRODUCE.md)
+/test/data/
+
+# outputs of test/eopf_s2_to_healpix.py (source cache, converted stores, sizes)
+/test/results/

@@ -50,14 +50,14 @@ overhead on the native product.}
 
 Three things follow. First, the tolerated error sets the ratio.
 Uncompressed, the tile is $2.58$ times the square. Compressed, the ratio
-is $2.06$ when the reconstruction must stay within $10^{-4}$ of the stored
+is $2.07$ when the reconstruction must stay within $10^{-4}$ of the stored
 values, a quarter of a percent of a typical scene's contrast. It falls
 steadily to $0.93$ at $10^{-2}$, a quarter of the contrast, where the
 HEALPix tile is the smaller one before any overhead is charged. The
 oversampling penalty is then more than recovered by the codec, though
 only at an error that is large for a reflectance product. Second, the
 kind of scene moves the ratio less than the tolerated error does. Across
-the four classes the medians span $2.01$--$2.17$ at the tightest \term{target}
+the four classes the medians span $1.98$--$2.17$ at the tightest \term{target}
 and $0.89$--$1.10$ at the loosest, and no class changes the picture.
 Third, the way the tile was filled matters as much as everything else
 combined, and the three \term{transfers} are not interchangeable. The
@@ -74,7 +74,7 @@ illustrative $\gamma_{\mathrm{tile}}=1.30$ included. Those bytes buy
 content the Clough--Tocher tile does not hold, so the two ratios answer
 different questions (Section~\ref{sec:transfer_cost}). The
 inverse-distance average, which restores no detail at all, costs nearly
-as much ($2.1$--$2.5$), so the extra bytes are consistent with the price
+as much ($2.0$--$2.5$), so the extra bytes are consistent with the price
 of leaving the smooth interpolant. With a Clough--Tocher \term{carrier}, the
 storage question is therefore a question of the tolerated error.
 Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative} show where the

@@ -1,17 +1,17 @@
 {
   "zfp": {
-    "attempted": 8,
-    "ok": 8,
+    "attempted": 11,
+    "ok": 11,
     "skipped": []
   },
   "sz3": {
-    "attempted": 8,
-    "ok": 8,
+    "attempted": 10,
+    "ok": 10,
     "skipped": []
   },
   "jpeg2000_lossy": {
-    "attempted": 10,
-    "ok": 10,
+    "attempted": 17,
+    "ok": 17,
     "skipped": []
   },
   "jpeg2000_lossless": {
@@ -20,8 +20,8 @@
     "skipped": []
   },
   "jpegxl_lossy": {
-    "attempted": 17,
-    "ok": 17,
+    "attempted": 21,
+    "ok": 21,
     "skipped": []
   },
   "jpegxl_lossless": {
@@ -30,8 +30,8 @@
     "skipped": []
   },
   "dwt_zstd": {
-    "attempted": 7,
-    "ok": 7,
+    "attempted": 9,
+    "ok": 9,
     "skipped": []
   },
   "uncompressed": {

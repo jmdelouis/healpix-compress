@@ -181,6 +181,10 @@ def checks(tex: str):
     out += target_scale_checks()
     out += bicubic_diag_checks()
     out += tile_crop_checks()
+    out += halo_layout_checks()
+    out += coauthor_review_checks()
+    out += rerun_prose_checks()
+    out += deposit_link_checks()
     out += appendix_table_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
@@ -527,6 +531,231 @@ def tile_crop_checks():
         out.append((f"tile/crop audit, mismatches at recorded indices {where}",
                     f"reports {n_rows:d} mismatched tiles",
                     "rows, i.e. (region, transfer) pairs"))
+    return out
+
+
+def halo_layout_checks():
+    """Section VI-B (revision 8): the native pixels that build one tile.
+
+    A store that keeps the native product and runs the transfer at read time
+    needs the tile footprint plus a halo for the kernel support. The halo
+    overhead is pure geometry: (side + 2h)^2 / side^2 - 1, quoted for a halo
+    of four cells on the 1024-cell tile and four native pixels on the
+    637-pixel equal-area crop. The bounding box of the ~45-degree footprint
+    (paper_config.TILE_BBOX_PX) is the rectangle a 2-D codec would need.
+    """
+    where = "[in sections/06_discussion.tex]"
+    h = 4
+    cells = (cfg.TILE_SIDE + 2 * h) ** 2 / cfg.TILE_SIDE ** 2 - 1.0
+    px = (cfg.UTM_SIDE_PX + 2 * h) ** 2 / cfg.UTM_SIDE_PX ** 2 - 1.0
+    bbox = cfg.TILE_BBOX_PX ** 2 / cfg.UTM_SIDE_PX ** 2
+    return [
+        (f"halo of {h} cells, tile enlargement {where}",
+         f"$({cfg.TILE_SIDE + 2 * h}/{cfg.TILE_SIDE})^2-1\\approx{100 * cells:.1f}\\%$",
+         "pure geometry"),
+        (f"halo of {h} native pixels, crop enlargement {where}",
+         f"${100 * px:.1f}\\%$", f"on the {cfg.UTM_SIDE_PX}-pixel crop"),
+        (f"footprint bounding box / footprint area {where}",
+         f"${bbox:.1f}$ times its area", f"{cfg.TILE_BBOX_PX}^2 / {cfg.UTM_SIDE_PX}^2"),
+        ("halo overhead, conclusion [in sections/07_conclusion.tex]",
+         f"about ${round(100 * (cells + px) / 2):d}\\%$", "rounded midpoint of the two halos"),
+    ]
+
+
+def coauthor_review_checks():
+    """Figures rewritten after the coauthor review on Overleaf (revision 9).
+
+    Three sentences quoted a figure loosely or from an earlier run: the share
+    of regions where native UTM stays ahead at gamma = 2 and the tightest
+    target ("three quarters" -> the table's own 72 %), the area of the native
+    rectangle of the common-support control (a 405 x 401 rectangle from an
+    earlier run; the stored control has one rectangle per region), and the
+    reader-floor halving, where the paired per-region ratio (0.582) and the
+    ratio of the two medians are different statistics and are now both named.
+    """
+    out = []
+    g = _csv("gamma_analysis_self.csv")
+    if g is not None and "win_at_2" in g:
+        r = g[(g.metric == "self") & (g.target == g.target.min())]
+        if len(r):
+            out.append(("UTM ahead at gamma = 2, tightest target, % of regions "
+                        "[in sections/05b_rd_main.tex]",
+                        f"${100 * (1 - float(r.win_at_2.iloc[0])):.0f}\\%$",
+                        "1 - win_at_2 of the synthesis table"))
+    c = _csv("support_controls_common.csv")
+    if c is not None and "utm_km2" in c:
+        a = c.groupby("scene").utm_km2.first()
+        h = c.groupby("scene").hpx_km2.first()
+        where = "[in sections/08_appendices.tex]"
+        out += [(f"common-support control, native rectangle area range {where}",
+                 f"\\SIrange{{{a.min():.1f}}}{{{a.max():.1f}}}{{\\kilo\\metre\\squared}}",
+                 f"over {len(a)} regions"),
+                (f"common-support control, native rectangle median area {where}",
+                 f"\\SI{{{a.median():.1f}}}{{\\kilo\\metre\\squared}}", ""),
+                (f"common-support control, HEALPix block area {where}",
+                 f"\\SI{{{h.iloc[0]:.1f}}}{{\\kilo\\metre\\squared}}", "256 x 256 cells")]
+    rf = _csv("reader_floor.csv")
+    if rf is not None:
+        ok = rf[rf.error.fillna("").astype(str).str.len() == 0]
+        ct = ok[ok.kernel == "clough_tocher"].pivot_table(
+            index="scene", columns="reader", values="floor")
+        if "nearest" in ct and "bilinear" in ct:
+            out.append(("bilinear / nearest floor, ratio of the two medians "
+                        "[in sections/05i_common_reference.tex]",
+                        f"${ct.bilinear.median() / ct.nearest.median():.2f}$",
+                        "not the paired median, which is 0.582"))
+    return out
+
+
+def deposit_link_checks():
+    """The two places the paper sends a reader for code and data.
+
+    \\repourl must point at the submission tag and \\datadoi at the Zenodo
+    data deposit; neither may be left as a TODO. The strings are asserted
+    as written in the preamble, so a change of tag or DOI shows up here.
+    """
+    where = "[in tgrs_healpix_compress.tex]"
+    return [
+        (f"code repository at the submission tag {where}",
+         "\\newcommand{\\repourl}{\\url{https://github.com/jmdelouis/healpix-compress/tree/tgrs-submission}}",
+         "the tag make_data_archive.py was run at"),
+        (f"data deposit DOI {where}",
+         "\\newcommand{\\datadoi}{\\url{https://doi.org/10.5281/zenodo.23388572}}",
+         "reserved on Zenodo on 15 Oct 2026, before publication"),
+    ]
+
+
+def rerun_prose_checks():
+    """Prose figures that the deposited run (October 2026) changed and that no
+    earlier block asserted: they were found stale only by reading the text
+    against the regenerated tables, which is the failure this harness exists
+    to prevent. Each is now derived from the digest or generated table the
+    corresponding table reads.
+    """
+    import re as _re
+    out = []
+    # --- latitude (Section V-D): belt and cap medians, Holm p-values --------
+    try:
+        d = json.loads((cfg.RESULTS_DIR / "paper_numbers_self.json").read_text())
+        lat = d["latitude"]
+        where = "[in sections/05d_latitude.tex]"
+        b2 = lat["budget:0.02"]; b5 = lat["budget:0.05"]; r1 = lat["rmse:0.01"]
+        out += [(f"latitude, belt vs cap medians at the 2% budget {where}",
+                 f"${b2['equatorial_vs_cap']['median_a']:.2f}$ against ${b2['equatorial_vs_cap']['median_b']:.2f}$", ""),
+                (f"latitude, Spearman rho at the 2% budget {where}",
+                 f"$\\rho={b2['spearman']['rho']:.2f}$", ""),
+                (f"latitude, Holm p of rho at the 2% budget {where}",
+                 f"$p^{{\\mathrm{{Holm}}}}_\\rho={b2['spearman']['p_holm']:.3f}$", ""),
+                (f"latitude, belt vs cap Holm p at the 2% budget {where}",
+                 f"$p^{{\\mathrm{{Holm}}}}={b2['equatorial_vs_cap']['p_holm']:.3f}$", ""),
+                (f"latitude, belt vs cap medians at the 5% budget {where}",
+                 f"${b5['equatorial_vs_cap']['median_a']:.2f}$ against ${b5['equatorial_vs_cap']['median_b']:.2f}$", ""),
+                (f"latitude, belt vs cap Holm p at the 5% budget {where}",
+                 f"$p^{{\\mathrm{{Holm}}}}={b5['equatorial_vs_cap']['p_holm']:.3f}$", ""),
+                (f"latitude, Holm p of rho at the 5% budget {where}",
+                 f"${b5['spearman']['p_holm']:.3f}$", "quoted as 'outside the threshold at'"),
+                (f"latitude, belt vs cap medians at the loosest target {where}",
+                 f"${r1['equatorial_vs_cap']['median_a']:.2f}$ against ${r1['equatorial_vs_cap']['median_b']:.2f}$", "")]
+        for tag, name in (("common", "nearest"), ("common_bilinear", "interpolating")):
+            dc = json.loads((cfg.RESULTS_DIR / f"paper_numbers_{tag}.json").read_text())
+            e = dc["latitude"]["budget:0.02"]["equatorial_vs_cap"]
+            out.append((f"latitude under the common reference, {name} read, belt vs cap at the 2% budget "
+                        "[in sections/05i_common_reference.tex]",
+                        f"${e['median_a']:.2f}$ against ${e['median_b']:.2f}$", ""))
+        # same-codec medians at the loosest target: the p the text quotes for SZ3
+        fc = d["fixed_codec"]
+        def _loosest(v):
+            for k in ("rmse:0.01", "0.01"):
+                if k in v:
+                    return v[k]
+            return list(v.values())[-1]
+        sz = _loosest(fc["sz3"])
+        out.append(("same-codec SZ3 paired p at the loosest target [in sections/05c2_same_codec.tex]",
+                    f"$p={sz['p']:.2f}$", f"n={sz['n']}"))
+    except (FileNotFoundError, KeyError) as exc:
+        out.append((f"rerun prose, latitude  [skipped: {exc}]", "", ""))
+    # --- codec ranking under the common reference (Section V-I) ------------
+    for suffix, label in (("_common", "nearest"), ("_common_bilinear", "interpolating")):
+        p = cfg.TEX_TABLES / f"table_codec_ranking{suffix}.tex"
+        if not p.exists():
+            continue
+        found = _re.findall(r"\\texttt\{([a-z0-9_\\]+)\}\s*&\s*(\d+)\s*&\s*\d+\s*&\s*([0-9.]+)", p.read_text())
+        rk = {k.replace("\\_", "_"): w for k, w, _r in found}
+        rows2 = {k.replace("\\_", "_"): _r for k, _w, _r in found}
+        where = "[in sections/05i_common_reference.tex]"
+        if "jpegxl_lossy" in rk and "sz3" in rk:
+            out += [(f"common reference, {label} read: JPEG XL vs SZ3 wins {where}",
+                     f"${rk['jpegxl_lossy']}$ against ${rk['sz3']}$", "Table codec_ranking" + suffix),
+                    (f"common reference, {label} read: SZ3 vs JPEG XL mean rank {where}",
+                     f"${rows2['sz3']}$ against ${rows2['jpegxl_lossy']}$", "")]
+    # --- the subset controls (Appendix, Section V-E) ------------------------
+    c = _csv("support_controls_common.csv")
+    if c is not None and "ratio_per_km2" in c:
+        cb = c.dropna(subset=["ratio_per_km2"])      # same rows as the table
+        med = cb.groupby("target").ratio_per_km2.median()
+        where = "[in sections/08_appendices.tex]"
+        out.append((f"common-support ratios per km2, five targets {where}",
+                    ", ".join(f"${v:.2f}$" for v in med.sort_index()), f"over {c.scene.nunique()} regions"))
+        out.append((f"common-support control, regions {where}", f"Over {c.scene.nunique()} regions", ""))
+    sh = _csv("support_controls_shift.csv")
+    if sh is not None and "ratio" in sh:
+        ts = sorted(sh.target.unique())
+        def _sp(t):
+            g = sh[sh.target == t]; per = g.groupby("scene").ratio
+            spread = float((per.max() - per.min()).median()); med = float(g.ratio.median())
+            return spread, spread / abs(med - 1.0)
+        s0, f0 = _sp(ts[0]); s1, f1 = _sp(ts[-1])
+        where = "[in sections/08_appendices.tex]"
+        out += [(f"shifted crops, spread at the tightest target {where}", f"${s0:.3f}$", ""),
+                (f"shifted crops, spread at the loosest target {where}", f"${s1:.3f}$", ""),
+                (f"shifted crops, spread as % of the effect at the tightest target {where}",
+                 f"${100 * f0:.0f}\\%$", "spread / |ratio - 1|"),
+                (f"shifted crops, regions {where}", f"Over {sh.scene.nunique()} regions", "")]
+    # --- level-19 discards by class (Section V-H) ----------------------------
+    lc = _csv("level_choice.csv")
+    if lc is not None and "discarded_var_frac" in lc:
+        l19 = lc[lc.level == 19] if "level" in lc else lc
+        g = l19.groupby("cls").discarded_var_frac.median() * 100
+        where = "[in sections/05h_level_choice.tex]"
+        out.append((f"level-19 discards by class, low and high {where}",
+                    f"${g.min():.1f}\\%$ in {g.idxmin()} to ${g.max():.1f}\\%$ in {g.idxmax()}", ""))
+    # --- the illustrative ratio at the three tightest targets (Section V-C) --
+    g = _csv("gamma_analysis_self.csv")
+    if g is not None and "gamma_star_median" in g:
+        r = g[(g.metric == "self") & g.reported].sort_values("target")
+        gs = r.gamma_star_median.values / cfg.GAMMA_UTM
+        out.append(("illustrative ratio range over the three tightest targets [in sections/05c_rd_illustrative.tex]",
+                    f"${gs[2]:.2f}$--${gs[0]:.2f}\\times$", "gamma_star / gamma_tile"))
+        out.append(("overhead restoring UTM at 3e-3, percent [in sections/05b_rd_main.tex]",
+                    f"${100 * (r.gamma_star_median.values[3] - 1):.0f}\\%$", "gamma_star - 1"))
+        out.append(("gamma_star at 3e-3 in the discussion [in sections/06_discussion.tex]",
+                    f"${r.gamma_star_median.values[3]:.2f}$ at", ""))
+    # --- within-representation budget ratios (Sections V-C, V-I, conclusion) --
+    try:
+        d = json.loads((cfg.RESULTS_DIR / "paper_numbers_self.json").read_text())
+        bud = {round(float(t["target"]), 4): t["test"]["median"]
+               for t in d["targets"] if t["kind"] == "budget" and t.get("test", {}).get("n")}
+        out += [("within-representation ratio at the 2% budget (several places)", f"${bud[0.02]:.2f}$", "V-C, V-I, conclusion"),
+                ("within-representation ratio at the 5% budget", f"${bud[0.05]:.2f}$", ""),
+                ("within-representation ratio at the 10% budget", f"${bud[0.1]:.2f}$", "")]
+        dc = json.loads((cfg.RESULTS_DIR / "paper_numbers_common.json").read_text())
+        ns = [t["test"]["n"] for t in sorted((t for t in dc["targets"] if t["kind"] == "budget" and t.get("test", {}).get("n")), key=lambda t: -t["target"])]
+        if len(ns) >= 3:
+            out.append(("common-reference budgets, regions qualifying (10%, 5%, 2% in text order 2/5/10) [in sections/05i_common_reference.tex]",
+                        f"over the {ns[-1]}, {ns[-2]} and {ns[-3]} regions", ""))
+        r01 = next(t for t in dc["targets"] if t["kind"] == "rmse" and abs(float(t["target"]) - 0.01) < 1e-9)
+        out.append(("common reference, nearest read at 1e-2, Holm p [in sections/05i_common_reference.tex]",
+                    f"$p^{{\\mathrm{{Holm}}}}={r01['p_holm']:.2f}$", "the one reportable RMSE target under the nearest read"))
+    except (FileNotFoundError, KeyError, StopIteration) as exc:
+        out.append((f"rerun prose, budgets  [skipped: {exc}]", "", ""))
+    # --- lossless sizes of the three carriers (Section V-L) -----------------
+    comp = _csv("compactability.csv")
+    if comp is not None and "lossless_bytes" in comp:
+        mb = {t: comp[comp.transfer == t].lossless_bytes.iloc[0] / 1e6
+              for t in ("clough_tocher", "psf", "linear") if (comp.transfer == t).any()}
+        if len(mb) == 3:
+            out.append(("lossless sizes of the three carriers [in sections/05l_transfer_cost.tex]",
+                        f"\\SI{{{mb['clough_tocher']:.2f}}}{{MB}}, \\SI{{{mb['psf']:.2f}}}{{MB}} and \\SI{{{mb['linear']:.2f}}}{{MB}}", ""))
     return out
 
 

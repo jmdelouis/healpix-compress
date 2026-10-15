@@ -400,7 +400,15 @@ def main(argv=None) -> int:
         print(f"\n{len(failures)} region(s) failed:")
         for scene, err in failures:
             print(f"  {scene}: {err}")
-        return 1
+        # A region the transfer is documented not to cover (Section V-L,
+        # paper_config.KNOWN_REJECTIONS) has no tile by design; that is the
+        # published state, not a failure. Anything else still fails the run.
+        known = set(cfg.KNOWN_REJECTIONS.get(args.resampler, []))
+        if any(scene not in known or not err.startswith("no ")
+               for scene, err in failures):
+            return 1
+        print(f"  expected: documented coverage of the {args.resampler} "
+              f"transfer (paper_config.KNOWN_REJECTIONS); not an error")
     if args.common_reference and args.cr_mode != "nearest":
         print(f"\nNext: python update_paper_numbers.py --metric common "
               f"--cr-mode {args.cr_mode}")

@@ -10,7 +10,7 @@ narrows the gap steadily, from $+106\%$ to $-7\%$. The operational
 verdict is therefore decided by whether the residual gap exceeds the
 overhead a given native layout carries, the \term{critical overhead}
 $\gamma_\star$ of Table~\ref{tab:synthesis}. That threshold is far
-above the overheads examined here at high fidelity. It is $1.19$ at
+above the overheads examined here at high fidelity. It is $1.23$ at
 $3\times10^{-3}$, where the verdict depends on the layout, and $0.93$ at
 $10^{-2}$, where the \term{carrier} is smaller at equal layout overhead. A
 HEALPix \term{carrier} pays less for its oversampling than raw byte counts
@@ -20,6 +20,7 @@ carries is efficiently discarded by several of the tested codecs as the
 distortion constraint is relaxed.
 
 \subsection{What Is a Property of the Grid}
+\label{sec:grid_property}
 One result is purely geometric: the raw $2.584\times$ sampling-density
 ratio, which the illustrative $\gamma_{\mathrm{tile}}=1.30$ turns into a
 product-architecture quantity of $1.99\times$. A second behaviour is
@@ -45,8 +46,8 @@ transfer-and-read floor is caused by the \term{read}, since changing the
 (Section~\ref{sec:operator}). The codec ranking is a property of these
 codecs on this imagery, identical on both grids, with no demonstrated
 quadtree effect (Section~\ref{sec:why_quadtree}). A reader interested
-in HEALPix as such should keep the first three; a product designer
-should keep all six, because a product is the complete chain.
+in HEALPix as such should keep the first two; a product designer
+should keep all five, because a product is the complete chain.
 Full-sphere behaviour has not been measured. Every result is on one
 level-10 parent tile per scene ($1024\times1024$ level-20 cells), large
 enough to amortise per-chunk codec overhead and small enough to remain
@@ -64,13 +65,44 @@ chunks rather than a second copy of the data. The same option is not
 established for the PSF-aware \term{transfer}. Its deconvolution amplifies the
 small scales of its input, and a native product stored with lossy
 compression may have lost exactly those scales. Whether the restored
-content survives a compressed input would need a dedicated test. Every
-ratio in this paper is about the other choice, a \term{carrier} materialised
-on disk, which is what a DGGS archive buys latency and simplicity with.
-Which of the two is right is a question about read patterns and compute
-budgets that this study does not address. A hybrid, storing the native
-product and materialising the \term{carrier} only for the levels and regions
-that are read often, sits between them.
+content survives a compressed input would need a dedicated test.
+
+That test is worth running, because the storage arithmetic favours this
+design for the PSF-aware \term{transfer}. Its tile costs $2.3$--$2.6$ times
+the \term{native square} at every \term{target}
+(Section~\ref{sec:transfer_cost}), so its \term{critical overhead} is
+$2.3$ or more. A native layout can stay far below that. The native pixels
+that build one $1024\times1024$ tile are those under its footprint plus a
+halo of a few pixels for the support of the kernel. A halo of four cells
+enlarges the footprint by $(1032/1024)^2-1\approx1.6\%$; four native
+pixels enlarge it by $2.5\%$. Both are an order of magnitude below the
+illustrative $30\%$. Such a store also keeps only valid pixels, so the
+padding at the swath edges that the granule layout carries is not stored
+at all. One caution: these figures count pixels, not the rectangle a 2-D
+codec needs. The footprint runs at about $45^\circ$ to the native axes,
+so its bounding box holds $2.0$ times its area. A lean store therefore
+keeps the native product in its own chunks and gathers, at read time, the
+chunks a tile touches; it reads more than it uses, and stores nothing
+twice. Under such a layout the PSF-aware \term{carrier} is a view, not a
+copy, and the archive is at least as small as the native product. What
+moves is the compute. The PSF-aware \term{transfer} is the expensive step of
+the chain, and this design runs it at every \term{read} instead of once, which
+is the work a materialised \term{carrier} was meant to save. Whether the
+design pays therefore rests on two open questions. The first is the test
+above: a native product compressed to a given \term{target} must still
+carry the small scales the deconvolution restores, and the deconvolution
+must not amplify the coding error more than it restores. The second is
+the cost of the \term{transfer} at read time, which a store can lower by
+keeping the parts of the computation that all tiles share, since the
+geometry between native pixels and cells changes slowly across a zone.
+Both are future work.
+
+Every ratio in this paper is about the other choice, a \term{carrier}
+materialised on disk, which is what a DGGS archive buys latency and
+simplicity with. Which of the two is right is a question about read
+patterns and compute budgets that this study does not address. A hybrid,
+storing the native product and materialising the \term{carrier} only for
+the levels and regions that are read often, sits between them.
 
 \subsection{What a Shared Grid Adds That This Study Does Not Count}
 \label{sec:shared_grid}
@@ -109,9 +141,10 @@ independent decoder (Appendix~\ref{app:codec_audit}). Each sweep
 records the codec library versions and the tagged checkout of the
 shared resampling package~\cite{delouis2026resample} it ran against,
 and the harness refuses a run whose instrument response falls outside
-the band of the sensor. The code, the stored results and the per-region
-values this paper does not print are at \repourl, at the tag it was
-submitted from.
+the band of the sensor. The code is at \repourl, at the tag it was
+submitted from. The native windows, the stored tiles, every result file
+and the per-region values this paper does not print are deposited at
+\datadoi.
 
 \subsection{Current Limitations}
 \label{sec:limitations}

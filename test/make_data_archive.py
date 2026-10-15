@@ -152,8 +152,8 @@ def code_version() -> dict:
     """Which checkout of this repository wrote the archive."""
     out = {}
     for key, cmd in (("commit", ["git", "rev-parse", "HEAD"]),
-                     ("describe", ["git", "describe", "--tags", "--dirty",
-                                   "--always"])):
+                     ("describe", ["git", "describe", "--tags", "--match",
+                                   "tgrs-*", "--dirty", "--always"])):
         try:
             out[key] = subprocess.run(cmd, cwd=cfg.REPO_ROOT, check=True,
                                       capture_output=True, text=True
@@ -311,10 +311,8 @@ def zenodo_metadata(version: dict) -> dict:
             "Add in the Zenodo form, once the DOIs exist: related identifier "
             "'isSupplementTo' the TGRS article, 'isCompiledBy' the code "
             "deposit, 'isDerivedFrom' the Copernicus Sentinel-2 products.",
-            "Add the funding entries with the funder picker (ESA contract "
-            "4000147951/25/I-NS; Estonian Research Agency PRG1764 and PSG841; "
-            "Estonian Ministry of Education and Research TK232; European "
-            "Commission ERC WaterSmartLand 101125476).",
+            "Add the funding entry with the funder picker (ESA contract "
+            "4000147951/25/I-NS).",
         ],
     }
 

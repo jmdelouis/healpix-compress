@@ -21,13 +21,13 @@ containing cell. \emph{Bilinear} places each native pixel in the \term{carrier}
 lattice at sub-cell precision and takes the bilinear combination of the
 four bracketing centres. Ratios are paired per region before the median
 is taken. On the same tiles, mask and observation, the bilinear floor is
-$0.582$ times that of the nearest \term{read}, lower on every region. Changing
+$0.584$ times that of the nearest \term{read}, lower on every region. Changing
 the \term{read} alone therefore removes $66\%$ of the mean squared error of the
 transfer-and-read floor: it drops from $10.0\%$ to $5.9\%$ of a scene's
 standard deviation. A substantial part of the floor is caused by the
 \term{read}ing operator. This is a measured difference between two chains and no
 variance decomposition: the \term{transfer} and read errors need not be
-orthogonal, and what the residual $1.9\times10^{-3}$ owes to each is not
+orthogonal, and what the residual $2.0\times10^{-3}$ owes to each is not
 separated here. The PSF-aware tiles are not scored in this table. Their
 estimand is the latent field, so a floor against the observation would
 measure their distance to a field they do not aim at

@@ -62,14 +62,14 @@ Table~\ref{tab:synthesis} reports $\gamma_\star$ at every \term{target}. Each
 region's value is the overhead at which the two representations reach
 equal compressed size; the table gives the median over the $n$ regions
 that qualify (40, 40, 39, 37 and 32 as the \term{target} loosens). It falls
-from $2.06$ to $0.93$. At $3\times10^{-3}$ it reaches $1.19$, below the
+from $2.07$ to $0.93$. At $3\times10^{-3}$ it reaches $1.23$, below the
 illustrative $1.30$; this is why the measured ratio at that \term{target} is
-$0.92$ and why the paired test does not separate the grids there. At the
-three tightest \term{targets} $\gamma_\star$ runs from $1.59$ to $2.06$,
+$0.94$ and why the paired test does not separate the grids there. At the
+three tightest \term{targets} $\gamma_\star$ runs from $1.58$ to $2.07$,
 overheads we know of no measurement supporting. At the tightest \term{target}
-native UTM stays ahead for three quarters of the regions even at
-$\gamma=2$. At $3\times10^{-3}$ a native product organised with less
-than $19\%$ of overhead would restore the advantage of UTM. The
+native UTM stays ahead on $72\%$ of the regions even at $\gamma=2$
+(Table~\ref{tab:synthesis}). At $3\times10^{-3}$ a native product organised with less
+than $23\%$ of overhead would restore the advantage of UTM. The
 Sentinel-2 tiling duplicates about $21\%$ of the nominal sample area
 (Section~\ref{sec:overhead}), which is above that value. What the
 duplication costs in compressed bytes is not measured here, and the
@@ -83,7 +83,7 @@ to assume an overhead in the \term{carrier}'s favour. $\gamma_\star$ has not
 been recomputed for the \term{matched-budget} protocol
 (Section~\ref{sec:limitations}). The column
 $f(e)=(2.58-\gamma_\star(e))/(2.58-1)$ is the share of the raw
-oversampling penalty that compression recovers at error $e$: $0.33$ at
+oversampling penalty that compression recovers at error $e$: $0.32$ at
 the tightest \term{target} and $1.04$ at the loosest, where the \term{carrier} has
 passed parity. The win columns give the fraction of the $n$ regions for
 which HEALPix is smaller at three illustrative overheads.
@@ -113,7 +113,7 @@ twice what the \term{carrier} does finds $28\%$ to $100\%$. Only at the tightest
 \term{target} is the answer robust over the whole range of overheads examined
 here in favour of UTM, and only at the loosest in favour of HEALPix. Each
 \term{target} also has a band of $\gamma$ within which the two grids cannot be
-separated, narrow at the extremes and $1.35$--$1.73$ at $10^{-3}$. The
+separated, narrow at the extremes and $1.35$--$1.72$ at $10^{-3}$. The
 eight regions absent at $10^{-2}$ are those whose scene contrast does
 not exceed the \term{target} (Section~\ref{sec:rd_protocol}); keeping them as
 bounds would leave the ratio at the illustrative overhead within

@@ -25,10 +25,12 @@
 % bold, #1 for none. The first occurrence carries a footnote (Section I).
 \newcommand{\term}[1]{\emph{#1}}
 
-% Where the code, the per-region values and the stored results live. Defined
-% once: Section IV-A, Section VI-C and Appendix B cite it through this macro,
-% and the archived-snapshot DOI replaces the URL at proof stage.
-\newcommand{\repourl}{\todo{confirm the GitHub URL of healpix-compress}}
+% Where the code and the data live. Defined once: Section IV-A and
+% Section VI-C cite them through these macros. The tag is the one the
+% paper was submitted from; the DOI is the Zenodo data deposit (windows,
+% tiles, every result file and the per-region values the text cites).
+\newcommand{\repourl}{\url{https://github.com/jmdelouis/healpix-compress/tree/tgrs-submission}}
+\newcommand{\datadoi}{\url{https://doi.org/10.5281/zenodo.23388572}}
 
 \begin{document}
 
@@ -38,14 +40,11 @@
 Jean-Marc Delouis\textsuperscript{1},
 Tina Odaka\textsuperscript{2},
 Benoit Bovy\textsuperscript{3},
-Etienne Cap\textsuperscript{4},
-Thomas Davison\textsuperscript{5},
-Anne Fouilloux\textsuperscript{6},
-Camille Gueguen\textsuperscript{7},
-Alexander Kmoch\textsuperscript{8},
-Justus Magin\textsuperscript{9},
-Pablo Richard\textsuperscript{10},
-and Vincent Dumoulin\textsuperscript{11}%
+Thomas Davison\textsuperscript{4},
+Anne Fouilloux\textsuperscript{5},
+Camille Gueguen\textsuperscript{6},
+Justus Magin\textsuperscript{7},
+and Pablo Richard\textsuperscript{8}%
 \thanks{\textsuperscript{1}LOPS UMR 6523,
 CNRS--IFREMER--IRD--Univ. Brest--IUEM, Plouzané, France.
 Corresponding author: jean.marc.delouis@ifremer.fr. ORCID: 0000-0002-0713-1658.}%
@@ -54,27 +53,18 @@ CNRS--IFREMER--IRD--Univ. Brest--IUEM, Plouzané, France.
 Email: Tina.Odaka@ifremer.fr. ORCID: 0000-0002-1500-0156.}%
 \thanks{\textsuperscript{3}GEORODE, Liège, Belgium.
 Email: bbovy@georode.com. ORCID: 0009-0001-4011-3574.}%
-\thanks{\textsuperscript{4}LOPS UMR 6523,
-CNRS--IFREMER--IRD--Univ. Brest--IUEM, Plouzané, France.
-Email: Etienne.Cap@ifremer.fr. ORCID: 0009-0007-0360-0692.}%
-\thanks{\textsuperscript{5}European Space Agency (ESA)---ESRIN, Frascati, Italy.
+\thanks{\textsuperscript{4}European Space Agency (ESA)---ESRIN, Frascati, Italy.
 Email: Thomas.Davison@esa.int. ORCID: 0000-0002-0917-4256.}%
-\thanks{\textsuperscript{6}LifeWatch ERIC, Seville, Spain.
+\thanks{\textsuperscript{5}LifeWatch ERIC, Seville, Spain.
 Email: anne.fouilloux@lifewatch.eu. ORCID: 0000-0002-1784-2920.}%
-\thanks{\textsuperscript{7}LOPS UMR 6523,
+\thanks{\textsuperscript{6}LOPS UMR 6523,
 CNRS--IFREMER--IRD--Univ. Brest--IUEM, Plouzané, France.
 Email: camille.gueguen@ifremer.fr. ORCID: 0009-0008-3748-9395.}%
-\thanks{\textsuperscript{8}University of Tartu,
-Institute of Ecology and Earth Sciences,
-Landscape Geoinformatics Lab, Tartu, Estonia.
-Email: alexander.kmoch@ut.ee. ORCID: 0000-0003-4386-4450.}%
-\thanks{\textsuperscript{9}LOPS UMR 6523,
+\thanks{\textsuperscript{7}LOPS UMR 6523,
 CNRS--IFREMER--IRD--Univ. Brest--IUEM, Plouzané, France.
 Email: Justus.Magin@ifremer.fr. ORCID: 0000-0002-4254-8002.}%
-\thanks{\textsuperscript{10}Pablo Richard EI, Paris, France.
+\thanks{\textsuperscript{8}Pablo Richard EI, Paris, France.
 Email: pablorichard@hotmail.fr. ORCID: 0000-0002-5441-8213.}%
-\thanks{\textsuperscript{11}European Space Agency (ESA)---ESRIN, Frascati, Italy.
-Email: vincent.dumoulin@esa.int. ORCID: 0009-0005-1217-1143.}%
 }
 
 \markboth{IEEE Transactions on Geoscience and Remote Sensing,~Vol.~XX, No.~X, Month~2026}%
@@ -94,7 +84,7 @@ land-cover classes and five established codecs. The result is the
 layout overhead a native product must carry, at each tolerated error,
 for the HEALPix copy to be the smaller one. Filled by
 Clough--Tocher interpolation, which keeps the resolution of the product,
-the tile falls from $2.06$ to $0.93$ times the compressed size of the
+the tile falls from $2.07$ to $0.93$ times the compressed size of the
 native square as the tolerated RMSE grows from $10^{-4}$ to $10^{-2}$:
 the HEALPix copy is smaller only at the loosest tolerance. A PSF-aware
 transfer instead
@@ -126,7 +116,7 @@ Earth observation, HEALPix, discrete global grid systems, data compression, rate
 \section*{Acknowledgment}
 This work was conducted mainly under the ESA-funded GRID4EARTH project, “ESA Digital Twin Earth Framework: Common DGGS for DestinE and Copernicus Sentinel Data,” ESA contract 4000147951/25/I-NS. Computations were carried out on the Pangeo-EOSC platform (EGI-ACE and C-SCALE, Horizon 2020).
 
-A. K. additionally receives support from the Estonian Research Agency under grant agreements PRG1764 and PSG841; from the Estonian Ministry of Education and Research via the Centre of Excellence for Sustainable Land Use, TK232; and from the European Commission through the ERC project WaterSmartLand, grant 101125476.
+The authors thank Vincent Dumoulin (ESA--ESRIN) and Alexander Kmoch (University of Tartu) for their support of this work.
 
 The authors acknowledge the HEALPix, Pangeo, Xarray, and Zarr communities for their open-source software, standards-related discussions, and technical input.
 

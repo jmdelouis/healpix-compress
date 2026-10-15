@@ -689,7 +689,15 @@ def main(argv=None) -> int:
         print(f"\n{len(failures)} (region, kernel) pair(s) failed:")
         for s, k, why in failures:
             print(f"  {s} {k}: {why}")
-        return 2
+        # A (region, kernel) pair the paper documents as not covered
+        # (paper_config.KNOWN_REJECTIONS, Section V-L) is the published
+        # state, not a failure; anything else still fails the run.
+        unexpected = [(s, k) for s, k, _ in failures
+                      if s not in cfg.KNOWN_REJECTIONS.get(k, [])]
+        if unexpected:
+            return 2
+        print("  expected: documented coverage of these kernels "
+              "(paper_config.KNOWN_REJECTIONS); not an error")
     return 0
 
 

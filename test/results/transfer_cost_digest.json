@@ -1,73 +1,73 @@
 {
   "0.0001": {
     "n": 39,
-    "psf_over_base": 1.2653650452676715,
+    "psf_over_base": 1.2639949716476981,
     "psf_over_base_p": 3.637978807091713e-12,
-    "linear_over_base": 1.2048034883118612,
+    "linear_over_base": 1.2026900454980534,
     "linear_over_base_p": 3.637978807091713e-12,
-    "deconv_over_control": 1.0513228302997495,
-    "deconv_over_control_p": 4.001776687800884e-10,
-    "clough_tocher_over_utm": 1.5909948678196504,
-    "psf_over_utm": 2.016375462619114,
-    "linear_over_utm": 1.9147064237046953
+    "deconv_over_control": 1.05027059332103,
+    "deconv_over_control_p": 4.984030965715647e-10,
+    "clough_tocher_over_utm": 1.5972802569839486,
+    "psf_over_utm": 2.0132001926668037,
+    "linear_over_utm": 1.9135683710929385
   },
   "0.0003": {
     "n": 39,
-    "psf_over_base": 1.3595486272572062,
+    "psf_over_base": 1.3471714409434143,
     "psf_over_base_p": 3.637978807091713e-12,
-    "linear_over_base": 1.306091134553436,
+    "linear_over_base": 1.305656315267993,
     "linear_over_base_p": 3.637978807091713e-12,
-    "deconv_over_control": 1.0478641794871881,
-    "deconv_over_control_p": 8.940332918427885e-08,
-    "clough_tocher_over_utm": 1.5018351639353213,
-    "psf_over_utm": 2.028269035451243,
-    "linear_over_utm": 1.9330380236633369
+    "deconv_over_control": 1.0475651093011153,
+    "deconv_over_control_p": 2.9125658329576254e-07,
+    "clough_tocher_over_utm": 1.5048208578856037,
+    "psf_over_utm": 2.021167981179816,
+    "linear_over_utm": 1.920344432445709
   },
   "0.001": {
     "n": 38,
-    "psf_over_base": 1.64158230082008,
+    "psf_over_base": 1.6392829510268947,
     "psf_over_base_p": 7.275957614183426e-12,
-    "linear_over_base": 1.6034111318654787,
+    "linear_over_base": 1.6035275154067856,
     "linear_over_base_p": 7.275957614183426e-12,
-    "deconv_over_control": 1.0341884490795614,
-    "deconv_over_control_p": 0.0003195038007106632,
-    "clough_tocher_over_utm": 1.2274936611547578,
-    "psf_over_utm": 2.0333314985822346,
-    "linear_over_utm": 1.9440928960925334
+    "deconv_over_control": 1.0343078172997202,
+    "deconv_over_control_p": 0.0007713564846199006,
+    "clough_tocher_over_utm": 1.2202337776928327,
+    "psf_over_utm": 2.0233244789472495,
+    "linear_over_utm": 1.9442010044697606
   },
   "0.003": {
     "n": 36,
-    "psf_over_base": 2.078365543226277,
+    "psf_over_base": 2.041238856346726,
     "psf_over_base_p": 2.9103830456733704e-11,
-    "linear_over_base": 1.9370848580347824,
+    "linear_over_base": 1.9370851582947637,
     "linear_over_base_p": 2.9103830456733704e-11,
-    "deconv_over_control": 1.0586521407209402,
-    "deconv_over_control_p": 0.12272018878138624,
-    "clough_tocher_over_utm": 0.9308896992871822,
-    "psf_over_utm": 2.011810961972104,
-    "linear_over_utm": 1.8978640454431903
+    "deconv_over_control": 1.058607799982192,
+    "deconv_over_control_p": 0.15220749407308176,
+    "clough_tocher_over_utm": 0.9442193869129922,
+    "psf_over_utm": 1.9974713624347222,
+    "linear_over_utm": 1.882940459812036
   },
   "0.01": {
     "n": 30,
-    "psf_over_base": 2.4490258946829333,
+    "psf_over_base": 2.45464377057324,
     "psf_over_base_p": 1.862645149230957e-09,
-    "linear_over_base": 2.1823868394008867,
+    "linear_over_base": 2.152391245134355,
     "linear_over_base_p": 1.862645149230957e-09,
-    "deconv_over_control": 1.1273235554531713,
-    "deconv_over_control_p": 0.07324407435953617,
-    "clough_tocher_over_utm": 0.7177410659255257,
-    "psf_over_utm": 1.7521634304043299,
-    "linear_over_utm": 1.62508252080827
+    "deconv_over_control": 1.140634961311834,
+    "deconv_over_control_p": 0.05768792890012264,
+    "clough_tocher_over_utm": 0.7177410659263517,
+    "psf_over_utm": 1.7819057768350102,
+    "linear_over_utm": 1.5741651870186937
   },
   "lossless_size_vs_ratio": {
     "psf": {
-      "rho": -0.125140712945591,
-      "p": 0.44165939902456103,
+      "rho": -0.12120075046904316,
+      "p": 0.45627971870914197,
       "n": 40
     },
     "linear": {
-      "rho": -0.07307692307692308,
-      "p": 0.6584102408971861,
+      "rho": -0.08299595141700405,
+      "p": 0.6154465156580862,
       "n": 39
     }
   }

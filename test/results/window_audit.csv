@@ -1,7 +1,7 @@
 scene,window_px,fit,tile_rows,tile_cols,centred_on,status
 region__agriculture__beauce,1168x1168,1.0,"[34, 1134]","[211, 956]",tile,ok
 region__agriculture__canterbury,1186x1186,1.0,"[37, 1149]","[227, 959]",tile,ok
-region__agriculture__iowa,1920x1920,1.0,"[407, 1513]","[596, 1324]",tile,ok
+region__agriculture__iowa,1194x1194,1.0,"[44, 1150]","[233, 961]",tile,ok
 region__agriculture__mato_grosso,1034x1034,1.0,"[93, 942]","[41, 993]",tile,ok
 region__agriculture__nile_delta,1046x1046,1.0,"[42, 1005]","[103, 943]",tile,ok
 region__agriculture__pampas,1086x1086,1.0,"[41, 1044]","[140, 946]",tile,ok

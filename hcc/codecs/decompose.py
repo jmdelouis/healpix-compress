@@ -1,4 +1,4 @@
-from dataclasses import MISSING, asdict, dataclass, field, fields, replace
+from dataclasses import asdict, dataclass, field, replace
 from typing import ClassVar, Self
 
 import numpy as np
@@ -36,41 +36,6 @@ class ArrayConfigWithScalars(ArrayConfig):
     scalars: dict[str, Buffer] = field(default_factory=dict)
     context: dict[str, np.ndarray] = field(default_factory=dict)
 
-
-# zarr's own ArrayConfig dataclass has occasionally gained new required
-# (no-default) fields across point releases -- e.g. `read_missing_chunks`,
-# added after this module was first written. A hardcoded positional call
-# like ArrayConfigWithScalars(order=..., write_empty_chunks=...) then
-# raises TypeError("missing N required positional argument(s)") purely
-# because of the installed zarr version, even though every field this
-# module actually cares about is supplied. This helper fills in any other
-# required ArrayConfig field with a value matching zarr's own documented
-# default, so array_spec construction stays forward/backward compatible
-# across zarr point releases instead of hardcoding a fixed keyword set.
-_ARRAY_CONFIG_FIELD_DEFAULTS: dict[str, object] = {
-    # zarr docs: "read_missing_chunks ... fill with the array's fill value
-    # on read (default True)".
-    "read_missing_chunks": True,
-}
-
-
-def _array_config_with_scalars(**overrides: object) -> "ArrayConfigWithScalars":
-    kwargs = dict(overrides)
-    for f in fields(ArrayConfig):
-        if f.name in kwargs:
-            continue
-        if f.default is not MISSING or f.default_factory is not MISSING:
-            continue
-        if f.name in _ARRAY_CONFIG_FIELD_DEFAULTS:
-            kwargs[f.name] = _ARRAY_CONFIG_FIELD_DEFAULTS[f.name]
-        else:
-            raise TypeError(
-                f"zarr.core.array_spec.ArrayConfig gained a new required "
-                f"field {f.name!r} with no known default in "
-                f"hcc.codecs.decompose._ARRAY_CONFIG_FIELD_DEFAULTS -- add "
-                f"one there matching zarr's documented default for it."
-            )
-    return ArrayConfigWithScalars(**kwargs)
 
 
 def array_spec_from_array_spec(
@@ -175,7 +140,14 @@ class HccDecomposeCodec(ArrayBytesCodec):
 
     def evolve_from_array_spec(self, array_spec: ArraySpec) -> Self:
         subarray_dtype = Float32(endianness="little")
-        config = _array_config_with_scalars(order="C", write_empty_chunks=False)
+        # derive the sub-array config from the array's own, so that fields zarr
+        # adds to ArrayConfig over time (read_missing_chunks, the sharding
+        # coalescing limits, ...) are carried over instead of enumerated here
+        config = replace(
+            ArrayConfigWithScalars(**asdict(array_spec.config)),
+            order="C",
+            write_empty_chunks=False,
+        )
 
         subarray_spec = ArraySpec(
             shape=array_spec.shape,

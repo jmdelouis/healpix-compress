@@ -1,6 +1,6 @@
 # Byte and type audit
 
-- rows: **424**, regions: 2, grids: hpx, utm, scenarios: dn, float32
+- rows: **568**, regions: 2, grids: hpx, utm, scenarios: dn, float32
 - files whose re-read bytes differ from what was written: **0**
 - points an independent decoder could not read back: **0**
 - points where the independent decoder disagrees with the adapter: **0**
@@ -11,12 +11,12 @@
 | codec | library | version | self-contained | uncharged sidecar | 16-bit floor (RMSE) | lossless claimed | bit-exact vs input | bit-exact vs 16-bit input |
 |---|---|---|---|---|---|---|---|---|
 | `dwt_zstd` | pywt | 1.8.0 | no | 0 B | -- | no | -- | -- |
-| `jpeg2000_lossless` | imagecodecs | 2026.5.10 | no | 8 B | 5.66e-06 | yes | no | yes |
-| `jpeg2000_lossy` | PIL | 12.2.0 | no | 8 B | 5.66e-06 | no | -- | -- |
-| `jpegxl_lossless` | imagecodecs | 2026.5.10 | no | 8 B | 5.66e-06 | yes | no | yes |
-| `jpegxl_lossy` | imagecodecs | 2026.5.10 | no | 8 B | 5.66e-06 | no | -- | -- |
+| `jpeg2000_lossless` | imagecodecs | 2025.8.2 | no | 8 B | 5.66e-06 | yes | no | yes |
+| `jpeg2000_lossy` | PIL | 12.0.0 | no | 8 B | 5.66e-06 | no | -- | -- |
+| `jpegxl_lossless` | imagecodecs | 2025.8.2 | no | 8 B | 5.66e-06 | yes | no | yes |
+| `jpegxl_lossy` | imagecodecs | 2025.8.2 | no | 8 B | 5.66e-06 | no | -- | -- |
 | `sz3` | pysz | 1.0.3 | no | 0 B | -- | no | -- | -- |
-| `uncompressed` | numpy | 2.4.6 | no | 0 B | -- | yes | yes | yes |
+| `uncompressed` | numpy | 2.3.4 | no | 0 B | -- | yes | yes | yes |
 | `zfp` | zfpy | 1.0.1 | yes | 0 B | -- | no | -- | -- |
 
 ## Per scenario

@@ -1,0 +1,59 @@
+{
+  "upload_type": "software",
+  "title": "healpix-compress: rate-distortion comparison of an oversampled HEALPix carrier against native UTM on Sentinel-2",
+  "description": "Code behind the TGRS manuscript \"When Does an Oversampled HEALPix Carrier Cost Less Than Native UTM? A Rate-Distortion and Critical-Overhead Study on Sentinel-2\". The test/ directory holds the full chain from the native Sentinel-2 windows to every table, figure and quoted value of the paper (reproduce.sh, REPRODUCE.md), and the checker that asserts each quoted figure against the results. The dataset (windows, tiles and results) is archived under its own DOI.",
+  "license": "Apache-2.0",
+  "access_right": "open",
+  "language": "eng",
+  "keywords": [
+    "HEALPix",
+    "DGGS",
+    "data compression",
+    "rate-distortion",
+    "Sentinel-2",
+    "resampling",
+    "Earth observation"
+  ],
+  "creators": [
+    {
+      "name": "Delouis, Jean-Marc",
+      "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France",
+      "orcid": "0000-0002-0713-1658"
+    },
+    {
+      "name": "Odaka, Tina",
+      "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France",
+      "orcid": "0000-0002-1500-0156"
+    },
+    {
+      "name": "Bovy, Benoit",
+      "affiliation": "GEORODE, Liège, Belgium",
+      "orcid": "0009-0001-4011-3574"
+    },
+    {
+      "name": "Davison, Thomas",
+      "affiliation": "European Space Agency (ESA), ESRIN, Frascati, Italy",
+      "orcid": "0000-0002-0917-4256"
+    },
+    {
+      "name": "Fouilloux, Anne",
+      "affiliation": "LifeWatch ERIC, Seville, Spain",
+      "orcid": "0000-0002-1784-2920"
+    },
+    {
+      "name": "Gueguen, Camille",
+      "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France",
+      "orcid": "0009-0008-3748-9395"
+    },
+    {
+      "name": "Magin, Justus",
+      "affiliation": "LOPS UMR 6523, CNRS-IFREMER-IRD-Univ. Brest-IUEM, Plouzané, France",
+      "orcid": "0000-0002-4254-8002"
+    },
+    {
+      "name": "Richard, Pablo",
+      "affiliation": "Pablo Richard EI, Paris, France",
+      "orcid": "0000-0002-5441-8213"
+    }
+  ]
+}

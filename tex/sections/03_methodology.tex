@@ -78,7 +78,7 @@ field that both geometries sample identically. That control reproduces
 the decline of the measured gap to within $5$--$24\%$, and the crossover
 itself once the field passes through the \term{transfer}. This makes it
 unlikely that the mismatch explains the decline. It does not isolate the
-mismatch's contribution to the narrow crossover at the loosest target.
+mismatch's contribution to the narrow crossover at the loosest \term{target}.
 The mismatch matters
 more for cross-grid comparisons of reconstruction \emph{error}, which is
 why the \term{common-reference} evaluation of
@@ -97,8 +97,9 @@ Filling the level-20 tile means resampling the native raster onto the
 HEALPix cell centres, a step with no counterpart on the UTM side, and the
 kernel decides what the codec sees. Cell anisotropy already matters: at
 fixed area the two local sample spacings scale as $\sqrt{1.7}$ and
-$1/\sqrt{1.7}$, which brings the shorter spacing closer to the native
-\SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests. The
+$1/\sqrt{1.7}$, so the longer spacing comes closer to the native
+\SI{10}{m} pitch than the nominal \SI{6.2}{m} scale suggests, while the
+shorter one oversamples it further. The
 \term{carrier} used throughout is a Clough--Tocher piecewise-cubic
 interpolant~\cite{clough1965plate} over a Delaunay triangulation of the
 native pixel centres. It is the \texttt{CloughTocherResampler} of the
@@ -119,8 +120,8 @@ comparison of~\cite{thevenaz2000interpolation}, by scoring each against
 an analytic field. Section~\ref{sec:transfer_cost} rebuilds the \term{carrier}
 with the PSF-aware and inverse-distance \term{transfers} and repeats the sweep
 on the 40 regions. Section~\ref{sec:support_controls} scores five
-kernels on the 39 regions the window audit of
-Appendix~\ref{app:window_radiometry} admits. The crossover reported
+kernels on the 40 regions, all of which pass the window audit of
+Appendix~\ref{app:window_radiometry}. The crossover reported
 below is a property of the \term{carrier} built with this \term{transfer}. The kernel
 that fills a HEALPix grid from a sensor grid is a scientific choice, and
 a kernel mismatched to the source sampling can change which of two grids

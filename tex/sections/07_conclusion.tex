@@ -13,13 +13,13 @@ region, which $30\%$ of native-layout overhead reduces to $1.99\times$.
 
 \emph{Compression.} Most of that penalty is redundancy that lossy coding
 removes (Table~\ref{tab:synthesis}). With no overhead charged to either
-side, the Clough--Tocher tile falls from $2.06\times$ the \term{native square}
+side, the Clough--Tocher tile falls from $2.07\times$ the \term{native square}
 at an RMSE of $10^{-4}$ to $0.93\times$ at $10^{-2}$, so the critical
 overhead $\gamma_\star$ falls with it. Two controls say where that
 decline comes from. An analytic field sampled by both lattices with no
 \term{transfer} follows it to within $5$--$24\%$. When the native side is
 given a strong Clough--Tocher smoothing control, the \term{carrier} costs
-$2.23$ to $1.24$ times the \term{native square}. That is within $7\%$ of the
+$2.22$ to $1.24$ times the \term{native square}. That is within $7\%$ of the
 control.
 The controls show that transfer-induced smoothing is sufficient to
 account for the remaining crossover under the tested conditions, and in
@@ -37,7 +37,7 @@ same coding RMSE and leaves HEALPix ahead at no \term{target}
 (Section~\ref{sec:transfer_cost}). This is a price, not a verdict on
 the PSF-aware \term{transfer}: its tile holds content the native raster
 does not, and the bytes pay for that content. The PSF/IDW differential
-is only $3$--$13\%$, so deconvolution alone is unlikely to explain the
+is only $3$--$14\%$, so deconvolution alone is unlikely to explain the
 two-fold surcharge. The split survives when the codec is held fixed on both grids,
 and the four that reproduce the pattern span wavelet, multiscale and
 prediction-based designs (Section~\ref{sec:same_codec}).
@@ -46,7 +46,7 @@ prediction-based designs (Section~\ref{sec:same_codec}).
 uncompressed \term{carrier} already differs from the native product by
 $4.0\times10^{-3}$ in median under the nearest-cell read, about $10\%$ of
 a scene's standard deviation. The $2\%$-budget ratio then moves from
-$0.83$ to $1.44$ in favour of native UTM. A \term{read} that interpolates within
+$0.82$ to $1.50$ in favour of native UTM. A \term{read} that interpolates within
 the \term{carrier} lattice removes $66\%$ of that floor's mean squared error.
 Re-scored through it, the lead of native UTM at the $2\%$ budget narrows
 to $1.12$ without reversing. The size advantage of HEALPix at the
@@ -78,7 +78,7 @@ threshold has fallen just below one. The margin is small and only
 marginally significant in the nominal paired test ($p=0.03$, $95\%$
 confidence interval $0.89$--$0.99$), and it holds only under a \term{reference}
 that charges the \term{transfer}'s smoothing to nobody. At $10^{-4}$ the
-threshold stands at $2.06$, an overhead we know of no measurement
+threshold stands at $2.07$, an overhead we know of no measurement
 supporting. The evidence is from
 Sentinel-2 B04 at \SI{10}{m}, one acquisition and one tile per region.
 The ratios should be re-measured before being applied to other bands,
@@ -86,7 +86,14 @@ sensors, temporal stacks, model output, flux-conservative fields or a
 full-sphere product. Two measurements would sharpen the framework: the
 compressed-byte overhead of a real tiled product, and a non-deconvolving
 \term{transfer} as smooth as Clough--Tocher, which would separate smoothness
-from interpolation class. The larger gain lies beyond this framework.
+from interpolation class. For the PSF-aware \term{transfer} the storage
+arithmetic points to a different design: keep the native pixels, whose
+halo around a tile adds about $2\%$ rather than $30\%$, and run the
+\term{transfer} at read time. The \term{carrier} then costs no storage at all
+and the cost moves to compute, which makes a fast PSF-aware read, and
+a test of the \term{transfer} on lossy-compressed input, the next questions
+for that chain (Section~\ref{sec:grid_property}). The larger gain
+lies beyond this framework.
 Each tile here was compressed alone, as the native product is. A
 shared grid puts every date, band and sensor on the same cells, and the
 nested index makes any spatial, temporal or spectral block a contiguous
