@@ -152,8 +152,8 @@ def code_version() -> dict:
     """Which checkout of this repository wrote the archive."""
     out = {}
     for key, cmd in (("commit", ["git", "rev-parse", "HEAD"]),
-                     ("describe", ["git", "describe", "--tags", "--dirty",
-                                   "--always"])):
+                     ("describe", ["git", "describe", "--tags", "--match",
+                                   "tgrs-*", "--dirty", "--always"])):
         try:
             out[key] = subprocess.run(cmd, cwd=cfg.REPO_ROOT, check=True,
                                       capture_output=True, text=True
