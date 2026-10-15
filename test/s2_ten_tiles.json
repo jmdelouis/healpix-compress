@@ -1,0 +1,93 @@
+{
+ "description": "Ten whole Sentinel-2 L2A products of varied landscapes (EOPF sample service, 2026), converted to HEALPix with the legacy-converters preset; reflectance under hcc-sentinel2-pyramid (default relative_step 0.57)",
+ "codec": {
+  "name": "hcc-sentinel2-pyramid",
+  "configuration": {}
+ },
+ "quality_chunks": 12,
+ "work_dir": "/tmp/s2_ten_tiles",
+ "dest": "s3://grid4earth/test-compression/s2_ten_tiles",
+ "storage_options": {
+  "profile": "grid4earth",
+  "client_kwargs": {
+   "endpoint_url": "https://s3.gra.io.cloud.ovh.net"
+  }
+ },
+ "delete_mirror_after_upload": true,
+ "tiles": {
+  "paris_urban": {
+   "product": "S2B_MSIL2A_20260812T104619_N0512_R051_T31UDQ_20260812T131957",
+   "tile": "T31UDQ",
+   "href": "https://data.eodc.eu/collections/EOPF_ZARR/products/cpm_v270/S02MSIL2A/2026/08/12/S2B_MSIL2A_20260812T104619_N0512_R051_T31UDQ_20260812T131957.zarr",
+   "cloud_cover": 0.001662,
+   "data_cover": 1.0
+  },
+  "alps_mountain_snow": {
+   "product": "S2A_MSIL2A_20260724T102701_N0512_R108_T32TLR_20260724T171410",
+   "tile": "T32TLR",
+   "href": "https://objects.eodc.eu:443/e05ab01a9d56408d82ac32d69a5aae2a:202607-s02msil2a-eu/24/products/cpm_v270/S2A_MSIL2A_20260724T102701_N0512_R108_T32TLR_20260724T171410.zarr",
+   "cloud_cover": 0.000747,
+   "data_cover": 1.0
+  },
+  "andalusia_agriculture": {
+   "product": "S2B_MSIL2A_20260530T110619_N0512_R137_T30STG_20260530T145841",
+   "tile": "T30STG",
+   "href": "https://objects.eodc.eu:443/e05ab01a9d56408d82ac32d69a5aae2a:202605-s02msil2a-eu/30/products/cpm_v270/S2B_MSIL2A_20260530T110619_N0512_R137_T30STG_20260530T145841.zarr",
+   "cloud_cover": 0.000727,
+   "data_cover": 1.0
+  },
+  "landes_forest": {
+   "product": "S2B_MSIL2A_20260914T105619_N0512_R094_T30TXP_20260914T152429",
+   "tile": "T30TXP",
+   "href": "https://data.eodc.eu/collections/EOPF_ZARR/products/cpm_v270/S02MSIL2A/2026/09/14/S2B_MSIL2A_20260914T105619_N0512_R094_T30TXP_20260914T152429.zarr",
+   "cloud_cover": 0.00145,
+   "data_cover": 1.0
+  },
+  "almeria_arid_greenhouses": {
+   "product": "S2C_MSIL2A_20260529T104621_N0512_R051_T30SWF_20260529T144209",
+   "tile": "T30SWF",
+   "href": "https://objects.eodc.eu:443/e05ab01a9d56408d82ac32d69a5aae2a:202605-s02msil2a-eu/29/products/cpm_v270/S2C_MSIL2A_20260529T104621_N0512_R051_T30SWF_20260529T144209.zarr",
+   "cloud_cover": 0.030546,
+   "data_cover": 0.9865
+  },
+  "brittany_coast_sea": {
+   "product": "S2B_MSIL2A_20260811T112109_N0512_R037_T30UUU_20260811T134112",
+   "tile": "T30UUU",
+   "href": "https://objects.eodc.eu:443/e05ab01a9d56408d82ac32d69a5aae2a:202608-s02msil2a-eu/11/products/cpm_v270/S2B_MSIL2A_20260811T112109_N0512_R037_T30UUU_20260811T134112.zarr",
+   "cloud_cover": 0.004685,
+   "data_cover": 1.0
+  },
+  "rotterdam_port_delta": {
+   "product": "S2A_MSIL2A_20260501T104651_N0512_R051_T31UET_20260501T173800",
+   "tile": "T31UET",
+   "href": "https://objects.eodc.eu:443/e05ab01a9d56408d82ac32d69a5aae2a:202605-s02msil2a-eu/01/products/cpm_v270/S2A_MSIL2A_20260501T104651_N0512_R051_T31UET_20260501T173800.zarr",
+   "cloud_cover": 0.021778,
+   "data_cover": 1.0
+  },
+  "iceland_volcanic_glacier": {
+   "product": "S2A_MSIL2A_20260520T130311_N0512_R038_T27VWL_20260520T204616",
+   "tile": "T27VWL",
+   "href": "https://objects.eodc.eu:443/e05ab01a9d56408d82ac32d69a5aae2a:202605-s02msil2a-eu/20/products/cpm_v270/S2A_MSIL2A_20260520T130311_N0512_R038_T27VWL_20260520T204616.zarr",
+   "cloud_cover": 0.7759,
+   "data_cover": 0.9987
+  },
+  "camargue_wetlands": {
+   "product": "S2B_MSIL2A_20260627T102559_N0512_R108_T31TFJ_20260627T142435",
+   "tile": "T31TFJ",
+   "href": "https://objects.eodc.eu:443/e05ab01a9d56408d82ac32d69a5aae2a:202606-s02msil2a-eu/27/products/cpm_v270/S2B_MSIL2A_20260627T102559_N0512_R108_T31TFJ_20260627T142435.zarr",
+   "cloud_cover": 0.00434,
+   "data_cover": 0.9908
+  },
+  "finland_boreal_lakes": {
+   "product": "S2A_MSIL2A_20260907T094121_N0512_R036_T35VNK_20260907T142210",
+   "tile": "T35VNK",
+   "href": "https://data.eodc.eu/collections/EOPF_ZARR/products/cpm_v270/S02MSIL2A/2026/09/07/S2A_MSIL2A_20260907T094121_N0512_R036_T35VNK_20260907T142210.zarr",
+   "cloud_cover": 0.035975,
+   "data_cover": 1.0
+  }
+ },
+ "batch_chunks": 16,
+ "defer_quality": true,
+ "healpix_resample_path": "~/hcc-test/hr_main",
+ "healpix_resample_note": "healpix-resample 4786405 (main, >= v2026.07.0) for the reflectance and the quality; masks/atmosphere/SCL/footprints (nearest) were converted with the image v2026.06.0"
+}
