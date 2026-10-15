@@ -314,14 +314,15 @@ class HccGradDctCodec(ArrayArrayCodec):
         return encoded_data
 
 
-def lookup_preset(name: str) -> HccDecomposeCodec:
+def lookup_preset(name: str) -> list[HccDecomposeCodec]:
     """Construct a full :class:`~hcc.codecs.decompose.HccDecomposeCodec`
     pipeline from a named quality preset.
 
     This is a convenience factory.  It resolves the preset parameters,
     assembles a ``HccDecomposeCodec`` with the appropriate sub-pipelines for
     the downsampled layer and the residual layer, and returns the fully
-    configured codec.
+    configured codec pipeline (a list, as every ``lookup_preset`` returns
+    for :func:`hcc.preset`).
 
     .. important::
 
@@ -339,8 +340,8 @@ def lookup_preset(name: str) -> HccDecomposeCodec:
 
     Returns
     -------
-    HccDecomposeCodec
-        A fully assembled codec pipeline:
+    list of HccDecomposeCodec
+        A one-element list holding the fully assembled codec:
 
         * ``downsampled`` sub-pipeline: ``BytesCodec → GzipCodec(level)``
         * ``residuals`` sub-pipeline:
@@ -358,7 +359,7 @@ def lookup_preset(name: str) -> HccDecomposeCodec:
 
     Examples
     --------
-    >>> pipeline = lookup_preset("medium")
+    >>> (pipeline,) = lookup_preset("medium")
     >>> pipeline.factor
     2
     >>> pipeline.codecs["residuals"][0].quantize_bits
@@ -373,14 +374,16 @@ def lookup_preset(name: str) -> HccDecomposeCodec:
     factor = presets.pop("downsample_factor")
     level = presets.pop("zlib_level")
 
-    return HccDecomposeCodec(
-        factor=factor,
-        codecs={
-            "downsampled": [BytesCodec(), GzipCodec(level=level)],
-            "residuals": [
-                HccGradDctCodec(**presets),
-                BytesCodec(),
-                GzipCodec(level=level),
-            ],
-        },
-    )
+    return [
+        HccDecomposeCodec(
+            factor=factor,
+            codecs={
+                "downsampled": [BytesCodec(), GzipCodec(level=level)],
+                "residuals": [
+                    HccGradDctCodec(**presets),
+                    BytesCodec(),
+                    GzipCodec(level=level),
+                ],
+            },
+        )
+    ]
