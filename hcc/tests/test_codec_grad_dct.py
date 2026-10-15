@@ -11,15 +11,11 @@ from hcc.tests import is_noise
 
 @pytest.mark.parametrize("window", [8, 16, 32])
 @pytest.mark.parametrize("quantize_bits", [8, 16])
-@pytest.mark.parametrize("sigma_floor_ratio", [0.05, 0.10])
 @pytest.mark.parametrize("clip_percentile", [0.5, 0.1])
-def test_codec_serialization_roundtrip(
-    window, quantize_bits, sigma_floor_ratio, clip_percentile
-):
+def test_codec_serialization_roundtrip(window, quantize_bits, clip_percentile):
     codec = grad_dct.HccGradDctCodec(
         window=window,
         quantize_bits=quantize_bits,
-        sigma_floor_ratio=sigma_floor_ratio,
         clip_percentile=clip_percentile,
     )
 
@@ -27,6 +23,26 @@ def test_codec_serialization_roundtrip(
     reconstructed = grad_dct.HccGradDctCodec.from_dict(serialized)
 
     assert codec == reconstructed
+
+
+def test_from_dict_ignores_legacy_sigma_floor_ratio():
+    # metadata written before sigma_floor_ratio was removed must stay readable
+    legacy = {
+        "name": "hcc-grad-dct",
+        "configuration": {
+            "window": 8,
+            "quantize_bits": 16,
+            "sigma_floor_ratio": 0.05,
+            "clip_percentile": 0.1,
+        },
+    }
+
+    with pytest.warns(DeprecationWarning, match="sigma_floor_ratio"):
+        codec = grad_dct.HccGradDctCodec.from_dict(legacy)
+
+    assert codec == grad_dct.HccGradDctCodec(
+        window=8, quantize_bits=16, clip_percentile=0.1
+    )
 
 
 @pytest.mark.parametrize("quantize_bits", [8, 16])
@@ -42,7 +58,6 @@ def test_resolve_metadata(quantize_bits):
     codec = grad_dct.HccGradDctCodec(
         window=8,
         quantize_bits=quantize_bits,
-        sigma_floor_ratio=0.05,
         clip_percentile=0.5,
     )
 
@@ -60,11 +75,8 @@ def test_resolve_metadata(quantize_bits):
 @pytest.mark.parametrize("chunksize", [64, 256])
 @pytest.mark.parametrize("window", [8, 16, 32])
 @pytest.mark.parametrize("quantize_bits", [8, 16])
-@pytest.mark.parametrize("sigma_floor_ratio", [0.05, 0.10])
 @pytest.mark.parametrize("clip_percentile", [0.5, 0.1])
-async def test_codec(
-    chunksize, window, quantize_bits, sigma_floor_ratio, clip_percentile
-):
+async def test_codec(chunksize, window, quantize_bits, clip_percentile):
     print(f"chunk shape: {chunksize}")
     edge_length = int(np.sqrt(chunksize))
     data = np.reshape(
@@ -87,7 +99,6 @@ async def test_codec(
     codec = grad_dct.HccGradDctCodec(
         window=window,
         quantize_bits=quantize_bits,
-        sigma_floor_ratio=sigma_floor_ratio,
         clip_percentile=clip_percentile,
     )
 
@@ -104,6 +115,12 @@ async def test_codec(
     input_buffer = prototype.nd_buffer.from_ndarray_like(
         np.astype(residuals, np.float32)
     )
+    if edge_length % window != 0:
+        # window is the DCT block size: it must tile the chunk
+        with pytest.raises(ValueError, match="not divisible by block_size"):
+            await codec._encode_single(input_buffer, array_spec)
+        return
+
     encoded = await codec._encode_single(input_buffer, array_spec)
     decoded = await codec._decode_single(encoded, array_spec)
     roundtripped = decoded.as_numpy_array()
@@ -137,7 +154,6 @@ def test_lookup_preset(name):
     grad_dct_codec = codec.codecs["residuals"][0]
     assert grad_dct_codec.window == presets["window"]
     assert grad_dct_codec.quantize_bits == presets["quantize_bits"]
-    assert grad_dct_codec.sigma_floor_ratio == presets["sigma_floor_ratio"]
     assert grad_dct_codec.clip_percentile == presets["clip_percentile"]
 
     assert codec.codecs["residuals"][-1].level == presets["zlib_level"]

@@ -14,5 +14,6 @@ def decode_scalar(
 def encode_scalar(prototype: BufferPrototype, encoded: NDBuffer) -> Buffer:
     data = encoded.as_numpy_array()
 
-    encoded = data[None].view(dtype="B")
+    # flatten: grad-dwt stores per-subband and 2-D sidecars, not only scalars
+    encoded = data.reshape(-1).view(dtype="B")
     return prototype.buffer.from_array_like(encoded)

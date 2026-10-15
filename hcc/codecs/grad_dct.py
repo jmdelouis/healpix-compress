@@ -37,6 +37,7 @@ lookup_preset   : Construct a full :class:`~hcc.codecs.decompose.HccDecomposeCod
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, ClassVar
 
@@ -170,11 +171,24 @@ class HccGradDctCodec(ArrayArrayCodec):
         Returns
         -------
         HccGradDctCodec
+
+        Notes
+        -----
+        Stores written by earlier versions carry a ``sigma_floor_ratio``
+        entry, which the current quantisation no longer uses. It is dropped
+        with a :class:`DeprecationWarning` so those stores remain readable.
         """
         _, configuration_parsed = parse_named_configuration(
             data, cls.name, require_configuration=True
         )
-        configuration_parsed = configuration_parsed or {}
+        configuration_parsed = dict(configuration_parsed or {})
+        if configuration_parsed.pop("sigma_floor_ratio", None) is not None:
+            warnings.warn(
+                "'sigma_floor_ratio' is no longer used by the hcc-grad-dct "
+                "codec and is ignored",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         return cls(**configuration_parsed)
 
     def to_dict(self) -> dict[str, JSON]:
