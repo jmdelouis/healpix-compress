@@ -33,38 +33,18 @@ Same function sampled by both lattices: no content difference at all, so the rat
 
 | transfer | beta | target | n | bracketed | median ratio | range | reportable |
 |---|---|---|---|---|---|---|---|
-| clough_tocher | 3 | 0.0001 | 40 | 100% | 1.953 | [0.925, 2.214] | yes |
-| clough_tocher | 3 | 0.0003 | 40 | 98% | 1.611 | [0.745, 2.085] | yes |
-| clough_tocher | 3 | 0.001 | 40 | 90% | 1.025 | [0.740, 1.856] | yes |
-| clough_tocher | 3 | 0.003 | 40 | 88% | 1.028 | [0.753, 2.478] | yes |
-| clough_tocher | 3 | 0.01 | 40 | 60% | 1.027 | [0.968, 1.327] | **withheld** |
-| clough_tocher | 4 | 0.0001 | 40 | 100% | 1.111 | [0.825, 1.841] | yes |
-| clough_tocher | 4 | 0.0003 | 40 | 90% | 1.098 | [0.854, 1.372] | yes |
-| clough_tocher | 4 | 0.001 | 40 | 88% | 1.113 | [0.969, 1.589] | yes |
-| clough_tocher | 4 | 0.003 | 40 | 72% | 1.117 | [0.979, 2.075] | **withheld** |
-| clough_tocher | 4 | 0.01 | 40 | 18% | 1.299 | [1.060, 1.977] | **withheld** |
-| clough_tocher | 5 | 0.0001 | 40 | 95% | 1.159 | [0.874, 1.363] | yes |
-| clough_tocher | 5 | 0.0003 | 40 | 90% | 1.204 | [1.031, 1.442] | yes |
-| clough_tocher | 5 | 0.001 | 40 | 82% | 1.246 | [1.123, 1.750] | yes |
-| clough_tocher | 5 | 0.003 | 40 | 55% | 1.329 | [1.222, 1.730] | **withheld** |
-| clough_tocher | 5 | 0.01 | 40 | 30% | 1.661 | [1.333, 1.868] | **withheld** |
-| none | 3 | 0.0001 | 40 | 100% | 1.793 | [1.018, 2.241] | yes |
-| none | 3 | 0.0003 | 40 | 98% | 1.545 | [0.837, 1.998] | yes |
-| none | 3 | 0.001 | 40 | 90% | 1.127 | [0.834, 1.751] | yes |
-| none | 3 | 0.003 | 40 | 85% | 1.109 | [0.842, 2.478] | yes |
-| none | 3 | 0.01 | 40 | 60% | 1.049 | [0.979, 1.405] | **withheld** |
-| none | 4 | 0.0001 | 40 | 100% | 1.175 | [0.886, 1.804] | yes |
-| none | 4 | 0.0003 | 40 | 90% | 1.165 | [0.926, 1.403] | yes |
-| none | 4 | 0.001 | 40 | 88% | 1.114 | [0.979, 1.589] | yes |
-| none | 4 | 0.003 | 40 | 72% | 1.123 | [0.990, 2.075] | **withheld** |
-| none | 4 | 0.01 | 40 | 18% | 1.300 | [1.059, 1.977] | **withheld** |
-| none | 5 | 0.0001 | 40 | 95% | 1.160 | [0.898, 1.369] | yes |
-| none | 5 | 0.0003 | 40 | 90% | 1.208 | [1.033, 1.442] | yes |
-| none | 5 | 0.001 | 40 | 82% | 1.247 | [1.124, 1.750] | yes |
-| none | 5 | 0.003 | 40 | 55% | 1.329 | [1.221, 1.730] | **withheld** |
-| none | 5 | 0.01 | 40 | 30% | 1.661 | [1.335, 1.868] | **withheld** |
+| clough_tocher | 1.9 | 0.0001 | 40 | 100% | 2.173 | [0.927, 2.313] | yes |
+| clough_tocher | 1.9 | 0.0003 | 40 | 100% | 2.099 | [0.817, 2.238] | yes |
+| clough_tocher | 1.9 | 0.001 | 40 | 98% | 1.900 | [0.751, 2.211] | yes |
+| clough_tocher | 1.9 | 0.003 | 40 | 95% | 1.387 | [0.758, 2.370] | yes |
+| clough_tocher | 1.9 | 0.01 | 40 | 80% | 0.944 | [0.817, 1.648] | yes |
+| none | 1.9 | 0.0001 | 40 | 100% | 2.175 | [1.095, 2.371] | yes |
+| none | 1.9 | 0.0003 | 40 | 100% | 2.082 | [0.989, 2.246] | yes |
+| none | 1.9 | 0.001 | 40 | 98% | 1.885 | [0.911, 2.203] | yes |
+| none | 1.9 | 0.003 | 40 | 95% | 1.460 | [0.927, 2.391] | yes |
+| none | 1.9 | 0.01 | 40 | 80% | 1.155 | [0.973, 1.691] | yes |
 
-Transfer error on the analytic field (RMSE against the exact cell values, in units of the scene std): median 0.99%, range [0.94%, 1.06%] over 40 regions.
+Transfer error on the analytic field (RMSE against the exact cell values, in units of the scene std): median 8.80%, range [8.66%, 9.26%] over 40 regions.
 
 ## The transfer alone, on the native lattice
 
