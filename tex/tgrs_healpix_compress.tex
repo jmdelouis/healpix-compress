@@ -25,10 +25,12 @@
 % bold, #1 for none. The first occurrence carries a footnote (Section I).
 \newcommand{\term}[1]{\emph{#1}}
 
-% Where the code, the per-region values and the stored results live. Defined
-% once: Section IV-A, Section VI-C and Appendix B cite it through this macro,
-% and the archived-snapshot DOI replaces the URL at proof stage.
-\newcommand{\repourl}{\todo{confirm the GitHub URL of healpix-compress}}
+% Where the code and the data live. Defined once: Section IV-A and
+% Section VI-C cite them through these macros. The tag is the one the
+% paper was submitted from; the DOI is the Zenodo data deposit (windows,
+% tiles, every result file and the per-region values the text cites).
+\newcommand{\repourl}{\url{https://github.com/jmdelouis/healpix-compress/tree/tgrs-submission}}
+\newcommand{\datadoi}{\url{https://doi.org/10.5281/zenodo.23388572}}
 
 \begin{document}
 

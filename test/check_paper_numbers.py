@@ -184,6 +184,7 @@ def checks(tex: str):
     out += halo_layout_checks()
     out += coauthor_review_checks()
     out += rerun_prose_checks()
+    out += deposit_link_checks()
     out += appendix_table_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
@@ -604,6 +605,24 @@ def coauthor_review_checks():
                         f"${ct.bilinear.median() / ct.nearest.median():.2f}$",
                         "not the paired median, which is 0.582"))
     return out
+
+
+def deposit_link_checks():
+    """The two places the paper sends a reader for code and data.
+
+    \\repourl must point at the submission tag and \\datadoi at the Zenodo
+    data deposit; neither may be left as a TODO. The strings are asserted
+    as written in the preamble, so a change of tag or DOI shows up here.
+    """
+    where = "[in tgrs_healpix_compress.tex]"
+    return [
+        (f"code repository at the submission tag {where}",
+         "\\newcommand{\\repourl}{\\url{https://github.com/jmdelouis/healpix-compress/tree/tgrs-submission}}",
+         "the tag make_data_archive.py was run at"),
+        (f"data deposit DOI {where}",
+         "\\newcommand{\\datadoi}{\\url{https://doi.org/10.5281/zenodo.23388572}}",
+         "reserved on Zenodo on 15 Oct 2026, before publication"),
+    ]
 
 
 def rerun_prose_checks():
