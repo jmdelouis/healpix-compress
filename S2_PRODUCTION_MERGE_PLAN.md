@@ -29,6 +29,8 @@ Merge in this order, then cut a release.
 
 Items 1 to 7 and 10, 11 merge cleanly on top of each other (checked with local trial merges); with #25 and #45 together, ten of #25's tests need the NaN-aware comparison above. Items 8 and 9 are last among the converter changes because they rewrite the per-chunk loop the others touch, and their author rebases them.
 
+**Update after @benbovy's review (2026-10-16):** #41 now goes after #31, since its check moves into `_resample_variables` (introduced by #31); the author rebases #41 once #31 is merged. #42 no longer imposes the delta filter: the cell ids codecs became a group setting (`healpix_coordinate_codecs`, default unchanged), so legacy-converters can opt in. #39 uses zarr's async API instead of a thread pool (same gain, measured on the hub).
+
 Before the review by @benbovy, the author's PRs (#27, #31, #39, #40, #41, #42) got a self-review against the GRID4EARTH rubric (review-rules#3), as tinaok did on #24 and #25 and as she asked on #27.
 
 Not needed for the Sentinel-2 production (review independently): #4 (`cell_methods`, has conflicts).
