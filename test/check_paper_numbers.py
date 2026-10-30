@@ -608,10 +608,11 @@ def coauthor_review_checks():
 
 
 def deposit_link_checks():
-    """The two places the paper sends a reader for code and data.
+    """The places the paper sends a reader for code and data.
 
-    \\repourl must point at the submission tag and \\datadoi at the Zenodo
-    data deposit; neither may be left as a TODO. The strings are asserted
+    \\repourl must point at the submission tag, \\codedoi at the Zenodo
+    archive of that tag and \\datadoi at the Zenodo data deposit; none may
+    be left as a TODO. The strings are asserted
     as written in the preamble, so a change of tag or DOI shows up here.
     """
     where = "[in tgrs_healpix_compress.tex]"
@@ -619,9 +620,12 @@ def deposit_link_checks():
         (f"code repository at the submission tag {where}",
          "\\newcommand{\\repourl}{\\url{https://github.com/jmdelouis/healpix-compress/tree/tgrs-submission}}",
          "the tag make_data_archive.py was run at"),
+        (f"code archive DOI {where}",
+         "\\newcommand{\\codedoi}{\\url{https://doi.org/10.5281/zenodo.23812789}}",
+         "Zenodo archive of the GitHub release of the tag, 30 Oct 2026"),
         (f"data deposit DOI {where}",
          "\\newcommand{\\datadoi}{\\url{https://doi.org/10.5281/zenodo.23388572}}",
-         "reserved on Zenodo on 15 Oct 2026, before publication"),
+         "reserved on Zenodo on 15 Oct 2026, published 30 Oct 2026"),
     ]
 
 

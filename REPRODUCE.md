@@ -387,7 +387,7 @@ pdflatex tgrs_healpix_compress && bibtex tgrs_healpix_compress && pdflatex tgrs_
 ```
 
 `check_paper_numbers.py` computes, from the files in `results/`, the
-exact string each claim should contain (304 at the time of writing) and
+exact string each claim should contain (305 at the time of writing) and
 asserts that it appears in the section its label names. A `MISSING` line
 means that the prose is stale or that the run differs from the stored
 results; it never means that the prose is right. The manuscript is never
@@ -412,9 +412,9 @@ and in its limitations.
 
 ## 7. Checklist before tagging
 
-- [ ] `check_install.py` reports the versions recorded in `results/bench_environment.json`
-- [ ] `check_paper_numbers.py` ends with *every checked figure from the current results appears in the manuscript*
-- [ ] `pdflatex` reports no undefined reference and no overfull box
-- [ ] `.zenodo.json` is at the repository root and `make_data_archive.py` builds without a missing required file
-- [ ] the `.zip` checksums in `MANIFEST.csv` match the Zenodo upload
-- [ ] `\repourl` in `tgrs_healpix_compress.tex` points to the tag, and the data DOI is in the Reproducibility subsection
+- [x] `check_install.py` reports the versions recorded in `results/bench_environment.json`
+- [x] `check_paper_numbers.py` ends with *every checked figure from the current results appears in the manuscript*
+- [x] `pdflatex` reports no undefined reference and no overfull box
+- [x] `.zenodo.json` is at the repository root and `make_data_archive.py` builds without a missing required file
+- [x] the `.zip` checksums in `MANIFEST.csv` match the Zenodo upload
+- [x] `\repourl` in `tgrs_healpix_compress.tex` points to the tag, and the data DOI is in the Reproducibility subsection
