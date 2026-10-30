@@ -608,7 +608,8 @@ def coauthor_review_checks():
 
 
 def deposit_link_checks():
-    """The places the paper sends a reader for code and data.
+    """The places the paper sends a reader for code and data, and the
+    companion study's dataset it builds on.
 
     \\repourl must point at the submission tag, \\codedoi at the Zenodo
     archive of that tag and \\datadoi at the Zenodo data deposit; none may
@@ -626,6 +627,12 @@ def deposit_link_checks():
         (f"data deposit DOI {where}",
          "\\newcommand{\\datadoi}{\\url{https://doi.org/10.5281/zenodo.23388572}}",
          "reserved on Zenodo on 15 Oct 2026, published 30 Oct 2026"),
+        ("companion dataset DOI [in tgrs_healpix_compress_refs.bib]",
+         "\\url{https://doi.org/10.5281/zenodo.22210945}",
+         "the version the healpix-resample manuscript cites"),
+        ("companion dataset cited where its patches are named [in sections/04_design.tex]",
+         "DOI~\\cite{delouis2026resampledata}",
+         "Section IV-A"),
     ]
 
 

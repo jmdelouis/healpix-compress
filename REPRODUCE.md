@@ -387,7 +387,7 @@ pdflatex tgrs_healpix_compress && bibtex tgrs_healpix_compress && pdflatex tgrs_
 ```
 
 `check_paper_numbers.py` computes, from the files in `results/`, the
-exact string each claim should contain (305 at the time of writing) and
+exact string each claim should contain (307 at the time of writing) and
 asserts that it appears in the section its label names. A `MISSING` line
 means that the prose is stale or that the run differs from the stored
 results; it never means that the prose is right. The manuscript is never
