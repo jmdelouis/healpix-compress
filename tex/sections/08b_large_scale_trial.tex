@@ -72,8 +72,8 @@ HEALPix reflectance is $1.50$ times the lossless JPEG~2000 reflectance
 reflectance; the other groups grow from 915 to 1\,043~MB;
 the whole product grows from 10.7 to 12.4~GB, by $16\%$.
 The codec's default was set for about $1.3$ times the lossless
-JPEG~2000 size on B04 of T31UDQ; the same tile measures $1.31$ at
-\SI{10}{m} here. The ratio is highest where the UTM tile is cheapest:
+JPEG~2000 size on B04 of T31UDQ; the same tile measures $1.31$ on its
+four \SI{10}{m} bands here. The ratio is highest where the UTM tile is cheapest:
 the arid tile ($1.90$) and the coastal tile with open sea ($1.70$), whose
 smooth or partly empty UTM rasters compress well while the HEALPix
 \term{carrier} holds the detail the deconvolving \term{transfer} restores.
@@ -85,13 +85,14 @@ The error is measured on the native UTM pixels of 12 random interior
 level-11 chunks per tile and resolution, with the observation operator of the
 \term{transfer} (Table~\ref{tab:operational_quality}). The \term{transfer}
 alone leaves $5$ to $6$~DN RMS at \SI{10}{m}, under $1\%$ of the scene's
-standard deviation; the codec adds $1.55$ times that error in median at
+standard deviation; the codec adds $1.56$ times that error in median at
 \SI{10}{m} and \SI{20}{m}, the ratio its default was designed for. Per
 tile and band, the ratio stays within $1.39$ to $1.63$ at \SI{10}{m}
-and within $1.42$ to $1.81$ at \SI{20}{m} on all ten tiles, except B01, a \SI{60}{m} band resampled to \SI{20}{m} by the
+and within $1.42$ to $1.65$ at \SI{20}{m} on all ten tiles, except B01, a \SI{60}{m} band resampled to \SI{20}{m} by the
 product, whose \term{transfer} error is below 1~DN (up to $2.57$). At
 \SI{60}{m} the ratio falls to $0.65$: at level 17 the \term{transfer}
-error dominates, about four times its value at \SI{20}{m} for the bands
+error dominates, three to eight times its value at \SI{20}{m} (five in
+median) for the bands
 present at both resolutions, while the codec's step follows the residual
 and not that error.
 
@@ -178,9 +179,12 @@ to the packages concerned, with fixes.
 This trial lies outside the deposited chain. It ran the operational
 packages, the EOPF reader, the converter, \texttt{healpix-resample} and
 the two codecs, on products held on an object store, and the HEALPix
-products it wrote stay on that store. The notebook that measured the two
-tables and drew the two figures is in the repository
-(\texttt{test/validation\_s2\_ten\_tiles.ipynb}); its inputs are not in
-the data deposit, \texttt{reproduce.sh} does not run it, and the checker
-of Section~\ref{sec:reproducibility} does not assert the figures quoted
-here. They are reported as the outcome of one production run.
+products it wrote stay on that store. Two scripts in the repository
+measured the two tables: \texttt{test/s2\_full\_products.py} converted the
+products and wrote their sizes and errors, and
+\texttt{test/s2\_ten\_tiles\_tables.py} turns these results into the
+tables. The notebook \texttt{test/validation\_s2\_ten\_tiles.ipynb} draws
+the two figures. Their inputs are not in the data deposit,
+\texttt{reproduce.sh} does not run them, and the checker of
+Section~\ref{sec:reproducibility} does not assert the figures quoted here.
+They are reported as the outcome of one production run.
