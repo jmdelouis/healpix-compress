@@ -387,7 +387,7 @@ pdflatex tgrs_healpix_compress && bibtex tgrs_healpix_compress && pdflatex tgrs_
 ```
 
 `check_paper_numbers.py` computes, from the files in `results/`, the
-exact string each claim should contain (264 at the time of writing) and
+exact string each claim should contain (304 at the time of writing) and
 asserts that it appears in the section its label names. A `MISSING` line
 means that the prose is stale or that the run differs from the stored
 results; it never means that the prose is right. The manuscript is never
@@ -398,12 +398,15 @@ One part of the paper is outside this chain: the large-scale trial on
 ten whole Sentinel-2 products (Appendix on the large-scale trial). It
 ran the operational conversion (EOPF reader, converter,
 `healpix-resample`, the `hcc-sentinel2` codecs) on an object store, and
-the HEALPix products stay there. `test/validation_s2_ten_tiles.ipynb`
-is the notebook that measured its two tables and drew its two figures;
-it needs access to that store and the production environment, so it is
-not run by `reproduce.sh`, its inputs are not in the Zenodo deposit, and
-its figures are not asserted by `check_paper_numbers.py`. The paper says
-so in the appendix and in its limitations.
+the HEALPix products stay there. Two scripts measured its two tables:
+`test/s2_full_products.py` converted the products and wrote their sizes
+and errors to the store, and `test/s2_ten_tiles_tables.py` fetches these
+results (`--fetch`) and writes the tables. `test/validation_s2_ten_tiles.ipynb`
+draws its two figures. They need access to that store and the production
+environment, so `reproduce.sh` does not run them, their inputs are not in
+the Zenodo deposit, and the figures quoted in the appendix are not
+asserted by `check_paper_numbers.py`. The paper says so in the appendix
+and in its limitations.
 
 ---
 
