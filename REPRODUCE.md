@@ -412,7 +412,7 @@ and in its limitations.
 
 ## 7. Checklist before tagging
 
-- [x] `check_install.py` reports the versions recorded in `results/bench_environment.json`
+- [x] `check_install.py` finds every module, and the installed versions match those recorded in `results/bench_environment.json`
 - [x] `check_paper_numbers.py` ends with *every checked figure from the current results appears in the manuscript*
 - [x] `pdflatex` reports no undefined reference and no overfull box
 - [x] `.zenodo.json` is at the repository root and `make_data_archive.py` builds without a missing required file
