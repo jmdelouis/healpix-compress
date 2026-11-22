@@ -205,6 +205,8 @@ def checks(tex: str):
     out += rerun_prose_checks()
     out += deposit_link_checks()
     out += appendix_table_checks()
+    out += aggregate_checks()
+    out += noise_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     # Revision 7: the PSF-aware carrier is no longer scored against the
@@ -212,6 +214,63 @@ def checks(tex: str):
     # matched-reader blocks of revision 6 are gone with the prose they guarded.
     return out, survivors
 
+
+
+def aggregate_checks():
+    """The Total column of Table synthesis and the sentences of Section V-C.
+
+    2026-11-22 (review M2): an archive pays the sum of its files, so the
+    summed HEALPix/UTM ratio sits beside the median of per-region ratios.
+    merged_tables.aggregate_ratio_gamma1 computes it for the table; the prose
+    quotes it at 1e-3, 3e-3 and 1e-2.
+    """
+    try:
+        import merged_tables as mt
+        agg = mt.aggregate_ratio_gamma1()
+    except Exception as exc:                              # noqa: BLE001
+        return [(f"aggregate ratio  [skipped: {type(exc).__name__}]", "", str(exc)[:60])]
+    ts = sorted(agg)
+    where = "[in sections/05b_rd_main.tex]"
+    out = []
+    if len(ts) >= 3:
+        a3, a2, a1 = agg[ts[-3]][0], agg[ts[-2]][0], agg[ts[-1]][0]
+        out.append((f"summed ratio at 1e-3 and 3e-3 {where}",
+                    f"${a3:.2f}$ at $10^{{-3}}$ and ${a2:.2f}$", "Total column"))
+        out.append((f"summed ratio at the loosest target {where}",
+                    f"${a1:.2f}$, keeps HEALPix", "Total column"))
+        out.append((f"summed ratio at the loosest target, advantage in percent {where}",
+                    f"${100 * (1 - a1):.0f}\\%$ ahead", "1 - Total"))
+        out.append((f"summed ratio at 3e-3 over gamma_tile exceeds one {where}",
+                    "leaves native UTM the smaller" if a2 / cfg.GAMMA_UTM > 1
+                    else "MUST BE REWORDED: HEALPix smaller", f"{a2 / cfg.GAMMA_UTM:.3f}"))
+    return out
+
+
+def noise_checks():
+    """The sensor noise the targets are set against (Section IV-B).
+
+    2026-11-22 (review M4): resampling_error.csv carries, per region, the
+    white-noise level Immerkaer's estimator reads off the imagery
+    (noise_std, in reflectance). The prose quotes its median and how many
+    RMSE targets lie below it.
+    """
+    d = _csv("resampling_error.csv")
+    if d is None or "noise_std" not in d:
+        return [("sensor noise  [skipped: resampling_error.csv]", "", "")]
+    d = d.drop_duplicates("scene")
+    med = float(d.noise_std.median())
+    q1, q3 = (float(x) for x in d.noise_std.quantile([0.25, 0.75]))
+    below = sum(t < med for t in cfg.TARGET_RMSE)
+    words = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}
+    where = "[in sections/04_design.tex]"
+    return [
+        (f"sensor noise, median over regions {where}",
+         f"${med*1e3:.1f}\\times10^{{-3}}$", "noise_std median"),
+        (f"sensor noise, interquartile range {where}",
+         f"${q1*1e3:.1f}$--${q3*1e3:.1f}\\times10^{{-3}}$", "noise_std quartiles"),
+        (f"RMSE targets below the median noise {where}",
+         f"{words.get(below, below)} tightest", f"{below} of {len(cfg.TARGET_RMSE)}"),
+    ]
 
 
 def gamma_continuous_checks():

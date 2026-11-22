@@ -181,7 +181,7 @@ def figure(df, gamma_utm, publish=True, name="fig_verdict_vs_gamma"):
                  va="top")
     ax1.axhline(50, color="0.75", lw=0.8, zorder=-1)
     ax1.axvline(1.0, color="0.75", lw=0.8, zorder=-1)
-    ax1.set_ylabel("qualifying regions where HEALPix is smaller (%)")
+    ax1.set_ylabel("HEALPix smaller (% of regions)")
     ax1.set_ylim(-3, 103)
     # lower right is empty (every curve is above 40% there); upper left
     # collided with the annotation of the illustrative overhead.

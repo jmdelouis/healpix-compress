@@ -69,12 +69,18 @@ three tightest \term{targets} $\gamma_\star$ runs from $1.58$ to $2.07$,
 overheads we know of no measurement supporting. At the tightest \term{target}
 native UTM stays ahead on $72\%$ of the regions even at $\gamma=2$
 (Table~\ref{tab:synthesis}). At $3\times10^{-3}$ a native product organised with less
-than $23\%$ of overhead would restore the advantage of UTM. The
+than $23\%$ of overhead would restore the advantage of UTM; the
 Sentinel-2 tiling duplicates about $21\%$ of the nominal sample area
-(Section~\ref{sec:overhead}), which is above that value. What the
-duplication costs in compressed bytes is not measured here, and the
-$19\%$ threshold sits inside the band where the paired test separates
-nothing. At $10^{-2}$, $\gamma_\star=0.93$ lies below one. The \term{carrier}
+(Section~\ref{sec:overhead}), just below that value, at a cost in
+compressed bytes not measured here and inside the band where the paired
+test separates nothing. The \emph{Total} column sums the bytes over the
+same regions, as an archive does. It is $1.71$ at $10^{-3}$ and $1.41$
+at $3\times10^{-3}$, above the medians, because the regions that weigh
+most, the urban scenes above all, are also the least favourable to
+HEALPix at these \term{targets}. For an archive of these regions, the
+illustrative $30\%$ overhead therefore leaves native UTM the smaller at
+$3\times10^{-3}$, and the total at $10^{-2}$, $0.95$, keeps HEALPix
+$5\%$ ahead with no overhead. At $10^{-2}$, $\gamma_\star=0.93$ lies below one. The \term{carrier}
 is already the smaller representation at equal layout overhead and stays
 so for any relative overhead $\gamma\ge0.93$; a native product organised
 more compactly than the \term{carrier} by more than $7\%$ would still be the

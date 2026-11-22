@@ -76,6 +76,38 @@ def _caption(title, label):
 
 
 # --- 1. synthesis ------------------------------------------------------------
+def aggregate_ratio_gamma1(metric="self"):
+    """Summed HEALPix bytes over summed UTM bytes at each RMSE target, gamma=1.
+
+    An archive pays the sum of its files, not the median of per-region
+    ratios, and the regions that weigh most (urban, agriculture) are also the
+    least favourable to HEALPix at intermediate targets (review M2 of
+    2026-11-22). Same population as the paired test of each target (the keys
+    of its ``ratios``), same oracle codec and interpolation as
+    update_paper_numbers._ratio_rows, no overhead on either side.
+    """
+    import update_paper_numbers as up
+    import paper_stats as st
+    hpx, utm, scenes, rmse_col = up.load(metric)
+    codecs = [c for c in cfg.COMPRESSOR_CODECS
+              if c in set(hpx.codec) or c in set(utm.codec)]
+    doc = json.loads((cfg.RESULTS_DIR / f"paper_numbers_{metric}.json").read_text())
+    out = {}
+    for t in doc["targets"]:
+        if t["kind"] != "rmse" or not t.get("ratios"):
+            continue
+        target = float(t["target"])
+        h = [st.best_of_codecs_size(hpx, s_, codecs, target, rmse_col=rmse_col)
+             for s_ in t["ratios"]]
+        u = [st.best_of_codecs_size(utm, s_, codecs, target, gamma=1.0)
+             for s_ in t["ratios"]]
+        ok = [(a, b) for a, b in zip(h, u) if np.isfinite(a) and np.isfinite(b)]
+        if ok:
+            out[round(target, 12)] = (sum(a for a, _ in ok) / sum(b for _, b in ok),
+                                      len(ok))
+    return out
+
+
 def table_synthesis():
     import gamma_analysis as ga
     df, gamma_utm, _ = ga.analyse("self")
@@ -99,6 +131,7 @@ def table_synthesis():
         sm = sm[sm.hpx_both_bracketed]
         smoothed = {round(float(t), 12): g.ratio_hpx_smoothed.median()
                     for t, g in sm.groupby("target")}
+    agg = aggregate_ratio_gamma1()
 
     rows = []
     for _, r in df.iterrows():
@@ -112,11 +145,13 @@ def table_synthesis():
             verdict = "inconcl."
         else:
             verdict = "HPX" if test["median"] < 1 else "UTM"
+        a = agg.get(round(float(r.target), 12))
+        agg_txt = "--" if a is None else f"{a[0]:.2f}"
         inc = ("--" if not np.isfinite(r.inconclusive_lo)
                else f"${r.inconclusive_lo:.2f}$--${r.inconclusive_hi:.2f}$")
         rows.append(
             f"{_label(r.target)} & {int(r.n)} & {r.gamma_star_median:.2f} & "
-            f"[{r.gamma_star_q25:.2f}, {r.gamma_star_q75:.2f}] & "
+            f"{agg_txt} & "
             f"{r.recovered_fraction:.2f} & {sm_txt} & "
             f"{100*r['win_at_1']:.0f} & {100*r['win_at_1.3']:.0f} & "
             f"{100*r['win_at_2']:.0f} & {inc} & "
@@ -129,12 +164,12 @@ def table_synthesis():
                    "overhead and the illustrative operating point",
                    "tab:synthesis")
         + "\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n"
-        "\\begin{tabular}{@{}lrrlrrrrrlrrl@{}}\n\\toprule\n"
+        "\\begin{tabular}{@{}lrrrrrrrrlrrl@{}}\n\\toprule\n"
         " & & \\multicolumn{4}{c}{$\\gamma=1$} & "
         "\\multicolumn{3}{c}{HPX smaller (\\% of $n$)} & & "
         f"\\multicolumn{{3}}{{c}}{{$\\gamma_{{\\mathrm{{tile}}}}={gamma_utm:g}$}} \\\\\n"
         "\\cmidrule(lr){3-6}\\cmidrule(lr){7-9}\\cmidrule(lr){11-13}\n"
-        "Target RMSE & $n$ & $\\gamma_\\star$ & IQR & $f(e)$ &  "
+        "Target RMSE & $n$ & $\\gamma_\\star$ & Total & $f(e)$ &  "
         "HPX/sm. & "
         "$\\gamma{=}1$ & $\\gamma{=}1.3$ & $\\gamma{=}2$ & Inconclusive $\\gamma$ & "
         "Ratio & $p_{\\mathrm{Holm}}$ & Verdict$^{*}$ \\\\\n\\midrule\n"
@@ -149,7 +184,11 @@ def table_synthesis():
             "and not a phase-matched experiment: it stays "
             "above one at every target, so the grid alone never crosses "
             "parity. Section~\\ref{sec:common_reference} charges the transfer "
-            "and the read to the carrier instead."))
+            "and the read to the carrier instead. \\emph{Total} is the summed "
+            "compressed size of the HEALPix tiles over that of the native "
+            "squares, on the same $n$ regions: the ratio an archive of these "
+            "regions pays, where $\\gamma_\\star$ is the median of the "
+            "per-region ratios."))
         + "\n\\end{table*}\n")
 
 
