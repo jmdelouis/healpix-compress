@@ -1,6 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{What the transfer costs: (a) storage, (b) compactability, (c) accuracy}
+\caption{What the transfer costs: (a) storage, (b) compactability}
 \label{tab:transfer}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -33,22 +33,4 @@ IDW & 1.43 & 0.543 & 0.387 & 0.244 & 0.110 & 0.033 \\
 native UTM & 0.37 & 0.819 & 0.584 & 0.349 & 0.148 & 0.038 \\
 \bottomrule
 \end{tabular}
-\vspace{4pt}
-
-\emph{(c) Accuracy, by kernel.}\\[2pt]
-\begin{tabular}{@{}lrrrrrrrrrr@{}}
-\toprule
- & & Transfer & Over & Floor & Floor & & Top & \multicolumn{3}{c}{Size / C--T at target RMSE} \\
-\cmidrule(lr){9-11}
-Kernel & $n$ & (\% std) & (\%) & (\% std) & rel.\ C--T & log-PSD & oct. & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ \\
-\midrule
-C--T & 40 & 7.97 & 0.00 & 10.1 & 1.00 & 0.05 & 0.89 & 1.00 & 1.00 & 1.00 \\
-PSF$^{\ddagger}$ & 40 & 24.46 & 0.20 & 24.4 & 2.55 & 0.44 & 2.80 & 1.26 & 1.35 & 1.64 \\
-IDW & 39 & 16.20 & 0.85 & 7.2 & 0.74 & 0.03 & 0.92 & 1.20 & 1.31 & 1.60 \\
-nearest & 40 & 18.30 & 0.00 & 0.9 & 0.11 & 0.00 & 1.00 & 1.21 & 1.31 & 1.50 \\
-bicubic$^{\dagger}$ & 39 & (634.28) & 2.68 & 11.9 & 0.96 & 0.16 & 1.51 & 1.65 & 1.92 & 2.87 \\
-\bottomrule
-\end{tabular}
-\par\smallskip
-{\footnotesize $^{\dagger}$Not a valid measurement of bicubic interpolation: the radial nearest-neighbour variant of the Keys kernel used here does not reproduce a constant field on about $1.6\%$ of the cells, and those cells carry almost all of its transfer error (Section~\ref{sec:transfer_cost}). $^{\ddagger}$Not a ranking entry: the PSF-aware transfer estimates the latent field, and its distance to the observation-resolution field prices the content it restores (Appendix~\ref{app:error_budget}).\par}
 \end{table*}

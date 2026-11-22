@@ -107,7 +107,7 @@ def table_sizes(rows: list[dict]) -> str:
     lines = [
         r"\begin{table*}[t]",
         r"\centering",
-        r"\caption{Whole Sentinel-2 L2A products, EOPF Zarr as distributed against the HEALPix Zarr of the operational chain"
+        r"\caption{Whole Sentinel-2 L2A products, EOPF Zarr as distributed against the HEALPix Zarr of the trial's conversion chain"
         r" (legacy-converters preset, reflectance under \texttt{hcc-sentinel2-pyramid} with $r=0.57$). Sizes in MB."
         r" JP2: the UTM reflectance under lossless JPEG~2000 per source chunk, the SAFE reference."
         r" ``Other'': masks, classification, atmosphere, probabilities, footprints, geometry, meteorology, metadata.}",

@@ -51,12 +51,13 @@ HEALPix at the loosest one ($0.70$ and $0.69$ at $10^{-2}$). Water
 regions produce nearly all the extreme ratios in either direction. Over
 near-constant water the compressed files fall below \SI{10}{kB}, where
 container overhead and resampling artefacts dominate; this is why
-medians are reported. Figure~\ref{fig:rd_comparison} shows
-the absolute-value curves, medians over scenes at each \term{target}.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig_storage_at_constant_rmse}
-\caption{Rate--distortion curves per codec, native UTM (solid, with the illustrative overhead) and HEALPix level 20 (dashed), one marker per codec: median absolute compressed size at each target RMSE (top, as a fraction of the shared raw tile size) and median RMSE at each storage budget (bottom), over the 40 regions. The isolated hollow points are the two lossless codecs, which have a single operating point each.}
-\label{fig:rd_comparison}
-\end{figure}
+medians are reported. Latitude matters less than the scene. HEALPix
+cells change shape from the equatorial belt to the polar
+caps~\cite{kmoch2022distortions}, and of the two families of rank tests
+run on the overhead-free ratio (correlation with $|\mathrm{latitude}|$,
+belt against caps, each Holm-corrected), two associations survive, both
+at a \term{matched storage} budget. At the tightest budget the belt reaches a
+median ratio of $0.95$ against $1.19$ in the caps
+($p^{\mathrm{Holm}}=0.008$). The association is exploratory: latitude
+is confounded with scene class, orientation relative to UTM and cell
+anisotropy, and the per-region tests are in the data deposit.

@@ -20,8 +20,12 @@ withheld rule.
 \input{tables/table_fixed_codec}
 
 Two observations follow. First, the codec ranking and the grid comparison
-are different results. JPEG~2000 and JPEG~XL lead on both grids alike
-(Section~\ref{sec:codec_choice}). At $10^{-2}$ the oracle selects one
+are different results. JPEG~2000 and JPEG~XL lead on both grids alike:
+over the 400 operating points of the HEALPix side, JPEG~2000 is best at
+199 and JPEG~XL at 131, against 35 for ZFP, 26 for SZ3 and 9 for the
+DWT+Zstandard baseline, and the same pair leads on the native side. No
+strict order between the two is claimed, and the byte-level audit of
+every encoded point is in Appendix~\ref{app:codec_audit}. At $10^{-2}$ the oracle selects one
 of the two on 30 of the 32 qualifying regions on the HEALPix side and on
 31 on the native side. The oracle ratios are therefore close to what
 either codec gives on its own: $0.77$ and $0.71$ against $0.72$ for the

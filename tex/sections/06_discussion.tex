@@ -145,46 +145,17 @@ the band of the sensor. The code is at \repourl; that tag is archived
 at \codedoi. The native windows, the stored tiles, every result file
 and the per-region values this paper does not print are deposited at
 \datadoi. The large-scale trial of Appendix~\ref{app:large_scale_trial}
-is the one exception: it ran the operational chain on an object store,
+is the one exception: it ran a conversion chain on an object store,
 and its scripts and notebook are in the repository without their
 inputs.
 
 \subsection{Current Limitations}
 \label{sec:limitations}
-Five groups, detailed in Appendix~\ref{app:limitations}.
-\emph{Transfer}. The crossover is a result for a \term{carrier} filled by
-Clough--Tocher, of the \term{transfers} tested, and scored against its own
-smooth tile. The smoothed-native control gives the native side that
-smoothing at two fixed phases. Across the original comparison and these
-two controls the loose-\term{target} ratio spans $0.93$--$1.24$; these are
-sensitivity controls, not formal limits on a phase-matched experiment. The PSF-aware \term{transfer} is priced at $\lambda=10^{-3}$, not at
-the $\lambda=0.1$ of the operational chain. A
-non-deconvolving \term{transfer} of the same smoothness has not been tested,
-and the data are consistent with energy compaction playing an important
-role, short of a demonstration.
-\emph{Reference and reader}. The two \term{reconstruction references} disagree
-at the crossover and both are reported; the \term{common-reference} sweep has
-been re-scored through an interpolating \term{read}. What stays open is the
-$3\times10^{-3}$ \term{target}, bracketed for only $57\%$ of the regions under
-the interpolating \term{read}. Also open are the PSF-aware \term{carrier} under the
-\term{common reference} at the operational damping, where the 40-region
-sweep and the large-scale trial give floors several times apart
-(Section~\ref{sec:operator}), and a synthetic-scene comparison of the
-Clough--Tocher and PSF-aware \term{transfers} against a known latent
-field.
-\emph{Footprint and orientation}. The \term{equal-area crop} and the rotated
-tile overlap over $74$--$83\%$ of their extent, and the mismatch is
-constrained by three controls, one analytic and two on subsets. The
-raster's axes run at about $45^\circ$ to the native ones, and the cost
-of that orientation to row-and-column codecs is not measured.
-\emph{Dataset}. Sentinel-2 B04 at \SI{10}{m}, one acquisition per
-region, one tile per region, 40 regions in four classes; nothing is
-claimed for other bands, sensors, temporal cubes, model output,
-flux-conservative fields or the full sphere. \emph{Compression and
-operational assumptions}. The oracle-best-codec comparison is optimistic
-by construction. Codecs are swept over their own quality parameters. The
-loosest \term{targets} carry censored observations. The overhead is a
-parameter: the container component is measured in bytes, while the
-overlap sample-area duplication is computed from the published tiling
-geometry and its corresponding compressed-byte cost is not measured.
-Learned codecs are not evaluated. The byte audit covers two regions.
+The main limits are stated with each result. The crossover holds for a
+\term{carrier} filled by Clough--Tocher and scored against its own
+smooth tile. The PSF-aware \term{transfer} is priced at
+$\lambda=10^{-3}$, not at the $\lambda=0.1$ of the conversion chain of
+Appendix~\ref{app:large_scale_trial}. The evidence is Sentinel-2 B04 at
+\SI{10}{m}, one acquisition and one tile per region, and the overhead of
+the native product is a parameter, not a measurement.
+Appendix~\ref{app:limitations} lists every limit with its section.

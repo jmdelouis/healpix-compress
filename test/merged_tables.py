@@ -51,6 +51,10 @@ import pandas as pd
 
 import paper_config as cfg
 
+# Block (c) of the transfer table (accuracy by kernel) moved to the data
+# deposit on 2026-11-22; True prints it again.
+KEEP_BLOCK_C = False
+
 RMSE_LABEL = {1e-4: r"$10^{-4}$", 3e-4: r"$3\times10^{-4}$", 1e-3: r"$10^{-3}$",
               3e-3: r"$3\times10^{-3}$", 1e-2: r"$10^{-2}$"}
 
@@ -336,15 +340,21 @@ def table_transfer():
         "latent field, and its distance to the observation-resolution field "
         "prices the content it restores (Appendix~\\ref{app:error_budget}).\\par}")
 
+    # 2026-11-22: block (c), the kernel comparison, left the manuscript for the
+    # data deposit (kernel_ablation.csv); the paper keeps blocks (a) and (b).
+    # Set KEEP_BLOCK_C to print it again.
+    caption = ("What the transfer costs: (a) storage, (b) compactability, "
+               "(c) accuracy" if KEEP_BLOCK_C else
+               "What the transfer costs: (a) storage, (b) compactability")
+    block_c = ("\n\\vspace{4pt}\n\n\\emph{(c) Accuracy, by kernel.}\\\\[2pt]\n" + part_c
+               if KEEP_BLOCK_C else "")
     return (
         "\\begin{table*}[t]\n\\centering\n"
-        + _caption("What the transfer costs: (a) storage, (b) compactability, "
-                   "(c) accuracy",
-                   "tab:transfer")
+        + _caption(caption, "tab:transfer")
         + "\n\\footnotesize\n\\setlength{\\tabcolsep}{4pt}\n"
         + "\\emph{(a) Storage.}\\\\[2pt]\n" + part_a
         + "\n\\vspace{4pt}\n\n\\emph{(b) Compactability.}\\\\[2pt]\n" + part_b
-        + "\n\\vspace{4pt}\n\n\\emph{(c) Accuracy, by kernel.}\\\\[2pt]\n" + part_c
+        + block_c
         + "\n\\end{table*}\n")
 
 

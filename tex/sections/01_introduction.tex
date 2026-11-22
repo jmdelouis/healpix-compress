@@ -7,7 +7,9 @@ scalable chunking. Discrete Global Grid Systems (DGGS) divide the Earth into
 hierarchically indexed cells that serve as a shared reference for storage,
 aggregation and analysis~\cite{ogc_dggs,iso19170}. H3~\cite{h3},
 S2~\cite{s2geometry} and HEALPix~\cite{gorski2005healpix} differ in cell
-shape, refinement rule and area preservation. Cloud-native products move
+shape, refinement rule and area preservation, and grids built for
+high-resolution Earth observation weigh projection distortion against
+oversampling~\cite{bauermarschallinger2014equi7}. Cloud-native products move
 in this direction: chunked array stores such as Zarr~\cite{moore2023zarr},
 community tooling for DGGS data cubes such as
 \texttt{xdggs}~\cite{kmoch2024xdggs}, and ESA's Earth Observation
@@ -18,108 +20,78 @@ sphere~\cite{gorski2005healpix}. Its cells have equal area and refine
 dyadically: whatever the ordering, every cell contains exactly four
 cells of the next level. The nested index adds a storage property to
 this geometry: it places all descendants of a cell in one contiguous
-block. That is what lets a tile be compressed on its own. The ring
-ordering would instead force compression by whole rings of latitude.
-These properties suit Earth observation as well, with one
-practical limit: HEALPix resolution changes only by powers of two, so
-the native sampling of an instrument almost never matches a level. The
-\SI{10}{m} bands of Sentinel-2~\cite{drusch2012sentinel2} fall between
-level 19 (\SI{12.4}{m}, too coarse) and level 20 (\SI{6.2}{m},
-geometrically safe and nominally oversampled). This paper asks whether
-that oversampling is expensive once storage and compression are both
-counted. Level-20 samples are not independent observations at
-\SI{6.2}{m}; they form an overcomplete representation whose information
-content the sensor response still limits. If this redundancy compresses
-well, storing the data at level 20 could cost no more than keeping the
-same information on the native UTM grid. The native product has a cost
-of its own. Under an operational tiling layout such as the MGRS granules
-of Sentinel-2 it carries padding, overlap and per-tile metadata beyond
-the area needed. A survey of that grid finds that it enlarges the stored
-land area by $33\%$, about one petabyte per year of
-products~\cite{bauer2023wasting}. This paper uses a $30\%$ overhead as
-an illustrative value at the level of that spatial overhead
-(Section~\ref{sec:overhead}).
+block, so a tile can be compressed on its own. These properties suit
+Earth observation as well, with one practical limit: HEALPix resolution
+changes only by powers of two, so the native sampling of an instrument
+almost never matches a level. The \SI{10}{m} bands of
+Sentinel-2~\cite{drusch2012sentinel2} fall between level 19
+(\SI{12.4}{m}, too coarse) and level 20 (\SI{6.2}{m}, geometrically safe
+and nominally oversampled). This paper asks whether that oversampling is
+expensive once storage and compression are both counted. Level-20
+samples form an overcomplete representation whose information content
+the sensor response still limits; if this redundancy compresses well,
+level 20 could cost no more than the native UTM grid. The native product
+has a cost of its own: under the MGRS granules of Sentinel-2 it carries
+padding, overlap and per-tile metadata, which a survey of that grid puts
+at $33\%$ more stored land area, about one petabyte per year of
+products~\cite{bauer2023wasting}.
 
-The answer, in a data manager's terms, is given in
-Section~\ref{sec:headline}. Before compression, a level-20 tile takes $2.58$
-times the bytes of the area-matched native raster. After compression to
-the same reconstruction error, it takes $2.07$ times as many when the
-tolerated error is a quarter of a percent of a typical scene's contrast.
-It takes $0.93$ times as many, a bare crossing, marginal in significance
-(Section~\ref{sec:rd_main}), when the tolerated error is a quarter of
-that contrast. These ratios compare each raster with its own uncompressed
-version. Scored against the Sentinel-2 observation instead
-(Section~\ref{sec:common_reference}), native UTM leads at every
-reportable storage budget, while the size advantage at the loosest error
-survives under an interpolating \term{read}\footnote{Terms in italics are defined in
-Table~\ref{tab:glossary}, Section~\ref{sec:glossary}.}.
+Section~\ref{sec:headline} gives the answer. Before compression, a
+level-20 tile takes $2.58$ times the bytes of the area-matched native
+raster. Compressed to the same error, with the same content on both
+sides, it still takes about twice as many at tight tolerances and a
+little more than as many at the loosest: from $2.22$ to $1.24$ times a
+native raster given the smoothing of the tile, and from $2.17$ to $1.16$
+for an analytic field sampled on both lattices. Oversampling is much
+cheaper once compressed, but not free. Against its own unsmoothed native
+raster, the Clough--Tocher tile falls from $2.07$ to $0.93$ times its
+size, a bare crossing at an error of a quarter of a typical scene's
+contrast (Section~\ref{sec:rd_main}). That crossing comes from the
+smoothing of the \term{transfer}, which the tile pays for in error
+against the observation (Section~\ref{sec:common_reference}).
 
-Two \term{transfers} can fill the
-tile, and they answer different questions.
-The main results use Clough--Tocher
-interpolation~\cite{clough1965plate}, which passes a smooth surface
-through the observed pixels and reads it at the HEALPix cell centres. It
-keeps the resolution of the product, so the tile and the native raster
-carry the same information at the same instrument response, and the
-comparison isolates what the grid costs in compressed bytes. The
-PSF-aware \term{transfer} of the companion study~\cite{delouis2026resample}
-also undoes part of the instrument blur and aims at a sharper latent
-field. Its tile carries small-scale content that the native raster does
-not, by design, and costs $2.3$--$2.6$ times the native raster at every
-error. Those bytes pay for content the product gains, whose benefit that
-study establishes, and this paper prices them without ranking the two
-\term{transfers} against each other (Section~\ref{sec:transfer_cost}). The
-choice of \term{transfer} is therefore one of the largest sensitivities in the
+Clough--Tocher interpolation~\cite{clough1965plate} passes a smooth
+surface through the observed pixels and reads it at the cell centres. It
+keeps the resolution of the product, so the comparison isolates what the
+grid costs. The PSF-aware \term{transfer} of the companion
+study~\cite{delouis2026resample} also undoes part of the instrument blur.
+Its tile costs $2.3$--$2.6$ times the native raster at every error, the
+price of small-scale content whose recovery, on this imagery and at the
+damping tested, is not established (Section~\ref{sec:transfer_cost}).
+The choice of \term{transfer} is one of the largest sensitivities in the
 storage cost of a HEALPix \term{carrier}.
-Section~\ref{sec:glossary} defines the nine terms the paper relies on.
 
 The question is answered empirically, with established compression
-libraries and no HEALPix-specific coding. The finer HEALPix level is
-treated as a plain 2-D raster, obtained by Morton (Z-order) de-interleaving
-of the nested chunk, and passed to standard codecs as an ordinary image.
-The comparison covers matched ground area: the centroid of the HEALPix
-tile defines an axis-aligned, \term{equal-area square} cut from the native UTM
-raster (Section~\ref{sec:utm_crop}), so the UTM side is always the
-untouched native product. The contributions are:
+libraries and no HEALPix-specific coding. A nested chunk is
+de-interleaved in Morton (Z-order) into a plain raster and passed to
+standard codecs as an ordinary image, as HEALPix sky surveys store their
+tiles~\cite{fernique2015hips}. The UTM side is an axis-aligned square of
+the same nominal area cut from the native product, which is never
+resampled (Section~\ref{sec:utm_crop}). The contributions are:
 \begin{itemize}
-    \item a storage--distortion formulation of the resolution mismatch
-    between native Sentinel-2 sampling and the next finer HEALPix level,
-    with a geometric accounting: the $2.58\times$ oversampling of level 20
-    makes the raw HEALPix tile the \emph{larger} representation by
-    $\approx\!1.99$ under the illustrative $30\%$ overhead, so only
-    compression can make HEALPix competitive;
     \item an equal-area rate--distortion protocol that separates the
-    overhead-free \term{carrier}/native \term{size ratio} from the overhead of the native
-    layout through a critical-overhead $\gamma_\star$ analysis, at matched
-    error and \term{matched budget}, against a \term{native UTM square} of the same
-    nominal area;
-    \item an evaluation over 40 Sentinel-2 regions, four land-cover
-    classes, latitudes from $43.5^\circ$S to $64.1^\circ$N (both HEALPix
-    cell-shape regimes) and five general-purpose codecs. It includes
-    sensitivity analyses on codec, \term{target}, \term{transfer} and assumed overhead,
-    and a multiple-testing correction that seven of the eight per-\term{target}
-    comparisons survive. Two controls explain the result. An
-    analytic-field control shows that sampling geometry alone reproduces
-    the decline of the gap with the \term{target}. A smoothed-native control
-    shows that transfer-induced smoothing is sufficient to account for a
-    residual of the observed magnitude
+    overhead-free \term{size ratio} from the layout overhead of the
+    native product through a \term{critical overhead} $\gamma_\star(e)$;
+    \item an evaluation over 40 Sentinel-2 regions in four land-cover
+    classes, from $43.5^\circ$S to $64.1^\circ$N, with five
+    general-purpose codecs, three \term{transfers} and two
+    \term{reconstruction references}, and a multiple-testing correction
+    that seven of the eight per-\term{target} comparisons survive;
+    \item two controls that explain the result: an analytic field shows
+    that sampling geometry alone reproduces the decline of the ratio
+    with the tolerated error, and a smoothed-native control shows that
+    the smoothing of the \term{transfer} accounts for the crossing
     (Section~\ref{sec:support_controls});
-    \item a reusable, assertion-guarded pipeline that shares its sites,
-    products and resampling operator with the companion
-    study~\cite{delouis2026resample}, so the storage and \term{transfer} questions
-    are answered on the same data.
+    \item an assertion-guarded pipeline that shares its sites, products
+    and resampling operator with the companion
+    study~\cite{delouis2026resample}.
 \end{itemize}
 
-The competitive regime reported below belongs to the complete chain.
-It depends on four quantities: the overhead of the native product,
-carried as $\gamma_\star(e)$ so that no value is assumed; the \term{transfer}
-(Section~\ref{sec:transfer_cost}); the codec
-(Section~\ref{sec:same_codec}); and the \term{reconstruction reference}
-(Section~\ref{sec:common_reference}). These four conditions belong with
-every statement of the form ``HEALPix is smaller''. The comparison
-compresses each tile, band and date alone, as the native product is
-stored. It therefore does not count what a shared grid adds: coding
-across dates, bands and sensors that sit on the same cells, and chunks
-shaped to the read pattern that the nested index makes contiguous.
-That gain is discussed in Section~\ref{sec:shared_grid}; the ratios
-here are the floor it starts from.
+A statement of the form ``HEALPix is smaller'' therefore holds only
+with four conditions: the overhead of the native product, carried as
+$\gamma_\star(e)$; the \term{transfer}; the codec
+(Section~\ref{sec:same_codec}); and the \term{reconstruction reference}.
+Each tile, band and date is compressed alone, as the native product is
+stored. What a shared grid adds, coding across dates, bands and sensors
+on the same cells, is discussed in Section~\ref{sec:shared_grid}; the
+ratios here are the floor it starts from.

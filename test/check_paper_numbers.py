@@ -61,6 +61,25 @@ def _fmt(x, nd=2):
     return f"{x:.{nd}f}"
 
 
+# Figures whose passage left the manuscript for the data deposit on
+# 2026-11-22 (latitude and codec-ranking subsections folded into V-C, block (c)
+# of the transfer table and its prose, the cross-term table). They are still
+# computed and printed, never asserted. A label is retired when it contains one
+# of these strings.
+RETIRED = (
+    "bicubic: cells failing the constant test",
+    "separable bicubic transfer error",
+    "codec mean rank,",
+    "[in sections/05d_latitude.tex]",
+    "transfer error vs analytic field, nearest",
+    "transfer error vs analytic field, psf",
+)
+
+
+def _retired(label):
+    return any(k in label for k in RETIRED)
+
+
 def load(metric):
     p = cfg.RESULTS_DIR / f"paper_numbers_{metric}.json"
     if not p.exists():
@@ -650,14 +669,17 @@ def rerun_prose_checks():
         d = json.loads((cfg.RESULTS_DIR / "paper_numbers_self.json").read_text())
         lat = d["latitude"]
         where = "[in sections/05d_latitude.tex]"
+        # 2026-11-22: Section V-D was folded into V-C, which keeps the 2%-budget
+        # belt/cap medians and their Holm p; the rest went to the data deposit.
+        kept = "[in sections/05c_rd_illustrative.tex]"
         b2 = lat["budget:0.02"]; b5 = lat["budget:0.05"]; r1 = lat["rmse:0.01"]
-        out += [(f"latitude, belt vs cap medians at the 2% budget {where}",
+        out += [(f"latitude, belt vs cap medians at the 2% budget {kept}",
                  f"${b2['equatorial_vs_cap']['median_a']:.2f}$ against ${b2['equatorial_vs_cap']['median_b']:.2f}$", ""),
                 (f"latitude, Spearman rho at the 2% budget {where}",
                  f"$\\rho={b2['spearman']['rho']:.2f}$", ""),
                 (f"latitude, Holm p of rho at the 2% budget {where}",
                  f"$p^{{\\mathrm{{Holm}}}}_\\rho={b2['spearman']['p_holm']:.3f}$", ""),
-                (f"latitude, belt vs cap Holm p at the 2% budget {where}",
+                (f"latitude, belt vs cap Holm p at the 2% budget {kept}",
                  f"$p^{{\\mathrm{{Holm}}}}={b2['equatorial_vs_cap']['p_holm']:.3f}$", ""),
                 (f"latitude, belt vs cap medians at the 5% budget {where}",
                  f"${b5['equatorial_vs_cap']['median_a']:.2f}$ against ${b5['equatorial_vs_cap']['median_b']:.2f}$", ""),
@@ -1674,10 +1696,16 @@ def main(argv=None) -> int:
             # a count, not a figure in the text: reported, never asserted
             continue
         if "needs every occurrence" in label:
-            if tex.count(value) < 3:
+            # two occurrences since 2026-11-22 (Sections III-B and VI-B; the
+            # conclusion no longer repeats it)
+            if tex.count(value) < 2:
                 bad.append((label, value, note))
             continue
         if "[count, not asserted]" in label:
+            continue
+        if _retired(label):
+            # 2026-11-22: the passage left the manuscript for the data
+            # deposit; the figure is still computed and printed here.
             continue
         m = re.search(r"\[in ([^\]]+)\]", label)
         if m:
