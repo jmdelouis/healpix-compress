@@ -30,8 +30,15 @@ What it collects
 
 Usage
 -----
-    python make_data_archive.py --tag tgrs-submission
-    python make_data_archive.py --tag tgrs-submission --tiles --zip
+    python make_data_archive.py --tag tgrs-submission-v2
+    python make_data_archive.py --tag tgrs-submission-v2 --tiles --zip
+    python make_data_archive.py --tag tgrs-submission-v2 --zip \
+        --reuse "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
+
+--reuse copies tiles/ and windows/ byte for byte from an earlier archive
+(a local .zip or its Zenodo URL, read by HTTP range requests), each member
+checked against that archive's own MANIFEST.csv. The second version of the
+deposit was built that way: its tiles and windows are those of version 1.
 
 Writes dist/healpix-compress-data-<tag>/ and, with --zip, the same as a
 single .zip beside it. Nothing is uploaded: the archive is what you attach
@@ -42,6 +49,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import shutil
 import subprocess
@@ -53,6 +61,9 @@ import paper_config as cfg
 import region_sites
 
 # What each results file feeds, by glob. The value is the paper element, named
+WITHDRAWN = ("withdrawn: scored with a psf read whose kernel was half as wide "
+             "as the transfer's (see README); no longer used by the paper")
+
 # by its LaTeX label so the mapping survives a renumbering of the tables.
 FEEDS = {
     "regions.csv": "the region list (Section IV-A; table removed from the "
@@ -66,12 +77,20 @@ FEEDS = {
     "hpx_codec_bench.csv": "the HEALPix-side rate-distortion sweep behind "
                            "every ratio (tab:synthesis, tab:error_at_size)",
     "utm_codec_bench.csv": "the native-UTM sweep behind every ratio",
+    "hpx_codec_bench__psf__psf.csv": WITHDRAWN,
+    "paper_numbers_common_psf_psf.json": WITHDRAWN,
+    "paper_numbers_common_psf_psf.md": WITHDRAWN,
+    "common_reference_floor__psf__psf.csv": WITHDRAWN,
     "hpx_codec_bench__*.csv": "the same sweep on another transfer or reader "
                               "(suffix = transfer, then reader)",
     "paper_numbers_self.json": "tab:synthesis, tab:error_at_size, "
-                               "tab:fixed_codec, tab:latitude_effect, "
-                               "tab:codec_ranking, fig:headline",
-    "paper_numbers_common*.json": "tab:common_two_readers, Section V-I",
+                               "tab:fixed_codec, fig:headline, and the "
+                               "latitude and codec-ranking figures quoted in "
+                               "the text",
+    "paper_numbers_common*.json": "tab:common_two_readers (common reference)",
+    "psf_matched_floor.json": "the PSF-aware tiles read through their own "
+                              "forward operator on four regions (Section on "
+                              "the reading operator, trial appendix)",
     "gamma_analysis_self.csv": "the critical overhead and f(e) "
                                "(tab:synthesis, fig:verdict_vs_gamma)",
     "headline.json": "fig:headline",
@@ -79,12 +98,13 @@ FEEDS = {
                               "controls (tab:support_controls, Section V-G)",
     "common_reference_floor*.csv": "the transfer-and-read floors "
                                    "(tab:floors, Section V-I)",
-    "reader_floor.csv": "the three reads of the same carrier (tab:floors, "
-                        "Section V-J)",
+    "reader_floor.csv": "the reads of the same carrier (tab:floors); its "
+                        "psf rows used the mis-scaled read and are unused",
     "reader_rescore.csv": "tab:common_two_readers",
     "level19_rd*.csv": "the level-19 carrier under compression "
                        "(tab:level19_rd, Section V-K)",
-    "level19_rd*.json": "tab:level19_rd, Section V-K",
+    "level19_rd*.json": "tab:level19_rd, and level 19 against level 20 "
+                        "under the common reference (block common_reference)",
     "level19_rd_diagnose.md": "why the aggregate column is flat (Section V-K)",
     "level19_direct*.csv": "the two level-19 carriers (tab:floors, Section V-L)",
     "level19_direct*.json": "tab:floors, Section V-L",
@@ -96,11 +116,13 @@ FEEDS = {
                            "Section V-M)",
     "transfer_cost_digest.json": "tab:transfer, Section V-M",
     "compactability.csv": "tab:transfer, second block",
-    "kernel_ablation.csv": "tab:transfer, third block",
+    "kernel_ablation.csv": "the comparison of five kernels, cited by the "
+                           "text and kept here (former third block of "
+                           "tab:transfer)",
     "resampling_error*.csv": "each transfer against the reference it answers "
                              "to (tab:resampling_error, Appendix C)",
     "cross_term.csv": "the cross term between transfer and compression error "
-                      "(tab:cross_term, Appendix D)",
+                      "(appendix on the error budget; table kept here)",
     "interscale*.csv": "the quadtree-native coder test (Appendix A-B)",
     "granule_overhead.json": "the measured tiling overhead (Section IV-C)",
     "granule_overhead.md": "the measured tiling overhead (Section IV-C)",
@@ -109,6 +131,27 @@ FEEDS = {
                               "healpix-resample checkout each run used "
                               "(Section VI-C)",
 }
+
+# What changed since the previous version of the deposit, written into the
+# README. Empty for a first version.
+CHANGES = [
+    "Version 2 goes with the revised manuscript (healpix-compress tag "
+    "`tgrs-submission-v2`). `tiles/` and `windows/` are those of version 1, "
+    "byte for byte (their SHA-256 are unchanged in `MANIFEST.csv`).",
+    "`results/level19_rd.json` gains a block `common_reference`: level 19 "
+    "against level 20 when both are scored against the observation. No other "
+    "value of the file changed.",
+    "`results/reader_rescore.csv` loses the rows of the PSF-aware chain, and "
+    "`tab:common_two_readers` its second block.",
+    "New: `results/psf_matched_floor.json`, the PSF-aware tiles of four "
+    "regions read through their own forward operator.",
+    "Withdrawn: `hpx_codec_bench__psf__psf.csv`, "
+    "`paper_numbers_common_psf_psf.*`, `common_reference_floor__psf__psf.csv` "
+    "and the psf rows of `reader_floor.csv` were scored with a read whose "
+    "Gaussian was half as wide as the transfer's (the reader passed the "
+    "standard deviation where healpix-resample expects twice it). They stay "
+    "in the deposit for the record and are marked so in `MANIFEST.csv`.",
+]
 
 # The manuscript promises these by name. Building an archive without them
 # would publish a broken cross-reference.
@@ -170,24 +213,50 @@ def write_regions(dest: Path) -> Path:
                         "hpx_regime", "catalog", "product_id")
             if c in sites.columns]
     out = dest / "regions.csv"
-    sites[keep].to_csv(out, index=False)
+    sites[keep].to_csv(out, index=False, lineterminator="\n")
     return out
 
 
+def _tracked_results() -> set[str] | None:
+    """Names of the results files git tracks, or None outside a git checkout.
+
+    The results directory also collects files no run of the paper wrote (a
+    draft issue, a scratch digest); only what the repository records is
+    archived.
+    """
+    try:
+        out = subprocess.run(["git", "ls-files", "--", str(cfg.RESULTS_DIR)],
+                             cwd=cfg.REPO_ROOT, check=True, capture_output=True,
+                             text=True).stdout
+    except Exception:                                         # noqa: BLE001
+        return None
+    return {Path(line).name for line in out.splitlines()
+            if Path(line).parent.name == cfg.RESULTS_DIR.name}
+
+
 def collect_results(dest: Path) -> list[Path]:
-    """Every digest the sweeps and controls wrote, flat, under results/."""
+    """Every digest the sweeps and controls wrote, flat, under results/.
+
+    Text files are written with LF line endings whatever the checkout's
+    convention, so a file whose content did not change keeps the SHA-256 it
+    has in an earlier version of the deposit.
+    """
     src = cfg.RESULTS_DIR
     if not src.exists():
         raise SystemExit(f"{src} does not exist; nothing to archive")
     target = dest / "results"
     target.mkdir(parents=True, exist_ok=True)
+    tracked = _tracked_results()
     copied = []
     for p in sorted(src.iterdir()):
         if p.is_dir() or p.suffix not in (".csv", ".json", ".md"):
             continue
         if ".pre_extension" in p.name or "DO_NOT_PUBLISH" in p.name:
             continue
-        shutil.copy2(p, target / p.name)
+        if tracked is not None and p.name not in tracked:
+            print(f"  skipped {p.name} (not tracked by git)")
+            continue
+        (target / p.name).write_bytes(p.read_bytes().replace(b"\r\n", b"\n"))
         copied.append(target / p.name)
     return copied
 
@@ -213,6 +282,81 @@ def collect_windows(dest: Path) -> list[Path]:
         out = target / f"{store.stem}.zip"
         shutil.make_archive(str(out.with_suffix("")), "zip", root_dir=store)
         copied.append(out)
+    return copied
+
+
+class _HTTPRangeFile(io.RawIOBase):
+    """A read-only, seekable file over HTTP range requests (no full download)."""
+
+    def __init__(self, url):
+        import requests
+        super().__init__()
+        self.s = requests.Session()
+        h = self.s.head(url, allow_redirects=True, timeout=60)
+        h.raise_for_status()
+        self.url, self.size, self.pos = h.url, int(h.headers["Content-Length"]), 0
+
+    def seekable(self):
+        return True
+
+    def readable(self):
+        return True
+
+    def tell(self):
+        return self.pos
+
+    def seek(self, off, whence=0):
+        self.pos = {0: off, 1: self.pos + off, 2: self.size + off}[whence]
+        return self.pos
+
+    def read(self, n=-1):
+        if n is None or n < 0:
+            n = self.size - self.pos
+        if n == 0 or self.pos >= self.size:
+            return b""
+        end = min(self.pos + n, self.size) - 1
+        r = self.s.get(self.url, headers={"Range": f"bytes={self.pos}-{end}"},
+                       timeout=600)
+        r.raise_for_status()
+        self.pos += len(r.content)
+        return r.content
+
+    def readinto(self, b):
+        data = self.read(len(b))
+        b[:len(data)] = data
+        return len(data)
+
+
+def reuse_from(source: str, dest: Path) -> list[Path]:
+    """Copy tiles/ and windows/ from an earlier archive, checked by SHA-256.
+
+    `source` is a local .zip or an URL; members are read one at a time and
+    each one must match the SHA-256 the earlier archive's MANIFEST.csv gives.
+    """
+    import csv
+    import io
+    import zipfile
+    if source.startswith("http"):
+        raw = io.BufferedReader(_HTTPRangeFile(source), buffer_size=8 << 20)
+    else:
+        raw = open(source, "rb")
+    z = zipfile.ZipFile(raw)
+    root = z.namelist()[0].split("/")[0]
+    with z.open(f"{root}/MANIFEST.csv") as m:
+        sums = {r["path"]: r["sha256"]
+                for r in csv.DictReader(io.TextIOWrapper(m, encoding="utf-8"))}
+    copied = []
+    for path in sorted(sums):
+        if not (path.startswith("tiles/") or path.startswith("windows/")):
+            continue
+        out = dest / path
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with z.open(f"{root}/{path}") as src, out.open("wb") as dst:
+            shutil.copyfileobj(src, dst, 1 << 20)
+        if sha256(out) != sums[path]:
+            raise SystemExit(f"{path}: SHA-256 differs from {source}'s MANIFEST")
+        copied.append(out)
+        print(f"  reused {path}")
     return copied
 
 
@@ -246,6 +390,11 @@ def readme(dest: Path, version: dict, counts: dict) -> str:
     lines += [
         "| `MANIFEST.csv` | 1 | path, size, SHA-256 and the paper element "
         "each file feeds |", "",
+    ]
+    if CHANGES:
+        lines += ["", "## Changes from the previous version", ""]
+        lines += [f"- {c}" for c in CHANGES]
+    lines += ["",
         "## Reading a table back to its data", "",
         "`MANIFEST.csv` names, for each file, the table or section it feeds. "
         "The tables themselves are rebuilt from these files by the code "
@@ -307,12 +456,20 @@ def zenodo_metadata(version: dict) -> dict:
         "keywords": ["HEALPix", "DGGS", "data compression", "rate-distortion",
                      "Sentinel-2", "resampling", "Earth observation"],
         "creators": creators,
+        "related_identifiers": [
+            {"identifier": "10.5281/zenodo.23812788", "relation": "isCompiledBy",
+             "resource_type": "software"},
+            {"identifier": "10.5281/zenodo.22210945", "relation": "isDerivedFrom",
+             "resource_type": "dataset"},
+        ],
         "notes_for_the_author": [
-            "Add in the Zenodo form, once the DOIs exist: related identifier "
-            "'isSupplementTo' the TGRS article, 'isCompiledBy' the code "
-            "deposit, 'isDerivedFrom' the Copernicus Sentinel-2 products.",
-            "Add the funding entry with the funder picker (ESA contract "
-            "4000147951/25/I-NS).",
+            "This is a NEW VERSION of record 10.5281/zenodo.23388572 (concept "
+            "10.5281/zenodo.23388571): open that record and click 'New "
+            "version', do not create a new upload.",
+            "Keep the related identifiers of version 1 (isCompiledBy the code, "
+            "isDerivedFrom the Copernicus Sentinel-2 products) and the ESA "
+            "funding (contract 4000147951/25/I-NS); the code is cited by its "
+            "concept DOI 10.5281/zenodo.23812788.",
         ],
     }
 
@@ -320,9 +477,12 @@ def zenodo_metadata(version: dict) -> dict:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--tag", default="tgrs-submission",
+    ap.add_argument("--tag", default="tgrs-submission-v2",
                     help="suffix of the archive directory (default: "
-                         "tgrs-submission)")
+                         "tgrs-submission-v2)")
+    ap.add_argument("--reuse", default=None,
+                    help="take tiles/ and windows/ from this earlier archive "
+                         "(local .zip or URL), checked against its MANIFEST")
     ap.add_argument("--tiles", action="store_true",
                     help="also archive the stored tiles and UTM crops")
     ap.add_argument("--windows", action="store_true",
@@ -354,6 +514,13 @@ def main(argv=None) -> int:
         w = collect_windows(dest)
         counts["windows"] = len(w)
         files += w
+    if args.reuse:
+        if args.tiles or args.windows:
+            raise SystemExit("--reuse replaces --tiles and --windows")
+        r = reuse_from(args.reuse, dest)
+        counts["tiles"] = sum(1 for x in r if x.parent.name == "tiles")
+        counts["windows"] = sum(1 for x in r if x.parent.name == "windows")
+        files += r
 
     missing = [n for n in REQUIRED
                if not any(p.name == n for p in files)]

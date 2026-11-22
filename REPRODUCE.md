@@ -63,7 +63,7 @@ Three levels of reproduction, from the cheapest to the most complete:
 ```bash
 git clone https://github.com/jmdelouis/healpix-compress.git
 cd healpix-compress
-git checkout tgrs-submission            # the tag the manuscript was built from
+git checkout tgrs-submission-v2         # the tag the revised manuscript was built from
 pip install -e ".[paper]"               # the evaluation stack (pyproject.toml, extra "paper")
 ```
 
@@ -225,10 +225,10 @@ tables the manuscript says are "in the data repository", so
 ### 2.5 Packaging for Zenodo
 
 ```bash
-python make_data_archive.py --tag tgrs-submission --tiles --windows --zip
+python make_data_archive.py --tag tgrs-submission-v2 --tiles --windows --zip
 ```
 
-This writes `dist/healpix-compress-data-tgrs-submission/` and the same
+This writes `dist/healpix-compress-data-tgrs-submission-v2/` and the same
 as one `.zip` beside it, containing `regions.csv` (one row per region
 with its pinned product), `results/` (every CSV, JSON and Markdown digest,
 including `bench_environment.json` with the codec library versions and
@@ -242,6 +242,18 @@ repository root, so the code and data deposits cannot drift apart; add
 that file before building the archive. Nothing is uploaded: attach the
 `.zip` to the Zenodo deposit, then put its DOI in the Reproducibility
 subsection of the paper and the tag's URL in `\repourl`.
+
+Version 2 of the deposit (revised manuscript) was built without the local
+windows, by taking `tiles/` and `windows/` from version 1, each member
+checked against version 1's `MANIFEST.csv`:
+
+```bash
+python make_data_archive.py --tag tgrs-submission-v2 --zip \
+    --reuse "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
+```
+
+The paper cites the concept DOIs of both deposits, which resolve to their
+latest version.
 
 Licences: results are CC-BY-4.0; the Sentinel-2 extracts are Copernicus
 Sentinel data under the Copernicus licence; the code is Apache-2.0.
@@ -418,3 +430,10 @@ and in its limitations.
 - [x] `.zenodo.json` is at the repository root and `make_data_archive.py` builds without a missing required file
 - [x] the `.zip` checksums in `MANIFEST.csv` match the Zenodo upload
 - [x] `\repourl` in `tgrs_healpix_compress.tex` points to the tag, and the data DOI is in the Reproducibility subsection
+
+For `tgrs-submission-v2` (revised manuscript, November 2026):
+
+- [x] `check_paper_numbers.py` passes (322 figures) and `pdflatex` reports no undefined reference and no overfull box
+- [x] `\repourl` points to `tgrs-submission-v2`; `\codedoi` and `\datadoi` are the concept DOIs
+- [ ] the data archive is rebuilt with `--reuse` and uploaded as a new version of 10.5281/zenodo.23388572
+- [ ] the GitHub release of `tgrs-submission-v2` has created the new version of the code deposit
