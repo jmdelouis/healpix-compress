@@ -37,8 +37,16 @@ Usage
 
 --reuse copies tiles/ and windows/ byte for byte from an earlier archive
 (a local .zip or its Zenodo URL, read by HTTP range requests), each member
-checked against that archive's own MANIFEST.csv. The second version of the
-deposit was built that way: its tiles and windows are those of version 1.
+checked against that archive's own MANIFEST.csv.
+
+--update-of builds an UPDATE archive instead: regions.csv, results/,
+README.md and a MANIFEST.csv that also lists, with their SHA-256, the tiles
+and windows of the earlier archive, which stays in the deposit unchanged.
+Version 2 of the deposit was built that way, so that its 2 GB of tiles and
+windows did not move:
+
+    python make_data_archive.py --tag tgrs-submission-v2 --zip \
+        --update-of "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
 
 Writes dist/healpix-compress-data-<tag>/ and, with --zip, the same as a
 single .zip beside it. Nothing is uploaded: the archive is what you attach
@@ -134,10 +142,21 @@ FEEDS = {
 
 # What changed since the previous version of the deposit, written into the
 # README. Empty for a first version.
-CHANGES = [
+LAYOUT_REUSE = (
     "Version 2 goes with the revised manuscript (healpix-compress tag "
     "`tgrs-submission-v2`). `tiles/` and `windows/` are those of version 1, "
-    "byte for byte (their SHA-256 are unchanged in `MANIFEST.csv`).",
+    "byte for byte (their SHA-256 are unchanged in `MANIFEST.csv`).")
+LAYOUT_UPDATE = (
+    "Version 2 goes with the revised manuscript (healpix-compress tag "
+    "`tgrs-submission-v2`) and holds two files. "
+    "`healpix-compress-data-tgrs-submission.zip` is the version-1 archive, "
+    "unchanged: its `tiles/` and `windows/` are still current. This update "
+    "archive, `healpix-compress-data-tgrs-submission-v2.zip`, carries "
+    "`regions.csv`, `results/`, this README and a `MANIFEST.csv` that "
+    "supersede those of the version-1 archive; the MANIFEST also lists the "
+    "tiles and windows, with the SHA-256 they have in the version-1 archive.")
+CHANGES = [
+    LAYOUT_REUSE,
     "`results/level19_rd.json` gains a block `common_reference`: level 19 "
     "against level 20 when both are scored against the observation. No other "
     "value of the file changed.",
@@ -327,6 +346,30 @@ class _HTTPRangeFile(io.RawIOBase):
         return len(data)
 
 
+def _open_archive(source: str):
+    import zipfile
+    if source.startswith("http"):
+        raw = io.BufferedReader(_HTTPRangeFile(source), buffer_size=8 << 20)
+    else:
+        raw = open(source, "rb")
+    z = zipfile.ZipFile(raw)
+    return z, z.namelist()[0].split("/")[0]
+
+
+def previous_manifest_rows(source: str) -> list[dict]:
+    """The tiles/ and windows/ rows of an earlier archive's MANIFEST.csv."""
+    import csv
+    z, root = _open_archive(source)
+    with z.open(f"{root}/MANIFEST.csv") as m:
+        rows = [r for r in csv.DictReader(io.TextIOWrapper(m, encoding="utf-8"))
+                if r["path"].startswith(("tiles/", "windows/"))]
+    name = source.split("/")[-1].split("?")[0]
+    for r in rows:
+        r["bytes"] = int(r["bytes"])
+        r["feeds"] = (r.get("feeds") or "") + f" (in {name}, unchanged)"
+    return rows
+
+
 def reuse_from(source: str, dest: Path) -> list[Path]:
     """Copy tiles/ and windows/ from an earlier archive, checked by SHA-256.
 
@@ -483,6 +526,10 @@ def main(argv=None) -> int:
     ap.add_argument("--reuse", default=None,
                     help="take tiles/ and windows/ from this earlier archive "
                          "(local .zip or URL), checked against its MANIFEST")
+    ap.add_argument("--update-of", default=None,
+                    help="build an update archive: list the tiles/ and "
+                         "windows/ of this earlier archive (local .zip or "
+                         "URL) in MANIFEST.csv without copying them")
     ap.add_argument("--tiles", action="store_true",
                     help="also archive the stored tiles and UTM crops")
     ap.add_argument("--windows", action="store_true",
@@ -514,6 +561,14 @@ def main(argv=None) -> int:
         w = collect_windows(dest)
         counts["windows"] = len(w)
         files += w
+    previous_rows = []
+    if args.update_of:
+        if args.tiles or args.windows or args.reuse:
+            raise SystemExit("--update-of excludes --tiles, --windows and --reuse")
+        previous_rows = previous_manifest_rows(args.update_of)
+        counts["tiles"] = sum(1 for r in previous_rows if r["path"].startswith("tiles/"))
+        counts["windows"] = sum(1 for r in previous_rows if r["path"].startswith("windows/"))
+        CHANGES[0] = LAYOUT_UPDATE
     if args.reuse:
         if args.tiles or args.windows:
             raise SystemExit("--reuse replaces --tiles and --windows")
@@ -538,6 +593,7 @@ def main(argv=None) -> int:
         rows.append(dict(path=str(p.relative_to(dest)).replace("\\", "/"),
                          bytes=p.stat().st_size, sha256=sha256(p),
                          feeds=feeds_for(p.name)))
+    rows += previous_rows
     man = pd.DataFrame(rows).sort_values("path")
     man.to_csv(dest / "MANIFEST.csv", index=False)
 
@@ -546,7 +602,7 @@ def main(argv=None) -> int:
     (dest / "zenodo_data.json").write_text(
         json.dumps(zenodo_metadata(version), indent=2), encoding="utf-8")
 
-    total = sum(r["bytes"] for r in rows)
+    total = sum(int(r["bytes"]) for r in rows if r not in previous_rows)
     undescribed = man[man.feeds == ""]
     print(f"{len(rows)} file(s), {total / 1e6:.1f} MB -> {dest}")
     if len(undescribed):

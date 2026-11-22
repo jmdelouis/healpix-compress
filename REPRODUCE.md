@@ -243,14 +243,18 @@ that file before building the archive. Nothing is uploaded: attach the
 `.zip` to the Zenodo deposit, then put its DOI in the Reproducibility
 subsection of the paper and the tag's URL in `\repourl`.
 
-Version 2 of the deposit (revised manuscript) was built without the local
-windows, by taking `tiles/` and `windows/` from version 1, each member
-checked against version 1's `MANIFEST.csv`:
+Version 2 of the deposit (revised manuscript) keeps the version-1 archive
+unchanged, for its `tiles/` and `windows/`, and adds an update archive
+whose `regions.csv`, `results/`, `README.md` and `MANIFEST.csv` supersede
+those of version 1; the MANIFEST lists the tiles and windows with their
+version-1 SHA-256:
 
 ```bash
 python make_data_archive.py --tag tgrs-submission-v2 --zip \
-    --reuse "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
+    --update-of "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
 ```
+
+`--reuse` with the same URL builds a single self-contained archive instead.
 
 The paper cites the concept DOIs of both deposits, which resolve to their
 latest version.
@@ -435,5 +439,5 @@ For `tgrs-submission-v2` (revised manuscript, November 2026):
 
 - [x] `check_paper_numbers.py` passes (322 figures) and `pdflatex` reports no undefined reference and no overfull box
 - [x] `\repourl` points to `tgrs-submission-v2`; `\codedoi` and `\datadoi` are the concept DOIs
-- [ ] the data archive is rebuilt with `--reuse` and uploaded as a new version of 10.5281/zenodo.23388572
+- [ ] the update archive (`--update-of`) is uploaded, with the version-1 archive imported, as a new version of 10.5281/zenodo.23388572
 - [ ] the GitHub release of `tgrs-submission-v2` has created the new version of the code deposit
