@@ -16,7 +16,9 @@ Clough--Tocher. The same rate--distortion protocol is run on \term{carrier}
 tiles rebuilt from the same native windows by the two further
 \term{transfers}. The PSF tiles are built at the damping at which the
 reconstruction error was measured ($\lambda=10^{-3}$) and at the nominal
-\SI{12.5}{m} response width. Coverage is 40 regions for the PSF \term{transfer}
+\SI{12.5}{m} response width. This is not the damping of the operational
+chain, which uses $\lambda=0.1$ (Appendix~\ref{app:large_scale_trial});
+how the surcharge moves with the damping has not been measured. Coverage is 40 regions for the PSF \term{transfer}
 and 39 for the inverse-distance average.
 
 Table~\ref{tab:transfer} uses short names: C--T for Clough--Tocher, PSF
@@ -154,7 +156,7 @@ and Richardson--Lucy by $11.0\%$ to $17.9\%$, with the restored power at
 low and intermediate frequencies~\cite{delouis2026resample}. Our own
 synthetic harness reproduces that recovery at the nominal response width
 without noise, and loses most of it at the noise level measured on the
-imagery (Appendix~\ref{app:error_budget}). Whether the particular tiles
+imagery, both at $\lambda=10^{-3}$ (Appendix~\ref{app:error_budget}). Whether the particular tiles
 whose bytes are counted here realise it is not established. With this
 reservation, the two-fold surcharge has two meanings. On the deconvolved \term{carrier} it
 is the price of small-scale content placed there by a validated method.

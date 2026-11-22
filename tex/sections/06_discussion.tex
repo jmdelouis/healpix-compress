@@ -141,8 +141,8 @@ independent decoder (Appendix~\ref{app:codec_audit}). Each sweep
 records the codec library versions and the tagged checkout of the
 shared resampling package~\cite{delouis2026resample} it ran against,
 and the harness refuses a run whose instrument response falls outside
-the band of the sensor. The code is at \repourl, at the tag it was
-submitted from, and is archived at \codedoi. The native windows, the stored tiles, every result file
+the band of the sensor. The code is at \repourl; that tag is archived
+at \codedoi. The native windows, the stored tiles, every result file
 and the per-region values this paper does not print are deposited at
 \datadoi. The large-scale trial of Appendix~\ref{app:large_scale_trial}
 is the one exception: it ran the operational chain on an object store,
@@ -157,7 +157,8 @@ Clough--Tocher, of the \term{transfers} tested, and scored against its own
 smooth tile. The smoothed-native control gives the native side that
 smoothing at two fixed phases. Across the original comparison and these
 two controls the loose-\term{target} ratio spans $0.93$--$1.24$; these are
-sensitivity controls, not formal limits on a phase-matched experiment. A
+sensitivity controls, not formal limits on a phase-matched experiment. The PSF-aware \term{transfer} is priced at $\lambda=10^{-3}$, not at
+the $\lambda=0.1$ of the operational chain. A
 non-deconvolving \term{transfer} of the same smoothness has not been tested,
 and the data are consistent with energy compaction playing an important
 role, short of a demonstration.
@@ -165,9 +166,11 @@ role, short of a demonstration.
 at the crossover and both are reported; the \term{common-reference} sweep has
 been re-scored through an interpolating \term{read}. What stays open is the
 $3\times10^{-3}$ \term{target}, bracketed for only $57\%$ of the regions under
-the interpolating \term{read}. Also open is a synthetic-scene comparison of the
-Clough--Tocher and PSF-aware \term{transfers} against a known latent field,
-since the observation is the estimand of only the first.
+the interpolating \term{read}. Also open are the PSF-aware sweeps scored against the
+observation through the forward operator of that \term{transfer},
+the \term{read} of the operational chain (Section~\ref{sec:operator}), and a
+synthetic-scene comparison of the Clough--Tocher and PSF-aware
+\term{transfers} against a known latent field.
 \emph{Footprint and orientation}. The \term{equal-area crop} and the rotated
 tile overlap over $74$--$83\%$ of their extent, and the mismatch is
 constrained by three controls, one analytic and two on subsets. The

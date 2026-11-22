@@ -133,8 +133,12 @@ field at the level-20 cell centres, with the instrument's response as the
 weight (nominal B04 width \SI{12.5}{m} FWHM). It assembles that forward
 operator as a sparse matrix from cells to samples. It then estimates the
 cell values by damped least squares, solved by conjugate gradients on
-the normal equations with a damping of $\lambda=10^{-3}$, the value at
-which the companion study reports its accuracy. Its estimand is
+the normal equations with a damping of $\lambda=10^{-3}$, the value at which the companion
+study reports its accuracy. The operational conversion chain of
+Appendix~\ref{app:large_scale_trial} damps harder, with $\lambda=0.1$;
+every PSF-aware figure in the body of this paper is at
+$\lambda=10^{-3}$, and none has been measured at the operational damping
+(Section~\ref{sec:limitations}). Its estimand is
 therefore the latent field before the instrument blur. The companion
 study measures that it recovers $15.4\%$ to $19.6\%$ of the blur on
 noise-free fields, and Section~\ref{sec:transfer_cost} prices the bytes

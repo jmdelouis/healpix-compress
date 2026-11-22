@@ -78,8 +78,7 @@ Email: pablorichard@hotmail.fr. ORCID: 0000-0002-5441-8213.}%
 Storing Sentinel-2 imagery on HEALPix forces a choice between level 19,
 whose \SI{12.4}{m} cells are coarser than the \SI{10}{m} product, and
 level 20, whose \SI{6.2}{m} cells hold $2.58$ times as many samples per
-unit area. This paper measures what the finer choice costs once both are
-compressed. Level-20 tiles are reshaped into
+unit area. This paper measures what the finer choice costs after compression. Level-20 tiles are reshaped into
 ordinary rasters and compared with native UTM squares of equal area at
 equal reconstruction error, over 40 Sentinel-2 B04 regions in four
 land-cover classes and five established codecs. The result is the
@@ -95,8 +94,9 @@ $1.2$ to $2.5$ times the Clough--Tocher bytes at equal coding error, or
 $2.3$--$2.6$ times the native square, close to the raw $2.58$ and below
 it only at loose tolerances: this surcharge prices what a transfer adds
 and does not rank the transfers.
-Scored against the native observation instead, native UTM leads at all
-three reportable matched-storage budgets. The finer level is therefore
+Scored against the native observation through a nearest or bilinear
+read, native UTM leads at all three reportable matched-storage
+budgets. The finer level is therefore
 competitive only at aggressive compression, only with Clough--Tocher
 among the transfers tested, and only when its own tile is the
 reference.

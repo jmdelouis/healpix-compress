@@ -55,9 +55,11 @@ overhead, at $0.93$ (Section~\ref{sec:common_reference}). The change
 of \term{reference} therefore removes the \term{matched-budget} advantage
 and keeps the loose-\term{target} size advantage. This
 \term{reference} applies to the Clough--Tocher \term{carrier}, which aims at the
-observation; the PSF-aware \term{carrier} aims at the latent field, and its
-comparison at equal reconstruction error awaits a synthetic scene with a
-known latent field. A HEALPix
+observation, read by the nearest cell or bilinearly. The PSF-aware
+\term{carrier} aims at the latent field. Read through its own forward
+operator it returns to the observation's resolution, and that scoring of
+its sweeps is still to be done, as is its comparison with Clough--Tocher
+against a known latent field. A HEALPix
 \term{carrier} is therefore competitive at aggressive compression when the
 HEALPix cube is itself the \term{reference} product, while native UTM remains
 ahead at all three reportable \term{matched-storage} budgets when the native
@@ -87,12 +89,17 @@ numbers, on ten whole L2A products, every band and group: the HEALPix
 reflectance takes $1.50$ times the lossless JPEG~2000 reflectance and the
 whole product $1.16$ times the EOPF product, for a compression error of
 $1.56$ times the \term{transfer} error at \SI{10}{m} and \SI{20}{m},
-spectrally white. The ratios should be re-measured before being applied to other bands,
+spectrally white. These sizes set a lossy product against lossless ones
+and are not \term{matched-error} ratios. That ratio is not measured for the
+operational chain; the closest figure, $2.3$--$2.6$ times the
+\term{native square} for the PSF-aware tile, comes from general-purpose
+codecs and from a damping that is not the operational one. The ratios should be re-measured before being applied to other bands,
 sensors, temporal stacks, model output, flux-conservative fields or a
-full-sphere product. Two measurements would sharpen the framework: the
-compressed-byte overhead of a real tiled product, and a non-deconvolving
+full-sphere product. Three measurements would sharpen the framework: the
+compressed-byte overhead of a real tiled product; a non-deconvolving
 \term{transfer} as smooth as Clough--Tocher, which would separate smoothness
-from interpolation class. For the PSF-aware \term{transfer} the storage
+from interpolation class; and the PSF-aware \term{transfer} at its
+operational damping, scored through its own forward operator. For the PSF-aware \term{transfer} the storage
 arithmetic points to a different design: keep the native pixels, whose
 halo around a tile adds about $2\%$ rather than $30\%$, and run the
 \term{transfer} at read time. The \term{carrier} then costs no storage at all

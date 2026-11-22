@@ -116,15 +116,23 @@ nearest \term{read} does not separate the grids there, and under the
 interpolating read the \term{carrier} is smaller under the illustrative
 overhead. What the two measures jointly
 exclude is the unconditional claim that a HEALPix \term{carrier} is cheaper.
-This \term{reference} applies to the Clough--Tocher \term{carrier} only. That \term{transfer}
+This \term{reference} applies to the Clough--Tocher \term{carrier}, and
+to the two \term{reads} tested here, only. That \term{transfer}
 keeps the observation's own resolution, so the observation is the field
 it aims at. The PSF-aware \term{carrier} of Section~\ref{sec:transfer_cost}
-aims at the latent field before the instrument blur. Scored against the
-observation, it would be charged for the small-scale content it was
-built to restore, and the comparison would rank the two \term{transfers} on a
-field only one of them \term{targets}. Such a comparison needs a synthetic
-scene whose latent field is known, and it is left to future work
-(Appendix~\ref{app:limitations}).
+aims at the latent field before the instrument blur. Read by the nearest
+cell or bilinearly and scored against the observation, it would be
+charged for the small-scale content it was built to restore. Read
+through its own forward operator, as the operational chain does
+(Appendix~\ref{app:large_scale_trial}), it returns to the observation's
+resolution: its uncompressed floor falls under $1\%$ of a scene's
+standard deviation (Section~\ref{sec:operator}), and the same operator
+averages the coding error over several cells. The verdict of this
+section may therefore differ for that chain, and it is not measured
+here: the PSF-aware sweeps have not been scored through that operator.
+Ranking the two \term{transfers} against the latent field on which they
+disagree needs a synthetic scene whose latent field is known, and it is
+left to future work (Appendix~\ref{app:limitations}).
 
 Two further questions about this \term{reference} are answered in the
 appendices. The compression error can be written as a fraction $\kappa$

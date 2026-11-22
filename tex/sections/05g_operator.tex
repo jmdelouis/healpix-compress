@@ -28,10 +28,18 @@ standard deviation. A substantial part of the floor is caused by the
 \term{read}ing operator. This is a measured difference between two chains and no
 variance decomposition: the \term{transfer} and read errors need not be
 orthogonal, and what the residual $2.0\times10^{-3}$ owes to each is not
-separated here. The PSF-aware tiles are not scored in this table. Their
-estimand is the latent field, so a floor against the observation would
-measure their distance to a field they do not aim at
-(Section~\ref{sec:transfer_cost}).
+separated here. The PSF-aware tiles are not scored in this table. Read by the nearest
+cell or bilinearly, a deconvolved tile is compared with the observation
+through an operator it was not built for, and the floor would charge it
+for the small-scale content it restores (Section~\ref{sec:transfer_cost}).
+The \term{read} that suits a deconvolved tile is its own observation
+model, the forward operator that maps cells to native pixels. The large-scale trial of
+Appendix~\ref{app:large_scale_trial} reads whole products that way and
+finds an uncompressed floor under $1\%$ of a scene's standard deviation
+at \SI{10}{m}, against the $10.0\%$ above. Two caveats keep the figures
+apart: that floor is measured on the pixels the fit was solved on, and
+at the operational damping. The 40-region PSF-aware sweeps have not been
+scored through that operator.
 
 The \term{read} has a second consequence, on rate. A nearest-cell read of a
 $1024^2$ tile by the $637^2$ crop touches only $30.8\%$ of the cells. The
