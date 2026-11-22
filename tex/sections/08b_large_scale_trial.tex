@@ -99,7 +99,9 @@ The error is measured on the native UTM pixels of 12 random interior
 level-11 chunks per tile and resolution, with the observation operator of the
 \term{transfer} (Table~\ref{tab:operational_quality}). The \term{transfer}
 alone leaves $5$ to $6$~DN RMS at \SI{10}{m}, under $1\%$ of the scene's
-standard deviation; the codec adds $1.56$ times that error in median at
+standard deviation (the 40-region sweep, read the same way at
+$\lambda=10^{-3}$, finds a floor several times larger,
+Table~\ref{tab:common_two_readers}; the two are not reconciled here); the codec adds $1.56$ times that error in median at
 \SI{10}{m} and \SI{20}{m}, the ratio its default was designed for. Per
 tile and band, the ratio stays within $1.39$ to $1.63$ at \SI{10}{m}
 and within $1.42$ to $1.65$ at \SI{20}{m} on all ten tiles, except B01, a \SI{60}{m} band resampled to \SI{20}{m} by the

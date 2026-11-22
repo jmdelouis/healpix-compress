@@ -56,10 +56,10 @@ of \term{reference} therefore removes the \term{matched-budget} advantage
 and keeps the loose-\term{target} size advantage. This
 \term{reference} applies to the Clough--Tocher \term{carrier}, which aims at the
 observation, read by the nearest cell or bilinearly. The PSF-aware
-\term{carrier} aims at the latent field. Read through its own forward
-operator it returns to the observation's resolution, and that scoring of
-its sweeps is still to be done, as is its comparison with Clough--Tocher
-against a known latent field. A HEALPix
+\term{carrier}, read through its own forward operator, fares no better:
+native UTM leads at the three budgets there too, at the damping tested.
+Its comparison with Clough--Tocher against a known latent field is still
+to be done. A HEALPix
 \term{carrier} is therefore competitive at aggressive compression when the
 HEALPix cube is itself the \term{reference} product, while native UTM remains
 ahead at all three reportable \term{matched-storage} budgets when the native
@@ -98,8 +98,8 @@ sensors, temporal stacks, model output, flux-conservative fields or a
 full-sphere product. Three measurements would sharpen the framework: the
 compressed-byte overhead of a real tiled product; a non-deconvolving
 \term{transfer} as smooth as Clough--Tocher, which would separate smoothness
-from interpolation class; and the PSF-aware \term{transfer} at its
-operational damping, scored through its own forward operator. For the PSF-aware \term{transfer} the storage
+from interpolation class; and the PSF-aware \term{transfer} under the
+\term{common reference} at its operational damping. For the PSF-aware \term{transfer} the storage
 arithmetic points to a different design: keep the native pixels, whose
 halo around a tile adds about $2\%$ rather than $30\%$, and run the
 \term{transfer} at read time. The \term{carrier} then costs no storage at all

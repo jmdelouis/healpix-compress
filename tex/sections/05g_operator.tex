@@ -33,13 +33,15 @@ cell or bilinearly, a deconvolved tile is compared with the observation
 through an operator it was not built for, and the floor would charge it
 for the small-scale content it restores (Section~\ref{sec:transfer_cost}).
 The \term{read} that suits a deconvolved tile is its own observation
-model, the forward operator that maps cells to native pixels. The large-scale trial of
-Appendix~\ref{app:large_scale_trial} reads whole products that way and
-finds an uncompressed floor under $1\%$ of a scene's standard deviation
-at \SI{10}{m}, against the $10.0\%$ above. Two caveats keep the figures
-apart: that floor is measured on the pixels the fit was solved on, and
-at the operational damping. The 40-region PSF-aware sweeps have not been
-scored through that operator.
+model, the forward operator that maps cells to native pixels.
+Section~\ref{sec:common_reference} scores the PSF-aware tiles through it:
+at $\lambda=10^{-3}$ their uncompressed floor is $4.4\times10^{-3}$ in
+median (Table~\ref{tab:common_two_readers}), above the
+$2.0\times10^{-3}$ of the Clough--Tocher tiles under the bilinear
+read. The large-scale trial of Appendix~\ref{app:large_scale_trial}
+reads whole products the same way at $\lambda=0.1$ and reports a floor
+several times smaller; the two differ in damping, products and pixels,
+and are not reconciled here.
 
 The \term{read} has a second consequence, on rate. A nearest-cell read of a
 $1024^2$ tile by the $637^2$ crop touches only $30.8\%$ of the cells. The
