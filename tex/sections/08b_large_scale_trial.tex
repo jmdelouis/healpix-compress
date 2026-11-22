@@ -16,10 +16,14 @@ reflectance used healpix-resample at commit \texttt{4786405}
 ($\ge$ v2026.7.0) and the nearest-neighbour groups v2026.6.0. The
 reflectance at \SI{10}{m}, \SI{20}{m} and \SI{60}{m} goes to levels 20,
 19 and 17 by the PSF-aware \term{transfer}~\cite{delouis2026resample}
-(9 nearest pixels per cell, weight threshold $0.1$, damping
-$\lambda=0.1$, at most 100 conjugate-gradient iterations; the 40-region
-sweeps of the body use $\lambda=10^{-3}$, so their PSF-aware figures do
-not carry over unchanged), one level-11 cell per chunk. Masks, scene
+(9 nearest pixels per cell, fewer than the 22 the companion uses at
+level 20 to keep $99\%$ of the kernel mass; weight threshold $0.1$;
+damping $\lambda=0.1$, strong as the companion recommends for native
+imagery but above the $\lambda\le10^{-2}$ range in which it shows an
+accuracy advantage over tuned deconvolutions~\cite{delouis2026resample};
+at most 100 conjugate-gradient iterations; the 40-region sweeps of the
+body use $\lambda=10^{-3}$, so their PSF-aware figures do not carry over
+unchanged), one level-11 cell per chunk. Masks, scene
 classification, atmosphere, probabilities and footprints are transferred
 by nearest neighbour and stored losslessly.
 
@@ -61,15 +65,20 @@ The error is measured on the native UTM pixels of 12 random interior
 level-11 chunks per tile and resolution, read back with the observation
 operator of the \term{transfer}, each band's no-data pixels excluded.
 The \term{transfer} alone leaves $5$ to $6$~DN RMS at \SI{10}{m}, under
-$1\%$ of the scene's standard deviation (the 40-region sweep, read the
-same way at $\lambda=10^{-3}$, finds a floor several times larger,
-Table~\ref{tab:common_two_readers}; the two are not reconciled here).
+$1\%$ of the scene's standard deviation (on four regions of the body, the same read at
+$\lambda=0.1$ leaves $0.37$--$3.1\times10^{-3}$,
+Section~\ref{sec:operator}); like those, it is measured on the pixels
+the \term{transfer} was fitted to.
 The codec adds $1.56$ times that error in median at \SI{10}{m} and
 \SI{20}{m}, the ratio its default was designed for, within $1.39$ to
 $1.63$ per tile and band at \SI{10}{m} and $1.42$ to $1.65$ at
 \SI{20}{m}, except B01, whose \term{transfer} error is below 1~DN. At
 \SI{60}{m} the ratio falls to $0.65$, because the \term{transfer} error
-at level 17 is three to eight times its value at \SI{20}{m}. The radial
+at level 17 is three to eight times its value at \SI{20}{m}. Converting
+the \SI{60}{m} bands straight to level 17 is a sample-to-cell spacing
+ratio of $1.2$, below the $1.6$ under which the companion finds that a
+direct solve loses its advantage; it recommends solving at level 18 and
+aggregating~\cite{delouis2026resample}. The radial
 power spectrum of the residual, \term{transfer} and compression together,
 is white, with no peak at the chunk size or any other scale, and its RMS
 lies $19$ to $141$ times below the standard deviation of $256\times256$

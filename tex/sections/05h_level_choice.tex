@@ -32,11 +32,7 @@ separate cleanly. That floor equals the level-20 floor and the discarded
 energy added in quadrature to within $7\%$ (median ratio of measured to
 quadrature $1.07$), and the discarded energy alone accounts for $84\%$
 of the excess variance. The extra error of the aggregate is thus the
-information the aggregation removed. $66.9\%$ of the sampled operating
-points in the extended codec sweeps lie below that floor, a share that
-depends on how far the ladders reach. A cell-averaged level-19 \term{carrier}
-already carries more error than most of the settings this study swept,
-and in that sense level 19 cannot replace level 20 here.
+information the aggregation removed.
 
 The result also cautions against the spectral argument that pointed the
 other way. The observed field carries $0.21\%$
@@ -82,3 +78,12 @@ compressibility at nearly the same rate as the \term{target} loosens. A
 $2\times2$ mean of a Clough--Tocher tile behaves, per stored value, much
 like the native raster it came from; the directly evaluated \term{carrier}
 keeps the sharper point values and pays for them.
+
+Against its own raster the level-19 \term{carrier} is therefore the
+cheaper one; against the observation it is not. Scored through the same
+nearest-cell read under the rules of
+Section~\ref{sec:common_reference}, the aggregate reaches the $10^{-2}$
+\term{target} on 20 of the 40 regions against 31 for level 20, and where
+both reach it, it costs $1.24$ times the level-20 bytes in median (16 regions). At the $2\%$, $5\%$ and $10\%$ budgets its error is $1.59$, $1.99$ and $2.23$ times that of level 20. The bytes the coarser level
+saves are the floor it adds: once that floor is charged, level 19 saves
+nothing over level 20, and native UTM remains ahead of both.

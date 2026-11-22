@@ -259,6 +259,60 @@ def digest_of(df, targets):
     return out
 
 
+COMMON_RMSE = (1e-2,)
+COMMON_BUDGETS = (0.02, 0.05, 0.10)
+
+
+def common_reference_digest(sweeps, utm, hpx, codecs):
+    """Level 19 against level 20 when both are scored against the observation.
+
+    2026-11-22 (review M3). The within-representation ratios above leave out
+    the floor a coarser carrier carries; this block scores both HEALPix
+    carriers through the same nearest-cell read against the observation
+    (column rmse_common of both sweeps), under the paper's rules: the oracle
+    codec must bracket the target on the carrier, sizes are compared at an
+    RMSE target and errors at a share of the shared raw tile. No overhead
+    enters: both sides are HEALPix.
+    """
+    out = {"read": "nearest", "carriers": {}}
+    for name, l19 in sweeps.groupby("carrier"):
+        scenes = sorted(set(l19.scene) & set(hpx.scene))
+        entry = {"n_regions": len(scenes), "rmse": {}, "budget": {}}
+        for t in COMMON_RMSE:
+            b19 = {s_: bool(st.oracle_bracketed(l19, s_, codecs, t, "rmse", "rmse_common"))
+                   for s_ in scenes}
+            b20 = {s_: bool(st.oracle_bracketed(hpx, s_, codecs, t, "rmse", "rmse_common"))
+                   for s_ in scenes}
+            both = [s_ for s_ in scenes if b19[s_] and b20[s_]]
+            r = []
+            for s_ in both:
+                a = st.best_of_codecs_size(l19, s_, codecs, t, rmse_col="rmse_common")
+                b = st.best_of_codecs_size(hpx, s_, codecs, t, rmse_col="rmse_common")
+                if np.isfinite(a) and np.isfinite(b) and b > 0:
+                    r.append(a / b)
+            entry["rmse"][f"{t:g}"] = {
+                "reached_l19": int(sum(b19.values())),
+                "reached_l20": int(sum(b20.values())),
+                "l19_over_l20_size": {k: v for k, v in st.paired_ratio_test(r).items()
+                                      if k in ("n", "median", "lo", "hi", "p")}}
+        for f in COMMON_BUDGETS:
+            budget = f * cfg.SHARED_RAW
+            r = []
+            for s_ in scenes:
+                if not (st.oracle_bracketed(l19, s_, codecs, budget, "budget", "rmse_common")
+                        and st.oracle_bracketed(hpx, s_, codecs, budget, "budget", "rmse_common")):
+                    continue
+                a = st.best_of_codecs_rmse(l19, s_, codecs, budget, rmse_col="rmse_common")
+                b = st.best_of_codecs_rmse(hpx, s_, codecs, budget, rmse_col="rmse_common")
+                if np.isfinite(a) and np.isfinite(b) and b > 0:
+                    r.append(a / b)
+            entry["budget"][f"{f:g}"] = {
+                k: v for k, v in st.paired_ratio_test(r).items()
+                if k in ("n", "median", "lo", "hi", "p")}
+        out["carriers"][name] = entry
+    return out
+
+
 def _fmt_p(p):
     if p is None or not np.isfinite(p):
         return "--"
@@ -365,6 +419,7 @@ def write_outputs(sweeps, codecs, targets, no_tex=False):
         return 1
     digest = digest_of(df, targets)
     digest["codecs"] = list(codecs)
+    digest["common_reference"] = common_reference_digest(sweeps, utm, hpx, codecs)
     df.to_csv(cfg.RESULTS_DIR / "level19_rd.csv", index=False)
     (cfg.RESULTS_DIR / "level19_rd.json").write_text(json.dumps(digest, indent=1))
     md = summarize(digest, targets)

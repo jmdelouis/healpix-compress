@@ -155,23 +155,23 @@ class CommonReference:
         import inspect
 
         import healpix_resample as hr
-        # The width is defined here, not asked for.
+        # The width is defined here, in the convention of the package.
         #
-        # `healpix_resample.fwhm_to_scale` returned sigma when this study was
-        # calibrated against the companion's own numbers (11.921 m FWHM ->
-        # 5.0625 m); on the present install it returns 10.1248 m for the same
-        # input, exactly twice that. The convention moved. `PSFResampler` takes
-        # `sigma_m`, so feeding it the helper's value builds an operator twice
-        # as wide as the one this study means, and nothing downstream notices:
-        # any normalised kernel preserves a constant, so the check below passes
-        # either way.
+        # healpix-resample's Gaussian resamplers weight a sample at distance d
+        # by exp(-2 d^2 / s^2) with s = `sigma_m` (psf_geometry.py at tag
+        # jstars-submission), so `sigma_m` is twice the standard deviation and
+        # FWHM = sqrt(2 ln 2) * s. build_tiles.py builds the PSF-aware tiles
+        # with that convention (fwhm_to_scale), a 12.5 m FWHM kernel.
         #
-        # The conversion is elementary and the companion's value confirms it,
-        # so it is computed here and the helper is kept only as a recorded
-        # cross-check. A dependency whose convention changes between two runs
-        # of the same day cannot be the definition of a quantity the results
-        # are scored against.
-        self.scale_m = float(fwhm_m) / (2.0 * np.sqrt(2.0 * np.log(2.0)))
+        # Until 2026-11-22 this reader passed the standard deviation
+        # FWHM / (2 sqrt(2 ln 2)) instead, so its "psf" read was a kernel half
+        # as wide as the transfer's (6.25 m FWHM for 12.5 m), and nothing
+        # downstream noticed: any normalised kernel preserves a constant. The
+        # earlier comment here took the library's factor two for a change of
+        # convention. The second block of table_common_two_readers was scored
+        # with that read and has been withdrawn; psf_matched_floor.py measures
+        # the difference on four regions.
+        self.scale_m = float(fwhm_m) / np.sqrt(2.0 * np.log(2.0))
         lib = getattr(hr, "fwhm_to_scale", None)
         if lib is None:
             try:

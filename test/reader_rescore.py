@@ -36,6 +36,8 @@ READERS = (("nearest", "paper_numbers_common.json"),
 PSF_CHAIN = ("psf_psf", "paper_numbers_common_psf_psf.json",
              "common_reference_floor__psf__psf.csv")
 MIN_BRACKETED = getattr(cfg, "MIN_BRACKETED", 0.75)
+# The PSF-chain block was scored with a mis-scaled read (see main()).
+WITHDRAW_PSF_BLOCK = True
 
 
 def load(name):
@@ -200,7 +202,15 @@ def main() -> int:
         p = cfg.RESULTS_DIR / f"common_reference_floor{tag}.csv"
         floors[r] = float(pd.read_csv(p).representation_floor_rmse.median()) if p.exists() else np.nan
     name, doc_file, floor_file = PSF_CHAIN
-    if (cfg.RESULTS_DIR / doc_file).exists():
+    # 2026-11-22: the PSF-chain sweep was scored with a "psf" read whose kernel
+    # was half as wide as the transfer's (common_reference.py passed the
+    # standard deviation where healpix-resample expects twice it). The block
+    # is withdrawn until that sweep is rerun with the corrected reader;
+    # psf_matched_floor.py measures the difference on four regions.
+    if WITHDRAW_PSF_BLOCK:
+        print(f"PSF chain withdrawn ({doc_file} was scored with a mis-scaled "
+              "read); table written with the two C--T readers only")
+    elif (cfg.RESULTS_DIR / doc_file).exists():
         docs[name] = json.loads((cfg.RESULTS_DIR / doc_file).read_text(encoding="utf-8"))
         p = cfg.RESULTS_DIR / floor_file
         if p.exists():

@@ -15,8 +15,8 @@ lossy coding removes. With the same content on both sides, the tile
 costs $2.22$ to $1.24$ times the native raster as the tolerated RMSE
 grows from $10^{-4}$ to $10^{-2}$, and an analytic field sampled on both
 lattices follows the same curve. The coarser level-19 \term{carrier} is
-smaller, at $0.67$ to $0.78$ of the \term{native square}, but its
-transfer-and-read floor is about $2.25$ times that of level 20.
+smaller, at $0.67$ to $0.78$ of the \term{native square}, but its transfer-and-read floor is about $2.25$ times that of level 20,
+and against the observation it saves nothing over level 20.
 
 \emph{Processing chain.} Against its own unsmoothed \term{native square}, the
 Clough--Tocher tile falls from $2.07$ to $0.93$. The crossing comes from
@@ -29,9 +29,10 @@ $3$--$14\%$, so deconvolution alone is unlikely to explain that
 surcharge.
 
 \emph{Reference.} Against the Sentinel-2 observation, native UTM leads
-at all three reportable \term{matched-storage} budgets: for the
-Clough--Tocher tile under both \term{reads}, and for the PSF-aware tile
-read through its own forward operator. Only the size advantage at
+at all three reportable \term{matched-storage} budgets for the
+Clough--Tocher tile, under both \term{reads}; the PSF-aware tile is not
+scored, since its own forward operator reproduces the pixels it was
+fitted to. Only the size advantage at
 $10^{-2}$ survives, under the interpolating read and the
 illustrative overhead (Section~\ref{sec:common_reference}).
 
@@ -48,8 +49,8 @@ whole products as it stood in October 2026, and fixes nothing about a
 future production. Three measurements would sharpen the framework: the
 compressed-byte overhead of a real tiled product; a non-deconvolving
 \term{transfer} as smooth as Clough--Tocher; and the PSF-aware
-\term{transfer} under the \term{common reference} at the damping of that
-chain. For the PSF-aware \term{transfer} the storage arithmetic points
+\term{transfer} scored against the observation on pixels held out of
+its fit. For the PSF-aware \term{transfer} the storage arithmetic points
 to another design: keep the native pixels, whose halo around a tile adds
 about $2\%$ rather than $30\%$, and run the \term{transfer} at read time
 (Section~\ref{sec:grid_property}). The larger gain lies beyond this

@@ -71,6 +71,7 @@ RETIRED = (
     "separable bicubic transfer error",
     "codec mean rank,",
     "[in sections/05d_latitude.tex]",
+    "sweep points below level-19 floor",
     "transfer error vs analytic field, nearest",
     "transfer error vs analytic field, psf",
 )
@@ -207,6 +208,8 @@ def checks(tex: str):
     out += appendix_table_checks()
     out += aggregate_checks()
     out += noise_checks()
+    out += level19_common_checks()
+    out += psf_matched_floor_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     # Revision 7: the PSF-aware carrier is no longer scored against the
@@ -243,6 +246,78 @@ def aggregate_checks():
         out.append((f"summed ratio at 3e-3 over gamma_tile exceeds one {where}",
                     "leaves native UTM the smaller" if a2 / cfg.GAMMA_UTM > 1
                     else "MUST BE REWORDED: HEALPix smaller", f"{a2 / cfg.GAMMA_UTM:.3f}"))
+    return out
+
+
+def level19_common_checks():
+    """Level 19 against level 20 under the common reference (Section V-G).
+
+    2026-11-22 (review M3): level19_rd.py scores both HEALPix carriers
+    through the nearest-cell read against the observation and writes the
+    block common_reference of level19_rd.json; the prose quotes the
+    aggregate carrier.
+    """
+    p = cfg.RESULTS_DIR / "level19_rd.json"
+    if not p.exists():
+        return [("level 19 vs 20, common reference  [skipped: no digest]", "", "")]
+    d = json.loads(p.read_text()).get("common_reference", {}).get("carriers", {})
+    a = d.get("aggregate")
+    if not a:
+        return [("level 19 vs 20, common reference  [skipped: re-run "
+                 "level19_rd.py --tables-only]", "", "")]
+    where = "[in sections/05h_level_choice.tex]"
+    r = a["rmse"]["0.01"]
+    b = a["budget"]
+    size = r["l19_over_l20_size"]
+    return [
+        (f"level 19/20, regions reaching 1e-2 {where}",
+         f"on {r['reached_l19']} of the 40 regions against {r['reached_l20']}", ""),
+        (f"level 19/20, size at 1e-2 {where}",
+         f"${size['median']:.2f}$ times the level-20 bytes", ""),
+        (f"level 19/20, n at 1e-2 {where}", f"({size['n']} regions)", ""),
+        (f"level 19/20, error at the three budgets {where}",
+         f"${b['0.02']['median']:.2f}$, ${b['0.05']['median']:.2f}$ and "
+         f"${b['0.1']['median']:.2f}$ times", ""),
+    ]
+
+
+def psf_matched_floor_checks():
+    """The PSF-aware tiles read through their own forward operator (V-G, App. trial).
+
+    2026-11-22 (review M5.3): psf_matched_floor.py rebuilt four regions' PSF
+    tiles at lambda = 1e-3 and 0.1 and read them through the transfer's own
+    kernel. The prose quotes the range of those floors at both dampings,
+    rounded outwards to two significant figures.
+    """
+    p = cfg.RESULTS_DIR / "psf_matched_floor.json"
+    if not p.exists():
+        return [("PSF matched floor  [skipped: psf_matched_floor.json absent]", "",
+                 "run psf_matched_floor.py")]
+    import math
+    rows = [r for r in json.loads(p.read_text())["rows"] if "variant" in r]
+
+    def rng(variant, scale):
+        v = [r["psf_fwhm12.5_matched"] / scale for r in rows if r["variant"] == variant]
+        lo = math.floor(min(v) * 100) / 100 if min(v) < 1 else math.floor(min(v) * 10) / 10
+        hi = math.ceil(max(v) * 10) / 10
+        return lo, hi, len(v)
+
+    lo3, hi3, n3 = rng("deposit_lam1e-3", 1e-5)
+    lo1, hi1, n1 = rng("rebuilt_lam0.1", 1e-3)
+    same = [abs(r["rms_diff_vs_deposit"]) for r in rows if r["variant"] == "rebuilt_lam0.001"]
+    out = [
+        ("PSF matched floor at lambda 1e-3 [in sections/05g_operator.tex]",
+         f"${lo3:.1f}$--${hi3:.1f}\\times10^{{-5}}$", f"{n3} regions"),
+        ("PSF matched floor at lambda 0.1 [in sections/05g_operator.tex]",
+         f"${lo1:.2f}$--${hi1:.1f}\\times10^{{-3}}$", f"{n1} regions"),
+        ("PSF matched floor at lambda 0.1 [in sections/08b_large_scale_trial.tex]",
+         f"${lo1:.2f}$--${hi1:.1f}\\times10^{{-3}}$", f"{n1} regions"),
+        ("PSF tiles rebuilt at lambda 1e-3 match the deposit  [count, not asserted]",
+         "", f"max RMS difference {max(same):.1e}"),
+    ]
+    if max(same) > 1e-4:
+        out.append(("PSF tiles rebuilt at lambda 1e-3 do not match the deposit",
+                    "MUST BE INVESTIGATED", f"{max(same):.1e}"))
     return out
 
 

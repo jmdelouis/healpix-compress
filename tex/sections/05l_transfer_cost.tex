@@ -11,7 +11,7 @@ it, every property of a deconvolving \term{transfer} would be confounded
 with its not being Clough--Tocher. The protocol is run on tiles rebuilt
 from the same native windows, on 40 regions for the PSF \term{transfer}
 and 39 for the inverse-distance average. The PSF tiles are built at the
-damping at which the reconstruction error was measured
+fixed damping of the companion's synthetic recovery experiments
 ($\lambda=10^{-3}$) and at the nominal \SI{12.5}{m} response width. The
 conversion chain of Appendix~\ref{app:large_scale_trial} uses
 $\lambda=0.1$; how the surcharge moves with the damping has not been
@@ -79,8 +79,11 @@ Nothing in this section measures the quality of the PSF-aware
 \term{transfer}; it establishes the storage price of the content that
 \term{transfer} adds. The companion study reports that the matched
 reconstruction recovers $15.4\%$ to $19.6\%$ of an imposed blur on a
-known texture, and has the smallest RMSE on real reduced-resolution
-Sentinel-2 imagery in all 40 regions~\cite{delouis2026resample}. Our
+known noise-free texture at that damping, and, with damping and
+iterations selected by cross-validation, a small accuracy advantage over
+tuned deconvolutions on real reduced-resolution Sentinel-2 imagery;
+against an independent higher-resolution \term{reference}, no method it tests
+improves on bicubic interpolation~\cite{delouis2026resample}. Our
 synthetic harness reproduces that recovery without noise, and loses
 most of it at the noise level measured on the imagery, both at
 $\lambda=10^{-3}$ (Appendix~\ref{app:error_budget}). On these tiles the

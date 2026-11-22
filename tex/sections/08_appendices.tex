@@ -127,10 +127,8 @@ points of the extended ladders reach a cell-space RMSE below the floor of
 Table~\ref{tab:floors}. A \term{read} whose kernel attenuates coding
 error, such as the forward operator of the PSF-aware \term{transfer},
 would let a codec target the product's distortion instead of the
-\term{carrier}'s, for a product consumed through that operator only. The
-PSF-aware \term{carrier} is scored through that operator in
-Section~\ref{sec:common_reference}; the rate such a codec would save is
-not measured here.
+\term{carrier}'s, for a product consumed through that operator only. The rate such
+a codec would save is not measured here.
 
 \subsection{Codec Audit}
 \label{app:codec_audit}
@@ -243,7 +241,8 @@ blur by $2\%$ and the recovery fraction by less than a point. White
 noise is added at the level Immerkaer's $3\times3$ estimator reads off
 each region's own imagery, $6.3$--$13.4\%$ of the field's standard
 deviation by class, because a deconvolving \term{transfer} amplifies noise as
-it amplifies structure. The damping is $\lambda=10^{-3}$, that of the companion study and of
+it amplifies structure. The damping is $\lambda=10^{-3}$, that of the companion's synthetic
+recovery experiments and of
 Section~\ref{sec:transfer_cost}; the conversion chain of
 Appendix~\ref{app:large_scale_trial} uses $\lambda=0.1$. In
 Table~\ref{tab:resampling_error}, \emph{Blur} is the RMSE between the
@@ -319,7 +318,10 @@ $-54.8\%$ over forest and $+3.5\%$ over urban scenes: a deconvolution
 amplifies noise at the frequencies it restores, and the companion's
 headline figure is a noise-free one. A stronger damping trades recovery
 against that amplification; the $\lambda=0.1$ of the conversion chain
-sits at another point of the trade, which is not measured here. Two differences with the companion's
+sits at another point of the trade, which is not measured here. On
+matched synthetic scenes the companion finds the preferred damping
+moving to $0.1$--$1$ as white noise grows, and recommends choosing it on
+the \term{target} sensor~\cite{delouis2026resample}. Two differences with the companion's
 protocol remain untested here, its \SI{10}{m} square detector aperture,
 which the scalar Gaussian inverse does not model, and its high-resolution
 image textures in place of a power-law field; at the nominal width and
@@ -368,7 +370,7 @@ general.
     \item \textbf{The overhead is a parameter because only part of it is measured.} The container cost of each side is measured at under half a percent and the overlap of the Sentinel-2 tiling at $21\%$ from its published geometry, while padding and metadata are assumed. $\gamma_{\mathrm{tile}}$ has not been measured from complete tiled product files, nor swept over $[1.0,1.5]$ for the \term{matched-budget} protocol, and for compressed storage the overhead is assumed to apply proportionally to the compressed byte count;
     \item \textbf{The level-19 comparison was made on a cell-averaged carrier; the directly evaluated one agrees.} Appendix~\ref{app:level19_direct} finds the two within $0.2\%$ in floor against the observation, with the widest departure at $1.059$, on all 40 regions. The kernel ablation and the resampling-error study, which also re-run a \term{transfer}, rest on the same 39; no measurement read from a stored tile is affected;
     \item \textbf{The loosest targets rest on fewer regions.} The failing pairs are the lowest-contrast scenes: none at the two tightest \term{RMSE targets}, one at $10^{-3}$, three at $3\times10^{-3}$ and eight at $10^{-2}$, with no urban scene among the absent. The $40\%$ and $20\%$ budgets qualify on $0\%$ and $65\%$ of the regions and are withheld;
-    \item \textbf{Neither reconstruction reference is the whole story.} The floor of Table~\ref{tab:floors} is an upper bound on what the representation costs, since the \term{read} alone can account for it (Section~\ref{sec:operator}). What stays open is the $3\times10^{-3}$ \term{target}, bracketed for $57\%$ of regions under the interpolating \term{read}. The PSF-aware \term{carrier} is scored against the observation only through the forward operator of its \term{transfer} (Table~\ref{tab:common_two_readers}), at $\lambda=10^{-3}$. Its floor there, $4.4\times10^{-3}$ in median, is several times the one the large-scale trial reports with the same kind of read at $\lambda=0.1$ (Appendix~\ref{app:large_scale_trial}), and the difference is not explained here. A comparison of the two \term{transfers} at equal reconstruction error needs a synthetic scene with a known latent field, degraded by the instrument response, transferred by both, compressed, and scored against that field; it is the first experiment a follow-up should run;
+    \item \textbf{Neither reconstruction reference is the whole story.} The floor of Table~\ref{tab:floors} is an upper bound on what the representation costs, since the \term{read} alone can account for it (Section~\ref{sec:operator}). What stays open is the $3\times10^{-3}$ \term{target}, bracketed for $57\%$ of regions under the interpolating \term{read}. The PSF-aware \term{carrier} is not scored against the observation: read by the nearest cell or bilinearly it would be charged for the content it is built to restore, and read through its own forward operator it reproduces the pixels it was fitted to (Section~\ref{sec:operator}); a fair score needs pixels held out of the fit. A comparison of the two \term{transfers} at equal reconstruction error needs a synthetic scene with a known latent field, degraded by the instrument response, transferred by both, compressed, and scored against that field; it is the first experiment a follow-up should run;
     \item \textbf{The super-resolution surcharge is measured; the recovery it buys is reproduced only without noise.} The deconvolved \term{carrier} costs $1.26$ to $2.45$ times the Clough--Tocher one, and the PSF/IDW differential of $3$--$14\%$ suggests that deconvolution alone is unlikely to account for that surcharge; because the two \term{transfers} are not matched in smoothness or interpolation class, the differential does not isolate or bound the deconvolution contribution. In our synthetic harness the PSF-aware reconstruction recovers the companion's $15.4\%$ to $19.6\%$ of the blur on the regions whose fitted response width is at or above \SI{11}{m}, loses on the narrower ones, and keeps little of it once noise is added at the level measured on the imagery (Appendix~\ref{app:error_budget}). The companion's square detector aperture and image textures are not modelled here. The storage price is reportable; the quality it buys on real tiles is established only by the companion study. Surcharge and recovery are both measured at $\lambda=10^{-3}$; the conversion chain of the trial uses $\lambda=0.1$ (Appendix~\ref{app:large_scale_trial}), at which neither has been measured;
     \item \textbf{The oracle-best-codec comparison is an envelope, and the crossover is codec-dependent.} Four of the five codecs held fixed on both grids reproduce the regime-dependent pattern; ZFP does not (Section~\ref{sec:same_codec});
     \item \textbf{The byte and type audit covers two regions.} Over 424 points it found no gap between reported and on-disk sizes and no disagreement with an independent decoder; it tests the adapters, which do not vary by region. The image codecs' eight-byte scale-and-offset sidecar is not charged to their sizes, and the DWT baseline charges four bytes for a scale it never writes;

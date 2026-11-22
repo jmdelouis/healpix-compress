@@ -130,21 +130,28 @@ looks more storage-efficient once compressed.
 The PSF-aware \term{transfer} is described here so that this paper stands on its
 own. It models each native pixel as a Gaussian-weighted sum of the latent
 field at the level-20 cell centres, with the instrument's response as the
-weight (nominal B04 width \SI{12.5}{m} FWHM). It assembles that forward
+weight (nominal B04 width \SI{12.5}{m} FWHM, about $3\%$ above the B04
+width of ESA's per-band response files and inside the companion's
+tolerance, which loses its advantage once the width exceeds the true
+response by $5$--$7\%$~\cite{delouis2026resample}). It assembles that forward
 operator as a sparse matrix from cells to samples. It then estimates the
 cell values by damped least squares, solved by conjugate gradients on
-the normal equations with a damping of $\lambda=10^{-3}$, the value at which the companion
-study reports its accuracy. The conversion chain tried in
+the normal equations with a damping of $\lambda=10^{-3}$, the fixed damping of the
+companion's synthetic recovery experiments; the companion selects
+$\lambda$ by cross-validation when it compares methods, and for native
+imagery recommends a damping chosen on the \term{target} sensor. The conversion chain tried in
 Appendix~\ref{app:large_scale_trial} damps harder, with $\lambda=0.1$;
 every PSF-aware figure in the body of this paper is at
 $\lambda=10^{-3}$, and none has been measured at that damping
 (Section~\ref{sec:limitations}). Its estimand is
 therefore the latent field before the instrument blur. The companion
 study measures that it recovers $15.4\%$ to $19.6\%$ of the blur on
-noise-free fields, and Section~\ref{sec:transfer_cost} prices the bytes
+noise-free synthetic fields at that damping, and Section~\ref{sec:transfer_cost} prices the bytes
 this sharper estimand costs. The PSF-aware \term{transfer} comes from the
 \texttt{healpix-resample} package at its tag
-\texttt{jstars-submission}, the version the companion paper describes.
+\texttt{jstars-submission}, the version of the companion's submitted
+manuscript; its revision (tag \texttt{jstars-revision-1.1}) leaves the
+figures quoted here unchanged.
 The environment record written with every sweep names the checkout it
 ran against, because the package's PSF width convention changed once
 between versions during this work.
