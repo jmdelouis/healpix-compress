@@ -6,10 +6,7 @@ outcome is in Table~\ref{tab:synthesis} and Fig.~\ref{fig:headline}. Both
 start from one quantity: the compressed size of the HEALPix tile divided
 by that of the area-matched \term{native UTM square}, at the same
 reconstruction error, with no overhead charged to either side. The five
-\term{targets} run from a quarter of a percent to a quarter of a typical
-scene's contrast, the median standard deviation of the 40 tiles, $0.04$
-in reflectance; the three tightest lie below the noise measured on the
-imagery (Section~\ref{sec:rd_protocol}). Per \term{target}, the table gives that ratio for the
+\term{targets} are those of Section~\ref{sec:rd_protocol}. Per \term{target}, the table gives that ratio for the
 Clough--Tocher \term{carrier}, as the median over the regions, which is
 also the \term{critical overhead} $\gamma_\star$
 (Section~\ref{sec:rd_main}), and on the summed bytes of those regions
@@ -51,38 +48,34 @@ $6\times10^{-6}$ on both grids, the tile is $3.42$ times the square in median ($
 the raw $2.58$, because the native values sit on the integer lattice of
 the product and the interpolated ones do not. An analytic field sampled
 on both lattices, where neither side is resampled, gives $2.17$ at
-$10^{-4}$, a quarter of a percent of a typical scene's contrast, and
-$1.16$ at $10^{-2}$, a quarter of the contrast
-(Fig.~\ref{fig:headline}). It never crosses parity.
+$10^{-4}$ and $1.16$ at $10^{-2}$, a quarter of the contrast of a
+typical scene (Fig.~\ref{fig:headline}). It never
+crosses parity.
 
 Second, against its own \term{native square} the Clough--Tocher tile
 goes further: $2.07$ at the tightest \term{target} and $0.93$ at the
-loosest, where it is the smaller one before any overhead is charged, by
-a statistically marginal margin that the ground both grids share does
-not confirm (Section~\ref{sec:rd_main}). The
-difference from the analytic curve is the smoothing of the
-\term{transfer}. Read through the same interpolant, the native raster
-compresses better as well, and at the loosest \term{target} the tile
-stays $1.24$ times its size at a half-pixel phase and $1.10$ at a
-quarter pixel (Section~\ref{sec:support_controls}): a fixed-phase
-control, not a matched experiment, but both phases stay above parity.
-The tile pays for that smoothing in error against the observation
+loosest, a statistically marginal crossing that the ground both grids
+share does not confirm (Section~\ref{sec:rd_main}). The difference from
+the analytic curve is the smoothing of the \term{transfer}. Read through
+the same interpolant, the native raster compresses better as well, and
+at the loosest \term{target} the tile stays
+$1.24$ times its size at a half-pixel phase and $1.10$ at a
+quarter pixel (Section~\ref{sec:support_controls}). The tile pays for
+that smoothing in error against the observation
 (Section~\ref{sec:common_reference}); the crossing belongs to the chain,
 not to the grid. The kind of scene moves the ratio less than the
 tolerated error does: the class medians span $1.98$--$2.17$ at
 the tightest \term{target} and $0.89$--$1.10$ at the loosest.
 
-Third, the way the tile is filled matters as much as everything else
-combined. The PSF-aware \term{transfer} of the companion
-study~\cite{delouis2026resample}, designed to undo part of the
-instrument blur, puts small-scale content on the tile, and a codec asked
-to preserve it must spend bytes on it: the tile compresses to
-$2.3$--$2.6$ times the \term{UTM square} at every \term{target}, close
-to the uncompressed ratio. The inverse-distance average, which restores
-no detail, costs nearly as much ($2.0$--$2.5$), so the extra bytes are
-consistent with the price of leaving the smooth interpolant. Under an
-illustrative $30\%$ layout overhead on the native product, the
-Clough--Tocher ratio reads $1.59$ down to $0.72$ (last block of
-Table~\ref{tab:synthesis}) and the PSF-aware one $1.8$ to $2.0$;
-Sections~\ref{sec:rd_main}--\ref{sec:rd_illustrative} show where the
-verdict changes sign.
+Third, the way the tile is filled is one of the largest sensitivities
+of the result. The PSF-aware \term{transfer} of the companion
+study~\cite{delouis2026resample} puts small-scale content on the tile,
+and a codec asked to preserve it must spend bytes on it: the tile
+compresses to $2.3$--$2.6$ times the \term{UTM square} at every
+\term{target}, close to the uncompressed ratio. The inverse-distance
+average, which restores no detail, costs nearly as much ($2.0$--$2.5$),
+so the extra bytes are consistent with the price of leaving the smooth
+interpolant (Section~\ref{sec:transfer_cost}). Under an illustrative
+$30\%$ layout overhead on the native product every ratio divides by
+$1.3$ (last block of Table~\ref{tab:synthesis},
+Section~\ref{sec:rd_illustrative}).

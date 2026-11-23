@@ -77,6 +77,23 @@ RETIRED = (
     # 2026-11-23: the same-ground control (same_domain.py) replaced the
     # common-support one in Table XI and Appendix B; its CSV stays deposited.
     "common-support",
+    # 2026-11-23, condensation pass: each statement is now made once, in the
+    # section that establishes it. The values below are still computed and
+    # printed; they are carried by the table or the section named.
+    "PSF-aware tile / UTM at gamma=1.3, range",            # Table XI / V-J (2.00, 1.78)
+    "headline section: loosest ratio at gamma_tile",       # Table IV, Section V-D
+    "footprint bounding box / footprint area",             # VI-B shortened
+    ": JPEG XL vs SZ3 wins",                               # codec ranking tables (deposit)
+    ": SZ3 vs JPEG XL mean rank",
+    "interpolating read: SZ3 and JPEG XL wins",
+    "summed ratio at the loosest target, advantage in percent",
+    "tile / smoothed native, two phases [in sections/01_introduction.tex]",
+    "latent inflation at the crossings [in sections/05i_common_reference.tex]",       # Appendix C
+    "own-estimand inflation at the crossings [in sections/05i_common_reference.tex]",  # Table XIV
+    "quadrature overstates, observation, points [in sections/05i_common_reference.tex]",
+    "quadrature understates, latent scene, points [in sections/05i_common_reference.tex]",
+    "variance discarded by level 19 [in sections/08_appendices.tex]",                  # Section V-I
+    "compressed / raw at the loosest target [in sections/05h_level_choice.tex]",
 )
 
 
@@ -251,7 +268,7 @@ def aggregate_checks():
         out.append((f"summed ratio at 1e-3 and 3e-3 {where}",
                     f"${a3:.2f}$ at $10^{{-3}}$ and ${a2:.2f}$", "Total column"))
         out.append((f"summed ratio at the loosest target {where}",
-                    f"${a1:.2f}$, keeps HEALPix", "Total column"))
+                    f"the total at $10^{{-2}}$ is ${a1:.2f}$", "Total column"))
         out.append((f"summed ratio at the loosest target, advantage in percent {where}",
                     f"${100 * (1 - a1):.0f}\\%$ ahead", "1 - Total"))
         out.append((f"summed ratio at 3e-3 over gamma_tile exceeds one {where}",
@@ -551,7 +568,7 @@ def same_ground_checks():
     sh = [x["median"] for x in d["over_full"]["harmonic"]]
     lo, hi = 100 * (min(sh) - 1), 100 * (max(sh) - 1)
     shift = f"${'-' if lo < 0 else '+'}{abs(lo):.1f}\\%$ to ${'-' if hi < 0 else '+'}{abs(hi):.1f}\\%$"
-    for f in ("03_methodology", "05e_support", "08_appendices"):
+    for f in ("05e_support", "08_appendices"):
         out.append((f"same ground: per-region shift against the full footprints "
                     f"[in sections/{f}.tex]", shift, "median of same-ground / full, five targets"))
     first = d["variants"]["harmonic"][0]["median"]
@@ -2323,7 +2340,7 @@ def main(argv=None) -> int:
         if "needs every occurrence" in label:
             # two occurrences since 2026-11-22 (Sections III-B and VI-B; the
             # conclusion no longer repeats it)
-            if tex.count(value) < 2:
+            if tex.count(value) < 1:
                 bad.append((label, value, note))
             continue
         if "[count, not asserted]" in label:

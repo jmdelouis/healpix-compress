@@ -77,18 +77,14 @@ codec is built to remove.
 
 Nothing in this section measures the quality of the PSF-aware
 \term{transfer}; it establishes the storage price of the content that
-\term{transfer} adds. The companion study reports that the matched
-reconstruction recovers $15.4\%$ to $19.6\%$ of an imposed blur on a
-known noise-free texture at that damping, and, with damping and
-iterations selected by cross-validation, a small accuracy advantage over
-tuned deconvolutions on real reduced-resolution Sentinel-2 imagery;
-against an independent higher-resolution \term{reference}, no method it tests
-improves on bicubic interpolation~\cite{delouis2026resample}. Our
-synthetic harness reproduces that recovery without noise, and loses
-most of it at the noise level measured on the imagery, both at
-$\lambda=10^{-3}$ (Appendix~\ref{app:error_budget}). On these tiles the
-surcharge therefore prices content whose recovery is not established
-here. Among the \term{transfers} that reproduce the product,
+\term{transfer} adds. The companion study reports a small accuracy advantage over tuned
+deconvolutions on real reduced-resolution Sentinel-2 imagery and,
+against an independent higher-resolution \term{reference}, no method
+that improves on bicubic interpolation~\cite{delouis2026resample}. Our
+synthetic harness loses most of the noise-free recovery at the noise
+level measured on the imagery (Appendix~\ref{app:error_budget}), so on
+these tiles the surcharge prices content whose recovery is not
+established here. Among the \term{transfers} that reproduce the product,
 Clough--Tocher is both the most accurate and the most compressible: a
 \term{transfer} that represents a band-limited field faithfully does not
 invent fine-scale content, and content it does not invent is content

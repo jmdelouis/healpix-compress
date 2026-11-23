@@ -17,15 +17,8 @@ trees~\cite{crouse1998hmt} and parent-conditioned
 coding~\cite{buccigrossi1999joint} turn that persistence into bits
 saved. An added octave that carries almost no variance is the case
 those models handle best, which is why the oversampling penalty is
-expected to be much smaller than the factor of~\eqref{eq:alpha}. The
-native product shows only part of that octave. A median of $0.21\%$ of
-each scene's variance lies above half the native Nyquist
-(Section~\ref{sec:support_controls}), while the octave level~20 adds
-over level~19 lies mostly above the native Nyquist. On the \term{carrier}, the detail that level 20 adds
-(the Haar coefficients of its finest level, which are not confined to
-that octave) holds $3.47\%$ of the tile's variance
-(Section~\ref{sec:level_choice}), two orders of magnitude more than a
-spectral extrapolation of the $0.21\%$ suggests.
+expected to be much smaller than the factor of~\eqref{eq:alpha}. Section~\ref{sec:level_choice} measures what that octave holds on the
+\term{carrier}.
 
 \subsection{A Direct Test of a Quadtree-Native Coder}
 \label{app:quadtree}
@@ -190,21 +183,21 @@ carries $\gamma_{\mathrm{tile}}=1.3$.
 \subsection{Is Each Window Still the Product Its Tile Came From?}
 \label{app:window_radiometry}
 Three measurements re-run a \term{transfer} from the native window, which
-must therefore still be the product its tile came from. Each stored tile
-is compared with its own window sampled at the tile's cell centres by
-nearest pixel. The difference between the two samplings is additive noise
-on the regressor. If that noise is uncorrelated with the signal, it
-attenuates the regression slope by exactly the squared correlation, so $\mathrm{slope}/\mathrm{corr}^2$ is one whatever
-the noise and the contrast, while a different acquisition carries a gain
-and an offset of its own. Across the 40 regions the ratio has median
+must therefore still be the product its tile came from. Each tile's file
+holds the equal-area \term{UTM crop} written in the same call, which
+must agree to the bit with the window's pixels over the same ground, and
+all 198 stored tiles do: the
+comparison at the recorded indices reports 0 mismatched tiles, and in
+the deposited run no window was re-acquired after its tile was built
+(0 of the 40 windows). As a second check, each
+stored tile is regressed against its own window sampled at the tile's
+cell centres by nearest pixel. If the difference between the two
+samplings is noise uncorrelated with the signal,
+$\mathrm{slope}/\mathrm{corr}^2$ is one whatever the noise and the
+contrast, while a different acquisition carries a gain and an offset of
+its own. Across the 40 regions the ratio has median
 $1.0032$, all in $[0.982, 1.011]$, over correlations from $0.910$ to
-$0.999$. A second test, exact and free of that assumption, carries the argument: each tile's file holds the
-equal-area \term{UTM crop} written in the same call, which must agree to
-the bit with the window's pixels over the same ground, and all 198 stored
-tiles do. The crop box is recomputed from the tile's centroid, which
-survives any re-cutting of the window; in the deposited run no window was
-re-acquired after its tile was built (0 of the 40 windows), and the
-comparison at the recorded indices reports 0 mismatched tiles.
+$0.999$.
 
 \subsection{The Two Level-19 Carriers}
 \label{app:level19_direct}
@@ -373,10 +366,10 @@ general.
 \section{Detailed Limitations}
 \label{app:limitations}
 \begin{itemize}
-    \item \textbf{The verdict is conditional on the transfer, by about a factor of two.} Rebuilding the \term{carrier} with a PSF-aware or an inverse-distance \term{transfer} costs $1.2$ to $2.5$ times the bytes at the same coding RMSE (Section~\ref{sec:transfer_cost}), more than the margin by which HEALPix leads at the loosest \term{targets}. The argument does not extend to \term{transfers} we have not swept, and a non-deconvolving \term{transfer} as smooth as Clough--Tocher, which would isolate deconvolution from smoothness, has not been tested;
+    \item \textbf{The verdict is conditional on the transfer, by about a factor of two} (Section~\ref{sec:transfer_cost}). The argument does not extend to \term{transfers} we have not swept, and a non-deconvolving \term{transfer} as smooth as Clough--Tocher, which would isolate deconvolution from smoothness, has not been tested;
     \item \textbf{The equal-area UTM square matches the tile's nominal projected area}, neither its exact geodesic area (UTM is conformal, and $636.7$ pixels were rounded to $637$) nor its shape (Section~\ref{sec:utm_crop}); the fixed $2.58\times$ oversampling would not change under a footprint-exact crop;
-    \item \textbf{The overhead is a parameter because only part of it is measured.} The container cost of each side is measured at about half a percent of the raw size or less and the overlap of the Sentinel-2 tiling at $21\%$ from its published geometry, while padding and metadata are assumed. $\gamma_{\mathrm{tile}}$ has not been measured from complete tiled product files, nor swept over $[1.0,1.5]$ for the \term{matched-budget} protocol, and for compressed storage the overhead is assumed to apply proportionally to the compressed byte count;
-    \item \textbf{Neither reconstruction reference is the whole story.} The floor of Table~\ref{tab:floors} is an upper bound on what the representation costs, since the \term{read} alone can account for it (Section~\ref{sec:operator}). What stays open is the $3\times10^{-3}$ \term{target}, bracketed for $57\%$ of regions under the interpolating \term{read}. The PSF-aware \term{carrier} is not scored against the observation: read by the nearest cell or bilinearly it would be charged for the content it is built to restore, and read through its own forward operator it reproduces the pixels it was fitted to (Section~\ref{sec:operator}); a fair score needs pixels held out of the fit. A comparison of the two \term{transfers} at equal reconstruction error needs a synthetic scene with a known latent field, degraded by the instrument response, transferred by both, compressed, and scored against that field; it is the first experiment a follow-up should run;
+    \item \textbf{The overhead is a parameter because only part of it is measured.}  $\gamma_{\mathrm{tile}}$ has not been measured from complete tiled product files, nor swept over $[1.0,1.5]$ for the \term{matched-budget} protocol, and for compressed storage the overhead is assumed to apply proportionally to the compressed byte count;
+    \item \textbf{Neither reconstruction reference is the whole story.} What stays open is the $3\times10^{-3}$ \term{target}, bracketed for $57\%$ of regions under the interpolating \term{read}. The PSF-aware \term{carrier} is not scored against the observation (Section~\ref{sec:operator}); comparing the two \term{transfers} at equal reconstruction error needs a synthetic scene with a known latent field, degraded by the instrument response, transferred by both, compressed, and scored against that field, the first experiment a follow-up should run;
     \item \textbf{The super-resolution surcharge is measured; the recovery it buys is reproduced only without noise.} In our synthetic harness the PSF-aware reconstruction recovers $8\%$ to $20\%$ of the blur on the regions whose fitted response width is at or above \SI{11}{m} (the companion reports $15.4\%$ to $19.6\%$), loses on the narrower ones, and keeps little of it once noise is added at the level measured on the imagery (Appendix~\ref{app:error_budget}). The storage price is reportable; the quality it buys on real tiles is established only by the companion study;
     \item \textbf{The byte and type audit covers two regions.} Over 424 points it found no gap between reported and on-disk sizes and no disagreement with an independent decoder; it tests the adapters, which do not vary by region;
     \item \textbf{The footprints are compared through convex hulls.} The intersection fractions come from the convex hull of the cell centres, and geodesic areas have not been computed. The tile's raster axes run at about $45^\circ$ to the native ones, and what that orientation costs row-and-column codecs is not measured;

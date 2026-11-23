@@ -72,7 +72,7 @@ Term & Meaning in this paper \\
 \midrule
 \term{Carrier grid, tile} & The HEALPix level-20 grid on which the imagery is stored, and the unit of storage on it: the $1024\times1024$ cells descending from one level-10 cell, about \SI{6.4}{km} across. \\
 \term{Native UTM square} & The $637\times637$-pixel square of the original Sentinel-2 raster with the same nominal projected area as one tile (Section~\ref{sec:utm_crop}); the native side is never resampled. \\
-\term{Transfer} & The operation that fills the tile from the native pixels. Three are compared, and they answer different questions. \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it keeps the resolution and the instrument response of the product, adds no information that was not in the native pixels, though it does smooth them, and is the carrier used throughout, so that the comparison isolates what the grid costs. \emph{PSF-aware} aims to undo part of the instrument blur, so the tile aims at a sharper field than the product it came from; its extra bytes are the price of that content, whose recovery on this imagery is not established here, and its error is meaningful only against that sharper field. \emph{Inverse-distance} averages the four nearest pixels with distance weights; it is the least accurate and serves as a control. \\
+\term{Transfer} & The operation that fills the tile from the native pixels. Three are compared (Section~\ref{sec:resampler}). \emph{Clough--Tocher} passes a smooth surface through the observed pixels and reads it at the cell centres; it keeps the resolution of the product, though it smooths it, and is the carrier used throughout. \emph{PSF-aware} aims to undo part of the instrument blur, so its tile aims at a sharper field than the product. \emph{Inverse-distance} averages the four nearest pixels with distance weights and serves as a control. \\
 \term{Read} & The operation that returns a value on a native pixel from a decoded tile, needed only when the tile is compared with the observation; nearest cell, interpolation within the tile, or, for a PSF-aware tile, the forward operator of its transfer. \\
 \term{Size ratio} & Compressed bytes of the HEALPix tile divided by compressed bytes of the native square, at the same reconstruction error. Above one, the HEALPix representation is larger. Uncompressed, the ratio is $2.58$ by geometry. \\
 \term{Target RMSE} & The tolerated reconstruction error, in reflectance units. Sentinel-2 reflectances are of order $0.1$ and a typical tile has a standard deviation, its contrast, of $0.04$; an RMSE of $10^{-4}$ is a quarter of a percent of that contrast and $10^{-2}$ a quarter of it. Five targets from $10^{-4}$ to $10^{-2}$ are used. \\
@@ -101,24 +101,19 @@ persistence used by zerotree coders make this expectation precise
 (Appendix~\ref{app:literatures}).
 
 One bound follows from information alone. For a fixed complete source
-window, the \term{carrier} is a deterministic function of the native samples:
-the tile is a known \term{transfer} applied to that window. A coder that stored
-those samples and the name of the \term{transfer} would reproduce the tile
-without loss. The information content of the \term{carrier} therefore cannot
-exceed that of the complete input samples by more than the description
-of the \term{transfer}. This does not give a unit upper bound on the HEALPix/native-crop
-ratio measured here. The \term{equal-area crop} and the \term{carrier} do not cover
-identical supports, and the \term{transfer} reads native samples from outside
-the crop, so the crop is not the input from which the tile is a function
-(Section~\ref{sec:utm_crop}). What the bound says is that the \term{carrier}
-holds no more information than the window it came from, and that the
-ratios measured in Section~\ref{sec:results} are a property of
-general-purpose codecs applied to an oversampled representation. Two
-classical settings describe the same situation. In oversampled
-analogue-to-digital conversion the redundant samples form a frame, and a
-consistent decoder can recover part of the oversampling
-gain~\cite{thao1994oversampled,christensen2016frames}. In generalised
-sampling a smooth interpolant read at a finer lattice adds no degrees of
-freedom~\cite{unser2000sampling}. How much of that
+window the \term{carrier} is a deterministic function of the native
+samples, a known \term{transfer} applied to that window, so its
+information content cannot exceed theirs by more than the description
+of the \term{transfer}. This gives no unit upper bound on the
+HEALPix/native-crop ratio measured here: the \term{equal-area crop} and
+the \term{carrier} do not cover identical supports, and the
+\term{transfer} reads native samples from outside the crop
+(Section~\ref{sec:utm_crop}). What the bound says is that the ratios
+measured in Section~\ref{sec:results} are a property of
+general-purpose codecs applied to an oversampled representation. Oversampled
+analogue-to-digital
+conversion~\cite{thao1994oversampled,christensen2016frames} and
+generalised sampling~\cite{unser2000sampling} describe the same
+situation: redundant samples add no degrees of freedom. How much of that
 redundancy a practical codec removes is the empirical question of this
 paper.

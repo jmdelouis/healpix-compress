@@ -7,13 +7,10 @@ illustrative overhead scenario of Section~\ref{sec:overhead}. Every
 verdict in them is the curve of Section~\ref{sec:rd_main} read at one
 abscissa: HEALPix is the smaller representation exactly where $1.30$
 exceeds that \term{target}'s $\gamma_\star$, which is why the sign changes
-between $10^{-3}$ and $3\times10^{-3}$ and nowhere else. In sizes: if the
-native product is stored with an illustrative $30\%$ layout overhead, the
-Clough--Tocher \term{carrier} is $1.59$ times its size at the tightest tolerance
-and $0.72$ times at the loosest. Each entry is a per-region HPX/UTM ratio
-with the oracle-best codec chosen per region and per grid, the UTM side
+between $10^{-3}$ and $3\times10^{-3}$ and nowhere else. Each entry is a median per-region ratio with the oracle-best codec
+chosen per region and per grid, the UTM side
 carrying $\gamma_{\mathrm{tile}}=1.3$, so a value below one favours
-HEALPix. The median is over the $n$ evaluable regions.
+HEALPix.
 $p^{\mathrm{Holm}}$ is a two-sided Wilcoxon test on the log ratio,
 corrected by Holm's procedure~\cite{holm1979simple} over the family of eight \term{targets} the two tables report
 together. A \term{target} the corrected test does not separate at the $5\%$
@@ -30,10 +27,8 @@ only reported \term{target} that fails correction ($p^{\mathrm{Holm}}=0.19$); it
 is inconclusive, since no equivalence margin has been defined. Keeping
 the excluded regions as bounds would change no verdict
 (Appendix~\ref{app:censoring}). In
-Table~\ref{tab:error_at_size} the budget is a fraction of the shared raw
-HEALPix tile size, \SI{4194304}{\byte}, the UTM side receives that budget
-divided by $\gamma_{\mathrm{tile}}$, and the ratio compared is of
-reconstruction errors.
+Table~\ref{tab:error_at_size} the ratio compared is of reconstruction
+errors at a budget (Section~\ref{sec:overhead}).
 
 \input{tables/table_error_at_constant_size}
 

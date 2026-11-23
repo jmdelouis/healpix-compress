@@ -19,10 +19,8 @@ region). The two studies thus share sites, acquisitions and radiometric
 conventions.
 
 The native window is centred on the HEALPix tile that contains the
-anchor, whose bounding box is \SI{9.0}{km} across. An anchor-centred
-window would have to be twice as large, more than one granule reliably
-covers near its edge; a tile-centred one needs the bounding box plus a
-resampling halo, about \SI{11}{km}. No image content enters this choice.
+anchor (bounding box \SI{9.0}{km} across, plus a resampling halo); no
+image content enters this choice.
 A region is admitted only if a complete level-10 parent tile lies inside
 its window with halo, if the native pixels under the footprint are
 valid, and if the \term{equal-area UTM square} is complete. When invalid pixels
@@ -49,11 +47,8 @@ things, and the same setting gives a different error on every
 scene~\cite{lindstrom2014zfp,liang2022sz3}. Each codec is therefore swept
 over its own parameter, and the resulting rate--distortion curves are
 compared in one of two ways only: at the same reconstruction error,
-compare sizes; or at the same size, compare errors. The two grids are
-compared in the same way. A HEALPix tile and a \term{native square} are never
-compared at the same codec setting; they are compared at the same
-achieved error or the same budget. Every ratio in this paper is
-therefore relative to a matched operating point, and none is an absolute
+compare sizes; or at the same size, compare errors. The two grids are compared in the same way: every ratio in this paper
+is relative to a matched operating point, and none is an absolute
 compression ratio.
 
 For every (scene, codec, parameter) combination we record the encoded byte
@@ -111,38 +106,27 @@ when an operational overhead is assumed (Section~\ref{sec:overhead}).
 Codecs with a single operating point (the two lossless variants) are
 reported at their achieved point only. All reported values are medians over
 the regions that qualify. Every confidence interval on a median ratio is a
-$95\%$ percentile bootstrap: the qualifying regions are resampled with
-replacement $10\,000$ times, the median is recomputed on each resample,
-and the interval runs from the $2.5$th to the $97.5$th percentile of
-those medians. Paired $p$-values are two-sided Wilcoxon signed-rank
+$95\%$ percentile bootstrap over the qualifying regions ($10\,000$
+resamples). Paired $p$-values are two-sided Wilcoxon signed-rank
 tests~\cite{wilcoxon1945} on the log ratios.
 
 The \term{targets} should be read against the error the \term{transfer}
-itself leaves, which is how the companion study sets the acceptable
-reconstruction error on synthetic scenes~\cite{delouis2026resample}.
-Appendix~\ref{app:error_budget} measures that error here on synthetic
+itself leaves, measured in Appendix~\ref{app:error_budget} on synthetic
 fields built with each region's own spectrum, instrument response and
 noise level. For the Clough--Tocher tile, scored against the observed
-field it reproduces, the median error is $2.8\times10^{-3}$. The
+field it reproduces, the median error is $2.8\times10^{-3}$: the
 tightest \term{target} is $4\%$ of it, the $3\times10^{-3}$
-\term{target} is $1.1$ times it and the loosest is $3.6$ times it: the
-three tightest \term{targets} compress well below the resampling error,
-the fourth at its level and the loosest above it. For the PSF-aware
-tile, scored against the latent field it estimates, the error is of
-the order of the blur itself, which by class median runs from
-$2.1\times10^{-3}$ over forest to $4.0\times10^{-2}$ over urban scenes.
-The companion study reports that this \term{transfer} recovers $15.4\%$
-to $19.6\%$ of that blur on noise-free fields;
-Appendix~\ref{app:error_budget} finds $13.8\%$ to $15.6\%$ here in three
-of the four classes. An orthogonal
+\term{target} is $1.1$ times it and the loosest is $3.6$ times it. For
+the PSF-aware tile, scored against the latent field it estimates, the
+error is of the order of the blur itself, which by class median runs
+from $2.1\times10^{-3}$ over forest to $4.0\times10^{-2}$ over urban
+scenes. On noise-free fields that \term{transfer} recovers
+$13.8\%$ to $15.6\%$ here in three of the four classes (the companion reports
+$15.4\%$ to $19.6\%$~\cite{delouis2026resample}); an orthogonal
 compression error of $1.1\times10^{-3}$ (forest) to $2.2\times10^{-2}$
-(urban) would cancel the smaller of those recoveries, so on the
-PSF-aware tile only the \term{targets} up to $10^{-3}$ preserve, in
-every class, what the \term{transfer} restores on noise-free fields; at
-the noise measured on the imagery most of that recovery is already lost
-(Appendix~\ref{app:error_budget}).
-Appendix~\ref{app:error_budget} carries the same accounting to the
-crossings of Section~\ref{sec:results}.
+(urban) would cancel it, so only the \term{targets} up to $10^{-3}$
+preserve it in every class, and at the noise measured on the imagery
+most of it is already lost.
 
 \subsection{Operational UTM Storage}
 \label{sec:overhead}
@@ -167,45 +151,38 @@ no-data. Along track the overlap alone gives $1.098$. The product, $1.66$,
 is the raw-byte overhead of the tiled swath. No-data compresses to
 almost nothing, so under compression the figure falls back towards the
 area duplication. A survey of the whole Sentinel-2 grid reaches the same
-order. Over the land surface, zone overlap and the enlarged granules
+order: over the land surface, zone overlap and the enlarged granules
 together store $33\%$ more area than the land covered ($13\%$ for the
-zone overlap alone). This inflates the yearly Level-1C and Level-2A
-volume by about one petabyte~\cite{bauer2023wasting}. That figure is
-also a duplication of area, not a count of compressed bytes. We use
+zone overlap alone), about one petabyte per year of Level-1C and
+Level-2A products~\cite{bauer2023wasting}, again a duplication of area
+and not a count of compressed bytes. We use
 $\gamma_{\mathrm{tile}}=1.30$ as an illustrative point on the decision
-curve of Section~\ref{sec:rd_main}. It lies between the geometric
-sample-area duplication factor of $1.21$ and the raw tiled-swath factor
-of $1.66$, at the level of the published spatial overhead. It is never a
+curve of Section~\ref{sec:rd_main}, between the sample-area duplication
+of $1.21$ and the raw tiled-swath factor of $1.66$. It is never a
 measurement of a complete product file
-(Section~\ref{sec:limitations}). $\gamma_{\mathrm{tile}}=1$ is the
+(Section~\ref{sec:limitations}); $\gamma_{\mathrm{tile}}=1$ is the
 overhead-free result.
 
 For \emph{uncompressed} storage (Table~\ref{tab:storage_accounting}),
 $\gamma_{\mathrm{tile}}$ multiplies the raw equal-area UTM byte count
-once. For \emph{compressed} storage, applying it to the raw size alone
-would assume that the padded $30\%$ of native pixels compresses to zero
-bytes, which is unsafe for a codec that encodes each tile independently.
-We therefore apply $\gamma_{\mathrm{tile}}$ to the \emph{compressed} byte
-count of the \term{equal-area crop} and compare absolute bytes, with the raw size
-of the fixed HEALPix tile ($\num{4194304}$ bytes) as the single reference
-for both grids. The survey of~\cite{bauer2023wasting} supports the
-order of magnitude of the \emph{spatial} overhead of the operational
-grid. Applying that multiplier to compressed bytes is an explicit
-assumption of the decision model, not a measurement. This is why the
-critical-overhead curve of Section~\ref{sec:rd_main} is the general
-result and $1.30$ one point on it. The tile and the crop have different
-pixel counts ($1024\times1024$ against $637\times637$), so only absolute
-bytes for the same nominal area are comparable. For a budget given as a share of the
-\term{reference}, the \term{UTM crop} receives the budget divided by
-$\gamma_{\mathrm{tile}}$; the rest is taken by the operational padding.
+once. For \emph{compressed} storage it is applied to the
+\emph{compressed} byte count of the \term{equal-area crop}: applying it
+to the raw size alone would assume that the padded $30\%$ of native
+pixels compresses to zero bytes. This is an explicit assumption of the
+decision model, not a measurement, which is why the critical-overhead
+curve of Section~\ref{sec:rd_main} is the general result and $1.30$ one
+point on it. The tile and the crop have different pixel counts, so only
+absolute bytes for the same nominal area are compared, with the raw size
+of the HEALPix tile ($\num{4194304}$ bytes) as the single reference; for
+a budget given as a share of it, the \term{UTM crop} receives the budget
+divided by $\gamma_{\mathrm{tile}}$.
 
-The two rasters also differ in divisibility: a power of two against an
-odd side that block and wavelet codecs must pad. Compressing each raster
-against its own central sub-blocks shows no penalty for the odd side.
-Cutting a $637^2$ block down to its central $512^2$ block changes the
-lossless bytes per pixel by the same factor on both grids: relative to
-their $512^2$ blocks, the odd-sided \term{UTM crop} and the $637^2$ block of
-the HEALPix raster differ in cost per pixel by $0.0\%$. Padding the crop to $640^2$, a side the codecs divide evenly,
-changes its lossless size by $0.2\%$. Larger rasters do cost less per pixel at loose \term{targets},
-where a file's fixed cost weighs. The protocol compares whole files of
-the same area, so that cost enters both sides alike.
+The two rasters also differ in divisibility, a power of two against an
+odd side that block and wavelet codecs must pad, at no measurable
+penalty: relative to their central $512^2$ blocks, the odd-sided
+\term{UTM crop} and the $637^2$ block of the HEALPix raster differ in
+lossless cost per pixel by $0.0\%$, and padding the crop to $640^2$
+changes its lossless size by $0.2\%$. Larger rasters do cost less per
+pixel at loose \term{targets}, where a file's fixed cost weighs; the
+protocol compares whole files of the same area, so that cost enters
+both sides alike.

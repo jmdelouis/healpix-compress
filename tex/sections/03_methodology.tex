@@ -34,14 +34,14 @@ of one level-10 parent form one \term{carrier} tile, large enough to amortise
 per-chunk codec overhead and small enough to stay a practical storage
 unit. This reshaping is the only HEALPix-specific step; all later steps
 work on a plain float32 raster. That raster still carries three marks of
-its origin. The first is the kernel that filled it from the sensor grid.
-The second is the shape anisotropy of equal-area HEALPix cells, a local
-axis-length ratio of up to $\sim\!1.7$ between the raster axes. Both
-affect compressibility (Section~\ref{sec:resampler}). The third is its
-orientation. In the UTM zone of a scene its axes run at about $45^\circ$
-to north (Fig.~\ref{fig:utm_crop_footprints}), so the row and column
-predictors of the codecs follow diagonals of the native raster. What
-that orientation costs or saves has not been measured
+its origin: the kernel that filled it from the sensor grid; the shape
+anisotropy of equal-area HEALPix cells, a local axis-length ratio of up
+to $\sim\!1.7$ between the raster axes (both affect compressibility,
+Section~\ref{sec:resampler}); and its orientation, at about $45^\circ$
+to north in the UTM zone of a scene
+(Fig.~\ref{fig:utm_crop_footprints}), so that the row and column
+predictors of the codecs follow diagonals of the native raster, at a
+cost or saving that has not been measured
 (Appendix~\ref{app:limitations}).
 
 \subsection{Equal-Area Native UTM Comparison}
@@ -73,14 +73,9 @@ over part of their extent. Over the 40 regions the intersection is
 $74$--$83\%$ of the crop ($81\%$ median), an intersection-over-union of
 about $0.68$ (Fig.~\ref{fig:utm_crop_footprints}). Supports that
 differ over a fifth of their extent can have different entropies.
-Section~\ref{sec:support_controls} constrains the effect with an analytic
-field that both geometries sample identically. That control reproduces
-the decline of the measured gap to within $5$--$24\%$, and the crossover
-itself once the field passes through the \term{transfer}. Restricting both grids to the ground
-they share moves the ratio by $-0.6\%$ to $+2.1\%$ in median: the
-mismatch does not explain the decline, but on that ground the narrow
-crossover at the loosest \term{target} is not significant.
-The mismatch matters
+Section~\ref{sec:support_controls} controls for this mismatch with an
+analytic field that both geometries sample identically and with a
+restriction of both grids to the ground they share. The mismatch matters
 more for cross-grid comparisons of reconstruction \emph{error}, which is
 why the \term{common-reference} evaluation of
 Section~\ref{sec:common_reference} is restricted to the intersection.
@@ -111,11 +106,7 @@ bit; it is distinct from the separable bicubic interpolation of a regular
 raster. It brings the HEALPix spectrum close to the native one. A Shepard-type
 inverse-distance average over the four nearest neighbours is kept as a
 control, with a kernel width set to the HEALPix \emph{output} scale
-($\sim\SI{6.2}{m}$) instead of the \SI{10}{m} \emph{input} spacing. It
-leaves no excess power in the top octave ($0.92$ of the observation's).
-It is, however, $2.0$ times less accurate than Clough--Tocher against an
-analytic field, and its output costs $1.20$ to $2.15$ times the bytes
-at equal error (Section~\ref{sec:transfer_cost}). Kernels are compared with the
+($\sim\SI{6.2}{m}$) instead of the \SI{10}{m} \emph{input} spacing. Section~\ref{sec:transfer_cost} measures its accuracy and its cost. Kernels are compared with the
 approximation-order framework of~\cite{blu1999fourier} and the kernel
 comparison of~\cite{thevenaz2000interpolation}, by scoring each against
 an analytic field. Section~\ref{sec:transfer_cost} rebuilds the \term{carrier}
@@ -128,51 +119,39 @@ that fills a HEALPix grid from a sensor grid is a scientific choice, and
 a kernel mismatched to the source sampling can change which of two grids
 looks more storage-efficient once compressed.
 
-The PSF-aware \term{transfer} is described here so that this paper stands on its
-own. It models each native pixel as a Gaussian-weighted sum of the latent
-field at the level-20 cell centres, with the instrument's response as the
-weight (nominal B04 width \SI{12.5}{m} FWHM, about $3\%$ above the B04
-width of ESA's per-band response files and inside the companion's
-tolerance, which loses its advantage once the width exceeds the true
-response by $5$--$7\%$~\cite{delouis2026resample}). It assembles that forward
-operator as a sparse matrix from cells to samples. It then estimates the
-cell values by damped least squares, solved by conjugate gradients on
-the normal equations with a damping of $\lambda=10^{-3}$, the fixed damping of the
-companion's synthetic recovery experiments; the companion selects
-$\lambda$ by cross-validation when it compares methods, and for native
-imagery recommends a damping chosen on the \term{target} sensor. The conversion chain tried in
-Appendix~\ref{app:large_scale_trial} damps harder, with $\lambda=0.1$;
-every PSF-aware figure in the body of this paper is at
-$\lambda=10^{-3}$, and none has been measured at that damping
-(Section~\ref{sec:limitations}). Its estimand is
-therefore the latent field before the instrument blur. The companion
-study measures that it recovers $15.4\%$ to $19.6\%$ of the blur on
-noise-free synthetic fields at that damping, and Section~\ref{sec:transfer_cost} prices the bytes
-this sharper estimand costs. The PSF-aware \term{transfer} comes from the
-\texttt{healpix-resample} package at its tag
-\texttt{jstars-submission}, the version of the companion's submitted
-manuscript; its revision (tag \texttt{jstars-revision-1.1}) leaves the
-figures quoted here unchanged.
-The environment record written with every sweep names the checkout it
-ran against, because the package's PSF width convention changed once
-between versions during this work.
+The PSF-aware \term{transfer}~\cite{delouis2026resample} models each
+native pixel as a Gaussian-weighted sum of the latent field at the
+level-20 cell centres, with the instrument's response as the weight
+(nominal B04 width \SI{12.5}{m} FWHM). It assembles that forward operator
+as a sparse matrix and estimates the cell values by damped least
+squares, solved by conjugate gradients on the normal equations. Its
+estimand is therefore the latent field before the instrument blur; the
+companion study measures that it recovers $15.4\%$ to $19.6\%$ of the
+blur on noise-free synthetic fields, and Section~\ref{sec:transfer_cost}
+prices the bytes this sharper estimand costs. Every PSF-aware figure in
+the body of this paper uses the damping of those experiments,
+$\lambda=10^{-3}$. The companion selects $\lambda$ by cross-validation
+when it compares methods and recommends choosing it on the \term{target}
+sensor; the conversion chain of Appendix~\ref{app:large_scale_trial}
+uses $\lambda=0.1$, at which nothing here is measured
+(Section~\ref{sec:limitations}). The \term{transfer} comes from
+\texttt{healpix-resample} at its tag \texttt{jstars-submission}; its
+revision (tag \texttt{jstars-revision-1.1}) leaves the figures quoted
+here unchanged, and the environment record written with every sweep
+names the checkout it ran against.
 
 \subsection{Codecs Compared}
 \label{sec:codecs}
 No custom or HEALPix-aware codec is used. We evaluate four established,
 independently maintained codecs and one textbook baseline, so that any redundancy that survives
 compression can be exploited with tools a practitioner can already
-install. Learned codecs are absent by design. They have reshaped the
-rate--distortion frontier for natural images since~\cite{balle2017endtoend}
-and reached remote sensing, including on-board
-use~\cite{valsesia2019onboard}. Their performance, however, depends on
-the training distribution, and no pair of models trained symmetrically
-on the two grids exists. Compression practice for optical space imagery
-is surveyed in~\cite{blanes2014tutorial}. The mission-side standards
-there, the CCSDS wavelet coder and its multispectral
-successor~\cite{hernandez2021ccsds123}, \term{target} the on-board bandwidth
-problem, where complexity, memory and channel errors constrain the coder
-as much as its rate~\cite{abrardo2010onboard}. The question here is
+install. Learned
+codecs~\cite{balle2017endtoend,valsesia2019onboard} are absent by
+design: their performance depends on the training distribution, and no
+pair of models trained symmetrically on the two grids exists. The
+mission-side
+standards~\cite{blanes2014tutorial,hernandez2021ccsds123,abrardo2010onboard}
+\term{target} the on-board bandwidth problem; the question here is
 archive-side. Five general-purpose compressors are applied identically
 on both grids:
 \begin{itemize}

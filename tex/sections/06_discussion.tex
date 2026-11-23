@@ -1,24 +1,19 @@
 \section{Discussion}
 
 \subsection{A Regime-Dependent Trade-off}
-The dyadic hierarchy of HEALPix has a real cost. Stored raw, the
-level-20 tile is about twice the \term{UTM crop} under the illustrative
-$\gamma_{\mathrm{tile}}=1.30$ (Table~\ref{tab:storage_accounting}).
-After compression, native UTM stays the more compressible
-representation at every quality tested except the loosest. Compression
+The dyadic hierarchy of HEALPix has a real cost. After compression,
+native UTM stays the more compressible representation at every quality
+tested except the loosest, and compression
 narrows the gap steadily, from $+107\%$ to $-7\%$. The operational
 verdict is therefore decided by whether the residual gap exceeds the
 overhead a given native layout carries, the \term{critical overhead}
-$\gamma_\star$ of Table~\ref{tab:synthesis}. That threshold is far
-above the overheads examined here at high fidelity. It is $1.23$ at
+$\gamma_\star$ of Table~\ref{tab:synthesis}: far above the overheads
+examined here at high fidelity, $1.23$ at
 $3\times10^{-3}$, where the verdict depends on the layout, and $0.93$ at
 $10^{-2}$, where the \term{carrier} is smaller at equal layout overhead,
 though not significantly on the ground both grids share. A
 HEALPix \term{carrier} pays less for its oversampling than raw byte counts
-suggest, and compression does not make it free. It becomes competitive
-in the regime of highest storage pressure, where the redundancy it
-carries is efficiently discarded by several of the tested codecs as the
-distortion constraint is relaxed.
+suggest, and compression does not make it free.
 
 \subsection{What Is a Property of the Grid}
 \label{sec:grid_property}
@@ -50,98 +45,63 @@ codecs on this imagery, identical on both grids, with no demonstrated
 quadtree effect (Section~\ref{sec:why_quadtree}). A reader interested
 in HEALPix as such should keep the first two; a product designer
 should keep all five, because a product is the complete chain.
-Full-sphere behaviour has not been measured. Every result is on one
-level-10 parent tile per scene ($1024\times1024$ level-20 cells), large
-enough to amortise per-chunk codec overhead and small enough to remain
-a practical chunking unit. A global product would need a
+Full-sphere behaviour has not been measured: every result is on one
+level-10 parent tile per scene, and a global product would need a
 multi-chunk hierarchy and boundary handling across the 12 base faces of
-level 0. A single base face carried down to level 20 would hold
-$4^{20}\approx10^{12}$ cells, far too large to compress as one array.
+level 0.
 
 One architectural option follows from Section~\ref{sec:redundancy} and is
 not measured here. The Clough--Tocher \term{carrier} holds no more information
-than the native window it was built from. A store that keeps the native
-product and applies that \term{transfer} at read time therefore carries no
-storage penalty at all. The HEALPix index becomes a view over native
-chunks rather than a second copy of the data. The same option is not
-established for the PSF-aware \term{transfer}. Its deconvolution amplifies the
-small scales of its input, and a native product stored with lossy
-compression may have lost exactly those scales. Whether the restored
-content survives a compressed input would need a dedicated test.
-
-That test is worth running, because the storage arithmetic favours this
-design for the PSF-aware \term{transfer}. Its tile costs $2.3$--$2.6$ times
-the \term{native square} at every \term{target}
-(Section~\ref{sec:transfer_cost}), so its \term{critical overhead} is
-$2.3$ or more. A native layout can stay far below that. The native pixels
-that build one $1024\times1024$ tile are those under its footprint plus a
-halo of a few pixels for the support of the kernel. A halo of four cells
-enlarges the footprint by $(1032/1024)^2-1\approx1.6\%$; four native
-pixels enlarge it by $2.5\%$. Both are an order of magnitude below the
-illustrative $30\%$. Such a store also keeps only valid pixels, so the
-padding at the swath edges that the granule layout carries is not stored
-at all. One caution: these figures count pixels, not the rectangle a 2-D
-codec needs. The footprint runs at about $45^\circ$ to the native axes,
-so its bounding box holds $2.0$ times its area. A lean store therefore
-keeps the native product in its own chunks and gathers, at read time, the
-chunks a tile touches; it reads more than it uses, and stores nothing
-twice. Under such a layout the PSF-aware \term{carrier} is a view, not a
-copy, and the archive is at least as small as the native product. What
-moves is the compute. The PSF-aware \term{transfer} is the expensive step of
-the chain, and this design runs it at every \term{read} instead of once, which
-is the work a materialised \term{carrier} was meant to save. Whether the
-design pays therefore rests on two open questions. The first is the test
-above: a native product compressed to a given \term{target} must still
-carry the small scales the deconvolution restores, and the deconvolution
-must not amplify the coding error more than it restores. The second is
-the cost of the \term{transfer} at read time, which a store can lower by
-keeping the parts of the computation that all tiles share, since the
-geometry between native pixels and cells changes slowly across a zone.
-Both are future work.
-
-Every ratio in this paper is about the other choice, a \term{carrier}
-materialised on disk, which is what a DGGS archive buys latency and
-simplicity with. Which of the two is right is a question about read
-patterns and compute budgets that this study does not address. A hybrid,
-storing the native product and materialising the \term{carrier} only for
-the levels and regions that are read often, sits between them.
+than the native window it was built from, so a store that keeps the
+native product and applies the \term{transfer} at read time carries no
+storage penalty: the HEALPix index becomes a view over native chunks
+rather than a second copy of the data. The storage arithmetic favours
+this design most for the PSF-aware \term{transfer}, whose tile costs
+$2.3$--$2.6$ times the \term{native square} at every \term{target}
+(Section~\ref{sec:transfer_cost}). The native pixels that build one
+tile are those under its footprint plus a halo of a few pixels for the
+support of the kernel: a halo of four cells enlarges the footprint by
+$(1032/1024)^2-1\approx1.6\%$ and four native pixels by $2.5\%$, an
+order of magnitude below the illustrative $30\%$, and such a store
+keeps only valid pixels. Two open questions decide whether the design
+pays. A native product compressed to a given \term{target} must still
+carry the small scales the deconvolution restores, without the
+deconvolution amplifying the coding error more than it restores; and
+the \term{transfer}, the expensive step of the chain, then runs at every
+\term{read} instead of once. Both are future work. Every ratio in this
+paper is about the other choice, a \term{carrier} materialised on disk,
+which is what a DGGS archive buys latency and simplicity with; a hybrid
+that materialises the \term{carrier} only for the levels and regions
+read often sits between the two.
 
 \subsection{What a Shared Grid Adds That This Study Does Not Count}
 \label{sec:shared_grid}
 Every ratio above compresses one tile, one band and one date as an
-independent two-dimensional raster. Those are the conditions of the
-native product, and they were chosen to isolate what the grid itself
-costs. They leave out the reason a DGGS is used. On HEALPix every
-product, whatever its sensor, band or date, lands on the same cells with
-the same identifiers. A codec can then exploit the correlation between
-dates, between bands and between sensors on a shared index, where the
-native products would first have to be reprojected onto one another.
-The nested index makes that practical. All descendants of a cell form
-one contiguous range, so a block of cells is a contiguous slice. A
-spatial, temporal or spectral chunk is then one contiguous array, and
-its shape can follow the read pattern of the application: a time series
-at a point, a band stack over a region, or a global field at a coarse
-level.
-Acquisitions of one Sentinel-2 tile already share a UTM grid, so for a
-single tile and sensor the native stack offers the same alignment in
-time. The difference appears across sensors, across UTM zones and in the
-overlaps of neighbouring tiles, where native products sit on different
-projected grids that a reader must reproject before it can combine
-them. The gain measured here, a \term{carrier} that is competitive only
-at aggressive compression, prices the geometry alone and none of that
-coherence. That coherence is the next measurement. Gridded model
-output is its natural first case. It is already a cell average, so
-there is no instrument response to model; a model that runs on another
-grid must still be remapped, with an error that conserving the integral
-does not remove. Its dominant redundancy is
-temporal. And it is global, where the equal-area cells and the locality
-of the nested index matter most.
+independent two-dimensional raster, the conditions of the native
+product, chosen to isolate what the grid itself costs. They leave out
+the reason a DGGS is used. On HEALPix every product, whatever its
+sensor, band or date, lands on the same cells with the same
+identifiers, and the nested index makes any block of cells one
+contiguous slice. A codec can then exploit the correlation between
+dates, bands and sensors, where native products would first have to be
+reprojected onto one another. For a single tile and sensor the native
+stack offers the same alignment in time; the difference appears across
+sensors, across UTM zones and in the overlaps of neighbouring tiles. The
+gain measured here, a \term{carrier} that is competitive only at
+aggressive compression, prices the geometry alone and none of that
+coherence, which is the next measurement. Gridded model output is its
+natural first case. It is already a cell average, so there is no
+instrument response to model, though a model that runs on another grid
+must still be remapped, with an error that conserving the integral
+does not remove; its dominant redundancy is temporal; and it is global,
+where the equal-area cells and the locality of the nested index matter
+most.
 
 \subsection{Reproducibility}
 \label{sec:reproducibility}
-Every figure quoted in the text is produced by a script from the stored
-results. An assertion harness recomputes each one and refuses to let
-the manuscript state a value the current run does not support. The
+The figures quoted in the text are produced by scripts from the stored
+results, and an assertion harness recomputes them and fails when the
+text does not carry a value it computes. The
 sizes reported are those of files written, closed and re-read by an
 independent decoder (Appendix~\ref{app:codec_audit}). Each sweep
 records the codec library versions and the tagged checkout of the

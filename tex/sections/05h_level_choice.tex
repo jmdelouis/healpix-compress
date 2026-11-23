@@ -9,8 +9,7 @@ this is the exact quadtree Haar transform of the tile, and the aggregate
 is the cell-average of the \term{carrier} over each level-19 cell. It differs
 from the \term{carrier} the same \term{transfer} would build at level 19, which stores
 point evaluations at cell centres. Both were built and read identically
-against the same observation, on the 40 regions, all of which pass the
-window audit of Appendix~\ref{app:window_radiometry}. They are different arrays,
+against the same observation, on the 40 regions. They are different arrays,
 differing by $6.3\%$ of a scene's standard deviation. Yet their floors
 agree to a median ratio of $1.002$ and cost $2.25$ and $2.24$ times the
 level-20 floor. What follows therefore holds for either reading of ``the
@@ -67,12 +66,7 @@ one at equal error (median over all $200$ region--\term{target} pairs, censored 
 included), the price
 of the sharper point evaluations the \term{transfer} keeps, and it is cheaper
 on every region at the four tightest \term{targets}. Its advantage grows with
-the \term{target}, from $0.95$ to $0.83$ of the direct \term{carrier}'s size. This is
-why its column against the \term{native crop} is flat where the direct
-\term{carrier}'s rises: at the loosest \term{target} the aggregate compresses to
-$0.9\%$ of its own raw size, against $0.8\%$ for the \term{native crop} and
-$1.2\%$ for the direct \term{carrier}, so the aggregate and the crop gain
-compressibility at nearly the same rate as the \term{target} loosens. A
+the \term{target}, from $0.95$ to $0.83$ of the direct \term{carrier}'s size.  A
 $2\times2$ mean of a Clough--Tocher tile behaves, per stored value, much
 like the native raster it came from; the directly evaluated \term{carrier}
 keeps the sharper point values and pays for them.

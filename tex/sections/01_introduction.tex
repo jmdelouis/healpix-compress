@@ -38,36 +38,26 @@ padding, overlap and per-tile metadata, which a survey of that grid puts
 at $33\%$ more stored land area, about one petabyte per year of
 products~\cite{bauer2023wasting}.
 
-Section~\ref{sec:headline} gives the answer. Before compression, a
+Section~\ref{sec:headline} gives the answer. Before compression a
 level-20 tile takes $2.58$ times the bytes of the area-matched native
-raster; coded losslessly after a 16-bit requantisation it takes $3.4$ times, because the interpolated
-values leave the integer lattice of the product. Compressed with loss to
-the same error, an analytic field sampled on both lattices, the one
-comparison in which both sides hold exactly the same content, falls
-from $2.17$ times the native size at the tightest tolerance to $1.16$ at
-the loosest. Oversampling is much cheaper once compressed with loss, but
-not free. Against its own native raster, the Clough--Tocher tile falls
-from $2.07$ to $0.93$ times its size, a bare and statistically marginal
-crossing, not significant on the ground both grids share, at an error
-where coding alone changes the NDVI class of $5$--$6\%$ of samples
-(Section~\ref{sec:rd_main}). That crossing comes from the smoothing of
-the \term{transfer}: read through the same interpolant, the native
-raster compresses better too, and the tile then stays $1.10$ to $1.24$
-times its size (Section~\ref{sec:support_controls}). The tile pays for
-that smoothing in error against the observation
-(Section~\ref{sec:common_reference}).
-
-Clough--Tocher interpolation~\cite{clough1965plate} passes a smooth
-surface through the observed pixels and reads it at the cell centres. It
-keeps the resolution of the product, so the comparison isolates what the
-grid costs. The PSF-aware \term{transfer} of the companion
-study~\cite{delouis2026resample} also aims to undo part of the
-instrument blur.
-Its tile costs $2.3$--$2.6$ times the native raster at every error, the
-price of small-scale content whose recovery, on this imagery and at the
-damping tested, is not established (Section~\ref{sec:transfer_cost}).
-The choice of \term{transfer} is one of the largest sensitivities in the
-storage cost of a HEALPix \term{carrier}.
+raster, and $3.4$ times when both are coded losslessly after a 16-bit
+requantisation. Coded with loss to the same error, an analytic field
+sampled on both lattices, the one comparison in which both sides hold
+the same content, falls from $2.17$ times the native size at the
+tightest tolerance to $1.16$ at the loosest: oversampling is much
+cheaper once compressed with loss, but not free. A tile filled by
+Clough--Tocher interpolation~\cite{clough1965plate}, which keeps the
+resolution of the product, falls from $2.07$ to $0.93$ against its own
+native raster. That bare crossing is statistically marginal, is not
+significant on the ground both grids share, comes from the smoothing of
+the \term{transfer}, and lies at an error where coding alone changes
+the NDVI class of $5$--$6\%$ of samples
+(Sections~\ref{sec:rd_main} and~\ref{sec:support_controls}). A PSF-aware
+\term{transfer}~\cite{delouis2026resample}, which also aims to undo part
+of the instrument blur, costs $2.3$--$2.6$ times the native raster at
+every error (Section~\ref{sec:transfer_cost}): the choice of
+\term{transfer} is one of the largest sensitivities in the storage cost
+of a HEALPix \term{carrier}.
 
 The question is answered empirically, with established compression
 libraries and no HEALPix-specific coding. A nested chunk is
@@ -83,9 +73,7 @@ resampled (Section~\ref{sec:utm_crop}). The contributions are:
     \item an evaluation over 40 Sentinel-2 regions in four land-cover
     classes, from $43.5^\circ$S to $64.1^\circ$N, with five
     general-purpose codecs, three \term{transfers} and two
-    \term{reconstruction references}, and, at the illustrative $30\%$
-    overhead, a multiple-testing correction that seven of the eight
-    per-\term{target} comparisons survive;
+    \term{reconstruction references};
     \item two controls that explain the result: an analytic field shows
     that sampling geometry alone reproduces the decline of the ratio
     with the tolerated error, and a smoothed-native control shows that

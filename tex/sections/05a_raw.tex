@@ -5,10 +5,9 @@ Table~\ref{tab:storage_accounting} gives the raw storage accounting. The
 HEALPix level-20 tile and the equal-area \term{UTM crop} are both fixed-size
 representations of the same nominal ground area, so their raw byte
 counts are geometric constants. At $\gamma_{\mathrm{tile}}=1$ the HEALPix tile is
-$2.584\times$ larger than the crop, exactly $1024^2/637^2$ on every region. It matches the
-analytic factor $\alpha_{\mathrm{HPX/native}}\approx2.58$ of
-\eqref{eq:alpha} because the crop side was derived from it: this ratio
-is fixed by geometry and identical for every region. Under the illustrative
+$2.584\times$ larger than the crop, exactly $1024^2/637^2$ on every
+region, the factor $\alpha_{\mathrm{HPX/native}}$ of \eqref{eq:alpha}
+from which the crop side was derived. Under the illustrative
 $\gamma_{\mathrm{tile}}=1.30$ scenario the uncompressed tile is still
 $1.99\times$ the size of the crop scaled by $\gamma_{\mathrm{tile}}$: a
 $30\%$ overhead cannot offset a $2.58\times$ oversampling. The three

@@ -29,22 +29,15 @@ standard deviation. A substantial part of the floor is caused by the
 variance decomposition: the \term{transfer} and read errors need not be
 orthogonal, and what the residual $2.0\times10^{-3}$ owes to each is not
 separated here. The PSF-aware tiles are not scored in this table. Read by the nearest
-cell or bilinearly, a deconvolved tile is compared with the observation
-through an operator it was not built for, and the floor would charge it
-for the small-scale content it is built to restore
-(Section~\ref{sec:transfer_cost}).
-The \term{read} that suits a deconvolved tile is its own observation
-model, the forward operator that maps cells to native pixels.
-On four regions, one per class, the uncompressed
-tiles read through that operator reproduce the observation to
+cell or bilinearly, a deconvolved tile would be charged for the
+small-scale content it is built to restore
+(Section~\ref{sec:transfer_cost}); read through its own forward
+operator, on four regions, one per class, it reproduces the observation to
 $1.0$--$5.0\times10^{-5}$ at $\lambda=10^{-3}$ and to
 $0.37$--$3.1\times10^{-3}$ at $\lambda=0.1$, the order the trial of
-Appendix~\ref{app:large_scale_trial} reports. These floors are measured
-on the pixels the \term{transfer} was fitted to, which an overcomplete
-fit can reproduce almost exactly, so they validate nothing; a fair score
-needs pixels held out of the fit, which this study does not run. The
-PSF-aware \term{carrier} is therefore not scored against the
-observation.
+Appendix~\ref{app:large_scale_trial} reports, but on the pixels the
+\term{transfer} was fitted to. A fair score needs pixels held out of the
+fit, which this study does not run.
 
 The \term{read} has a second consequence, on rate. A nearest-cell read of a
 $1024^2$ tile by the $637^2$ crop touches only $30.8\%$ of the cells. The

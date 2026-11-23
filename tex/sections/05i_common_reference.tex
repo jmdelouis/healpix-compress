@@ -100,21 +100,15 @@ by coding.
 
 Two results survive the switch of \term{reference}. JPEG~2000 leads by a wide
 margin under both \term{references} and both \term{reads}, while JPEG~XL and SZ3
-exchange second place. Under the nearest \term{read} JPEG~XL takes more
-outright wins, $49$ against $38$, and SZ3 the better mean rank,
-$2.52$ against $3.05$; under the interpolating \term{read} SZ3 takes both,
-$50$ wins against $48$ for JPEG~XL and $2.52$ against $2.97$ in mean
-rank. The latitude effect keeps its
+exchange second place. The latitude effect keeps its
 direction: the equatorial belt stays more favourable to HEALPix than the
 caps at the tightest budget (overhead-free ratios:
-$1.63$ against $2.15$ under the nearest read, $1.30$ against $1.60$ under the interpolating one). The reader
-decides its significance. Under the nearest read the contrast fails the
-Holm correction of its family ($p^{\mathrm{Holm}}=0.11$). Under the
-interpolating read it passes at all three budgets
-($p^{\mathrm{Holm}}=0.003$ at the tightest, $0.003$ and $0.003$ at the
-other two) and fails at the one reportable \term{RMSE target}. This is what
-one expects if the jitter of the nearest \term{read}, largest where cells are
-most anisotropic, was masking it.
+$1.63$ against $2.15$ under the nearest read, $1.30$ against $1.60$ under the interpolating one).
+It passes the Holm correction of its family under the interpolating
+read ($p^{\mathrm{Holm}}=0.003$ at the tightest budget) and not under the
+nearest ($p^{\mathrm{Holm}}=0.11$), as expected if the jitter of the
+nearest \term{read}, largest where cells are most anisotropic, was
+masking it.
 
 Both measures are therefore reported and neither is elected. If the
 HEALPix cube is itself the product, the case a DGGS archive is built for,
@@ -122,35 +116,19 @@ the within-representation measure is the operative one and the
 regime-dependent verdict of Section~\ref{sec:rd_main} stands. If the
 native Sentinel-2 observation remains the \term{reference} product and the
 HEALPix copy is a derived
-convenience, the \term{transfer} error belongs in the accounting. On that basis
-the native grid is more efficient at all three reportable \term{matched-storage}
-budgets. Among the \term{RMSE targets}, only $10^{-2}$ is reportable: the
-nearest \term{read} does not separate the grids there, and under the
-interpolating read the \term{carrier} is smaller under the illustrative
-overhead. What the two measures jointly
+convenience, the \term{transfer} error belongs in the accounting. What the two measures jointly
 exclude is the unconditional claim that a HEALPix \term{carrier} is cheaper.
 The Clough--Tocher \term{transfer} keeps the observation's own
 resolution, so the observation is the field it aims at. The PSF-aware
 \term{carrier} of Section~\ref{sec:transfer_cost} aims at the latent
-field before the instrument blur. Read by the nearest cell or bilinearly
-and scored against the observation, it would be charged for the
-small-scale content it was built to restore; read through its own
-forward operator, it reproduces the pixels it was fitted to
-(Section~\ref{sec:operator}). Neither read scores it fairly, so this
-section applies to the Clough--Tocher \term{carrier} only. Ranking the two \term{transfers} against the latent field
-on which they disagree needs a synthetic scene whose latent field is
-known, and it is left to future work (Appendix~\ref{app:limitations}).
+field before the instrument blur and is not scored here
+(Section~\ref{sec:operator}); ranking the two \term{transfers} against
+that latent field needs a synthetic scene in which it is known, and is
+left to future work.
 
-Two further questions about this \term{reference} are answered in the
-appendices. The compression error can be written as a fraction $\kappa$
-of the \term{transfer} error (Appendix~\ref{app:error_budget}). On that scale
-the crossings of Section~\ref{sec:rd_illustrative} occur at
-$\kappa=0.23$ to $0.76$ against the latent scene, in all four classes.
-They inflate the product's total error by a measured $4.9$ to $39.8\%$.
-The saving in bytes is $12$ to $30\%$ in three classes and about $2\%$
-over water. Against the observation the same crossings cost $18.8$ to $64.1\%$. The two errors do not add in quadrature
-(Appendix~\ref{app:cross_term}). The cross term is negative against the
-observation, where quadrature overstates the total by $14$ to $22$
-points at these crossings, and positive against the latent scene, where
-it understates it by $2$ to $14$ points. JPEG~2000 carries the whole effect, and ZFP is orthogonal
-within $|\rho|\le0.03$.
+Two further questions about this \term{reference} are answered in
+Appendix~\ref{app:error_budget}: how large the compression error is at
+the crossings of Section~\ref{sec:rd_illustrative} as a fraction
+$\kappa$ of the \term{transfer} error ($\kappa=0.23$ to $0.76$ against
+the latent scene, in all four classes), and why the two errors do not
+add in quadrature (Appendix~\ref{app:cross_term}).
