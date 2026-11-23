@@ -23,8 +23,9 @@ and against the observation it shows no saving over level 20.
 Clough--Tocher tile falls from $2.07$ to $0.93$. The crossing comes from
 the smoothing of the \term{transfer}: against a native raster read
 through the same interpolant, the tile stays at $1.10$ to $1.24$ times
-its size at the loosest \term{target}. It holds for four of the five
-codecs but not for ZFP (Section~\ref{sec:same_codec}). A PSF-aware or an
+its size at the loosest \term{target}. With one codec on both grids, only JPEG~XL takes the tile below
+parity with no overhead; under the illustrative $30\%$ four of the five
+do, and ZFP never (Section~\ref{sec:same_codec}). A PSF-aware or an
 inverse-distance \term{transfer} costs $1.2$ to $2.5$ times the bytes at
 the same coding RMSE and leaves HEALPix ahead at no \term{target}
 (Section~\ref{sec:transfer_cost}). The PSF/IDW differential is only

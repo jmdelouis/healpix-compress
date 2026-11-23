@@ -66,8 +66,9 @@ evaluable \term{RMSE target}. The
 median RMSE ratios are $1.50$, $4.05$ and $32.5$ at the $2\%$, $5\%$ and
 $10\%$ budgets, over the 40, 39 and 38 regions that qualify
 (Holm-adjusted $p<10^{-4}$ throughout), against $0.82$, $1.33$ and $4.02$
-under the within-representation measure. The one clear HEALPix
-advantage of Section~\ref{sec:rd_illustrative} reverses under the change
+under the within-representation measure. The one HEALPix advantage at a budget, which
+Section~\ref{sec:rd_illustrative} already owes to the illustrative
+overhead, reverses under the change
 of \term{reference} for an arithmetic reason. At a $2\%$ budget the compression
 error and the \term{transfer} error are of the same order, so a measure that
 charges the second to HEALPix moves the balance by more than the codec
@@ -105,8 +106,8 @@ $2.52$ against $3.05$; under the interpolating \term{read} SZ3 takes both,
 $50$ wins against $48$ for JPEG~XL and $2.52$ against $2.97$ in mean
 rank. The latitude effect keeps its
 direction: the equatorial belt stays more favourable to HEALPix than the
-caps at the tightest budget ($1.63$ against $2.15$ under the nearest
-read, $1.30$ against $1.60$ under the interpolating one). The reader
+caps at the tightest budget (overhead-free ratios:
+$1.63$ against $2.15$ under the nearest read, $1.30$ against $1.60$ under the interpolating one). The reader
 decides its significance. Under the nearest read the contrast fails the
 Holm correction of its family ($p^{\mathrm{Holm}}=0.11$). Under the
 interpolating read it passes at all three budgets

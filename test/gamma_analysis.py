@@ -158,7 +158,8 @@ def figure(df, gamma_utm, publish=True, name="fig_verdict_vs_gamma"):
         print("  no reported target; figure skipped")
         return
     cmap = plt.get_cmap("viridis")
-    colors = {t: cmap(i / max(len(d) - 1, 1))
+    # stop short of the yellow end of the map, illegible on white
+    colors = {t: cmap(0.85 * i / max(len(d) - 1, 1))
               for i, t in enumerate(sorted(d.target))}
 
     fig, (ax1, ax2) = plt.subplots(

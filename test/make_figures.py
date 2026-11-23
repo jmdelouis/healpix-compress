@@ -367,8 +367,9 @@ def fig_region_map(index, publish=True):
     if COASTLINE.exists():
         c = np.load(COASTLINE)
         ax.plot(c["lon"], c["lat"], color="0.6", linewidth=0.35, zorder=1)
+    marker = {"agriculture": "o", "forest": "^", "urban": "s", "water": "D"}
     for cls, g in index.groupby("scene_class"):
-        ax.scatter(g.lon, g.lat, s=11, label=cls,
+        ax.scatter(g.lon, g.lat, s=11, label=cls, marker=marker.get(cls, "o"),
                    color=CLASS_COLOR.get(cls, "0.4"),
                    edgecolor="black", linewidth=0.3, zorder=3)
     for lat in (cfg.EQUATORIAL_LAT_DEG, -cfg.EQUATORIAL_LAT_DEG):

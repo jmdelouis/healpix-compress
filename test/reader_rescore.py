@@ -69,7 +69,10 @@ def _p(x):
 
 
 def _fmt_target(kind, t):
-    return (f"RMSE ${t:g}$" if kind == "rmse" else f"budget ${100*t:g}\\%$")
+    rmse = {1e-4: r"$10^{-4}$", 3e-4: r"$3\times10^{-4}$", 1e-3: r"$10^{-3}$",
+            3e-3: r"$3\times10^{-3}$", 1e-2: r"$10^{-2}$"}
+    return (f"RMSE {rmse.get(round(float(t), 12), f'${t:g}$')}" if kind == "rmse"
+            else f"budget ${100*t:g}\\%$")
 
 
 def latex_table(df, floors):

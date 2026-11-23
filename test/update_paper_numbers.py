@@ -336,7 +336,8 @@ def table_iv_v(rows, family_size, n_regions, metric="self"):
               f"Median and [min, max] over the $n$ "
               f"evaluable regions of {n_regions}. " + note))
     tex_v = _table(
-        "Reconstruction-error ratio at a constant storage budget" + ref,
+        "Reconstruction-error ratio at a constant storage budget, "
+        f"$\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$" + ref,
         "tab:error_at_size", "lrrrrrl", header,
         lines("budget", lambda t: f"${100*t:g}\\%$"),
         note=(f"Per-region HPX/UTM RMSE ratio at a budget expressed as a "
@@ -526,13 +527,27 @@ def table_fixed_codec(hpx, utm, scenes, rmse_col, codecs):
             out.setdefault(c, {})[f"{target:g}"] = t
             cells.append(f"{_fmt(t['median'])} ({t['n']})"
                          if t["n"] >= cfg.MIN_SCENES else "--")
+        # The loosest target once more with no overhead (cold-read review,
+        # 2026-11-23): the text discusses the crossing of parity at gamma = 1
+        # and the change of verdict at gamma_tile, and a reader could not tell
+        # from this table which codecs take part in the first. Every ratio
+        # carries the same factor, so the median scales exactly.
+        cells.append(_fmt(t["median"] * cfg.GAMMA_UTM)
+                     if t["n"] >= cfg.MIN_SCENES else "--")
         body.append(f"{_codec_label(c)} & " + " & ".join(cells) + r" \\")
-    header = "Codec & " + " & ".join(RMSE_LABEL.get(t, f"${t:g}$")
-                                     for t in cfg.TARGET_RMSE) + r" \\"
+    n_t = len(cfg.TARGET_RMSE)
+    # Two header rows: the overhead above, the target below. One row with
+    # both ran 26 pt past the column.
+    header = (f" & \\multicolumn{{{n_t}}}{{c}}{{$\\gamma_{{\\mathrm{{tile}}}}={cfg.GAMMA_UTM}$}}"
+              " & $\\gamma{=}1$ \\\\\n"
+              f"\\cmidrule(lr){{2-{n_t + 1}}}\\cmidrule(l){{{n_t + 2}-{n_t + 2}}}\n"
+              "Codec & " + " & ".join(RMSE_LABEL.get(t, f"${t:g}$")
+                                      for t in cfg.TARGET_RMSE)
+              + " & " + RMSE_LABEL.get(cfg.TARGET_RMSE[-1], "") + r" \\")
     tex = _table(
         "Same-codec HEALPix/UTM size ratio at constant reconstruction RMSE, "
-        "$\\gamma_{\\mathrm{tile}}=1.3$",
-        "tab:fixed_codec", "l" + "r" * len(cfg.TARGET_RMSE), header, body,
+        "under the illustrative overhead and, at the loosest target, with none",
+        "tab:fixed_codec", "@{}l" + "r" * (n_t + 1) + "@{}", header, body,
         note=(r"Median per-region HPX/UTM compressed-size ratio at each target "
               r"RMSE when the \emph{same} codec is used on both grids, with "
               r"the number of regions in parentheses; the UTM side includes "

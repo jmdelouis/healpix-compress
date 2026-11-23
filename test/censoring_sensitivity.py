@@ -285,7 +285,11 @@ def latex_table(summary, gamma):
         r"Target & Bracketed & \multicolumn{3}{c}{Median ratio at "
         r"$\gamma_{\mathrm{tile}}{=}" + f"{gamma:g}" + r"$} & Median & Sure & Sign $p$ \\",
         r"\cmidrule(lr){3-5}",
-        r" & regions & reported & bracketed & $p^{\mathrm{Holm}}$ & interval & HPX / UTM / ? & (worst case) \\",
+        # "bounds kept": every censored pair kept as a bound; "qualifying": the
+        # pairs the oracle codec brackets on both grids, the values of Table IV.
+        # Until 2026-11-23 the first column was headed "reported", which is
+        # what the second one is.
+        r" & regions & bounds kept & qualifying & $p^{\mathrm{Holm}}$ & interval & HPX / UTM / ? & (worst case) \\",
         r"\midrule", *body, r"\bottomrule", r"\end{tabular}",
         *cfg.tex_note(note, wide=True), r"\end{table*}"]) + "\n"
 

@@ -73,19 +73,21 @@ Three rules govern the \term{targets}. First, the curve is the constrained
 problem $R(D)=\min\{S(q): d(q)\le D\}$: when a codec's coarsest setting is
 already more accurate than the \term{target}, its size is a bound on what the
 codec could achieve. Second, a (region, \term{target}) pair enters the paired
-comparison only when the codec the oracle selects brackets the \term{target}
+comparison only when the oracle's codec, the one that gives the smallest file
+on that region and grid, brackets the \term{target}
 with two measured points on both grids, so that every ratio tested is an
-interpolated estimate. A censored codec can be the smallest admissible
-one, so this is stricter than asking some codec to bracket the \term{target}.
+interpolated estimate. A censored codec, one whose size is such a bound, can be the
+smallest admissible one, so this is stricter than asking some codec to bracket the \term{target}.
 Every ladder was therefore extended at its coarse end
 (Appendix~\ref{app:censoring}) until the only failing pairs were the
-lowest-contrast scenes, where the \term{target} is a large fraction of the
+lowest-contrast scenes (one at $10^{-3}$, three at $3\times10^{-3}$ and eight at $10^{-2}$),
+where the \term{target} is a large fraction of the
 scene's standard deviation or exceeds it. At $10^{-2}$ the eight
 excluded regions are exactly those whose standard deviation is at most
 $1.22$ times the \term{target} (six lakes and two smooth forests), and every
 included region has at least $1.36$ times it. At tighter \term{targets} the one
-to three exclusions are the smoothest lakes. A constant fill already
-meets such a \term{target}, so the comparison is void there. Excluded pairs are counted, never
+to three exclusions are the smoothest lakes. A constant fill meets such a \term{target} or comes close to it,
+so the comparison is void there. Excluded pairs are counted, never
 bounded; the $n$ of every table is the number that remain. Third, a
 \term{target} for which fewer than $75\%$ of the regions qualify is withheld; the
 $40\%$ and $20\%$ budgets ($0\%$ and $65\%$) fall under this rule. Every
@@ -126,12 +128,13 @@ tightest \term{target} is $4\%$ of it, the $3\times10^{-3}$
 \term{target} is $1.1$ times it and the loosest is $3.6$ times it: the
 three tightest \term{targets} compress well below the resampling error,
 the fourth at its level and the loosest above it. For the PSF-aware
-tile, scored against the latent field it estimates, the error is set by
-the blur it does not remove: by class median, $2.1\times10^{-3}$ over
-forest to $4.0\times10^{-2}$ over urban scenes. The companion study
-reports that this \term{transfer} recovers $15.4\%$ to $19.6\%$ of that
-blur on noise-free fields, and Appendix~\ref{app:error_budget} finds the
-same range here at the nominal response width. An orthogonal
+tile, scored against the latent field it estimates, the error is of
+the order of the blur itself, which by class median runs from
+$2.1\times10^{-3}$ over forest to $4.0\times10^{-2}$ over urban scenes.
+The companion study reports that this \term{transfer} recovers $15.4\%$
+to $19.6\%$ of that blur on noise-free fields;
+Appendix~\ref{app:error_budget} finds $13.8\%$ to $15.6\%$ here in three
+of the four classes. An orthogonal
 compression error of $1.1\times10^{-3}$ (forest) to $2.2\times10^{-2}$
 (urban) would cancel the smaller of those recoveries, so on the
 PSF-aware tile only the \term{targets} up to $10^{-3}$ preserve, in

@@ -220,6 +220,7 @@ def checks(tex: str):
     out += external_review_checks()
     out += same_ground_checks()
     out += ndvi_checks()
+    out += cold_read_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     # Revision 7: the PSF-aware carrier is no longer scored against the
@@ -643,6 +644,167 @@ def ndvi_checks():
     b8 = r2["size_ratio_b08"]
     out.append((f"B08 size ratio at the loosest target {w}",
                 f"(${b8['median']:.2f}$ over {b8['n']}", f"p = {b8['p']:.3f}"))
+    return out
+
+
+def cold_read_checks():
+    """Figures a cold read of 2026-11-23 found stated without their overhead,
+    stale, or disagreeing between two places
+    (reviews/REVUE_LECTURE_A_FROID_2026-11-23.md). None was asserted before:
+    this checker verified that computed values appear in the text, not that
+    every number of the text is computed.
+    """
+    import paper_stats as st
+    out = []
+    d = load("self")
+    g = float(d["gamma_utm"])
+
+    # --- same codec on both grids: who is below one, at which overhead ---------
+    loose = f"{cfg.TARGET_RMSE[-1]:g}"
+    fc = {c: v[loose] for c, v in d.get("fixed_codec", {}).items() if loose in v}
+    if fc:
+        names = {"zfp": "ZFP", "sz3": "SZ3", "jpeg2000_lossy": "JPEG~2000",
+                 "jpegxl_lossy": "JPEG~XL", "dwt_zstd": "DWT+Zstandard"}
+        words = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}
+        below_tile = [c for c, v in fc.items() if v["median"] < 1]
+        below_one = [c for c, v in fc.items() if g * v["median"] < 1]
+        for c, v in fc.items():
+            out.append((f"same codec, {c}, loosest target with no overhead "
+                        "[in tables/table_fixed_codec.tex]",
+                        f"& {g * v['median']:.2f} \\\\", f"{g:g} x {v['median']:.3f}"))
+        said = f"{words[len(below_tile)]} of the {words[len(fc)]}"
+        for f in ("05c2_same_codec", "06_discussion", "07_conclusion"):
+            out.append((f"same codec: codecs below one under the illustrative overhead "
+                        f"[in sections/{f}.tex]", said, ", ".join(below_tile)))
+        if len(below_one) == 1:
+            c = below_one[0]
+            for f in ("05c2_same_codec", "06_discussion", "07_conclusion"):
+                out.append((f"same codec: the one codec below parity with no overhead "
+                            f"[in sections/{f}.tex]", f"only {names[c]}", ""))
+            out.append(("same codec: that codec's ratio and regions with no overhead "
+                        "[in sections/05c2_same_codec.tex]",
+                        f"(${g * fc[c]['median']:.2f}$, on {fc[c]['n']} regions)", ""))
+            if "jpeg2000_lossy" in fc:
+                out.append(("same codec: JPEG 2000 with no overhead "
+                            "[in sections/05c2_same_codec.tex]",
+                            f"(${g * fc['jpeg2000_lossy']['median']:.2f}$)", ""))
+        else:
+            out.append(("same codec: codecs below parity with no overhead "
+                        "[text says only one]", ", ".join(below_one), "REWRITE the text"))
+
+    # --- the tightest budget with no overhead (Section V-D) ---------------------
+    for t in d["targets"]:
+        if t["kind"] == "budget" and abs(float(t["target"]) - min(cfg.BUDGETS)) < 1e-12:
+            g1 = t.get("test_gamma1") or {}
+            if g1.get("n"):
+                e = math.floor(math.log10(g1["p"]))
+                out.append(("tightest budget, error ratio with no overhead "
+                            "[in sections/05c_rd_illustrative.tex]",
+                            f"${g1['median']:.2f}$ times that of", f"n = {g1['n']}"))
+                out.append(("tightest budget, its p with no overhead "
+                            "[in sections/05c_rd_illustrative.tex]",
+                            f"$p={g1['p'] / 10 ** e:.0f}\\times10^{{{e}}}$", f"{g1['p']:.2e}"))
+
+    # --- the two ends of the overhead-free margin (Section VI-A) ---------------
+    rm = sorted((t for t in d["targets"] if t["kind"] == "rmse"),
+                key=lambda t: float(t["target"]))
+    if rm:
+        hi = rm[0]["test_gamma1"]["median"]
+        lo = rm[-1]["test_gamma1"]["median"]
+        out.append(("overhead-free margin, tightest to loosest [in sections/06_discussion.tex]",
+                    f"from $+{100 * (hi - 1):.0f}\\%$ to $-{100 * (1 - lo):.0f}\\%$", ""))
+
+    # --- absolute rates (Section V-C) ----------------------------------------------
+    hpx, utm = _csv("hpx_codec_bench.csv"), _csv("utm_codec_bench.csv")
+    if hpx is not None and utm is not None and rm:
+        npx = cfg.UTM_SIDE_PX ** 2
+        rate = {}
+        for t in (rm[0], rm[-1]):
+            sc = list(t["ratios"])
+            tt = float(t["target"])
+            u = [st.best_of_codecs_size(utm, s, cfg.COMPRESSOR_CODECS, tt) for s in sc]
+            h = [st.best_of_codecs_size(hpx, s, cfg.COMPRESSOR_CODECS, tt) for s in sc]
+            rate[tt] = (float(np.median(8 * np.array(u) / npx)),
+                        float(np.median(8 * np.array(h) / npx)))
+        (u0, h0), (u1, h1) = rate[float(rm[0]["target"])], rate[float(rm[-1]["target"])]
+        w = "[in sections/05b_rd_main.tex]"
+        out += [(f"absolute rate of the native square, tightest and loosest target {w}",
+                 f"${u0:.2f}$ bits per pixel at $10^{{-4}}$ and ${u1:.2f}$ at", "median, bits per native pixel"),
+                (f"absolute rate of the tile, per native pixel of ground {w}",
+                 f"${h0:.1f}$ and ${h1:.2f}$ bits", "")]
+
+    # --- floors of the two reads, in % of the scene's standard deviation (V-H) --
+    rf = _csv("reader_floor.csv")
+    if rf is not None:
+        ok = rf[rf.error.fillna("").astype(str).str.len() == 0]
+        ct = ok[ok.kernel == "clough_tocher"].groupby("reader").floor_frac_of_std.median()
+        if "nearest" in ct and "bilinear" in ct:
+            out.append(("floor under the two reads, % of std [in sections/05g_operator.tex]",
+                        f"from ${100 * ct['nearest']:.1f}\\%$ to ${100 * ct['bilinear']:.1f}\\%$", ""))
+
+    # --- Appendix B-A: the two statistics of the same-ground control, and the
+    #     median of the shifted crops at the loosest target ----------------------
+    p = cfg.RESULTS_DIR / "same_domain.json"
+    if p.exists() and rm:
+        sd = json.loads(p.read_text(encoding="utf-8"))
+        har = [x["median"] for x in sd["variants"]["harmonic"]]
+        pub = [t["test_gamma1"]["median"] for t in rm]
+        ch = [100 * (a / b - 1) for a, b in zip(har, pub)]
+        fmt = lambda v: f"${'-' if v < 0 else '+'}{abs(v):.0f}\\%$"
+        out.append(("same ground: change of the row medians of the controls table "
+                    "[in sections/08_appendices.tex]",
+                    f"differ by {fmt(min(ch))} to {fmt(max(ch))}", "a different statistic from the per-region change"))
+    sh = _csv("support_controls_shift.csv")
+    if sh is not None and "ratio" in sh:
+        gl = sh[sh.target == sh.target.max()]
+        out.append(("shifted crops, median ratio at the loosest target "
+                    "[in sections/08_appendices.tex]",
+                    f"these crops is ${float(gl.ratio.median()):.2f}$", ""))
+
+    # --- Appendix A-B: coded points below the floor ---------------------------------
+    fl = _csv("common_reference_floor.csv")
+    if hpx is not None and fl is not None and "rmse" in hpx:
+        x = hpx[hpx.codec != "uncompressed"].copy()
+        x["floor"] = x.scene.map(fl.set_index("scene").representation_floor_rmse)
+        share = 100 * float((x.rmse < x.floor).mean())
+        n = f"{len(x):,}".replace(",", "\\,")
+        out.append(("coded operating points below the floor [in sections/08_appendices.tex]",
+                    f"${share:.1f}\\%$ of the ${n}$ coded operating", "lossless points included"))
+
+    # --- V-I: the pairs behind the aggregate-over-direct median ----------------------
+    p = cfg.RESULTS_DIR / "level19_rd.json"
+    if p.exists():
+        n = json.loads(p.read_text(encoding="utf-8")).get("direct_over_aggregate_size", {}).get("n")
+        if n:
+            out.append(("level 19, pairs behind the direct/aggregate median "
+                        "[in sections/05h_level_choice.tex]", f"median over all ${n}$", ""))
+
+    # --- IV-B: noiseless recoveries by class (Table XIII, last column) ----------------
+    rec = [float(r[-1].replace("+", "")) for r in _table_rows("table_resampling_error")
+           if len(r) >= 9 and re.match(r"^[+-]?\d", r[-1].strip())]
+    pos = [v for v in rec if v > 0]
+    if rec and pos:
+        words = {1: "one", 2: "two", 3: "three", 4: "four"}
+        out.append(("noiseless PSF recovery, positive class medians [in sections/04_design.tex]",
+                    f"${min(pos):.1f}\\%$ to ${max(pos):.1f}\\%$ here in {words[len(pos)]}", ""))
+        out.append(("noiseless PSF recovery, classes [in sections/04_design.tex]",
+                    f"of the {words[len(rec)]} classes", ""))
+
+    # --- III-C: regions each transfer covers ------------------------------------------
+    n_all = int(d["n_regions"])
+    n_idw = n_all - len(getattr(cfg, "KNOWN_REJECTIONS", {}).get("linear", []))
+    out.append(("regions swept for the PSF and inverse-distance transfers "
+                "[in sections/03_methodology.tex]", f"on {n_all} and {n_idw} regions", ""))
+
+    # --- V-F: how the analytic field is drawn -------------------------------------------
+    try:
+        import inspect
+        import support_controls as _sc
+        n_modes = inspect.signature(_sc.synthetic_field).parameters["n_modes"].default
+        out.append(("analytic control, number of plane waves [in sections/05e_support.tex]",
+                    f"({n_modes} waves, one seed)", "support_controls.synthetic_field"))
+    except Exception as exc:                                  # noqa: BLE001
+        out.append((f"analytic control [skipped: {type(exc).__name__}]", "", ""))
     return out
 
 
@@ -1506,13 +1668,12 @@ def transfer_cost_prose_checks():
                 "min and max over both transfers and all targets, rounded outwards"))
     v = [rows[t]["deconv_over_control"] for t in ts]
     pct = f"${100*(min(v)-1):.0f}$--${100*(max(v)-1):.0f}\\%$"
-    for scope in (where, "[in sections/07_conclusion.tex]",
-                  "[in sections/08_appendices.tex]"):
+    for scope in (where, "[in sections/07_conclusion.tex]"):
         out.append((f"transfer cost, PSF/IDW differential as percent {scope}",
                     pct, "(ratio - 1), min and max over targets"))
     v = [rows[t]["psf_over_base"] for t in ts]
-    out.append(("transfer cost, PSF / C-T range [in sections/08_appendices.tex]",
-                f"${min(v):.2f}$ to ${max(v):.2f}$", "Appendix E item"))
+    out.append(("transfer cost, PSF / C-T range [in sections/05l_transfer_cost.tex]",
+                f"${min(v):.2f}$ to ${max(v):.2f}$", "Section V-J"))
     for key, label in (("clough_tocher_over_utm", "C-T"), ("psf_over_utm", "PSF"),
                        ("linear_over_utm", "IDW")):
         a, b = rows[ts[-2]][key], rows[ts[-1]][key]

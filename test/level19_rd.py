@@ -319,6 +319,10 @@ def _fmt_p(p):
     return "$<10^{-4}$" if p < 1e-4 else f"{p:.3f}"
 
 
+_TARGET_LABEL = {1e-4: r"$10^{-4}$", 3e-4: r"$3\times10^{-4}$", 1e-3: r"$10^{-3}$",
+                 3e-3: r"$3\times10^{-3}$", 1e-2: r"$10^{-2}$"}
+
+
 def latex_table(digest, targets):
     main = "direct" if "direct" in digest["carriers"] else "aggregate"
     other = "aggregate" if main == "direct" else None
@@ -327,14 +331,14 @@ def latex_table(digest, targets):
     c = digest["carriers"][main]
     cols = "lrrlrr" + ("r" if other else "")
     head = ("Target & $n$ & L19/UTM & Range & $p_{\\mathrm{Holm}}$ & L19/L20"
-            + (" & L19/UTM (agg.)" if other else "") + " \\\\")
+            + (" & agg./UTM" if other else "") + " \\\\")
     rows = []
     for t in targets:
         e = c["targets"][f"{t:g}"]
         a, b = e["l19_over_utm"], e["l19_over_l20"]
         if a["n"] == 0 or (e["bracketed_fraction_utm"] or 0) < cfg.MIN_BRACKETED:
             continue
-        row = (f"${t:g}$ & {a['n']} & {a['median']:.2f} & "
+        row = (f"{_TARGET_LABEL.get(round(float(t), 12), f'${t:g}$')} & {a['n']} & {a['median']:.2f} & "
                f"[{a['lo']:.2f}, {a['hi']:.2f}] & {_fmt_p(a.get('p_holm'))} & "
                f"{b['median']:.2f}")
         if other:

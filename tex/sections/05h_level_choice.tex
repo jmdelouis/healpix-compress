@@ -15,7 +15,7 @@ differing by $6.3\%$ of a scene's standard deviation. Yet their floors
 agree to a median ratio of $1.002$ and cost $2.25$ and $2.24$ times the
 level-20 floor. What follows therefore holds for either reading of ``the
 level-19 \term{carrier}''. Appendix~\ref{app:level19_direct} gives the
-comparison and the one region it excludes. The figure quoted below is
+comparison. The figure quoted below is
 the aggregate's.
 
 Two quantities are separated, because a coarser \term{carrier} is charged twice
@@ -43,10 +43,7 @@ orders of magnitude below what the aggregation discards. Aggregation is
 no brick-wall filter at the coarser Nyquist frequency. The residual of a
 $2\times2$ mean has response $1-\cos^2(k_x d/2)\cos^2(k_y d/2)$. It
 grows as $(kd)^2$ and draws mainly on the shoulder of the spectrum
-\emph{below} the native Nyquist frequency, where the power lies. The same
-fitted spectra predict the discarded fraction well only in the ensemble
-median (predicted $3.4\%$ against $3.1\%$ measured), one more reason to
-report the spectral model as an ensemble parameter only.
+\emph{below} the native Nyquist frequency, where the power lies.
 
 \input{tables/table_level19_rd}
 
@@ -66,7 +63,8 @@ costs $1.15$ times the level-19 \term{carrier} at $10^{-2}$ and $3.1$ times at
 $10^{-4}$. The cost of the finer \term{carrier} is the cost of its density,
 largest where the codec keeps every sample and nearly gone where it
 keeps few. The cell-averaged \term{carrier} is $9\%$ cheaper than the direct
-one at equal error (median over $200$ region--\term{target} pairs), the price
+one at equal error (median over all $200$ region--\term{target} pairs, censored ones
+included), the price
 of the sharper point evaluations the \term{transfer} keeps, and it is cheaper
 on every region at the four tightest \term{targets}. Its advantage grows with
 the \term{target}, from $0.95$ to $0.83$ of the direct \term{carrier}'s size. This is

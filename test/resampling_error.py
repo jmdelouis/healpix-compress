@@ -396,10 +396,10 @@ def latex_table(df, control=None):
             "tab:resampling_error")) + "\n\\footnotesize\n"
         "\\begin{tabular}{@{}lrrr rrr rr@{}}\n\\toprule\n"
         " & \\multicolumn{3}{c}{Scene} & \\multicolumn{3}{c}{RMSE} & "
-        "\\multicolumn{2}{c}{\\texttt{psf} recovery (\\%)} \\\\\n"
+        "\\multicolumn{2}{c}{PSF recovery (\\%)} \\\\\n"
         "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}\\cmidrule(lr){8-9}\n"
         "Class & $\\beta$ & FWHM (m) & Noise (\\%) & Blur & "
-        "\\texttt{clough\\_tocher} & \\texttt{psf} & measured & noiseless "
+        "Clough--Tocher & PSF & measured & noiseless "
         "\\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
         + "\n".join(cfg.tex_note(note, wide=True)) + "\n\\end{table*}\n")

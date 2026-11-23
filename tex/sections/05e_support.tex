@@ -7,7 +7,10 @@ that mismatch and takes the scene content out of the comparison. It is an
 analytic random field, a sum of plane waves with power spectrum
 $P(k)\propto k^{-\beta}$ multiplied by a Gaussian instrument response of
 width $\sigma$, evaluated exactly at the level-20 cell centres and at the
-native pixel centres of the same region. Both sides see the same
+native pixel centres of the same region. It carries no noise, is drawn
+once (512 waves, one seed) and is scaled to the mean and standard
+deviation of each region's tile, so low-contrast regions are censored at
+the loose \term{targets} as on the imagery. Both sides see the same
 function, so whatever ratio survives comes from the sampling geometry
 alone. Both parameters are measured: fitting
 $\log P(k)=c-\beta\log k-k^2\sigma^2$ to the radially averaged spectrum of

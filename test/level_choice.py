@@ -12,7 +12,7 @@ why the measurement here is direct. The observed field carries a median
 $0.21\\%$ of its variance above half the native Nyquist and, propagating the
 fitted slope and response width, about $0.03\\%$ above the level-19 Nyquist --
 from which one would conclude that level 19 discards three parts in ten
-thousand. It discards $3.07\\%$, a hundred times more. Aggregation is not a
+thousand. It discards $3.47\\%$, a hundred times more. Aggregation is not a
 brick wall at the coarser Nyquist: the residual of a $2\\times2$ mean has
 response $1-\\cos^2(k_xd/2)\\cos^2(k_yd/2)$, which grows like $(kd)^2$ and so
 feeds mainly on the shoulder *below* the native Nyquist. Variance above a

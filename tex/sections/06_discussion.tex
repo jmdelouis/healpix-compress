@@ -6,7 +6,7 @@ level-20 tile is about twice the \term{UTM crop} under the illustrative
 $\gamma_{\mathrm{tile}}=1.30$ (Table~\ref{tab:storage_accounting}).
 After compression, native UTM stays the more compressible
 representation at every quality tested except the loosest. Compression
-narrows the gap steadily, from $+106\%$ to $-7\%$. The operational
+narrows the gap steadily, from $+107\%$ to $-7\%$. The operational
 verdict is therefore decided by whether the residual gap exceeds the
 overhead a given native layout carries, the \term{critical overhead}
 $\gamma_\star$ of Table~\ref{tab:synthesis}. That threshold is far
@@ -37,11 +37,12 @@ the same protocol says the same from below
 sufficient to generate this trend under the conditions tested. The
 exploratory latitude dependence is consistent with HEALPix cell-shape
 anisotropy, and has not been isolated as a grid property. Three
-findings belong elsewhere. The crossover at a given overhead belongs to
+findings belong elsewhere. The crossing of parity belongs to
 the \term{transfer}: it exists for a Clough--Tocher \term{carrier} and for no
 other \term{transfer} tested, and it disappears when the native raster is
-given that smoothing. It also belongs to the codec, since four of the
-five reproduce it and ZFP does not. A substantial part of the
+given that smoothing. It also belongs to the codec: with no overhead
+only JPEG~XL shows it on its own, and under the illustrative overhead
+four of the five fall below one and ZFP does not. A substantial part of the
 transfer-and-read floor is caused by the \term{read}, since changing the
 \term{read}ing operator alone removes two thirds of its mean squared error
 (Section~\ref{sec:operator}). The codec ranking is a property of these

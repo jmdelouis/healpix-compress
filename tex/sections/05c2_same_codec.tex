@@ -8,7 +8,8 @@ Table~\ref{tab:fixed_codec} holds the codec fixed on both grids, the
 operational form of the comparison. Each cell is the median per-region
 HPX/UTM compressed-\term{size ratio} at that \term{target} with the \emph{same} codec
 on both grids, the UTM side carrying $\gamma_{\mathrm{tile}}$, with the
-number of qualifying regions in parentheses. A region enters a cell only
+number of qualifying regions in parentheses; the last column repeats
+the loosest \term{target} with no overhead. A region enters a cell only
 if that codec brackets the \term{target} with two measured points on both
 grids. This is a codec-by-codec sensitivity table, so every cell is
 shown with its own $n$ and none is withheld, even where fewer than three
@@ -29,21 +30,25 @@ every encoded point is in Appendix~\ref{app:codec_audit}. At $10^{-2}$ the oracl
 of the two on 30 of the 32 qualifying regions on the HEALPix side and on
 31 on the native side. The oracle ratios are therefore close to what
 either codec gives on its own: $0.77$ and $0.71$ against $0.72$ for the
-envelope. Codec selection does not create the crossover. Second, the
-crossover is codec-dependent in a way the envelope hides. Four of the
-five codecs show the same directional crossover: JPEG~XL and JPEG~2000
-most strongly ($0.71$ and $0.77$ at $10^{-2}$, $p<10^{-7}$), then
-DWT+Zstandard ($0.83$) and SZ3 ($0.94$, $p=0.04$). These codec-specific
+envelope. Codec selection does not create the change of verdict under the
+illustrative overhead. Second, that change is codec-dependent in a way
+the envelope hides. Under the illustrative overhead four of the five
+codecs fall below one at $10^{-2}$: JPEG~XL and JPEG~2000
+most strongly ($0.71$ and $0.77$, $p<10^{-7}$), then
+DWT+Zstandard ($0.83$) and SZ3 ($0.94$, $p=0.04$). With no overhead
+only JPEG~XL does ($0.93$, on 26 regions); JPEG~2000 sits at parity
+($1.01$) and the others stay above it, so the crossing of parity of
+Section~\ref{sec:rd_main} does not hold codec by codec. These codec-specific
 $p$-values are descriptive and uncorrected, since this table is a
 sensitivity analysis and not a family of tests the paper draws a verdict
 from. Under ZFP the HEALPix tile costs $1.54$--$1.72$ times the native
 product at every \term{target}, with no decline as the \term{target} loosens. This is
 consistent with ZFP's fixed-accuracy block coding and its rate
 allocation, and the experiment does not isolate the mechanism. SZ3,
-which reproduces the crossover, is prediction-based, so the successful
+which falls below one under the illustrative overhead, is prediction-based, so the successful
 family cannot be defined by the transform alone. An archive that
 standardised on ZFP would see no regime in which the \term{carrier} is the
-smaller representation. The scope of the crossover is thus a \term{carrier}
+smaller representation. The scope of the change of verdict is thus a \term{carrier}
 filled by the Clough--Tocher \term{transfer}, of those tested
 (Section~\ref{sec:transfer_cost}), \emph{and} coded by one of the other
 four, and the second condition binds as much as the first.
