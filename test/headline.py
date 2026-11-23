@@ -136,6 +136,36 @@ def latex_table(per_target, raw, transfers, std, gamma):
         *cfg.tex_note(note), r"\end{table}"]) + "\n"
 
 
+def control_curves():
+    """Medians of the two equal-content controls, per target (figure only).
+
+    The analytic field sampled on both lattices, and the Clough--Tocher tile
+    against a native raster read through the same interpolant at half a
+    pixel. Read from the CSVs support_controls.py wrote; a target bracketed by
+    fewer than MIN_BRACKETED of the regions is left out, as in the tables.
+    """
+    out = {"synthetic": {}, "smoothed": {}}
+    p = cfg.RESULTS_DIR / "support_controls_synthetic.csv"
+    if p.exists():
+        d = pd.read_csv(p)
+        if "transfer" in d.columns:
+            d = d[d.transfer.fillna("none").astype(str) == "none"]
+        for t, g in d.dropna(subset=["ratio"]).groupby("target"):
+            br = g[g.both_bracketed]
+            if len(g) and len(br) / len(g) >= cfg.MIN_BRACKETED:
+                out["synthetic"][float(t)] = float(br.ratio.median())
+    p = cfg.RESULTS_DIR / "support_controls_smoothed.csv"
+    if p.exists():
+        d = pd.read_csv(p)
+        if {"shift_x", "shift_y"} <= set(d.columns):
+            d = d[np.isclose(d.shift_x, 0.5) & np.isclose(d.shift_y, 0.5)]
+        for t, g in d.groupby("target"):
+            b = g[g.hpx_both_bracketed.astype(bool)].dropna(subset=["ratio_hpx_smoothed"])
+            if len(g) and len(b) / len(g) >= cfg.MIN_BRACKETED:
+                out["smoothed"][float(t)] = float(b.ratio_hpx_smoothed.median())
+    return out
+
+
 def figure(per_target, raw, transfers, std, gamma, publish=True):
     targets = sorted(per_target)
     x = np.array(targets)
@@ -164,6 +194,17 @@ def figure(per_target, raw, transfers, std, gamma, publish=True):
                 label="PSF-aware transfer")
         ax.plot(tt, [transfers[t]["idw"] for t in tt], "^-", color="#009E73",
                 label="inverse-distance transfer")
+    ctl = control_curves()
+    if ctl["synthetic"]:
+        tt = sorted(ctl["synthetic"])
+        ax.plot(tt, [ctl["synthetic"][t] for t in tt], "d--", color="0.25",
+                markersize=3.5, linewidth=1,
+                label="control: analytic field on both lattices")
+    if ctl["smoothed"]:
+        tt = sorted(ctl["smoothed"])
+        ax.plot(tt, [ctl["smoothed"][t] for t in tt], "v:", color="0.25",
+                markersize=3.5, linewidth=1,
+                label="control: tile / native read through the same interpolant")
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("tolerated reconstruction error\n"
@@ -173,12 +214,12 @@ def figure(per_target, raw, transfers, std, gamma, publish=True):
     ax.set_xticks(x)
     ax.set_xticklabels([f"{t:g}\n{100*t/std:.2g}%" for t in x], fontsize=7.5)
     ax.tick_params(axis="x", which="minor", bottom=False, labelbottom=False)
-    ax.set_ylim(0.42, 3.2)
+    ax.set_ylim(0.3, 3.2)
     ax.set_yticks([0.5, 0.7, 1, 1.5, 2, 2.58, 3])
     ax.set_yticklabels(["0.5", "0.7", "1", "1.5", "2", "2.58", "3"])
     ax.tick_params(axis="y", which="minor", left=False, labelleft=False)
     ax.grid(alpha=0.25, which="both", linewidth=0.4)
-    ax.legend(fontsize=7, frameon=False, loc="lower left", borderaxespad=0.3)
+    ax.legend(fontsize=6.3, frameon=False, loc="lower left", borderaxespad=0.3)
     fig.tight_layout()
     cfg.FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     for ext in ("pdf", "png"):

@@ -10,17 +10,20 @@ parts.
 $2.584\times$ relative to the native \SI{10}{m} raster, which $30\%$ of
 native-layout overhead reduces to $1.99\times$.
 
-\emph{Compression.} Most, not all, of that penalty is redundancy that
-lossy coding removes. With the same content on both sides, the tile
-costs $2.22$ to $1.24$ times the native raster as the tolerated RMSE
-grows from $10^{-4}$ to $10^{-2}$, and an analytic field sampled on both
-lattices follows the same curve. The coarser level-19 \term{carrier} is
-smaller, at $0.67$ to $0.78$ of the \term{native square}, but its transfer-and-read floor is about $2.25$ times that of level 20,
-and against the observation it saves nothing over level 20.
+\emph{Compression.} Lossy coding removes part of that penalty at tight
+tolerances and most of it at loose ones; lossless coding removes none,
+and the tile then takes $3.42$ times the native bytes. With the same
+content on both sides, an analytic field sampled on both lattices costs
+$2.17$ to $1.16$ times the native size as the tolerated RMSE grows from
+$10^{-4}$ to $10^{-2}$. The coarser level-19 \term{carrier} is smaller,
+at $0.67$ to $0.78$ of the \term{native square}, but its transfer-and-read floor is about $2.25$ times that of level 20,
+and against the observation it shows no saving over level 20.
 
 \emph{Processing chain.} Against its own unsmoothed \term{native square}, the
 Clough--Tocher tile falls from $2.07$ to $0.93$. The crossing comes from
-the smoothing of the \term{transfer}, and it holds for four of the five
+the smoothing of the \term{transfer}: against a native raster read
+through the same interpolant, the tile stays at $1.10$ to $1.24$ times
+its size at the loosest \term{target}. It holds for four of the five
 codecs but not for ZFP (Section~\ref{sec:same_codec}). A PSF-aware or an
 inverse-distance \term{transfer} costs $1.2$ to $2.5$ times the bytes at
 the same coding RMSE and leaves HEALPix ahead at no \term{target}

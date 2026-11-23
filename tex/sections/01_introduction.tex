@@ -21,9 +21,11 @@ dyadically: whatever the ordering, every cell contains exactly four
 cells of the next level. The nested index adds a storage property to
 this geometry: it places all descendants of a cell in one contiguous
 block, so a tile can be compressed on its own. These properties suit
-Earth observation as well, with one practical limit: HEALPix resolution
-changes only by powers of two, so the native sampling of an instrument
-almost never matches a level. The \SI{10}{m} bands of
+Earth observation as well, with one practical limit: in the nested
+scheme, which carries that hierarchy, resolution changes only by powers
+of two, so the native sampling of an instrument almost never matches a
+level (the ring scheme accepts any $N_{\mathrm{side}}$, without the
+parent--child index this study relies on). The \SI{10}{m} bands of
 Sentinel-2~\cite{drusch2012sentinel2} fall between level 19
 (\SI{12.4}{m}, too coarse) and level 20 (\SI{6.2}{m}, geometrically safe
 and nominally oversampled). This paper asks whether that oversampling is
@@ -38,17 +40,21 @@ products~\cite{bauer2023wasting}.
 
 Section~\ref{sec:headline} gives the answer. Before compression, a
 level-20 tile takes $2.58$ times the bytes of the area-matched native
-raster. Compressed to the same error, with the same content on both
-sides, it still takes about twice as many at tight tolerances and a
-little more than as many at the loosest: from $2.22$ to $1.24$ times a
-native raster given the smoothing of the tile, and from $2.17$ to $1.16$
-for an analytic field sampled on both lattices. Oversampling is much
-cheaper once compressed, but not free. Against its own unsmoothed native
-raster, the Clough--Tocher tile falls from $2.07$ to $0.93$ times its
-size, a bare crossing at an error of a quarter of a typical scene's
-contrast (Section~\ref{sec:rd_main}). That crossing comes from the
-smoothing of the \term{transfer}, which the tile pays for in error
-against the observation (Section~\ref{sec:common_reference}).
+raster; coded losslessly it takes $3.4$ times, because the interpolated
+values leave the integer lattice of the product. Compressed with loss to
+the same error, an analytic field sampled on both lattices, the one
+comparison in which both sides hold exactly the same content, falls
+from $2.17$ times the native size at the tightest tolerance to $1.16$ at
+the loosest. Oversampling is much cheaper once compressed with loss, but
+not free. Against its own native raster, the Clough--Tocher tile falls
+from $2.07$ to $0.93$ times its size, a bare and statistically marginal
+crossing at an error of a quarter of a typical scene's contrast
+(Section~\ref{sec:rd_main}). That crossing comes from the smoothing of
+the \term{transfer}: read through the same interpolant, the native
+raster compresses better too, and the tile then stays $1.10$ to $1.24$
+times its size (Section~\ref{sec:support_controls}). The tile pays for
+that smoothing in error against the observation
+(Section~\ref{sec:common_reference}).
 
 Clough--Tocher interpolation~\cite{clough1965plate} passes a smooth
 surface through the observed pixels and reads it at the cell centres. It
@@ -76,8 +82,9 @@ resampled (Section~\ref{sec:utm_crop}). The contributions are:
     \item an evaluation over 40 Sentinel-2 regions in four land-cover
     classes, from $43.5^\circ$S to $64.1^\circ$N, with five
     general-purpose codecs, three \term{transfers} and two
-    \term{reconstruction references}, and a multiple-testing correction
-    that seven of the eight per-\term{target} comparisons survive;
+    \term{reconstruction references}, and, at the illustrative $30\%$
+    overhead, a multiple-testing correction that seven of the eight
+    per-\term{target} comparisons survive;
     \item two controls that explain the result: an analytic field shows
     that sampling geometry alone reproduces the decline of the ratio
     with the tolerated error, and a smoothed-native control shows that
@@ -93,6 +100,6 @@ with four conditions: the overhead of the native product, carried as
 $\gamma_\star(e)$; the \term{transfer}; the codec
 (Section~\ref{sec:same_codec}); and the \term{reconstruction reference}.
 Each tile, band and date is compressed alone, as the native product is
-stored. What a shared grid adds, coding across dates, bands and sensors
-on the same cells, is discussed in Section~\ref{sec:shared_grid}; the
+stored. What a shared grid adds, coding across sensors, zones and overlapping
+tiles on the same cells, is discussed in Section~\ref{sec:shared_grid}; the
 ratios here are the floor it starts from.

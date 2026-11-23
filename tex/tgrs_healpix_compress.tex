@@ -83,21 +83,25 @@ level 20, whose \SI{6.2}{m} cells hold $2.58$ times as many samples per
 unit area. This paper measures what the finer choice costs after
 compression. Level-20 tiles are reshaped into ordinary rasters and
 compared with native UTM squares of equal area at equal reconstruction
-error, over 40 Sentinel-2 B04 regions in four land-cover classes and
-five established codecs. The result is the layout overhead a native
+error, over 40 Sentinel-2 B04 regions and
+five general-purpose codecs. The result is the layout overhead a native
 product must carry, at each tolerated error, for the HEALPix copy to be
-the smaller one. With the same content on both sides, compression
-removes most of the oversampling but not all of it: as the tolerated
-RMSE grows from $10^{-4}$ to $10^{-2}$, the tile falls from $2.22$ to
-$1.24$ times a native raster given the same smoothing, and an analytic
-field sampled on both lattices behaves alike. Against its own unsmoothed
-native square, the Clough--Tocher tile falls from $2.07$ to $0.93$, a
-crossing that the smoothing of the transfer accounts for. A PSF-aware transfer, which aims to restore small-scale content, costs $2.3$--$2.6$ times
-the native square at every tolerance. Scored against the native
-observation, native UTM leads at all three reportable matched-storage
-budgets for the Clough--Tocher tile. Level 20 is therefore competitive only at
-aggressive compression, only with a smoothing transfer, and only when
-its own tile is the reference.
+smaller. Coded losslessly, the tile takes $3.4$ times the
+native bytes. As the tolerated RMSE grows from $10^{-4}$ to
+$10^{-2}$, an analytic field sampled on both lattices falls from $2.17$
+to $1.16$ times the native size: lossy coding removes most of the
+oversampling only at loose tolerances, and never all of it.
+The Clough--Tocher tile falls from $2.07$ to $0.93$ against its own
+native square, a marginal crossing that the smoothing of the transfer
+accounts for: against a native raster read through the same
+interpolant, it stays at $1.10$--$1.24$. A PSF-aware transfer, which
+aims to restore small-scale content, costs $2.3$--$2.6$ times the native
+square at every tolerance. Scored against the native observation,
+native UTM leads at all three matched-storage budgets, and
+the tile keeps a size advantage only at the loosest tolerance, under an
+interpolating read and a $30\%$ native overhead. Level 20 is
+competitive only at aggressive compression and only with a smoothing
+transfer.
 \end{abstract}
 
 \begin{IEEEkeywords}

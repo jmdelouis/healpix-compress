@@ -1,33 +1,21 @@
-\begin{table}[t]
+\begin{table*}[t]
 \centering
-\caption{Controls for the support mismatch}
+\caption{Controls on the HEALPix/native size ratio at $\gamma=1$: median over the regions that bracket the target (their number in parentheses)}
 \label{tab:support_controls}
 \footnotesize
-\begin{tabular}{@{}llrrl@{}}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-Control & Target & $n$ & Median & Range \\
+Control & $10^{-4}$ & $3\times10^{-4}$ & $10^{-3}$ & $3\times10^{-3}$ & $10^{-2}$ \\
 \midrule
-Synthetic, direct, $\beta=1.9$ & $0.0001$ & 40 & 2.17 & [1.10, 2.37] \\
-Synthetic, direct, $\beta=1.9$ & $0.0003$ & 40 & 2.08 & [0.99, 2.25] \\
-Synthetic, direct, $\beta=1.9$ & $0.001$ & 39 & 1.89 & [0.91, 2.20] \\
-Synthetic, direct, $\beta=1.9$ & $0.003$ & 38 & 1.46 & [0.93, 2.39] \\
-Synthetic, direct, $\beta=1.9$ & $0.01$ & 32 & 1.16 & [0.97, 1.69] \\
-Synthetic, via C--T, $\beta=1.9$ & $0.0001$ & 40 & 2.17 & [0.93, 2.31] \\
-Synthetic, via C--T, $\beta=1.9$ & $0.0003$ & 40 & 2.10 & [0.82, 2.24] \\
-Synthetic, via C--T, $\beta=1.9$ & $0.001$ & 39 & 1.90 & [0.75, 2.21] \\
-Synthetic, via C--T, $\beta=1.9$ & $0.003$ & 38 & 1.39 & [0.76, 2.37] \\
-Synthetic, via C--T, $\beta=1.9$ & $0.01$ & 32 & 0.94 & [0.82, 1.65] \\
-Common support, B/km$^2$ & $0.0001$ & 40 & 2.10 & [0.48, 4.58] \\
-Common support, B/km$^2$ & $0.0003$ & 40 & 1.97 & [0.31, 6.24] \\
-Common support, B/km$^2$ & $0.001$ & 40 & 1.62 & [0.24, 21.99] \\
-Common support, B/km$^2$ & $0.003$ & 40 & 1.57 & [0.35, 27.67] \\
-Common support, B/km$^2$ & $0.01$ & 40 & 1.49 & [0.41, 34.92] \\
-Shifted crops, spread & $0.0001$ & 40 & 0.012 & 1\% of effect \\
-Shifted crops, spread & $0.0003$ & 40 & 0.015 & 2\% of effect \\
-Shifted crops, spread & $0.001$ & 40 & 0.022 & 4\% of effect \\
-Shifted crops, spread & $0.003$ & 40 & 0.040 & 18\% of effect \\
-Shifted crops, spread & $0.01$ & 40 & 0.057 & 179\% of effect \\
+Imagery: Clough--Tocher tile / native & 2.07 (40) & 1.95 (40) & 1.58 (39) & 1.23 (37) & 0.93 (32) \\
+Synthetic field, direct & 2.17 (40) & 2.08 (40) & 1.89 (39) & 1.46 (38) & 1.16 (32) \\
+Synthetic field, via C--T & 2.17 (40) & 2.10 (40) & 1.90 (39) & 1.39 (38) & 0.94 (32) \\
+HEALPix / smoothed native, phase 0.5 px & 2.22 (40) & 2.10 (40) & 1.83 (39) & 1.48 (37) & 1.24 (32) \\
+HEALPix / smoothed native, phase 0.25 px & 2.19 (40) & 2.06 (40) & 1.78 (39) & 1.36 (37) & 1.10 (32) \\
+Smoothed native / native, phase 0.5 px & 0.94 (40) & 0.92 (40) & 0.89 (40) & 0.84 (39) & 0.78 (35) \\
+Smoothed native / native, phase 0.25 px & 0.96 (40) & 0.94 (40) & 0.92 (40) & 0.89 (39) & 0.86 (35) \\
+Common support, bytes per km$^2$ & 2.10 (40) & 1.97 (40) & 1.62 (40) & 1.57 (40) & 1.49 (40) \\
+Shifted crops, spread of the ratio & 0.012 (40) & 0.015 (40) & 0.022 (40) & 0.040 (40) & 0.057 (40) \\
 \bottomrule
 \end{tabular}
-
-\end{table}
+\end{table*}

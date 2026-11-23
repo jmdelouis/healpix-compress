@@ -1036,7 +1036,7 @@ def _with_transfer(d: pd.DataFrame) -> pd.DataFrame:
     return d
 
 
-def latex_table(frames: dict) -> str:
+def latex_table_long(frames: dict) -> str:
     rows = []
     if "synthetic" in frames and len(frames["synthetic"]):
         d = _with_transfer(frames["synthetic"])
@@ -1155,6 +1155,97 @@ def latex_table(frames: dict) -> str:
         + "\n".join(cfg.tex_note(" ".join(parts))) + "\n\\end{table}\n")
 
 
+def latex_table(frames: dict) -> str:
+    """One row per control, one column per target (wide form, 2026-11-23).
+
+    The long form (latex_table_long) printed one row per control and target
+    and left out the smoothed-native rows the text refers to. This form holds
+    every control, with the measured ratio as its first row. A cell is the
+    median over the regions that bracket the target on both sides, with their
+    number in parentheses; a target bracketed by fewer than MIN_BRACKETED of
+    the regions is withheld.
+    """
+    import json
+    targets = [float(t) for t in cfg.TARGET_RMSE]
+    head = {1e-4: "$10^{-4}$", 3e-4: "$3\\times10^{-4}$", 1e-3: "$10^{-3}$",
+            3e-3: "$3\\times10^{-3}$", 1e-2: "$10^{-2}$"}
+
+    def cell(values, total, nd=2):
+        values = pd.Series(values).dropna()
+        if not len(values) or (total and len(values) / total < cfg.MIN_BRACKETED):
+            return "--"
+        return f"{values.median():.{nd}f} ({len(values)})"
+
+    def at(d, t):
+        return d[np.isclose(d.target, t)]
+
+    rows = []
+    p = cfg.RESULTS_DIR / "paper_numbers_self.json"
+    if p.exists():
+        per = {round(float(x["target"]), 12): x
+               for x in json.loads(p.read_text())["targets"] if x["kind"] == "rmse"}
+        cells = []
+        for t in targets:
+            g1 = (per.get(round(t, 12)) or {}).get("test_gamma1") or {}
+            cells.append(f"{g1['median']:.2f} ({g1['n']})" if g1.get("n") else "--")
+        rows.append("Imagery: Clough--Tocher tile / native & " + " & ".join(cells) + " \\\\")
+    if "synthetic" in frames and len(frames["synthetic"]):
+        d = _with_transfer(frames["synthetic"])
+        names = {"none": "direct", "clough_tocher": "via C--T"}
+        betas = sorted(d.beta.dropna().unique())
+        for tr in ("none", "clough_tocher"):
+            for beta in betas:
+                g = d[(d.transfer == tr) & np.isclose(d.beta, beta)]
+                if not len(g):
+                    continue
+                cells = []
+                for t in targets:
+                    a = at(g, t).dropna(subset=["ratio"])
+                    cells.append(cell(a[a.both_bracketed].ratio, len(a)))
+                tag = "" if len(betas) == 1 else f", $\\beta={beta:g}$"
+                rows.append(f"Synthetic field, {names[tr]}{tag} & " + " & ".join(cells) + " \\\\")
+    if "smoothed" in frames and len(frames["smoothed"]):
+        d = frames["smoothed"]
+        phases = sorted(set(zip(d.shift_x.round(3), d.shift_y.round(3))), reverse=True)
+        for col, mask, label in (
+                ("ratio_hpx_smoothed", "hpx_both_bracketed", "HEALPix / smoothed native"),
+                ("ratio_smoothed_native", "both_bracketed", "Smoothed native / native")):
+            for fx, fy in phases:
+                dp = d[np.isclose(d.shift_x, fx) & np.isclose(d.shift_y, fy)]
+                cells = []
+                for t in targets:
+                    a = at(dp, t)
+                    cells.append(cell(a[a[mask].astype(bool)][col], len(a)))
+                rows.append(f"{label}, phase {fx:g} px & " + " & ".join(cells) + " \\\\")
+    if "common" in frames and len(frames["common"]):
+        d = frames["common"].dropna(subset=["ratio_per_km2"])
+        cells = [cell(at(d, t).ratio_per_km2, 0) for t in targets]
+        rows.append("Common support, bytes per km$^2$ & " + " & ".join(cells) + " \\\\")
+    if "shift" in frames and len(frames["shift"]):
+        d = frames["shift"]
+        cells = []
+        for t in targets:
+            g = at(d, t)
+            if not len(g):
+                cells.append("--")
+                continue
+            per = g.groupby("scene").ratio
+            cells.append(f"{float((per.max() - per.min()).median()):.3f} "
+                         f"({g.scene.nunique()})")
+        rows.append("Shifted crops, spread of the ratio & " + " & ".join(cells) + " \\\\")
+    if not rows:
+        return ""
+    return (
+        "\\begin{table*}[t]\n\\centering\n"
+        + "\n".join(cfg.tex_caption(
+            "Controls on the HEALPix/native size ratio at $\\gamma=1$: median "
+            "over the regions that bracket the target (their number in "
+            "parentheses)", "tab:support_controls"))
+        + "\n\\footnotesize\n\\begin{tabular}{@{}lrrrrr@{}}\n\\toprule\n"
+        "Control & " + " & ".join(head[t] for t in targets) + " \\\\\n\\midrule\n"
+        + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n")
+
+
 # --- driver ------------------------------------------------------------------
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
@@ -1199,7 +1290,23 @@ def main(argv=None) -> int:
                          "rounded to 0.1) instead of --betas/--psf-fwhm; this "
                          "is the paper's synthetic control")
     ap.add_argument("--no-tex", action="store_true")
+    ap.add_argument("--tables-only", action="store_true",
+                    help="rebuild the table from the saved CSVs, run no control")
     args = ap.parse_args(argv)
+    if args.tables_only:
+        frames = {}
+        for control in ("synthetic", "smoothed", "common", "shift"):
+            path = cfg.RESULTS_DIR / f"support_controls_{control}.csv"
+            if path.exists():
+                frames[control] = pd.read_csv(path)
+        tex = latex_table(frames)
+        if not tex:
+            print("no saved control to tabulate")
+            return 1
+        out = cfg.TEX_TABLES / "table_support_controls.tex"
+        out.write_text(tex, encoding="utf-8")
+        print(f"wrote {out}")
+        return 0
 
     controls = (["spectrum", "shift", "common", "synthetic", "smoothed"]
                 if "all" in args.control else list(dict.fromkeys(args.control)))

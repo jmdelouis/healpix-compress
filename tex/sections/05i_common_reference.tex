@@ -58,7 +58,8 @@ floor row is the uncompressed \term{carrier}'s RMSE against the observation.
 
 The second consequence is a reversal, the most important caveat of this
 paper. Under the \term{common reference} and the nearest \term{read}, native UTM is
-ahead at \emph{every} evaluable \term{target}, \term{matched-budget} included. The
+ahead at all three budgets and is not separated from HEALPix at the one
+evaluable \term{RMSE target}. The
 median RMSE ratios are $1.50$, $4.05$ and $32.5$ at the $2\%$, $5\%$ and
 $10\%$ budgets, over the 40, 39 and 38 regions that qualify
 (Holm-adjusted $p<10^{-4}$ throughout), against $0.82$, $1.33$ and $4.02$
@@ -85,12 +86,20 @@ native UTM. Of the gap between the two \term{references} at the $2\%$ budget
 ($1.50$ against $0.82$ under the nearest \term{read}, $1.12$ against $0.82$
 under the interpolating one), about half was the reader.
 
+This \term{reference} is one-sided by construction. The observation is
+the native raster itself, noise included, so the native side has no
+floor, while the \term{carrier}'s is $2$ to $4\times10^{-3}$. At the
+$5\%$ and $10\%$ budgets the native error lies far below that floor, and
+the ratios there measure the floor more than the codecs; the $2\%$
+budget and the $10^{-2}$ \term{target} are where both grids are limited
+by coding.
+
 Two results survive the switch of \term{reference}. JPEG~2000 leads by a wide
 margin under both \term{references} and both \term{reads}, while JPEG~XL and SZ3
 exchange second place. Under the nearest \term{read} JPEG~XL takes more
 outright wins, $49$ against $38$, and SZ3 the better mean rank,
 $2.52$ against $3.05$; under the interpolating \term{read} SZ3 takes both,
-$48$ against $50$ wins for JPEG~XL and $2.52$ against $2.97$ in mean
+$50$ wins against $48$ for JPEG~XL and $2.52$ against $2.97$ in mean
 rank. The latitude effect keeps its
 direction: the equatorial belt stays more favourable to HEALPix than the
 caps at the tightest budget ($1.63$ against $2.15$ under the nearest
@@ -132,13 +141,12 @@ Two further questions about this \term{reference} are answered in the
 appendices. The compression error can be written as a fraction $\kappa$
 of the \term{transfer} error (Appendix~\ref{app:error_budget}). On that scale
 the crossings of Section~\ref{sec:rd_illustrative} occur at
-$\kappa=0.13$ to $0.50$ against the latent scene, in all four classes.
-They inflate the product's total error by a measured $2.5$ to $16.0\%$.
+$\kappa=0.23$ to $0.76$ against the latent scene, in all four classes.
+They inflate the product's total error by a measured $4.9$ to $39.8\%$.
 The saving in bytes is $12$ to $30\%$ in three classes and about $2\%$
-over water. Against the observation the same crossings cost $37$ to
-$115\%$. The two errors do not add in quadrature
+over water. Against the observation the same crossings cost $18.8$ to $64.1\%$. The two errors do not add in quadrature
 (Appendix~\ref{app:cross_term}). The cross term is negative against the
-observation, where quadrature overstates the total by up to $24$ points,
-and positive against the latent scene, where it understates it by up to
-$6.6$ points. JPEG~2000 carries the whole effect, and ZFP is orthogonal
+observation, where quadrature overstates the total by $14$ to $22$
+points at these crossings, and positive against the latent scene, where
+it understates it by $2$ to $14$ points. JPEG~2000 carries the whole effect, and ZFP is orthogonal
 within $|\rho|\le0.03$.

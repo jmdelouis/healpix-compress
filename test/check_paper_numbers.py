@@ -210,6 +210,7 @@ def checks(tex: str):
     out += noise_checks()
     out += level19_common_checks()
     out += psf_matched_floor_checks()
+    out += review_v2_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     # Revision 7: the PSF-aware carrier is no longer scored against the
@@ -275,9 +276,18 @@ def level19_common_checks():
         (f"level 19/20, size at 1e-2 {where}",
          f"${size['median']:.2f}$ times the level-20 bytes", ""),
         (f"level 19/20, n at 1e-2 {where}", f"({size['n']} regions)", ""),
-        (f"level 19/20, error at the three budgets {where}",
-         f"${b['0.02']['median']:.2f}$, ${b['0.05']['median']:.2f}$ and "
-         f"${b['0.1']['median']:.2f}$ times", ""),
+        (f"level 19/20, spread at 1e-2 {where}",
+         f"${size['lo']:.2f}$ to ${size['hi']:.2f}$", "min and max over the regions"),
+        (f"level 19/20, paired p at 1e-2 {where}", f"$p={size['p']:.2f}$",
+         "the prose says 'no separation': " + ("ok" if size["p"] >= 0.05
+                                               else "PROSE MUST BE REWORDED")),
+        (f"level 19/20, error at the 2% and 5% budgets {where}",
+         f"${b['0.02']['median']:.2f}$ and ${b['0.05']['median']:.2f}$ times", ""),
+        (f"level 19/20, n at the 2% and 5% budgets {where}",
+         f"({b['0.02']['n']} regions each)" if b['0.02']['n'] == b['0.05']['n']
+         else "PROSE MUST GIVE BOTH n", ""),
+        (f"level 19/20, error at the 10% budget {where}",
+         f"${b['0.1']['median']:.2f}$ times at the $10\\%$ budget ({b['0.1']['n']} regions)", ""),
     ]
 
 
@@ -318,6 +328,142 @@ def psf_matched_floor_checks():
     if max(same) > 1e-4:
         out.append(("PSF tiles rebuilt at lambda 1e-3 do not match the deposit",
                     "MUST BE INVESTIGATED", f"{max(same):.1e}"))
+    return out
+
+
+def review_v2_checks():
+    """Figures corrected after the review of 2026-11-22, each tied to its section.
+
+    That review found prose that had kept the numbers of earlier runs while
+    the tables moved (0.92 for 0.94 in V-D, the kappa ranges of V-G, +13.6 for
+    +14.0 in Appendix C). The default rule only asks that a fresh value appear
+    somewhere in the manuscript, so a stale copy elsewhere passes; every
+    figure below is therefore asserted in the one file that quotes it.
+    """
+    import merged_tables as mt
+    import paper_stats as st
+    out = []
+    doc = load("self")
+    gam = float(doc.get("gamma_utm", cfg.GAMMA_UTM))
+    rm = sorted((t for t in doc["targets"] if t["kind"] == "rmse"),
+                key=lambda t: float(t["target"]))
+
+    # --- V-C: margins, the gamma=1 family, the fixed population -------------
+    w = "[in sections/05b_rd_main.tex]"
+    if len(rm) == 5:
+        g1 = [t["test_gamma1"] for t in rm]
+        m = [100 * (g["median"] - 1) for g in g1[:4]]
+        out.append((f"UTM margins at gamma=1, four tightest targets {w}",
+                    f"$+{m[0]:.0f}\\%$, $+{m[1]:.0f}\\%$, $+{m[2]:.0f}\\%$ and "
+                    f"$+{m[3]:.0f}\\%$", "median gamma_star - 1"))
+        adj = [float(a) for a in st.holm([g["p"] for g in g1])]
+        out.append((f"gamma=1 family, Holm p at the loosest target {w}",
+                    f"$p^{{\\mathrm{{Holm}}}}={adj[-1]:.3f}$", "five targets"))
+        out.append((f"gamma=1 family, largest Holm p of the four tightest {w}",
+                    f"$p^{{\\mathrm{{Holm}}}}\\le{math.ceil(max(adj[:4]) * 1000) / 1000:.3f}$",
+                    "rounded up"))
+        keep = set(rm[-1]["ratios"])
+        fixed = [float(np.median([t["ratios"][s] * gam for s in keep if s in t["ratios"]]))
+                 for t in rm]
+        out.append((f"gamma_star on the regions that qualify at every target {w}",
+                    ", ".join(f"${v:.2f}$" for v in fixed[:4]) + f" and ${fixed[4]:.2f}$",
+                    f"n={len(keep)}"))
+        sh = [100 * float(np.mean([v * gam < 1 for v in t["ratios"].values()]))
+              for t in rm[-2:]]
+        out.append((f"regions with gamma_star below one, two loosest targets {w}",
+                    f"${sh[0]:.0f}\\%$ and ${sh[1]:.0f}\\%$", "win column at gamma=1"))
+
+        # --- V-D: the inconclusive target at the illustrative overhead ----
+        t3 = rm[-2]
+        w3 = "[in sections/05c_rd_illustrative.tex]"
+        out.append((f"illustrative ratio at 3e-3 {w3}",
+                    f"median ${t3['test']['median']:.2f}$, $n={t3['test']['n']}$", ""))
+        out.append((f"Holm p at 3e-3 {w3}",
+                    f"$p^{{\\mathrm{{Holm}}}}={t3['p_holm']:.2f}$", "family of eight"))
+
+    # --- the lossless ratio ------------------------------------------------------
+    ll = mt.lossless_ratio_gamma1()
+    if ll:
+        for f in ("05a2_headline", "05b_rd_main", "07_conclusion"):
+            out.append((f"lossless HEALPix/UTM ratio [in sections/{f}.tex]",
+                        f"${ll['median']:.2f}$", f"median, n={ll['n']}"))
+        out.append(("lossless ratio, range [in sections/05a2_headline.tex]",
+                    f"${ll['lo']:.2f}$ to ${ll['hi']:.2f}$", ""))
+        out.append(("lossless ratio, one decimal [in tgrs_healpix_compress.tex]",
+                    f"${ll['median']:.1f}$ times", "abstract"))
+        out.append(("lossless ratio, one decimal [in sections/01_introduction.tex]",
+                    f"${ll['median']:.1f}$ times", ""))
+
+    # --- the tile against a native raster read through the same interpolant ---
+    sm = _csv("support_controls_smoothed.csv")
+    if sm is not None and {"shift_x", "shift_y"} <= set(sm.columns):
+        loose = float(sm.target.max())
+
+        def med(phase):
+            g = sm[np.isclose(sm.shift_x, phase) & np.isclose(sm.shift_y, phase)
+                   & np.isclose(sm.target, loose)]
+            g = g[g.hpx_both_bracketed.astype(bool)]
+            return float(g.ratio_hpx_smoothed.median())
+
+        lo_, hi_ = sorted((med(0.25), med(0.5)))
+        out.append(("tile / smoothed native, loosest target, two phases "
+                    "[in tgrs_healpix_compress.tex]",
+                    f"${lo_:.2f}$--${hi_:.2f}$", "abstract"))
+        for f in ("01_introduction", "07_conclusion"):
+            out.append((f"tile / smoothed native, two phases [in sections/{f}.tex]",
+                        f"${lo_:.2f}$ to ${hi_:.2f}$", ""))
+        out.append(("tile / smoothed native, half pixel [in sections/05a2_headline.tex]",
+                    f"${hi_:.2f}$ times its size at a half-pixel phase", ""))
+        out.append(("tile / smoothed native, quarter pixel [in sections/05a2_headline.tex]",
+                    f"${lo_:.2f}$ at a", ""))
+
+    # --- V-G: kappa and inflation at the crossings, read from the table ------
+    rows = [r for r in _table_rows("table_alpha_budget") if len(r) >= 10]
+    if rows:
+        w = "[in sections/05i_common_reference.tex]"
+
+        def pair(cell):
+            a, b = cell.split("(")
+            return float(a), float(b.strip(") "))
+
+        lk = sorted(float(r[8]) for r in rows)
+        li, oi = [pair(r[9]) for r in rows], [pair(r[6]) for r in rows]
+        under = sorted(a - b for a, b in li)          # quadrature understates
+        over = sorted(b - a for a, b in oi)           # quadrature overstates
+        out += [
+            (f"latent kappa at the crossings {w}",
+             f"$\\kappa={lk[0]:.2f}$ to ${lk[-1]:.2f}$", "four classes"),
+            (f"latent inflation at the crossings {w}",
+             f"${min(a for a, _ in li):.1f}$ to ${max(a for a, _ in li):.1f}\\%$", "measured"),
+            (f"own-estimand inflation at the crossings {w}",
+             f"${min(a for a, _ in oi):.1f}$ to ${max(a for a, _ in oi):.1f}\\%$", "measured"),
+            (f"quadrature overstates, observation, points {w}",
+             f"${over[0]:.0f}$ to ${over[-1]:.0f}$", "orthogonal - measured"),
+            (f"quadrature understates, latent scene, points {w}",
+             f"${under[0]:.0f}$ to ${under[-1]:.0f}$", "measured - orthogonal"),
+        ]
+    try:
+        cb = json.loads((cfg.RESULTS_DIR / "paper_numbers_common_bilinear.json").read_text())
+        wins = cb["codec_ranking"]["wins"]
+        out.append(("interpolating read: SZ3 and JPEG XL wins "
+                    "[in sections/05i_common_reference.tex]",
+                    f"${wins['sz3']}$ wins against ${wins['jpegxl_lossy']}$",
+                    "SZ3 must be the larger for 'takes both'"
+                    if wins["sz3"] > wins["jpegxl_lossy"] else "PROSE MUST BE REWORDED"))
+    except Exception:                                         # noqa: BLE001
+        pass
+
+    # --- appendices ------------------------------------------------------------
+    lc = _csv("level_choice.csv")
+    if lc is not None and "discarded_var_frac" in lc:
+        g = lc[lc.level == 19]
+        v = f"${100 * g.discarded_var_frac.median():.2f}\\%$"
+        out.append(("variance discarded by level 19 [in sections/08_appendices.tex]", v, ""))
+        out.append(("variance discarded by level 19 [in sections/05h_level_choice.tex]", v, ""))
+    rec = {r[0].lower(): r[-1] for r in _table_rows("table_resampling_error") if len(r) >= 9}
+    if "water" in rec:
+        out.append(("noiseless psf recovery over water [in sections/08_appendices.tex]",
+                    f"${rec['water']}\\%$ over water", "table_resampling_error"))
     return out
 
 
@@ -851,8 +997,13 @@ def rerun_prose_checks():
         rows2 = {k.replace("\\_", "_"): _r for k, _w, _r in found}
         where = "[in sections/05i_common_reference.tex]"
         if "jpegxl_lossy" in rk and "sz3" in rk:
+            # The codec with more wins is named first (review of 2026-11-22:
+            # "SZ3 takes both, 48 against 50" read as a contradiction).
+            jx, sz = int(rk["jpegxl_lossy"]), int(rk["sz3"])
+            wins = (f"${jx}$ against ${sz}$" if jx >= sz
+                    else f"${sz}$ wins against ${jx}$")
             out += [(f"common reference, {label} read: JPEG XL vs SZ3 wins {where}",
-                     f"${rk['jpegxl_lossy']}$ against ${rk['sz3']}$", "Table codec_ranking" + suffix),
+                     wins, "Table codec_ranking" + suffix),
                     (f"common reference, {label} read: SZ3 vs JPEG XL mean rank {where}",
                      f"${rows2['sz3']}$ against ${rows2['jpegxl_lossy']}$", "")]
     # --- the subset controls (Appendix, Section V-E) ------------------------

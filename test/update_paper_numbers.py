@@ -530,7 +530,8 @@ def table_fixed_codec(hpx, utm, scenes, rmse_col, codecs):
     header = "Codec & " + " & ".join(RMSE_LABEL.get(t, f"${t:g}$")
                                      for t in cfg.TARGET_RMSE) + r" \\"
     tex = _table(
-        "Same-codec comparison at constant reconstruction RMSE",
+        "Same-codec HEALPix/UTM size ratio at constant reconstruction RMSE, "
+        "$\\gamma_{\\mathrm{tile}}=1.3$",
         "tab:fixed_codec", "l" + "r" * len(cfg.TARGET_RMSE), header, body,
         note=(r"Median per-region HPX/UTM compressed-size ratio at each target "
               r"RMSE when the \emph{same} codec is used on both grids, with "

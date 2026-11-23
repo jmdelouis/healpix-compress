@@ -95,12 +95,14 @@ No extrapolation beyond a codec's measured range is performed.
 
 \term{Target RMSE} values run from $10^{-4}$ to $10^{-2}$ (normalised
 reflectance). The noise the imagery itself carries, read off each crop by
-Immerkaer's $3\times3$ estimator (Appendix~\ref{app:error_budget}), is
+Immerkaer's $3\times3$ estimator~\cite{immerkaer1996fast}
+(Appendix~\ref{app:error_budget}), is
 $2.3\times10^{-3}$ in median ($1.4$--$5.2\times10^{-3}$ between
 quartiles), an upper estimate since the estimator also counts the finest
-texture. The three tightest \term{targets} lie below it, where a codec
-spends most of its bits on the noise of every sample; only
-$3\times10^{-3}$ and $10^{-2}$ lie at or above it. Storage budgets run from $2\%$ to $40\%$ of one shared
+texture. The three tightest \term{targets} lie below this estimate and
+only $3\times10^{-3}$ and $10^{-2}$ at or above it; the instrument's own
+noise is lower, so at least the two loosest \term{targets}, and possibly
+more, lie above the noise. Storage budgets run from $2\%$ to $40\%$ of one shared
 reference, the raw size of the HEALPix tile (\num{4194304}~B), for both
 grids; the UTM side receives this budget divided by $\gamma_{\mathrm{tile}}$
 when an operational overhead is assumed (Section~\ref{sec:overhead}).
@@ -133,7 +135,9 @@ same range here at the nominal response width. An orthogonal
 compression error of $1.1\times10^{-3}$ (forest) to $2.2\times10^{-2}$
 (urban) would cancel the smaller of those recoveries, so on the
 PSF-aware tile only the \term{targets} up to $10^{-3}$ preserve, in
-every class, what the \term{transfer} restores.
+every class, what the \term{transfer} restores on noise-free fields; at
+the noise measured on the imagery most of that recovery is already lost
+(Appendix~\ref{app:error_budget}).
 Appendix~\ref{app:error_budget} carries the same accounting to the
 crossings of Section~\ref{sec:results}.
 

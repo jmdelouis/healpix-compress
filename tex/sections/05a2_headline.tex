@@ -10,12 +10,15 @@ reconstruction error, with no overhead charged to either side. The five
 scene's contrast, the median standard deviation of the 40 tiles, $0.04$
 in reflectance; the three tightest lie below the noise measured on the
 imagery (Section~\ref{sec:rd_protocol}). Per \term{target}, the table gives that ratio for the
-Clough--Tocher \term{carrier}, which is also the \term{critical overhead}
-$\gamma_\star$ (Section~\ref{sec:rd_main}); the share of the raw penalty
-that compression recovers; the same \term{carrier} against a native
-raster given the \term{carrier}'s smoothing (HPX/sm.,
-Section~\ref{sec:support_controls}); and the verdict over a range of
-overheads and at the illustrative $30\%$. $n$ counts the regions whose
+Clough--Tocher \term{carrier}, as the median over the regions, which is
+also the \term{critical overhead} $\gamma_\star$
+(Section~\ref{sec:rd_main}), and on the summed bytes of those regions
+(Total); the share of the raw penalty that compression recovers; the
+same \term{carrier} against a native raster read through the
+\term{carrier}'s interpolant at half a pixel, its strongest smoothing
+(HPX/sm., Section~\ref{sec:support_controls}); and the verdict over a
+range of overheads and at the illustrative $30\%$. The first row is the
+smallest lossless file of each grid. $n$ counts the regions whose
 sweeps bracket the \term{target} on both grids. Each grid is scored
 against its own uncompressed raster; Section~\ref{sec:common_reference}
 scores both against the observation. Under an overhead $\gamma$ on the
@@ -33,26 +36,38 @@ range of the four land-cover class medians for the Clough--Tocher
 carrier; the curves have the populations of Table~\ref{tab:synthesis}
 and Section~\ref{sec:transfer_cost}. The dashed line is the uncompressed ratio; the
 dotted lines mark parity with no overhead and with the illustrative $30\%$
-overhead on the native product.}
+overhead on the native product. The two grey curves are the controls of
+Section~\ref{sec:support_controls}: an analytic field sampled on both
+lattices, and the Clough--Tocher tile against a native raster read
+through the same interpolant at half a pixel.}
 \label{fig:headline}
 \end{figure}
 
-Three things follow. First, at equal content compression removes most of
-the oversampling, not all of it. Uncompressed, the tile is $2.58$ times
-the square. Against a native raster given the same smoothing, it
-compresses to $2.22$ times at $10^{-4}$, a quarter of a percent of a
-typical scene's contrast, and to $1.24$ times at $10^{-2}$, a quarter of the contrast. It never crosses parity, and an analytic field sampled on
-both lattices gives the same curve within $7\%$
-(Section~\ref{sec:support_controls}).
+Three things follow. First, with the same content on both sides, lossy
+coding removes part of the oversampling at tight tolerances and most of
+it at loose ones, never all. Coded losslessly, the tile is $3.42$ times
+the square in median ($2.17$ to $6.92$ over the 40 regions): more than
+the raw $2.58$, because the native values sit on the integer lattice of
+the product and the interpolated ones do not. An analytic field sampled
+on both lattices, where neither side is resampled, gives $2.17$ at
+$10^{-4}$, a quarter of a percent of a typical scene's contrast, and
+$1.16$ at $10^{-2}$, a quarter of the contrast
+(Fig.~\ref{fig:headline}). It never crosses parity.
 
-Second, against its own unsmoothed \term{native square} the Clough--Tocher tile
+Second, against its own \term{native square} the Clough--Tocher tile
 goes further: $2.07$ at the tightest \term{target} and $0.93$ at the
-loosest, where it is the smaller one before any overhead is charged. The
-difference between the two curves is the smoothing of the
-\term{transfer}, which the tile pays for in error against the
-observation (Section~\ref{sec:common_reference}); the crossing belongs
-to the chain, not to the grid. The kind of scene moves the ratio less
-than the tolerated error does: the class medians span $1.98$--$2.17$ at
+loosest, where it is the smaller one before any overhead is charged, by
+a statistically marginal margin (Section~\ref{sec:rd_main}). The
+difference from the analytic curve is the smoothing of the
+\term{transfer}. Read through the same interpolant, the native raster
+compresses better as well, and at the loosest \term{target} the tile
+stays $1.24$ times its size at a half-pixel phase and $1.10$ at a
+quarter pixel (Section~\ref{sec:support_controls}): a fixed-phase
+control, not a matched experiment, but both phases stay above parity.
+The tile pays for that smoothing in error against the observation
+(Section~\ref{sec:common_reference}); the crossing belongs to the chain,
+not to the grid. The kind of scene moves the ratio less than the
+tolerated error does: the class medians span $1.98$--$2.17$ at
 the tightest \term{target} and $0.89$--$1.10$ at the loosest.
 
 Third, the way the tile is filled matters as much as everything else

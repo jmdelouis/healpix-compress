@@ -108,6 +108,33 @@ def aggregate_ratio_gamma1(metric="self"):
     return out
 
 
+def lossless_ratio_gamma1(metric="self"):
+    """HEALPix over UTM bytes at each grid's smallest lossless point, gamma=1.
+
+    Sentinel-2 is archived without loss, and the lossless ratio is not the raw
+    2.58: the native values sit on the integer lattice of the product and the
+    interpolated tile's do not (review M3 of 2026-11-22). "Lossless" is
+    lossless after the 16-bit requantisation the image codecs receive
+    (Appendix B-C), on both grids alike.
+    """
+    import update_paper_numbers as up
+    hpx, utm, scenes, _ = up.load(metric)
+
+    def best(df):
+        d = df[df.codec.astype(str).str.contains("lossless")]
+        return d.groupby("scene").total_bytes.min()
+
+    bh, bu = best(hpx), best(utm)
+    r = (bh / bu).dropna()
+    if not len(r):
+        return {}
+    return {"n": int(len(r)), "median": float(r.median()), "lo": float(r.min()),
+            "hi": float(r.max()),
+            "total": float(bh[r.index].sum() / bu[r.index].sum()),
+            "win_at_1": float((r < 1).mean()), "win_at_1.3": float((r < 1.3).mean()),
+            "win_at_2": float((r < 2).mean())}
+
+
 def table_synthesis():
     import gamma_analysis as ga
     df, gamma_utm, _ = ga.analyse("self")
@@ -134,6 +161,12 @@ def table_synthesis():
     agg = aggregate_ratio_gamma1()
 
     rows = []
+    ll = lossless_ratio_gamma1()
+    if ll:
+        rows.append(
+            f"lossless & {ll['n']} & {ll['median']:.2f} & {ll['total']:.2f} & -- & -- & "
+            f"{100*ll['win_at_1']:.0f} & {100*ll['win_at_1.3']:.0f} & "
+            f"{100*ll['win_at_2']:.0f} & -- & {ll['median']/gamma_utm:.2f} & -- & UTM \\\\")
     for _, r in df.iterrows():
         t = at_g.get(round(float(r.target), 12))
         if t is None:
@@ -172,7 +205,7 @@ def table_synthesis():
         "Target RMSE & $n$ & $\\gamma_\\star$ & Total & $f(e)$ &  "
         "HPX/sm. & "
         "$\\gamma{=}1$ & $\\gamma{=}1.3$ & $\\gamma{=}2$ & Inconclusive $\\gamma$ & "
-        "Ratio & $p_{\\mathrm{Holm}}$ & Verdict$^{*}$ \\\\\n\\midrule\n"
+        "Ratio & $p_{\\mathrm{Holm}}$ & Verdict \\\\\n\\midrule\n"
         + "\n".join(rows) + "\n\\bottomrule\n\\end{tabular}\n"
         + "\n".join(cfg.tex_note(
             "$^{*}$The verdict is within-representation: each grid is scored "

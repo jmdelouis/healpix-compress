@@ -42,7 +42,7 @@ orientation. In the UTM zone of a scene its axes run at about $45^\circ$
 to north (Fig.~\ref{fig:utm_crop_footprints}), so the row and column
 predictors of the codecs follow diagonals of the native raster. What
 that orientation costs or saves has not been measured
-(Section~\ref{sec:limitations}).
+(Appendix~\ref{app:limitations}).
 
 \subsection{Equal-Area Native UTM Comparison}
 \label{sec:utm_crop}
@@ -113,13 +113,13 @@ control, with a kernel width set to the HEALPix \emph{output} scale
 ($\sim\SI{6.2}{m}$) instead of the \SI{10}{m} \emph{input} spacing. It
 leaves no excess power in the top octave ($0.92$ of the observation's).
 It is, however, $2.0$ times less accurate than Clough--Tocher against an
-analytic field, and its output costs about twice the bytes at equal
-error (Section~\ref{sec:transfer_cost}). Kernels are compared with the
+analytic field, and its output costs $1.20$ to $2.15$ times the bytes
+at equal error (Section~\ref{sec:transfer_cost}). Kernels are compared with the
 approximation-order framework of~\cite{blu1999fourier} and the kernel
 comparison of~\cite{thevenaz2000interpolation}, by scoring each against
 an analytic field. Section~\ref{sec:transfer_cost} rebuilds the \term{carrier}
 with the PSF-aware and inverse-distance \term{transfers} and repeats the sweep
-on the 40 regions. Section~\ref{sec:support_controls} scores five
+on the 40 regions. The data deposit holds the same comparison for five
 kernels on the 40 regions, all of which pass the window audit of
 Appendix~\ref{app:window_radiometry}. The crossover reported
 below is a property of the \term{carrier} built with this \term{transfer}. The kernel
@@ -158,8 +158,8 @@ between versions during this work.
 
 \subsection{Codecs Compared}
 \label{sec:codecs}
-No custom or HEALPix-aware codec is used. We evaluate established,
-independently maintained codecs, so that any redundancy that survives
+No custom or HEALPix-aware codec is used. We evaluate four established,
+independently maintained codecs and one textbook baseline, so that any redundancy that survives
 compression can be exploited with tools a practitioner can already
 install. Learned codecs are absent by design. They have reshaped the
 rate--distortion frontier for natural images since~\cite{balle2017endtoend}
@@ -181,6 +181,10 @@ on both grids:
     \item \textbf{JPEG~XL}~\cite{alakuijala2019jpegxl}, lossy and lossless: a multiscale (\emph{Squeeze}) modular mode for lossless and near-lossless coding and a block-DCT (\emph{VarDCT}) mode for lossy coding;
     \item \textbf{DWT+Zstandard}: a textbook baseline, a multi-level 2-D wavelet transform~\cite{antonini1992wavelet} with uniform scalar quantisation, entropy-coded with Zstandard~\cite{rfc8878zstd}.
 \end{itemize}
+ZFP and SZ3 are called through \texttt{zfpy} and \texttt{pysz}, JPEG~2000
+and JPEG~XL through \texttt{imagecodecs} (OpenJPEG and libjxl), and the
+baseline through PyWavelets and \texttt{zstandard}; the versions are
+recorded with each sweep (Section~\ref{sec:reproducibility}).
 Each codec is swept over its own quality parameter to trace a full
 rate--distortion curve: tolerance for ZFP, absolute error bound for SZ3,
 quality/rate for JPEG~2000, distance/level for JPEG~XL, quantisation

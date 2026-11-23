@@ -120,12 +120,14 @@ spatial, temporal or spectral chunk is then one contiguous array, and
 its shape can follow the read pattern of the application: a time series
 at a point, a band stack over a region, or a global field at a coarse
 level.
-None of this has an equivalent in a stack of native products, each on
-its own projected grid, which a reader must assemble before it can use
-them. The gain measured here, a \term{carrier} that is competitive only at
-aggressive compression, is therefore a lower bound on what the grid can
-return. It prices the geometry alone and none of the coherence the grid
-was adopted for. That coherence is the next measurement. Gridded model
+Acquisitions of one Sentinel-2 tile already share a UTM grid, so for a
+single tile and sensor the native stack offers the same alignment in
+time. The difference appears across sensors, across UTM zones and in the
+overlaps of neighbouring tiles, where native products sit on different
+projected grids that a reader must reproject before it can combine
+them. The gain measured here, a \term{carrier} that is competitive only
+at aggressive compression, prices the geometry alone and none of that
+coherence. That coherence is the next measurement. Gridded model
 output is its natural first case. It is already a cell average, so
 there is no \term{transfer} error to charge. Its dominant redundancy is
 temporal. And it is global, where the equal-area cells and the locality
