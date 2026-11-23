@@ -256,8 +256,18 @@ python make_data_archive.py --tag tgrs-submission-v2 --zip \
 
 `--reuse` with the same URL builds a single self-contained archive instead.
 
-The paper cites the concept DOIs of both deposits, which resolve to their
-latest version.
+Version 3 (same-ground control and NDVI check, November 2026) is built
+the same way and replaces the version-2 update archive. It adds
+`results/same_domain*`, `results/ndvi_validation*` and `tiles_b08/`, the
+B08 tiles `ndvi_validation.py --fetch` wrote, which no earlier archive
+holds:
+
+```bash
+python make_data_archive.py --tag tgrs-submission-v3 --b08-tiles --zip \
+    --update-of "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
+```
+
+The paper cites the version DOIs of both deposits.
 
 Licences: results are CC-BY-4.0; the Sentinel-2 extracts are Copernicus
 Sentinel data under the Copernicus licence; the code is Apache-2.0.

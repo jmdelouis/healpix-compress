@@ -30,9 +30,9 @@ What it collects
 
 Usage
 -----
-    python make_data_archive.py --tag tgrs-submission-v2
-    python make_data_archive.py --tag tgrs-submission-v2 --tiles --zip
-    python make_data_archive.py --tag tgrs-submission-v2 --zip \
+    python make_data_archive.py --tag tgrs-submission-v3
+    python make_data_archive.py --tag tgrs-submission-v3 --tiles --b08-tiles --zip
+    python make_data_archive.py --tag tgrs-submission-v3 --b08-tiles --zip \
         --reuse "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
 
 --reuse copies tiles/ and windows/ byte for byte from an earlier archive
@@ -42,10 +42,11 @@ checked against that archive's own MANIFEST.csv.
 --update-of builds an UPDATE archive instead: regions.csv, results/,
 README.md and a MANIFEST.csv that also lists, with their SHA-256, the tiles
 and windows of the earlier archive, which stays in the deposit unchanged.
-Version 2 of the deposit was built that way, so that its 2 GB of tiles and
-windows did not move:
+Versions 2 and 3 of the deposit were built that way, so that its 2 GB of
+tiles and windows did not move. Version 3 adds the B08 tiles of the NDVI
+check (--b08-tiles, data/tiles_b08), which no earlier archive holds:
 
-    python make_data_archive.py --tag tgrs-submission-v2 --zip \
+    python make_data_archive.py --tag tgrs-submission-v3 --b08-tiles --zip \
         --update-of "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
 
 Writes dist/healpix-compress-data-<tag>/ and, with --zip, the same as a
@@ -124,6 +125,15 @@ FEEDS = {
                            "Section V-M)",
     "transfer_cost_digest.json": "tab:transfer, Section V-M",
     "compactability.csv": "tab:transfer, second block",
+    "same_domain*.csv": "the same-ground control: both grids restricted to "
+                        "the ground they share (tab:support_controls, "
+                        "Appendix B-A)",
+    "same_domain.json": "the same-ground control (tab:support_controls, "
+                        "Appendix B-A)",
+    "ndvi_validation*.csv": "NDVI from B04 and B08 at the targets "
+                            "(Section V-C)",
+    "ndvi_validation.json": "NDVI from B04 and B08 at the targets "
+                            "(Section V-C)",
     "kernel_ablation.csv": "the comparison of five kernels, cited by the "
                            "text and kept here (former third block of "
                            "tab:transfer)",
@@ -143,34 +153,52 @@ FEEDS = {
 # What changed since the previous version of the deposit, written into the
 # README. Empty for a first version.
 LAYOUT_REUSE = (
-    "Version 2 goes with the revised manuscript (healpix-compress tag "
-    "`tgrs-submission-v2`). `tiles/` and `windows/` are those of version 1, "
-    "byte for byte (their SHA-256 are unchanged in `MANIFEST.csv`).")
+    "Version 3 goes with the manuscript at healpix-compress tag "
+    "`tgrs-submission-v3`. `tiles/` and `windows/` are those of version 1, "
+    "byte for byte (their SHA-256 are unchanged in `MANIFEST.csv`); "
+    "`tiles_b08/` is new.")
 LAYOUT_UPDATE = (
-    "Version 2 goes with the revised manuscript (healpix-compress tag "
-    "`tgrs-submission-v2`) and holds two files. "
+    "Version 3 goes with the manuscript at healpix-compress tag "
+    "`tgrs-submission-v3` and holds two files. "
     "`healpix-compress-data-tgrs-submission.zip` is the version-1 archive, "
     "unchanged: its `tiles/` and `windows/` are still current. This update "
-    "archive, `healpix-compress-data-tgrs-submission-v2.zip`, carries "
-    "`regions.csv`, `results/`, this README and a `MANIFEST.csv` that "
-    "supersede those of the version-1 archive; the MANIFEST also lists the "
-    "tiles and windows, with the SHA-256 they have in the version-1 archive.")
+    "archive, `healpix-compress-data-tgrs-submission-v3.zip`, replaces the "
+    "update archive of version 2. It carries `regions.csv`, `results/`, this "
+    "README and a `MANIFEST.csv` that supersede those of the version-1 "
+    "archive, and `tiles_b08/`, new in this version; the MANIFEST also lists "
+    "the tiles and windows of the version-1 archive, with the SHA-256 they "
+    "have there.")
 CHANGES = [
     LAYOUT_REUSE,
-    "`results/level19_rd.json` gains a block `common_reference`: level 19 "
-    "against level 20 when both are scored against the observation. No other "
-    "value of the file changed.",
-    "`results/reader_rescore.csv` loses the rows of the PSF-aware chain, and "
-    "`tab:common_two_readers` its second block.",
-    "New: `results/psf_matched_floor.json`, the PSF-aware tiles of four "
-    "regions read through their own forward operator.",
-    "Withdrawn: `hpx_codec_bench__psf__psf.csv`, "
+    "New: `results/same_domain.csv`, `same_domain.json` and "
+    "`same_domain_sweeps.csv`, the same-ground control: both grids restricted "
+    "to the ground they share, filled outside it and scored on it "
+    "(`same_domain.py`).",
+    "New: `results/ndvi_validation.csv`, `ndvi_validation.json` and "
+    "`ndvi_validation_sweeps.csv`, NDVI from B04 and B08 at each target, and "
+    "`tiles_b08/`, the B08 carrier tiles and native crops they were computed "
+    "from. These are built from the same Sentinel-2 products and windows as "
+    "the B04 tiles, by the same transfer (`ndvi_validation.py`). The B08 "
+    "windows are not archived; `ndvi_validation.py --fetch` reads them again.",
+    "No results file of version 2 changed. Its own changes from version 1 "
+    "still hold and are repeated below.",
+    "(version 2) `results/level19_rd.json` gains a block `common_reference`: "
+    "level 19 against level 20 when both are scored against the observation.",
+    "(version 2) `results/reader_rescore.csv` loses the rows of the PSF-aware "
+    "chain, and `tab:common_two_readers` its second block.",
+    "(version 2) New: `results/psf_matched_floor.json`, the PSF-aware tiles "
+    "of four regions read through their own forward operator.",
+    "(version 2) Withdrawn: `hpx_codec_bench__psf__psf.csv`, "
     "`paper_numbers_common_psf_psf.*`, `common_reference_floor__psf__psf.csv` "
     "and the psf rows of `reader_floor.csv` were scored with a read whose "
     "Gaussian was half as wide as the transfer's (the reader passed the "
     "standard deviation where healpix-resample expects twice it). They stay "
     "in the deposit for the record and are marked so in `MANIFEST.csv`.",
 ]
+
+B08_FEEDS = ("the B08 carrier tile and native crop of the NDVI check "
+             "(Section V-C), same product, window and transfer as the B04 "
+             "tile of the same name")
 
 # The manuscript promises these by name. Building an archive without them
 # would publish a broken cross-reference.
@@ -285,6 +313,21 @@ def collect_tiles(dest: Path) -> list[Path]:
     target.mkdir(parents=True, exist_ok=True)
     copied = []
     for p in sorted(cfg.TILE_DIR.glob("*.npz")):
+        shutil.copy2(p, target / p.name)
+        copied.append(target / p.name)
+    return copied
+
+
+def collect_b08_tiles(dest: Path) -> list[Path]:
+    """The B08 tiles of ndvi_validation.py (data/tiles_b08), under tiles_b08/."""
+    src = cfg.DATA_DIR / "tiles_b08"
+    found = sorted(src.glob("*.npz"))
+    if not found:
+        raise SystemExit(f"{src} holds no tile; run ndvi_validation.py --fetch")
+    target = dest / "tiles_b08"
+    target.mkdir(parents=True, exist_ok=True)
+    copied = []
+    for p in found:
         shutil.copy2(p, target / p.name)
         copied.append(target / p.name)
     return copied
@@ -426,6 +469,10 @@ def readme(dest: Path, version: dict, counts: dict) -> str:
         lines.append(f"| `tiles/` | {counts['tiles']} | the stored level-20 "
                      "carrier tiles and their equal-area UTM crops, one "
                      "`.npz` per region |")
+    if counts.get("tiles_b08"):
+        lines.append(f"| `tiles_b08/` | {counts['tiles_b08']} | the B08 "
+                     "carrier tiles and native crops of the NDVI check, one "
+                     "`.npz` per region, same layout as `tiles/` |")
     if counts.get("windows"):
         lines.append(f"| `windows/` | {counts['windows']} | the native "
                      "Sentinel-2 windows each tile was built from, one zipped "
@@ -444,7 +491,8 @@ def readme(dest: Path, version: dict, counts: dict) -> str:
         "deposit: `update_paper_numbers.py` (the per-target tables), "
         "`merged_tables.py` (synthesis, floors, transfer), "
         "`gamma_analysis.py` (critical overhead), `reader_rescore.py` (the "
-        "common-reference readers), `level19_rd.py`, `alpha_budget.py`, "
+        "common-reference readers), `level19_rd.py`, `same_domain.py`, "
+        "`ndvi_validation.py`, `alpha_budget.py`, "
         "`cross_term.py` and `make_figures.py` (the figures). "
         "`check_paper_numbers.py` recomputes every value quoted in the text "
         "from these same files and fails if one of them no longer supports "
@@ -487,7 +535,8 @@ def zenodo_metadata(version: dict) -> dict:
             "manuscript: the rate-distortion sweeps of five general-purpose "
             "codecs on HEALPix level-20 carrier tiles and on area-matched "
             "native Sentinel-2 UTM crops, the critical-overhead analysis, the "
-            "support, transfer and reading-operator controls, and the "
+            "support, transfer and reading-operator controls, the same-ground "
+            "control, the NDVI check with its B08 tiles, and the "
             "per-region values of four tables the manuscript cites rather "
             "than printing (the region list, the reading-operator tests, the "
             "byte and type audit, and the window radiometry audit). "
@@ -506,9 +555,11 @@ def zenodo_metadata(version: dict) -> dict:
              "resource_type": "dataset"},
         ],
         "notes_for_the_author": [
-            "This is a NEW VERSION of record 10.5281/zenodo.23388572 (concept "
-            "10.5281/zenodo.23388571): open that record and click 'New "
-            "version', do not create a new upload.",
+            "This is a NEW VERSION of the data deposit (concept "
+            "10.5281/zenodo.23388571, version 2 = 10.5281/zenodo.24446516): "
+            "open the latest version and click 'New version', do not create "
+            "a new upload. Keep the version-1 archive, remove the version-2 "
+            "update archive and add this one.",
             "Keep the related identifiers of version 1 (isCompiledBy the code, "
             "isDerivedFrom the Copernicus Sentinel-2 products) and the ESA "
             "funding (contract 4000147951/25/I-NS); the code is cited by its "
@@ -520,9 +571,13 @@ def zenodo_metadata(version: dict) -> dict:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--tag", default="tgrs-submission-v2",
+    ap.add_argument("--tag", default="tgrs-submission-v3",
                     help="suffix of the archive directory (default: "
-                         "tgrs-submission-v2)")
+                         "tgrs-submission-v3)")
+    ap.add_argument("--b08-tiles", action="store_true",
+                    help="also archive data/tiles_b08, the B08 tiles of the "
+                         "NDVI check (new in version 3; allowed with "
+                         "--update-of and --reuse)")
     ap.add_argument("--reuse", default=None,
                     help="take tiles/ and windows/ from this earlier archive "
                          "(local .zip or URL), checked against its MANIFEST")
@@ -561,6 +616,10 @@ def main(argv=None) -> int:
         w = collect_windows(dest)
         counts["windows"] = len(w)
         files += w
+    if args.b08_tiles:
+        b = collect_b08_tiles(dest)
+        counts["tiles_b08"] = len(b)
+        files += b
     previous_rows = []
     if args.update_of:
         if args.tiles or args.windows or args.reuse:
@@ -592,7 +651,8 @@ def main(argv=None) -> int:
     for p in files:
         rows.append(dict(path=str(p.relative_to(dest)).replace("\\", "/"),
                          bytes=p.stat().st_size, sha256=sha256(p),
-                         feeds=feeds_for(p.name)))
+                         feeds=(B08_FEEDS if p.parent.name == "tiles_b08"
+                                else feeds_for(p.name))))
     rows += previous_rows
     man = pd.DataFrame(rows).sort_values("path")
     man.to_csv(dest / "MANIFEST.csv", index=False)
