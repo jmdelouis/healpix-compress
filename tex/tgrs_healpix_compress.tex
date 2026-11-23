@@ -83,7 +83,7 @@ whose \SI{12.4}{m} cells are coarser than the \SI{10}{m} product, and
 level 20, whose \SI{6.2}{m} cells hold $2.58$ times as many samples per
 unit area. We measure what the finer choice costs after
 compression. Level-20 tiles are reshaped into rasters and
-compared with native UTM squares of equal area at equal reconstruction
+compared with equal-area native UTM squares at equal reconstruction
 error, over 40 Sentinel-2 B04 regions and
 five general-purpose codecs. The result is the layout overhead a native
 product must carry, at each error, for the HEALPix copy to be
@@ -93,8 +93,8 @@ $10^{-2}$, an analytic field sampled on both lattices falls from $2.17$
 to $1.16$ times the native size: lossy coding removes most of the
 oversampling only at loose tolerances, and never all of it.
 The Clough--Tocher tile falls from $2.07$ to $0.93$ against its own
-native square, at an error that changes the NDVI class of $5$--$6\%$ of
-samples. The crossing is marginal: $0.97$ ($p=0.54$) on the ground both grids
+native square, at an error where coding alone changes the NDVI class
+of $5$--$6\%$ of samples. The crossing is marginal: $0.97$ ($p=0.54$) on the ground both grids
 share, $1.10$--$1.24$ against a native raster read through the same
 interpolant. A PSF-aware transfer costs $2.3$--$2.6$ times the native
 square at every tolerance. Scored against the native observation,

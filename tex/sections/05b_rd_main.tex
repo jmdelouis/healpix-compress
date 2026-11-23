@@ -27,7 +27,7 @@ $p^{\mathrm{Holm}}=0.034$, and the four tighter \term{targets} favour
 native UTM at $p^{\mathrm{Holm}}\le0.007$. The crossing is also
 sensitive to the test. These values are signed-rank tests on the log
 ratios; the same test on the ratios themselves gives $p=0.052$ at
-$10^{-2}$, and an exact sign test $p=0.050$ (22 regions of 32). It also depends on the
+$10^{-2}$, and an exact sign test $p=0.0501$ (22 regions of 32). It also depends on the
 \term{reference}. Here each grid is scored against its own raw raster. The
 Clough--Tocher \term{transfer} has already removed high-frequency noise that a
 codec would otherwise spend bits on, while the native side keeps that
@@ -35,8 +35,8 @@ noise. Section~\ref{sec:common_reference} charges the smoothing to the
 \term{carrier}, and the sign reverses. Section~\ref{sec:support_controls} reads
 the native side through the same interpolant instead, and the \term{carrier} is then
 $1.10$ to $1.24$ times the native raster at this \term{target}, depending on the phase.
-Restricted to the ground both grids share, it is $0.97$, indistinguishable
-from parity ($p=0.54$). A smaller confound runs
+Restricted to the ground both grids share, it is $0.97$, not significantly
+different from parity ($p=0.54$). A smaller confound runs
 the other way at the tight \term{targets}. The native product is distributed
 as integers and already sits on the coding lattice; the interpolated
 \term{carrier} does not, so it pays a quantisation the native side never pays
@@ -46,15 +46,19 @@ ratio, $3.42$, exceeds the raw $2.58$.
 What $10^{-2}$ means in use was measured with NDVI, from B08 read from
 the same products and windows as B04 and carried by the same
 \term{transfer}. On each grid both bands take, at each \term{target}, the
-smallest file of any codec that meets it, and NDVI from the decoded
-bands is compared with NDVI from the uncompressed ones. At
+smallest file of any codec that meets it (at $10^{-2}$, a band RMSE of
+$8.7$--$9.0\times10^{-3}$ in median), and NDVI from the decoded bands is
+compared with NDVI from the uncompressed bands of the same grid, where
+B04 + B08 exceeds $0.02$. This measures what coding adds, not the
+\term{transfer} error; figures are medians over regions. At
 $10^{-2}$, over the 32 regions, its RMSE is $0.05$ in median on both
 grids and $5$--$6\%$ of the samples change class (classes split at $0.2$
 and $0.5$); at $10^{-3}$ the figures are $0.006$ and $0.5\%$. At equal
 band error the two grids give the same NDVI error to within $6\%$, and
 B08 coded alone crosses at the same \term{target} ($0.93$ over 34
-regions). The crossing therefore lies in a regime for browsing and coarse
-mapping rather than for quantitative use of the index.
+regions). For these classes and data, the crossing therefore lies in a regime
+suited to browsing and coarse mapping rather than to quantitative use of
+the index.
 
 Writing this gap as
 $\gamma_\star(e)=S_{\mathrm{HPX}}(e)/S_{\mathrm{UTM,crop}}(e)$ is an
@@ -72,8 +76,8 @@ Fig.~\ref{fig:verdict_vs_gamma} extends below $1$: there the \term{carrier}
 carries the heavier container, and at the two loosest \term{targets} $27\%$ and $69\%$
 of the regions already have their \term{critical overhead} in that range.
 Two components of $\gamma$ are known. The container format is measured
-in bytes and accounts for at most half a percent of the raw size on
-either side, though up to a tenth of the smallest compressed files
+in bytes and accounts for about half a percent of the raw size on
+either side, and for about a tenth of a file at the $2\%$ budget
 (Appendix~\ref{app:container}). The $21\%$ of sample area that the
 Sentinel-2 tiling duplicates is known as a geometry
 (Section~\ref{sec:overhead}). Padding and per-granule metadata depend on

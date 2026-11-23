@@ -494,7 +494,7 @@ def external_review_checks():
             out.append((f"crossing at the loosest target, signed-rank on the ratios {w}",
                         f"$p={g['p_linear']:.3f}$", "paper_numbers_self test_gamma1.p_linear"))
             out.append((f"crossing at the loosest target, exact sign test {w}",
-                        f"$p={g['p_sign']:.3f}$ ({g['n'] - g['n_above_one']} regions of {g['n']})",
+                        f"$p={g['p_sign']:.4f}$ ({g['n'] - g['n_above_one']} regions of {g['n']})",
                         "test_gamma1.p_sign"))
 
     # --- how far below the uncompressed chain a sweep point went -------------
@@ -632,6 +632,11 @@ def ndvi_checks():
     dev = max(abs(r["hpx_over_utm_ndvi_rmse_full"]["median"] - 1) for r in d["rows"])
     out.append((f"NDVI error, HEALPix against native at equal band error {w}",
                 f"same NDVI error to within ${math.ceil(100 * dev):.0f}\\%$", f"{100 * dev:.1f}%"))
+    ach = [r2[k][1] for k in ("utm_rmse_b04", "utm_rmse_b08", "hpx_rmse_b04", "hpx_rmse_b08")]
+    out.append((f"NDVI check: band RMSE achieved at the loosest target, range of medians {w}",
+                f"${1e3 * min(ach):.1f}$--${1e3 * max(ach):.1f}\\times10^{{-3}}$", ""))
+    out.append((f"NDVI check: samples kept where B04 + B08 exceeds {w}",
+                f"B04 + B08 exceeds ${d['valid_sum']:g}$", "ndvi_validation.VALID_SUM"))
     b8 = r2["size_ratio_b08"]
     out.append((f"B08 size ratio at the loosest target {w}",
                 f"(${b8['median']:.2f}$ over {b8['n']}", f"p = {b8['p']:.3f}"))
