@@ -195,13 +195,12 @@ region whose contrast permits it: ZFP tolerance up to $3$, SZ3 error
 bound up to $1$, JPEG~2000 compression ratio up to $4000$, JPEG~XL down
 to its coarsest quality level and largest Butteraugli distance,
 DWT+Zstandard down to two quantisation bits. This gives 71 operating
-points per region and grid. Sweeping the parameter bypasses each codec's
-rate control on purpose; in JPEG~2000 that means the quality layers and
-the post-compression optimisation that fills them, a research subject in
-itself~\cite{auli2008scalability}. A rate controller targets a budget,
-while this comparison needs an \emph{achieved} error or size on both
-grids, so the matching is done afterwards
-(Section~\ref{sec:rd_protocol}).
+points per region and grid. No codec is asked for a \term{target} directly. Each is run at its own
+settings; for JPEG~2000 these are single quality layers at requested
+compression ratios, which the codec's own rate
+allocation~\cite{auli2008scalability} fills. The comparison needs an
+\emph{achieved} error or size on both grids, so the matching is done
+afterwards (Section~\ref{sec:rd_protocol}).
 
 \subsection{Codec Preference Is Empirical}
 \label{sec:why_quadtree}

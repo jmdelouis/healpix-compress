@@ -17,8 +17,9 @@ also the \term{critical overhead} $\gamma_\star$
 same \term{carrier} against a native raster read through the
 \term{carrier}'s interpolant at half a pixel, its strongest smoothing
 (HPX/sm., Section~\ref{sec:support_controls}); and the verdict over a
-range of overheads and at the illustrative $30\%$. The first row is the
-smallest lossless file of each grid. $n$ counts the regions whose
+range of overheads and at the illustrative $30\%$. The first row is the smallest lossless file of each grid, lossless
+after the 16-bit requantisation the image codecs receive
+(Appendix~\ref{app:codec_audit}). $n$ counts the regions whose
 sweeps bracket the \term{target} on both grids. Each grid is scored
 against its own uncompressed raster; Section~\ref{sec:common_reference}
 scores both against the observation. Under an overhead $\gamma$ on the
@@ -45,8 +46,8 @@ through the same interpolant at half a pixel.}
 
 Three things follow. First, with the same content on both sides, lossy
 coding removes part of the oversampling at tight tolerances and most of
-it at loose ones, never all. Coded losslessly, the tile is $3.42$ times
-the square in median ($2.17$ to $6.92$ over the 40 regions): more than
+it at loose ones, never all. Coded losslessly after that requantisation, which leaves an RMSE near
+$6\times10^{-6}$ on both grids, the tile is $3.42$ times the square in median ($2.17$ to $6.92$ over the 40 regions): more than
 the raw $2.58$, because the native values sit on the integer lattice of
 the product and the interpolated ones do not. An analytic field sampled
 on both lattices, where neither side is resampled, gives $2.17$ at

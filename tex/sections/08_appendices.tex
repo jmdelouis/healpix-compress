@@ -21,8 +21,9 @@ expected to be much smaller than the factor of~\eqref{eq:alpha}. The
 native product shows only part of that octave. A median of $0.21\%$ of
 each scene's variance lies above half the native Nyquist
 (Section~\ref{sec:support_controls}), while the octave level~20 adds
-over level~19 lies mostly above the native Nyquist. On the \term{carrier} that
-octave holds $3.47\%$ of the tile's variance
+over level~19 lies mostly above the native Nyquist. On the \term{carrier}, the detail that level 20 adds
+(the Haar coefficients of its finest level, which are not confined to
+that octave) holds $3.47\%$ of the tile's variance
 (Section~\ref{sec:level_choice}), two orders of magnitude more than a
 spectral extrapolation of the $0.21\%$ suggests.
 
@@ -50,7 +51,12 @@ the cell identifiers of a contiguous NESTED block are implicit. A
 single-tile deflate Cloud-Optimized GeoTIFF~\cite{ogc_cog2023} of the
 \term{equal-area crop} costs \SI{8461}{\byte} of header, tag directory and
 near-empty payload, $0.52\%$ of its raw size. Container format therefore
-accounts for at most half a percent on either side; a major remaining
+accounts for at most half a percent of the raw size on either side.
+Against compressed files it weighs more: at the $2\%$ budget, the
+GeoTIFF container is $10\%$ of the file and the Zarr metadata $0.9\%$.
+The sizes compared in this paper are those of the codec streams, without
+container, so at loose targets a fixed container cost would move
+the ratio towards the lighter container. A major remaining
 contribution to a layout overhead is granule geometry, whose sample-area
 effect Section~\ref{sec:overhead} constrains.
 
@@ -185,12 +191,12 @@ Three measurements re-run a \term{transfer} from the native window, which
 must therefore still be the product its tile came from. Each stored tile
 is compared with its own window sampled at the tile's cell centres by
 nearest pixel. The difference between the two samplings is additive noise
-on the regressor, which attenuates the regression slope by exactly the
-squared correlation, so $\mathrm{slope}/\mathrm{corr}^2$ is one whatever
+on the regressor. If that noise is uncorrelated with the signal, it
+attenuates the regression slope by exactly the squared correlation, so $\mathrm{slope}/\mathrm{corr}^2$ is one whatever
 the noise and the contrast, while a different acquisition carries a gain
 and an offset of its own. Across the 40 regions the ratio has median
 $1.0032$, all in $[0.982, 1.011]$, over correlations from $0.910$ to
-$0.999$. A second, exact test confirms it: each tile's file holds the
+$0.999$. A second test, exact and free of that assumption, carries the argument: each tile's file holds the
 equal-area \term{UTM crop} written in the same call, which must agree to
 the bit with the window's pixels over the same ground, and all 198 stored
 tiles do. The crop box is recomputed from the tile's centroid, which
@@ -344,8 +350,8 @@ $\kappa$ within a factor of $1.5$; the grouped values are in the data
 deposit. The sign depends on the \term{reference}. Against the
 \emph{observed} field, $\rho$ is negative and reaches $-0.33$ at
 $\kappa=1$: the \term{transfer} error is dominated by the sensor noise the
-\term{transfer} carried (what takes Clough--Tocher from $0.8$--$1.5\%$ of
-a scene's standard deviation without noise to $5.0$--$11.0\%$ with it),
+\term{transfer} carried (what takes Clough--Tocher from $3.9$--$10.3\%$ of
+a scene's standard deviation without noise to $7.5$--$14.8\%$ with it),
 and a lossy coder discards part of that noise. Quadrature then
 \emph{overstates} the damage, by $11$ percentage points at $\kappa=0.5$
 and $24$ at $\kappa=1$. Against the \emph{latent} scene $\rho$ rises to
@@ -376,12 +382,12 @@ general.
     \item \textbf{The byte and type audit covers two regions.} Over 424 points it found no gap between reported and on-disk sizes and no disagreement with an independent decoder; it tests the adapters, which do not vary by region. The image codecs' eight-byte scale-and-offset sidecar is not charged to their sizes, and the DWT baseline charges four bytes for a scale it never writes;
     \item \textbf{The footprint mismatch is constrained, not bounded in the strict sense}: the three controls that address it run on 40 regions each, so they suggest that the mismatch is unlikely to explain the main trend rather than bounding it mathematically, and they do not isolate what it contributes to the crossover at $10^{-2}$. The intersection fractions come from the convex hull of the cell centres, and geodesic areas have not been computed. The tile's raster axes run at about $45^\circ$ to the native ones, and what that orientation costs row-and-column codecs is not measured;
     \item \textbf{Codecs are swept over their own quality parameter}, so residual convention effects cannot be excluded;
-    \item \textbf{Single band, single sensor, one epoch.} Only Sentinel-2 B04 at \SI{10}{m} is evaluated, with no derived product: how the measured errors propagate into an index such as NDVI needs B08 and a common mask, and lossy compression is documented to change downstream land-cover classification at ratios inside the range studied here~\cite{zabala2011lossy}. Gridded model output is a different problem: it is already a cell average, so there is no \term{transfer} error to charge; its dominant redundancy is temporal, which none of the codecs favoured here exploits; its HEALPix level is a free design parameter; and conservation adds a constraint an RMSE budget does not enforce;
+    \item \textbf{Single band, single sensor, one epoch.} Only Sentinel-2 B04 at \SI{10}{m} is evaluated, with no derived product: how the measured errors propagate into an index such as NDVI needs B08 and a common mask, and lossy compression is documented to change downstream land-cover classification at ratios inside the range studied here~\cite{zabala2011lossy}. Gridded model output is a different problem: it is already a cell average, so there is no instrument response to model, though remapping from the model's own grid has an error of its own; its dominant redundancy is temporal, which none of the codecs favoured here exploits; its HEALPix level is a free design parameter; and conservation adds a constraint an RMSE budget does not enforce;
     \item \textbf{The HEALPix side uses a deliberately simple resampling.} Clough--Tocher is PSF-agnostic; the PSF-aware resampler of the companion study~\cite{delouis2026resample} places more high-frequency detail in the \term{carrier}, so the HEALPix-side ratios here are those of a tile that holds no more than the product; a PSF-aware tile holds more and costs more (Section~\ref{sec:transfer_cost}). Low power in the observed field bounds nothing about the latent one: the fitted spectra put $2.3\%$ (forest) to $31.1\%$ (urban) of the latent variance above the native Nyquist (Appendix~\ref{app:error_budget});
     \item \textbf{Forty regions, one tile each.} Independent replicate tiles within a region would be needed to separate scene-to-scene from tile-to-tile variability. The image codecs receive a 16-bit requantization with an RMSE floor of $5.7\times10^{-6}$ in median, so the reported lossless points are bit-identical after that step only;
     \item \textbf{Ratios over near-constant scenes are fragile.} Over deep water at the loosest \term{targets}, compressed files fall below \SI{10}{kB} and individual ratios range from $0.07$ to $6.1$, though the class medians behave like the others;
     \item \textbf{Learned compression is not evaluated.} Comparing two grids with a neural codec~\cite{balle2017endtoend,valsesia2019onboard} needs models trained symmetrically on both, a study of its own;
-    \item \textbf{Codec choice was evaluated on compression efficiency alone.} JPEG~2000 and JPEG~XL support partial, range-based reads of a chunk, ZFP at the block level, SZ3 and the DWT baseline neither; where partial access is required, the strongest compressor may be the wrong choice;
+    \item \textbf{Codec choice was evaluated on compression efficiency alone.} JPEG~2000 and JPEG~XL support partial, range-based reads of a chunk, ZFP at the block level in its fixed-rate mode only (the fixed-accuracy mode swept here writes blocks of variable size and would need an index), SZ3 and the DWT baseline neither; where partial access is required, the strongest compressor may be the wrong choice;
     \item \textbf{Global-sphere behaviour is not measured} (Section~\ref{sec:grid_property});
     \item \textbf{The large-scale trial is reported, not reproduced.} Appendix~\ref{app:large_scale_trial} comes from one run of a conversion chain under development, on an object store; its scripts and notebook are in the repository, its inputs are outside the data deposit and its figures outside the checker. Its \term{size ratios} set a lossy HEALPix product against lossless UTM products, so they are not \term{matched-error} ratios, and its stores hold levels 20, 19 and 17 without the derived levels of a multiresolution pyramid.
 \end{itemize}

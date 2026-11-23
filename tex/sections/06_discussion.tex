@@ -129,7 +129,9 @@ them. The gain measured here, a \term{carrier} that is competitive only
 at aggressive compression, prices the geometry alone and none of that
 coherence. That coherence is the next measurement. Gridded model
 output is its natural first case. It is already a cell average, so
-there is no \term{transfer} error to charge. Its dominant redundancy is
+there is no instrument response to model; a model that runs on another
+grid must still be remapped, with an error that conserving the integral
+does not remove. Its dominant redundancy is
 temporal. And it is global, where the equal-area cells and the locality
 of the nested index matter most.
 

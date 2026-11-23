@@ -24,8 +24,11 @@ the native pixels of the intersection with the nearest \term{read}. It is
 $4.0\times10^{-3}$ in median, about $10\%$ of the standard deviation of
 the scene. It rises to $7.9\times10^{-3}$ over urban scenes and falls to
 $8.1\times10^{-4}$ over water, following the high-frequency content as a
-\term{transfer} step should. No codec setting on the HEALPix side can go below
-it. The \term{read} alone accounts for an error of that size
+\term{transfer} step should. In the sweeps no codec setting on the HEALPix side
+went more than $0.4\%$ below it under either \term{read}; it is the
+error of the uncompressed chain, not a bound, since a coding error that
+partly cancels the \term{transfer} error could go lower
+(Appendix~\ref{app:cross_term}). The \term{read} alone accounts for an error of that size
 (Section~\ref{sec:operator}), so the floor is an upper bound on what
 the representation costs.
 

@@ -14,7 +14,7 @@ fitted slope and response width, about $0.03\\%$ above the level-19 Nyquist --
 from which one would conclude that level 19 discards three parts in ten
 thousand. It discards $3.07\\%$, a hundred times more. Aggregation is not a
 brick wall at the coarser Nyquist: the residual of a $2\\times2$ mean has
-response $1-\\cos^2(k_xd/2)\\cos^2(k_yd/2)$, which grows like $(kd)^4$ and so
+response $1-\\cos^2(k_xd/2)\\cos^2(k_yd/2)$, which grows like $(kd)^2$ and so
 feeds mainly on the shoulder *below* the native Nyquist. Variance above a
 Nyquist is not the error of sampling below it.
 
@@ -135,7 +135,7 @@ def summarize(df):
                 f"{100*one.discarded_var_frac.median():.4f}% of the tile's "
                 f"variance. This is *not* the power above the level-19 "
                 f"Nyquist: a $2\\times2$ mean is a high-pass whose response "
-                f"$1-\\cos^2(k_xd/2)\\cos^2(k_yd/2)$ grows like $(kd)^4$, so "
+                f"$1-\\cos^2(k_xd/2)\\cos^2(k_yd/2)$ grows like $(kd)^2$, so "
                 f"it feeds mainly on the shoulder below the native Nyquist",
                 f"- raw storage: level 20 is {top.raw_ratio.iloc[0]:.3f} of the "
                 f"equal-area UTM crop, level 19 is {one.raw_ratio.iloc[0]:.3f}",

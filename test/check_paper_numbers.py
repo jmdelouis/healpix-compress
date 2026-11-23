@@ -211,6 +211,7 @@ def checks(tex: str):
     out += level19_common_checks()
     out += psf_matched_floor_checks()
     out += review_v2_checks()
+    out += external_review_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     # Revision 7: the PSF-aware carrier is no longer scored against the
@@ -464,6 +465,63 @@ def review_v2_checks():
     if "water" in rec:
         out.append(("noiseless psf recovery over water [in sections/08_appendices.tex]",
                     f"${rec['water']}\\%$ over water", "table_resampling_error"))
+    return out
+
+
+def external_review_checks():
+    """Figures added after the external review of 2026-11-23.
+
+    The crossing at 1e-2 under three paired tests (Section V-C), how far a
+    sweep point went below the uncompressed chain's error (Section V-G), and
+    the container bytes as a share of a compressed file (Appendix A-C).
+    """
+    out = []
+    doc = load("self")
+    rm = sorted((t for t in doc["targets"] if t["kind"] == "rmse"),
+                key=lambda t: float(t["target"]))
+    if rm:
+        g = rm[-1]["test_gamma1"]
+        w = "[in sections/05b_rd_main.tex]"
+        if "p_linear" in g and "p_sign" in g:
+            out.append((f"crossing at the loosest target, signed-rank on the ratios {w}",
+                        f"$p={g['p_linear']:.3f}$", "paper_numbers_self test_gamma1.p_linear"))
+            out.append((f"crossing at the loosest target, exact sign test {w}",
+                        f"$p={g['p_sign']:.3f}$ ({g['n'] - g['n_above_one']} regions of {g['n']})",
+                        "test_gamma1.p_sign"))
+
+    # --- how far below the uncompressed chain a sweep point went -------------
+    worst = None
+    for name in ("hpx_codec_bench.csv", "hpx_codec_bench__bilinear.csv"):
+        h = _csv(name)
+        if h is None or "rmse_common" not in h:
+            continue
+        fl = h[h.codec == "uncompressed"].set_index("scene").rmse_common
+        x = h[h.codec != "uncompressed"].dropna(subset=["rmse_common"]).copy()
+        x["floor"] = x.scene.map(fl)
+        x = x.dropna(subset=["floor"])
+        if len(x):
+            r = float((x.rmse_common / x.floor).min())
+            worst = r if worst is None else min(worst, r)
+    if worst is not None:
+        below = max(0.0, 100 * (1 - worst))
+        out.append(("largest drop of a sweep point below the uncompressed chain "
+                    "[in sections/05i_common_reference.tex]",
+                    f"${math.ceil(below * 10) / 10:.1f}\\%$ below", f"{below:.2f}% under either read"))
+
+    # --- container bytes against a compressed file (Appendix A-C) --------------
+    # The two byte counts are those the appendix quotes (gamma_analysis.py
+    # --containers measured them); the shares must follow from them.
+    zarr_b, cog_b = 737, 8461
+    budget = min(cfg.BUDGETS) * cfg.SHARED_RAW
+    w = "[in sections/08_appendices.tex]"
+    out += [
+        (f"Zarr metadata bytes {w}", f"\\SI{{{zarr_b}}}{{\\byte}}", ""),
+        (f"GeoTIFF container bytes {w}", f"\\SI{{{cog_b}}}{{\\byte}}", ""),
+        (f"GeoTIFF container, share of the tightest budget {w}",
+         f"${100 * cog_b / budget:.0f}\\%$ of the file", f"{budget:.0f} B"),
+        (f"Zarr metadata, share of the tightest budget {w}",
+         f"${100 * zarr_b / budget:.1f}\\%$", ""),
+    ]
     return out
 
 

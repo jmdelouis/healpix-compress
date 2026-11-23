@@ -11,7 +11,7 @@ $2.584\times$ relative to the native \SI{10}{m} raster, which $30\%$ of
 native-layout overhead reduces to $1.99\times$.
 
 \emph{Compression.} Lossy coding removes part of that penalty at tight
-tolerances and most of it at loose ones; lossless coding removes none,
+tolerances and most of it at loose ones; lossless coding, after 16-bit requantisation, removes none,
 and the tile then takes $3.42$ times the native bytes. With the same
 content on both sides, an analytic field sampled on both lattices costs
 $2.17$ to $1.16$ times the native size as the tolerated RMSE grows from
@@ -58,5 +58,5 @@ to another design: keep the native pixels, whose halo around a tile adds
 about $2\%$ rather than $30\%$, and run the \term{transfer} at read time
 (Section~\ref{sec:grid_property}). The larger gain lies beyond this
 framework. A shared grid puts every date, band and sensor on the same
-cells; coding that coherence, first on global model output where no
-\term{transfer} error enters, starts from the floor measured here.
+cells; coding that coherence, first on global model output, where no
+instrument response enters, starts from the floor measured here.

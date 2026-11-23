@@ -24,7 +24,10 @@ above parity). The advantage is small and statistically marginal: the
 confidence interval stops just short of parity. Corrected over the five
 \term{targets} of this $\gamma=1$ family, it stays at
 $p^{\mathrm{Holm}}=0.034$, and the four tighter \term{targets} favour
-native UTM at $p^{\mathrm{Holm}}\le0.007$. It also depends on the
+native UTM at $p^{\mathrm{Holm}}\le0.007$. The crossing is also
+sensitive to the test. These values are signed-rank tests on the log
+ratios; the same test on the ratios themselves gives $p=0.052$ at
+$10^{-2}$, and an exact sign test $p=0.050$ (22 regions of 32). It also depends on the
 \term{reference}. Here each grid is scored against its own raw raster. The
 Clough--Tocher \term{transfer} has already removed high-frequency noise that a
 codec would otherwise spend bits on, while the native side keeps that
@@ -54,7 +57,8 @@ Fig.~\ref{fig:verdict_vs_gamma} extends below $1$: there the \term{carrier}
 carries the heavier container, and at the two loosest \term{targets} $27\%$ and $69\%$
 of the regions already have their \term{critical overhead} in that range.
 Two components of $\gamma$ are known. The container format is measured
-in bytes and accounts for at most half a percent on either side
+in bytes and accounts for at most half a percent of the raw size on
+either side, though up to a tenth of the smallest compressed files
 (Appendix~\ref{app:container}). The $21\%$ of sample area that the
 Sentinel-2 tiling duplicates is known as a geometry
 (Section~\ref{sec:overhead}). Padding and per-granule metadata depend on

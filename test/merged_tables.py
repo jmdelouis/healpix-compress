@@ -164,7 +164,7 @@ def table_synthesis():
     ll = lossless_ratio_gamma1()
     if ll:
         rows.append(
-            f"lossless & {ll['n']} & {ll['median']:.2f} & {ll['total']:.2f} & -- & -- & "
+            f"lossless (16 bit) & {ll['n']} & {ll['median']:.2f} & {ll['total']:.2f} & -- & -- & "
             f"{100*ll['win_at_1']:.0f} & {100*ll['win_at_1.3']:.0f} & "
             f"{100*ll['win_at_2']:.0f} & -- & {ll['median']/gamma_utm:.2f} & -- & UTM \\\\")
     for _, r in df.iterrows():
