@@ -463,5 +463,5 @@ For `tgrs-submission-v3` (same-ground control, NDVI check, condensed text, Novem
 - [x] `check_paper_numbers.py` passes (417 figures) and `pdflatex` reports no undefined reference and no overfull box (23 pages)
 - [x] `\repourl` points to `tgrs-submission-v3` and `\datadoi` is the version-3 DOI of the data (10.5281/zenodo.24468024)
 - [x] the update archive (`--update-of`) is built and replaces the version-2 update archive in the new version of the data deposit; the B08 tiles are not archived
-- [ ] the data deposit is published as 10.5281/zenodo.24468024
-- [ ] the GitHub release of `tgrs-submission-v3` has created the new version of the code deposit, and `\codedoi` cites it
+- [x] the data deposit is published as 10.5281/zenodo.24468024 (update archive: 5,706,105 bytes, MD5 `4870bedd68761c8e757013b178f9cca2`, SHA-256 `de30909b7d8c0d22aef06eaf2a44ef41ca5707fd0f889709ec96c09cf7e71ea4`, built at f340b0d)
+- [x] the GitHub release of `tgrs-submission-v3` (f340b0d) has created the new version of the code deposit, 10.5281/zenodo.24468735, and `\codedoi` cites it

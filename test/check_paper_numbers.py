@@ -1279,9 +1279,9 @@ def deposit_link_checks():
          "\\newcommand{\\repourl}{\\url{https://github.com/jmdelouis/healpix-compress/tree/tgrs-submission-v3}}",
          "the tag make_data_archive.py was run at"),
         (f"code archive DOI {where}",
-         "\\newcommand{\\codedoi}{\\url{https://doi.org/10.5281/zenodo.23812788}}",
-         "concept DOI of the code deposit until the release of tgrs-submission-v3 "
-         "gives the version-3 DOI (version 1 23812789, version 2 24458417)"),
+         "\\newcommand{\\codedoi}{\\url{https://doi.org/10.5281/zenodo.24468735}}",
+         "version 3 of the code deposit, 23 Nov 2026 (concept 23812788, "
+         "version 1 23812789, version 2 24458417)"),
         (f"data deposit DOI {where}",
          "\\newcommand{\\datadoi}{\\url{https://doi.org/10.5281/zenodo.24468024}}",
          "version 3 of the data deposit, 23 Nov 2026 (concept 23388571, "
