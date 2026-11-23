@@ -311,7 +311,11 @@ The controls (Section V-E, Appendix):
 python support_controls.py --control synthetic --fitted --transfer clough_tocher   # analytic field at the fitted slope and response (beta = 1.9), direct and through the paper's transfer
 python support_controls.py --control smoothed                         # smoothed-native control at half a pixel (default --smooth-shift 0.5 0.5)
 python support_controls.py --control smoothed --smooth-shift 0.25 0.25    # at a quarter of a pixel
-python support_controls.py --control common shift                     # common-support and shifted-crop controls, all regions
+python support_controls.py --control common shift                     # common-support (superseded, see below) and shifted-crop controls, all regions
+python same_domain.py --workers 12                                    # same-ground control: both grids restricted to the shared ground, filled outside it (row of Table VII, Appendix B)
+python ndvi_validation.py --fetch --workers 6                         # B08 windows from the B04 products (network), B08 Clough--Tocher tiles in data/tiles_b08
+python ndvi_validation.py --run --workers 12                          # NDVI error and class changes at each target, B08 size ratios (Section V-C)
+python support_controls.py --tables-only                              # Table VII (tab:support_controls), with the same-ground row in place of the common-support one
 python block_size_bias.py --limit 0                                   # 512^2 / 637^2 / 1024^2 per-pixel cost
 python granule_overhead.py                                            # the tiling overhead from the published MGRS geometry
 python censoring_sensitivity.py                                       # share of censored (bound) observations per target

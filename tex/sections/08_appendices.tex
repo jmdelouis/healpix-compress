@@ -63,22 +63,22 @@ effect Section~\ref{sec:overhead} constrains.
 \section{Supplementary Controls}
 \label{app:controls}
 
-\subsection{Common-Support and Shifted-Crop Controls}
+\subsection{Same-Ground and Shifted-Crop Controls}
 \label{app:support}
-Each grid is restricted to the largest block of its own lattice whose
-ground lies inside the intersection, an axis-aligned pixel rectangle on
-the UTM side and a Morton-aligned cell block on the HEALPix side, and
-sizes are normalised by the ground area each covers. Over 40 regions
-this gives ratios of $2.10$, $1.97$, $1.62$, $1.57$, $1.49$ bytes per
-square kilometre, against $2.07$, $1.95$, $1.58$, $1.23$ and $0.93$ over
-the full footprints (Table~\ref{tab:support_controls}): close at the
-three tightest \term{targets}, drifting at the two loosest. Morton
-alignment is restrictive, so the HEALPix block is $256\times256$ cells
-(\SI{2.5}{\kilo\metre\squared}) against a native rectangle of
-\SIrange{10.0}{20.1}{\kilo\metre\squared} (median
-\SI{19.7}{\kilo\metre\squared}); where files fall to a few kilobytes the
-fixed container cost weighs more on the smaller raster, so this control
-is biased against HEALPix at the loose end. Re-cutting the \term{UTM crop}
+Both grids are restricted to the ground they share: the native pixels
+whose centre lies in the tile and the cells whose centre lies in the
+crop, $74$--$83\%$ of each raster. Outside it each raster is replaced by
+the harmonic extension of its own values on the boundary, so the codecs
+see rasters of the main comparison's shape, and the error is measured on
+the shared ground only. The same ladders on the unmodified rasters
+reproduce the per-region ratios of the main comparison to within
+$5\%$. Against them, the same-ground ratio moves by $-0.6\%$ to $+2.1\%$
+in median over the five \term{targets}. A constant fill, which leaves a step
+along the boundary, changes no median by more than $0.01$, and scoring
+the unmodified rasters on the shared ground alone moves the ratio by at
+most $0.7\%$ in median. At $10^{-2}$ the same-ground median is $0.97$
+over 32 regions ($95\%$ confidence interval $0.93$--$1.01$, $p=0.54$,
+21 below parity), against $0.93$ over the full footprints. Over 40 regions, re-cutting the \term{UTM crop}
 at eight offsets of up to 16 native pixels, with the HEALPix side fixed,
 changes each region's content by about as much as the footprint mismatch
 does. The median spread of the ratio across the nine crops is $0.012$ at
@@ -380,9 +380,9 @@ general.
     \item \textbf{The super-resolution surcharge is measured; the recovery it buys is reproduced only without noise.} The deconvolved \term{carrier} costs $1.26$ to $2.45$ times the Clough--Tocher one, and the PSF/IDW differential of $3$--$14\%$ suggests that deconvolution alone is unlikely to account for that surcharge; because the two \term{transfers} are not matched in smoothness or interpolation class, the differential does not isolate or bound the deconvolution contribution. In our synthetic harness the PSF-aware reconstruction recovers the companion's $15.4\%$ to $19.6\%$ of the blur on the regions whose fitted response width is at or above \SI{11}{m}, loses on the narrower ones, and keeps little of it once noise is added at the level measured on the imagery (Appendix~\ref{app:error_budget}). The companion's square detector aperture and image textures are not modelled here. The storage price is reportable; the quality it buys on real tiles is established only by the companion study. Surcharge and recovery are both measured at $\lambda=10^{-3}$; the conversion chain of the trial uses $\lambda=0.1$ (Appendix~\ref{app:large_scale_trial}), at which neither has been measured;
     \item \textbf{The oracle-best-codec comparison is an envelope, and the crossover is codec-dependent.} Four of the five codecs held fixed on both grids reproduce the regime-dependent pattern; ZFP does not (Section~\ref{sec:same_codec});
     \item \textbf{The byte and type audit covers two regions.} Over 424 points it found no gap between reported and on-disk sizes and no disagreement with an independent decoder; it tests the adapters, which do not vary by region. The image codecs' eight-byte scale-and-offset sidecar is not charged to their sizes, and the DWT baseline charges four bytes for a scale it never writes;
-    \item \textbf{The footprint mismatch is constrained, not bounded in the strict sense}: the three controls that address it run on 40 regions each, so they suggest that the mismatch is unlikely to explain the main trend rather than bounding it mathematically, and they do not isolate what it contributes to the crossover at $10^{-2}$. The intersection fractions come from the convex hull of the cell centres, and geodesic areas have not been computed. The tile's raster axes run at about $45^\circ$ to the native ones, and what that orientation costs row-and-column codecs is not measured;
+    \item \textbf{The footprint mismatch is controlled, not bounded in the strict sense}: on the ground both grids share, over 40 regions, the ratio moves by $-0.6\%$ to $+2.1\%$ in median and the crossover at $10^{-2}$ is not significant. The intersection fractions come from the convex hull of the cell centres, and geodesic areas have not been computed. The tile's raster axes run at about $45^\circ$ to the native ones, and what that orientation costs row-and-column codecs is not measured;
     \item \textbf{Codecs are swept over their own quality parameter}, so residual convention effects cannot be excluded;
-    \item \textbf{Single band, single sensor, one epoch.} Only Sentinel-2 B04 at \SI{10}{m} is evaluated, with no derived product: how the measured errors propagate into an index such as NDVI needs B08 and a common mask, and lossy compression is documented to change downstream land-cover classification at ratios inside the range studied here~\cite{zabala2011lossy}. Gridded model output is a different problem: it is already a cell average, so there is no instrument response to model, though remapping from the model's own grid has an error of its own; its dominant redundancy is temporal, which none of the codecs favoured here exploits; its HEALPix level is a free design parameter; and conservation adds a constraint an RMSE budget does not enforce;
+    \item \textbf{Single sensor, one epoch.} Sentinel-2 B04 at \SI{10}{m} carries the comparison and B08 only the NDVI check of Section~\ref{sec:rd_main}, whose classes are thresholds rather than a trained classifier; lossy compression is documented to change downstream land-cover classification at ratios inside the range studied here~\cite{zabala2011lossy}. Gridded model output is a different problem: it is already a cell average, so there is no instrument response to model, though remapping from the model's own grid has an error of its own; its dominant redundancy is temporal, which none of the codecs favoured here exploits; its HEALPix level is a free design parameter; and conservation adds a constraint an RMSE budget does not enforce;
     \item \textbf{The HEALPix side uses a deliberately simple resampling.} Clough--Tocher is PSF-agnostic; the PSF-aware resampler of the companion study~\cite{delouis2026resample} places more high-frequency detail in the \term{carrier}, so the HEALPix-side ratios here are those of a tile that holds no more than the product; a PSF-aware tile holds more and costs more (Section~\ref{sec:transfer_cost}). Low power in the observed field bounds nothing about the latent one: the fitted spectra put $2.3\%$ (forest) to $31.1\%$ (urban) of the latent variance above the native Nyquist (Appendix~\ref{app:error_budget});
     \item \textbf{Forty regions, one tile each.} Independent replicate tiles within a region would be needed to separate scene-to-scene from tile-to-tile variability. The image codecs receive a 16-bit requantization with an RMSE floor of $5.7\times10^{-6}$ in median, so the reported lossless points are bit-identical after that step only;
     \item \textbf{Ratios over near-constant scenes are fragile.} Over deep water at the loosest \term{targets}, compressed files fall below \SI{10}{kB} and individual ratios range from $0.07$ to $6.1$, though the class medians behave like the others;

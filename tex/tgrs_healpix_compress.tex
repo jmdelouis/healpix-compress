@@ -86,22 +86,22 @@ compression. Level-20 tiles are reshaped into rasters and
 compared with native UTM squares of equal area at equal reconstruction
 error, over 40 Sentinel-2 B04 regions and
 five general-purpose codecs. The result is the layout overhead a native
-product must carry, at each tolerated error, for the HEALPix copy to be
+product must carry, at each error, for the HEALPix copy to be
 smaller. Coded losslessly after 16-bit requantisation, the tile takes $3.4$ times the
 native bytes. As the tolerated RMSE grows from $10^{-4}$ to
 $10^{-2}$, an analytic field sampled on both lattices falls from $2.17$
 to $1.16$ times the native size: lossy coding removes most of the
 oversampling only at loose tolerances, and never all of it.
 The Clough--Tocher tile falls from $2.07$ to $0.93$ against its own
-native square, a marginal crossing that the smoothing of the transfer
-accounts for: against a native raster read through the same
-interpolant, it stays at $1.10$--$1.24$. A PSF-aware transfer, which
-aims to restore small-scale content, costs $2.3$--$2.6$ times the native
+native square, at an error that changes the NDVI class of $5$--$6\%$ of
+samples. The crossing is marginal: $0.97$ ($p=0.54$) on the ground both grids
+share, $1.10$--$1.24$ against a native raster read through the same
+interpolant. A PSF-aware transfer costs $2.3$--$2.6$ times the native
 square at every tolerance. Scored against the native observation,
-native UTM leads at all matched-storage budgets, and
+native UTM leads at all matched-storage budgets;
 the tile keeps a size advantage only at the loosest tolerance, under an
-interpolating read and a $30\%$ native overhead. Level 20 is
-competitive only at aggressive compression and only with a smoothing
+interpolating read and a $30\%$ native overhead. Level 20
+competes only at aggressive compression and with a smoothing
 transfer.
 \end{abstract}
 

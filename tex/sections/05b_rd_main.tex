@@ -34,12 +34,27 @@ codec would otherwise spend bits on, while the native side keeps that
 noise. Section~\ref{sec:common_reference} charges the smoothing to the
 \term{carrier}, and the sign reverses. Section~\ref{sec:support_controls} reads
 the native side through the same interpolant instead, and the \term{carrier} is then
-$1.10$ to $1.24$ times the native raster at this \term{target}, depending on the phase. A smaller confound runs
+$1.10$ to $1.24$ times the native raster at this \term{target}, depending on the phase.
+Restricted to the ground both grids share, it is $0.97$, indistinguishable
+from parity ($p=0.54$). A smaller confound runs
 the other way at the tight \term{targets}. The native product is distributed
 as integers and already sits on the coding lattice; the interpolated
 \term{carrier} does not, so it pays a quantisation the native side never pays
 (Appendix~\ref{app:codec_audit}). That lattice is also why the lossless
 ratio, $3.42$, exceeds the raw $2.58$.
+
+What $10^{-2}$ means in use was measured with NDVI, from B08 read from
+the same products and windows as B04 and carried by the same
+\term{transfer}. On each grid both bands take, at each \term{target}, the
+smallest file of any codec that meets it, and NDVI from the decoded
+bands is compared with NDVI from the uncompressed ones. At
+$10^{-2}$, over the 32 regions, its RMSE is $0.05$ in median on both
+grids and $5$--$6\%$ of the samples change class (classes split at $0.2$
+and $0.5$); at $10^{-3}$ the figures are $0.006$ and $0.5\%$. At equal
+band error the two grids give the same NDVI error to within $6\%$, and
+B08 coded alone crosses at the same \term{target} ($0.93$ over 34
+regions). The crossing therefore lies in a regime for browsing and coarse
+mapping rather than for quantitative use of the index.
 
 Writing this gap as
 $\gamma_\star(e)=S_{\mathrm{HPX}}(e)/S_{\mathrm{UTM,crop}}(e)$ is an

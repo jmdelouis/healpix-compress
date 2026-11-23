@@ -25,9 +25,8 @@ field on both lattices. The smoothed-native rows read the crop through
 the same Clough--Tocher operator at points shifted by a fixed phase,
 half or a quarter of a pixel, at the native density, and compress that
 raster like the crop: the native side gets the \term{carrier}'s
-smoothing and nothing else. The common-support and
-shifted-crop rows, which address the mismatch on subsets, are described
-in Appendix~\ref{app:support}.
+smoothing and nothing else. The same-ground and
+shifted-crop rows are described in Appendix~\ref{app:support}.
 
 \input{tables/table_support_controls}
 
@@ -68,9 +67,10 @@ the same field at $2.58$ times the density predicts. Across the original
 comparison and the two phases, the loose-\term{target} ratio spans
 $0.93$--$1.24$, with the two measured phases at $1.10$ and $1.24$. The
 smoothing of the \term{transfer} is therefore enough to remove the
-crossover. The controls on subsets (Appendix~\ref{app:support}) move the
-ratio by $1\%$ of the effect at the tightest \term{target} and by more
-than the effect at the loosest, where the ratio is close to parity; over
-footprints that overlap by $74$--$83\%$, the support mismatch is unlikely
-to explain the decline of the \term{size ratio}, though its contribution
-to the narrow crossover at the loosest \term{target} is not isolated.
+crossover. The footprint mismatch does not make the \term{size ratio} decline:
+with both grids restricted to the ground they share
+(Appendix~\ref{app:support}), the ratio moves by $-0.6\%$ to $+2.1\%$ in
+median, region by region, and still falls from $2.08$ to $0.97$. At
+$10^{-2}$, however, its confidence interval on that ground,
+$0.93$--$1.01$, includes parity ($p=0.54$): the narrow crossover does
+not survive the restriction.

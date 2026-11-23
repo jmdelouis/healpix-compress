@@ -74,6 +74,9 @@ RETIRED = (
     "sweep points below level-19 floor",
     "transfer error vs analytic field, nearest",
     "transfer error vs analytic field, psf",
+    # 2026-11-23: the same-ground control (same_domain.py) replaced the
+    # common-support one in Table XI and Appendix B; its CSV stays deposited.
+    "common-support",
 )
 
 
@@ -142,9 +145,12 @@ def checks(tex: str):
                         f"median over {n} regions"))
 
     # --- critical overhead ---------------------------------------------------
+    # Checked in the synthesis table, where every value is printed. Until
+    # 2026-11-23 the check ran on the prose, which quoted the value at 3e-4
+    # only in the common-support passage of Appendix B, since replaced.
     for k, v in self_.get("gamma_star", {}).items():
-        out.append((f"gamma_star @ {k}", _fmt(float(v)),
-                    "must match table_gamma_continuous; re-run gamma_analysis.py"))
+        out.append((f"gamma_star @ {k} [in tables/table_synthesis.tex]", _fmt(float(v)),
+                    "must match the synthesis table; re-run merged_tables.py"))
 
     # --- raw accounting ------------------------------------------------------
     acc = self_.get("storage_accounting", {})
@@ -212,6 +218,8 @@ def checks(tex: str):
     out += psf_matched_floor_checks()
     out += review_v2_checks()
     out += external_review_checks()
+    out += same_ground_checks()
+    out += ndvi_checks()
     out += consistency_checks(tex)
     out += wording_checks(tex)
     # Revision 7: the PSF-aware carrier is no longer scored against the
@@ -522,6 +530,111 @@ def external_review_checks():
         (f"Zarr metadata, share of the tightest budget {w}",
          f"${100 * zarr_b / budget:.1f}\\%$", ""),
     ]
+    return out
+
+
+def same_ground_checks():
+    """The same-ground control of 2026-11-23 (test/same_domain.py): both grids
+    restricted to the intersection of the two footprints, filled outside it,
+    scored on it. Sections III-B, V-C, V-E, the conclusion and Appendix B."""
+    p = cfg.RESULTS_DIR / "same_domain.json"
+    if not p.exists():
+        return [("same-ground control [skipped: results/same_domain.json absent]", "", "")]
+    d = json.loads(p.read_text(encoding="utf-8"))
+    out = []
+    loose = d["variants"]["harmonic"][-1]
+    full = d["variants"]["full"][-1]
+    sh = [x["median"] for x in d["over_full"]["harmonic"]]
+    lo, hi = 100 * (min(sh) - 1), 100 * (max(sh) - 1)
+    shift = f"${'-' if lo < 0 else '+'}{abs(lo):.1f}\\%$ to ${'-' if hi < 0 else '+'}{abs(hi):.1f}\\%$"
+    for f in ("03_methodology", "05e_support", "08_appendices"):
+        out.append((f"same ground: per-region shift against the full footprints "
+                    f"[in sections/{f}.tex]", shift, "median of same-ground / full, five targets"))
+    first = d["variants"]["harmonic"][0]["median"]
+    out.append(("same ground: tightest to loosest target [in sections/05e_support.tex]",
+                f"${first:.2f}$ to ${loose['median']:.2f}$", "harmonic fill"))
+    ci = f"${loose['ci_lo']:.2f}$--${loose['ci_hi']:.2f}$"
+    pv = f"$p={loose['p']:.2f}$"
+    for f in ("05e_support", "08_appendices"):
+        out.append((f"same ground: 95% CI at the loosest target [in sections/{f}.tex]", ci, ""))
+    for f in ("sections/05b_rd_main.tex", "sections/05e_support.tex",
+              "sections/07_conclusion.tex", "sections/08_appendices.tex",
+              "tgrs_healpix_compress.tex"):
+        out.append((f"same ground: p at the loosest target [in {f}]", pv, "signed rank on log ratios"))
+    out += [
+        ("same ground: median at the loosest target [in sections/05b_rd_main.tex]",
+         f"it is ${loose['median']:.2f}$", f"n = {loose['n']}"),
+        ("same ground: median at the loosest target [in sections/08_appendices.tex]",
+         f"same-ground median is ${loose['median']:.2f}$", ""),
+        ("same ground: median, abstract [in tgrs_healpix_compress.tex]",
+         f"${loose['median']:.2f}$ ($p={loose['p']:.2f}$)", ""),
+        ("same ground: median, conclusion [in sections/07_conclusion.tex]",
+         f"parity (${loose['median']:.2f}$, $p={loose['p']:.2f}$)", ""),
+        ("same ground: regions and below parity at the loosest target "
+         "[in sections/08_appendices.tex]",
+         f"over {loose['n']} regions", ""),
+        ("same ground: regions below parity [in sections/08_appendices.tex]",
+         f"{loose['n_below_one']} below parity), against ${full['median']:.2f}$", ""),
+    ]
+    agree = d.get("paper_full_agreement") or []
+    if agree:
+        worst = max(x["max_abs_rel_diff"] for x in agree)
+        out.append(("same ground: recomputed full-footprint ratios vs the main bench "
+                    "[in sections/08_appendices.tex]",
+                    f"${math.ceil(100 * worst):.0f}\\%$. Against them", f"{100 * worst:.2f}%"))
+    m_h = [x["median"] for x in d["variants"]["harmonic"]]
+    m_c = [x["median"] for x in d["variants"]["mean"]]
+    dm = max(abs(a - b) for a, b in zip(m_h, m_c))
+    out.append(("same ground: constant fill against harmonic fill, largest median change "
+                "[in sections/08_appendices.tex]",
+                f"by more than ${math.ceil(100 * dm) / 100:.2f}$", f"{dm:.4f}"))
+    od = max(abs(x["median"] - 1) for x in d["over_full"]["on_domain"])
+    out.append(("same ground: scoring on the shared ground alone, largest median shift "
+                "[in sections/08_appendices.tex]",
+                f"${math.ceil(1000 * od) / 10:.1f}\\%$ in median", f"{100 * od:.2f}%"))
+    fr = d["domain_frac_utm"] + d["domain_frac_hpx"]
+    out.append(("same ground: shared ground as a fraction of each raster "
+                "[in sections/08_appendices.tex]",
+                f"${100 * min(fr):.0f}$--${100 * max(fr):.0f}\\%$ of each raster", ""))
+    return out
+
+
+def ndvi_checks():
+    """NDVI from B04 and B08 at the targets (test/ndvi_validation.py,
+    2026-11-23): Section V-C, the abstract, the introduction, the conclusion."""
+    p = cfg.RESULTS_DIR / "ndvi_validation.json"
+    if not p.exists():
+        return [("NDVI check [skipped: results/ndvi_validation.json absent]", "", "")]
+    d = json.loads(p.read_text(encoding="utf-8"))
+    rows = {round(float(r["target"]), 12): r for r in d["rows"]}
+    r2, r3 = rows[0.01], rows[0.001]
+    w = "[in sections/05b_rd_main.tex]"
+    u2, h2 = r2["utm_ndvi_rmse_full"][1], r2["hpx_ndvi_rmse_full"][1]
+    if f"{u2:.2f}" != f"{h2:.2f}":
+        return [("NDVI RMSE at 1e-2 differs between the grids at two decimals "
+                 "[text says 'on both grids']", f"{u2:.3f} vs {h2:.3f}", "")]
+    c2 = [100 * r2["utm_class_change_full"][1], 100 * r2["hpx_class_change_full"][1]]
+    cls = f"${math.floor(min(c2)):.0f}$--${math.ceil(max(c2)):.0f}\\%$"
+    out = [(f"NDVI at the loosest target, regions and RMSE {w}",
+            f"over the {r2['n']} regions, its RMSE is ${u2:.2f}$", f"{u2:.4f} / {h2:.4f}")]
+    for f in ("sections/05b_rd_main.tex", "sections/01_introduction.tex",
+              "sections/07_conclusion.tex", "tgrs_healpix_compress.tex"):
+        out.append((f"NDVI class change at the loosest target [in {f}]", cls,
+                    f"{c2[0]:.2f}% / {c2[1]:.2f}%"))
+    u3, h3 = r3["utm_ndvi_rmse_full"][1], r3["hpx_ndvi_rmse_full"][1]
+    c3 = [100 * r3["utm_class_change_full"][1], 100 * r3["hpx_class_change_full"][1]]
+    if f"{u3:.3f}" == f"{h3:.3f}" and f"{c3[0]:.1f}" == f"{c3[1]:.1f}":
+        out.append((f"NDVI at 1e-3, RMSE and class change {w}",
+                    f"${u3:.3f}$ and ${c3[0]:.1f}\\%$", ""))
+    else:
+        out.append((f"NDVI at 1e-3 differs between the grids at the quoted precision {w}",
+                    f"{u3:.4f}/{h3:.4f}, {c3[0]:.2f}/{c3[1]:.2f}", ""))
+    dev = max(abs(r["hpx_over_utm_ndvi_rmse_full"]["median"] - 1) for r in d["rows"])
+    out.append((f"NDVI error, HEALPix against native at equal band error {w}",
+                f"same NDVI error to within ${math.ceil(100 * dev):.0f}\\%$", f"{100 * dev:.1f}%"))
+    b8 = r2["size_ratio_b08"]
+    out.append((f"B08 size ratio at the loosest target {w}",
+                f"(${b8['median']:.2f}$ over {b8['n']}", f"p = {b8['p']:.3f}"))
     return out
 
 

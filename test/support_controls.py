@@ -1217,7 +1217,20 @@ def latex_table(frames: dict) -> str:
                     a = at(dp, t)
                     cells.append(cell(a[a[mask].astype(bool)][col], len(a)))
                 rows.append(f"{label}, phase {fx:g} px & " + " & ".join(cells) + " \\\\")
-    if "common" in frames and len(frames["common"]):
+    # Same ground on both grids (same_domain.py, 2026-11-23). It supersedes
+    # the common-support row, which set a 256 x 256 cell block against a
+    # native rectangle five to eight times larger and was biased at the loose
+    # end; that row is printed only when the same-ground results are absent.
+    sd = cfg.RESULTS_DIR / "same_domain.csv"
+    if sd.exists():
+        d = pd.read_csv(sd)
+        d = d[d.variant == "harmonic"].dropna(subset=["ratio"])
+        cells = []
+        for t in targets:
+            a = at(d, t)
+            cells.append(cell(a[a.both_bracketed.astype(bool)].ratio, len(a)))
+        rows.append("Same ground, filled outside it & " + " & ".join(cells) + " \\\\")
+    elif "common" in frames and len(frames["common"]):
         d = frames["common"].dropna(subset=["ratio_per_km2"])
         cells = [cell(at(d, t).ratio_per_km2, 0) for t in targets]
         rows.append("Common support, bytes per km$^2$ & " + " & ".join(cells) + " \\\\")
