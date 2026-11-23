@@ -258,12 +258,13 @@ python make_data_archive.py --tag tgrs-submission-v2 --zip \
 
 Version 3 (same-ground control and NDVI check, November 2026) is built
 the same way and replaces the version-2 update archive. It adds
-`results/same_domain*`, `results/ndvi_validation*` and `tiles_b08/`, the
-B08 tiles `ndvi_validation.py --fetch` wrote, which no earlier archive
-holds:
+`results/same_domain*` and `results/ndvi_validation*`, and the B08 tiles
+`ndvi_validation.py --fetch` wrote, which no earlier archive holds, as 40
+separate compressed files `tiles_b08__<scene>.npz` beside the archive
+(save each as `data/tiles_b08/<scene>.npz`):
 
 ```bash
-python make_data_archive.py --tag tgrs-submission-v3 --b08-tiles --zip \
+python make_data_archive.py --tag tgrs-submission-v3 --b08-separate --zip \
     --update-of "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
 ```
 
@@ -460,6 +461,6 @@ For `tgrs-submission-v3` (same-ground control, NDVI check, condensed text, Novem
 
 - [x] `check_paper_numbers.py` passes (417 figures) and `pdflatex` reports no undefined reference and no overfull box (23 pages)
 - [x] `\repourl` points to `tgrs-submission-v3` and `\datadoi` is the version-3 DOI of the data (10.5281/zenodo.24468024)
-- [x] the update archive (`--update-of ... --b08-tiles`, 356 MB, SHA-256 `e9540083413d65f0b0c5650ac1f99edf60ae2cd7d16154e6152dc68321321715`) is built at commit 5c01041 and replaces the version-2 update archive in the new version of the data deposit
+- [x] the update archive (`--update-of ... --b08-separate`) and the 40 B08 tile files are built and replace the version-2 update archive in the new version of the data deposit; their SHA-256 are in the archive's `MANIFEST.csv`
 - [ ] the data deposit is published as 10.5281/zenodo.24468024
 - [ ] the GitHub release of `tgrs-submission-v3` has created the new version of the code deposit, and `\codedoi` cites it

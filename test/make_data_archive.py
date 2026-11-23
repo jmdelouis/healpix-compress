@@ -44,9 +44,11 @@ README.md and a MANIFEST.csv that also lists, with their SHA-256, the tiles
 and windows of the earlier archive, which stays in the deposit unchanged.
 Versions 2 and 3 of the deposit were built that way, so that its 2 GB of
 tiles and windows did not move. Version 3 adds the B08 tiles of the NDVI
-check (--b08-tiles, data/tiles_b08), which no earlier archive holds:
+check (data/tiles_b08), which no earlier archive holds, as 40 separate
+compressed files beside the update archive (--b08-separate; --b08-tiles
+puts them inside the archive instead):
 
-    python make_data_archive.py --tag tgrs-submission-v3 --b08-tiles --zip \
+    python make_data_archive.py --tag tgrs-submission-v3 --b08-separate --zip \
         --update-of "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
 
 Writes dist/healpix-compress-data-<tag>/ and, with --zip, the same as a
@@ -168,6 +170,18 @@ LAYOUT_UPDATE = (
     "archive, and `tiles_b08/`, new in this version; the MANIFEST also lists "
     "the tiles and windows of the version-1 archive, with the SHA-256 they "
     "have there.")
+LAYOUT_UPDATE_SEPARATE = (
+    "Version 3 goes with the manuscript at healpix-compress tag "
+    "`tgrs-submission-v3` and holds 42 files. "
+    "`healpix-compress-data-tgrs-submission.zip` is the version-1 archive, "
+    "unchanged: its `tiles/` and `windows/` are still current. This update "
+    "archive, `healpix-compress-data-tgrs-submission-v3.zip`, replaces the "
+    "update archive of version 2: its `regions.csv`, `results/`, this README "
+    "and its `MANIFEST.csv` supersede those of the version-1 archive. The 40 "
+    "files `tiles_b08__<scene>.npz`, new in this version, are the B08 tiles "
+    "of the NDVI check, one per region and outside any archive; save each as "
+    "`data/tiles_b08/<scene>.npz`. The MANIFEST lists them, and the tiles and "
+    "windows of the version-1 archive with the SHA-256 they have there.")
 CHANGES = [
     LAYOUT_REUSE,
     "New: `results/same_domain.csv`, `same_domain.json` and "
@@ -176,10 +190,11 @@ CHANGES = [
     "(`same_domain.py`).",
     "New: `results/ndvi_validation.csv`, `ndvi_validation.json` and "
     "`ndvi_validation_sweeps.csv`, NDVI from B04 and B08 at each target, and "
-    "`tiles_b08/`, the B08 carrier tiles and native crops they were computed "
-    "from. These are built from the same Sentinel-2 products and windows as "
-    "the B04 tiles, by the same transfer (`ndvi_validation.py`). The B08 "
-    "windows are not archived; `ndvi_validation.py --fetch` reads them again.",
+    "the B08 carrier tiles and native crops they were computed from. These "
+    "are built from the same Sentinel-2 products and windows as the B04 "
+    "tiles, by the same transfer (`ndvi_validation.py`), and hold the arrays "
+    "`build_tiles.py` writes. The B08 windows are not archived; "
+    "`ndvi_validation.py --fetch` reads them again.",
     "No results file of version 2 changed. Its own changes from version 1 "
     "still hold and are repeated below.",
     "(version 2) `results/level19_rd.json` gains a block `common_reference`: "
@@ -333,6 +348,40 @@ def collect_b08_tiles(dest: Path) -> list[Path]:
     return copied
 
 
+def write_b08_separate(out_dir: Path) -> list[dict]:
+    """The B08 tiles as separate files, `tiles_b08__<scene>.npz`, beside the
+    archive; returns their MANIFEST rows.
+
+    A tile as build_tiles.py writes it is 12.3 MB, uncompressed. Here the same
+    arrays are written with numpy.savez_compressed (7.9 to 9.2 MB), which
+    numpy.load reads the same way, and each file is read back and compared
+    array by array before it is listed.
+    """
+    import numpy as np
+    src = cfg.DATA_DIR / "tiles_b08"
+    found = sorted(src.glob("*.npz"))
+    if not found:
+        raise SystemExit(f"{src} holds no tile; run ndvi_validation.py --fetch")
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True)
+    rows = []
+    for q in found:
+        a = np.load(q, allow_pickle=False)
+        out = out_dir / f"tiles_b08__{q.name}"
+        np.savez_compressed(out, **{k: a[k] for k in a.files})
+        b = np.load(out, allow_pickle=False)
+        if not (set(a.files) == set(b.files) and all(
+                a[k].dtype == b[k].dtype and a[k].shape == b[k].shape
+                and np.array_equal(a[k], b[k]) for k in a.files)):
+            raise SystemExit(f"{out.name}: arrays differ from {q}")
+        rows.append(dict(path=out.name, bytes=out.stat().st_size,
+                         sha256=sha256(out),
+                         feeds=B08_FEEDS + f" (a separate file of the deposit; "
+                               f"save it as data/tiles_b08/{q.name})"))
+    return rows
+
+
 def collect_windows(dest: Path) -> list[Path]:
     """One zip per region: a .zarr store is a directory, not a file."""
     target = dest / "windows"
@@ -469,6 +518,11 @@ def readme(dest: Path, version: dict, counts: dict) -> str:
         lines.append(f"| `tiles/` | {counts['tiles']} | the stored level-20 "
                      "carrier tiles and their equal-area UTM crops, one "
                      "`.npz` per region |")
+    if counts.get("tiles_b08_separate"):
+        lines.append(f"| `tiles_b08__<scene>.npz` | "
+                     f"{counts['tiles_b08_separate']} | the B08 carrier tiles "
+                     "and native crops of the NDVI check, separate files of "
+                     "the deposit, same arrays as `tiles/` |")
     if counts.get("tiles_b08"):
         lines.append(f"| `tiles_b08/` | {counts['tiles_b08']} | the B08 "
                      "carrier tiles and native crops of the NDVI check, one "
@@ -574,6 +628,11 @@ def main(argv=None) -> int:
     ap.add_argument("--tag", default="tgrs-submission-v3",
                     help="suffix of the archive directory (default: "
                          "tgrs-submission-v3)")
+    ap.add_argument("--b08-separate", action="store_true",
+                    help="write data/tiles_b08 as separate compressed files, "
+                         "tiles_b08__<scene>.npz, in a directory beside the "
+                         "archive, and list them in MANIFEST.csv (the layout "
+                         "of version 3: every new file stays under 10 MB)")
     ap.add_argument("--b08-tiles", action="store_true",
                     help="also archive data/tiles_b08, the B08 tiles of the "
                          "NDVI check (new in version 3; allowed with "
@@ -616,10 +675,17 @@ def main(argv=None) -> int:
         w = collect_windows(dest)
         counts["windows"] = len(w)
         files += w
+    if args.b08_tiles and args.b08_separate:
+        raise SystemExit("--b08-tiles and --b08-separate are two layouts; pick one")
     if args.b08_tiles:
         b = collect_b08_tiles(dest)
         counts["tiles_b08"] = len(b)
         files += b
+    separate_rows = []
+    if args.b08_separate:
+        separate_rows = write_b08_separate(
+            root / f"healpix-compress-data-{args.tag}-tiles_b08")
+        counts["tiles_b08_separate"] = len(separate_rows)
     previous_rows = []
     if args.update_of:
         if args.tiles or args.windows or args.reuse:
@@ -627,7 +693,7 @@ def main(argv=None) -> int:
         previous_rows = previous_manifest_rows(args.update_of)
         counts["tiles"] = sum(1 for r in previous_rows if r["path"].startswith("tiles/"))
         counts["windows"] = sum(1 for r in previous_rows if r["path"].startswith("windows/"))
-        CHANGES[0] = LAYOUT_UPDATE
+        CHANGES[0] = LAYOUT_UPDATE_SEPARATE if args.b08_separate else LAYOUT_UPDATE
     if args.reuse:
         if args.tiles or args.windows:
             raise SystemExit("--reuse replaces --tiles and --windows")
@@ -653,6 +719,7 @@ def main(argv=None) -> int:
                          bytes=p.stat().st_size, sha256=sha256(p),
                          feeds=(B08_FEEDS if p.parent.name == "tiles_b08"
                                 else feeds_for(p.name))))
+    rows += separate_rows
     rows += previous_rows
     man = pd.DataFrame(rows).sort_values("path")
     man.to_csv(dest / "MANIFEST.csv", index=False)
@@ -662,7 +729,8 @@ def main(argv=None) -> int:
     (dest / "zenodo_data.json").write_text(
         json.dumps(zenodo_metadata(version), indent=2), encoding="utf-8")
 
-    total = sum(int(r["bytes"]) for r in rows if r not in previous_rows)
+    total = sum(int(r["bytes"]) for r in rows
+                if r not in previous_rows and r not in separate_rows)
     undescribed = man[man.feeds == ""]
     print(f"{len(rows)} file(s), {total / 1e6:.1f} MB -> {dest}")
     if len(undescribed):
