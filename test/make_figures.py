@@ -348,26 +348,45 @@ def fig_footprints(scenes, publish=True, max_panels=8, ncol=4):
               f"[{100*min(fr):.1f}, {100*max(fr):.1f}]")
 
 
+# Natural Earth 1:110m coastline (public domain), read once with cartopy 0.24
+# and stored next to this script as lon/lat polylines separated by NaN, so the
+# map needs no cartographic package (2026-11-23: without coastlines the
+# figure did not read as a world map).
+COASTLINE = Path(__file__).resolve().parent / "ne_110m_coastline.npz"
+
+
 def fig_region_map(index, publish=True):
     if "lat" not in index:
-        return
-    fig, ax = plt.subplots(figsize=(9, 4.4))
+        # the tiles index lives with the tiles; the site table holds the same
+        # anchors and classes
+        import region_sites
+        index = region_sites.load_sites()
+    # Drawn at column width, like Figs. 5 and 6: drawn at 9 in and scaled by
+    # LaTeX, its text printed at about 2.5 pt. Equal aspect: a plate carree.
+    fig, ax = plt.subplots(figsize=(COLUMN_IN, 2.15))
+    if COASTLINE.exists():
+        c = np.load(COASTLINE)
+        ax.plot(c["lon"], c["lat"], color="0.6", linewidth=0.35, zorder=1)
     for cls, g in index.groupby("scene_class"):
-        ax.scatter(g.lon, g.lat, s=42, label=cls,
+        ax.scatter(g.lon, g.lat, s=11, label=cls,
                    color=CLASS_COLOR.get(cls, "0.4"),
-                   edgecolor="black", linewidth=0.4, zorder=3)
+                   edgecolor="black", linewidth=0.3, zorder=3)
     for lat in (cfg.EQUATORIAL_LAT_DEG, -cfg.EQUATORIAL_LAT_DEG):
-        ax.axhline(lat, color="grey", linestyle=":", linewidth=1)
-    ax.text(-178, cfg.EQUATORIAL_LAT_DEG + 2,
-            r"HEALPix equatorial belt boundary  $|\mathrm{lat}|=41.81^\circ$",
-            fontsize=8, color="grey")
+        ax.axhline(lat, color="grey", linestyle=":", linewidth=0.7)
+    # in the South Pacific, clear of land and of the regions; the caption
+    # says what the line is
+    ax.text(-176, -cfg.EQUATORIAL_LAT_DEG + 3, r"$|\mathrm{lat}|=41.81^\circ$",
+            fontsize=5.5, color="0.35")
     ax.set_xlim(-180, 180)
     ax.set_ylim(-70, 75)
+    ax.set_aspect("equal")
+    ax.set_xticks(range(-150, 181, 50))
+    ax.set_yticks(range(-60, 61, 30))
     ax.set_xlabel("Longitude (deg)")
     ax.set_ylabel("Latitude (deg)")
-    ax.grid(alpha=0.25, linewidth=0.5)
-    ax.legend(ncol=4, frameon=False, loc="lower center", bbox_to_anchor=(0.5, -0.32))
-    ax.set_title(f"{len(index)} evaluation regions, shared with healpix-resample")
+    ax.grid(alpha=0.25, linewidth=0.4)
+    ax.legend(ncol=4, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.34),
+              handletextpad=0.2, columnspacing=1.0)
     _save(fig, "fig_region_map", publish)
 
 
