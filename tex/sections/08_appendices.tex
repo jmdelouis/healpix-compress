@@ -52,8 +52,8 @@ single-tile deflate Cloud-Optimized GeoTIFF~\cite{ogc_cog2023} of the
 \term{equal-area crop} costs \SI{8461}{\byte} of header, tag directory and
 near-empty payload, $0.52\%$ of its raw size. Container format therefore
 costs at most about half a percent of the raw size on either side.
-Against compressed files it weighs more: at the $2\%$ budget, the
-GeoTIFF container is $10\%$ of the file and the Zarr metadata $0.9\%$.
+Against compressed files it weighs more: the GeoTIFF container is
+$10\%$ of the $2\%$ shared budget and the Zarr metadata $0.9\%$.
 The sizes compared in this paper are those of the codec streams, without
 container, so at loose targets a fixed container cost would move
 the ratio towards the lighter container. A major remaining

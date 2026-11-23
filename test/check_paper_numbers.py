@@ -526,7 +526,10 @@ def external_review_checks():
         (f"Zarr metadata bytes {w}", f"\\SI{{{zarr_b}}}{{\\byte}}", ""),
         (f"GeoTIFF container bytes {w}", f"\\SI{{{cog_b}}}{{\\byte}}", ""),
         (f"GeoTIFF container, share of the tightest budget {w}",
-         f"${100 * cog_b / budget:.0f}\\%$ of the file", f"{budget:.0f} B"),
+         f"${100 * cog_b / budget:.0f}\\%$ of the ${100 * min(cfg.BUDGETS):.0f}\\%$ shared budget",
+         f"{budget:.0f} B"),
+        (f"GeoTIFF container, share of the tightest budget [in sections/05b_rd_main.tex]",
+         f"the ${100 * min(cfg.BUDGETS):.0f}\\%$ shared budget", "about a tenth"),
         (f"Zarr metadata, share of the tightest budget {w}",
          f"${100 * zarr_b / budget:.1f}\\%$", ""),
     ]
