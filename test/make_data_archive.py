@@ -43,12 +43,12 @@ checked against that archive's own MANIFEST.csv.
 README.md and a MANIFEST.csv that also lists, with their SHA-256, the tiles
 and windows of the earlier archive, which stays in the deposit unchanged.
 Versions 2 and 3 of the deposit were built that way, so that its 2 GB of
-tiles and windows did not move. Version 3 adds the B08 tiles of the NDVI
-check (data/tiles_b08), which no earlier archive holds, as 40 separate
-compressed files beside the update archive (--b08-separate; --b08-tiles
-puts them inside the archive instead):
+tiles and windows did not move. Version 3 archives the results of the NDVI
+check and not its B08 tiles (350 MB, rebuilt by ndvi_validation.py --fetch);
+--b08-tiles puts them inside the archive and --b08-separate writes them as
+40 compressed files beside it:
 
-    python make_data_archive.py --tag tgrs-submission-v3 --b08-separate --zip \
+    python make_data_archive.py --tag tgrs-submission-v3 --zip \
         --update-of "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
 
 Writes dist/healpix-compress-data-<tag>/ and, with --zip, the same as a
@@ -157,44 +157,46 @@ FEEDS = {
 LAYOUT_REUSE = (
     "Version 3 goes with the manuscript at healpix-compress tag "
     "`tgrs-submission-v3`. `tiles/` and `windows/` are those of version 1, "
-    "byte for byte (their SHA-256 are unchanged in `MANIFEST.csv`); "
-    "`tiles_b08/` is new.")
+    "byte for byte (their SHA-256 are unchanged in `MANIFEST.csv`).")
 LAYOUT_UPDATE = (
     "Version 3 goes with the manuscript at healpix-compress tag "
     "`tgrs-submission-v3` and holds two files. "
     "`healpix-compress-data-tgrs-submission.zip` is the version-1 archive, "
     "unchanged: its `tiles/` and `windows/` are still current. This update "
     "archive, `healpix-compress-data-tgrs-submission-v3.zip`, replaces the "
-    "update archive of version 2. It carries `regions.csv`, `results/`, this "
-    "README and a `MANIFEST.csv` that supersede those of the version-1 "
-    "archive, and `tiles_b08/`, new in this version; the MANIFEST also lists "
-    "the tiles and windows of the version-1 archive, with the SHA-256 they "
-    "have there.")
-LAYOUT_UPDATE_SEPARATE = (
-    "Version 3 goes with the manuscript at healpix-compress tag "
-    "`tgrs-submission-v3` and holds 42 files. "
-    "`healpix-compress-data-tgrs-submission.zip` is the version-1 archive, "
-    "unchanged: its `tiles/` and `windows/` are still current. This update "
-    "archive, `healpix-compress-data-tgrs-submission-v3.zip`, replaces the "
     "update archive of version 2: its `regions.csv`, `results/`, this README "
-    "and its `MANIFEST.csv` supersede those of the version-1 archive. The 40 "
-    "files `tiles_b08__<scene>.npz`, new in this version, are the B08 tiles "
-    "of the NDVI check, one per region and outside any archive; save each as "
-    "`data/tiles_b08/<scene>.npz`. The MANIFEST lists them, and the tiles and "
-    "windows of the version-1 archive with the SHA-256 they have there.")
+    "and its `MANIFEST.csv` supersede those of the version-1 archive. The "
+    "MANIFEST also lists the tiles and windows of the version-1 archive, "
+    "with the SHA-256 they have there.")
+LAYOUT_B08_INSIDE = " This archive also carries `tiles_b08/`, new in this version."
+LAYOUT_B08_SEPARATE = (
+    " The deposit also holds 40 files `tiles_b08__<scene>.npz`, new in this "
+    "version and outside any archive: the B08 tiles of the NDVI check, one "
+    "per region, listed in the MANIFEST; save each as "
+    "`data/tiles_b08/<scene>.npz`.")
+NDVI_RESULTS = (
+    "New: `results/ndvi_validation.csv`, `ndvi_validation.json` and "
+    "`ndvi_validation_sweeps.csv`, NDVI from B04 and B08 at each target "
+    "(`ndvi_validation.py`).")
+NDVI_B08_NOT_ARCHIVED = (
+    " The B08 carrier tiles and native crops behind them are not archived "
+    "(350 MB for 40 regions). `ndvi_validation.py --fetch` rebuilds them from "
+    "the same Sentinel-2 products and windows as the B04 tiles, whose "
+    "identifiers are in `regions.csv`, by the same transfer; it checks that "
+    "each B08 tile has the parent cell and the crop of its B04 tile.")
+NDVI_B08_ARCHIVED = (
+    " The B08 carrier tiles and native crops behind them are archived too. "
+    "They are built from the same Sentinel-2 products and windows as the B04 "
+    "tiles, by the same transfer, and hold the arrays `build_tiles.py` "
+    "writes. The B08 windows are not archived; `ndvi_validation.py --fetch` "
+    "reads them again.")
 CHANGES = [
     LAYOUT_REUSE,
     "New: `results/same_domain.csv`, `same_domain.json` and "
     "`same_domain_sweeps.csv`, the same-ground control: both grids restricted "
     "to the ground they share, filled outside it and scored on it "
     "(`same_domain.py`).",
-    "New: `results/ndvi_validation.csv`, `ndvi_validation.json` and "
-    "`ndvi_validation_sweeps.csv`, NDVI from B04 and B08 at each target, and "
-    "the B08 carrier tiles and native crops they were computed from. These "
-    "are built from the same Sentinel-2 products and windows as the B04 "
-    "tiles, by the same transfer (`ndvi_validation.py`), and hold the arrays "
-    "`build_tiles.py` writes. The B08 windows are not archived; "
-    "`ndvi_validation.py --fetch` reads them again.",
+    NDVI_RESULTS + NDVI_B08_NOT_ARCHIVED,
     "No results file of version 2 changed. Its own changes from version 1 "
     "still hold and are repeated below.",
     "(version 2) `results/level19_rd.json` gains a block `common_reference`: "
@@ -590,7 +592,7 @@ def zenodo_metadata(version: dict) -> dict:
             "codecs on HEALPix level-20 carrier tiles and on area-matched "
             "native Sentinel-2 UTM crops, the critical-overhead analysis, the "
             "support, transfer and reading-operator controls, the same-ground "
-            "control, the NDVI check with its B08 tiles, and the "
+            "control, the NDVI check, and the "
             "per-region values of four tables the manuscript cites rather "
             "than printing (the region list, the reading-operator tests, the "
             "byte and type audit, and the window radiometry audit). "
@@ -693,7 +695,14 @@ def main(argv=None) -> int:
         previous_rows = previous_manifest_rows(args.update_of)
         counts["tiles"] = sum(1 for r in previous_rows if r["path"].startswith("tiles/"))
         counts["windows"] = sum(1 for r in previous_rows if r["path"].startswith("windows/"))
-        CHANGES[0] = LAYOUT_UPDATE_SEPARATE if args.b08_separate else LAYOUT_UPDATE
+        CHANGES[0] = LAYOUT_UPDATE
+    # what the deposit holds for B08, said where the README lists the changes
+    if args.b08_tiles:
+        CHANGES[0] += LAYOUT_B08_INSIDE
+        CHANGES[2] = NDVI_RESULTS + NDVI_B08_ARCHIVED
+    elif args.b08_separate:
+        CHANGES[0] += LAYOUT_B08_SEPARATE
+        CHANGES[2] = NDVI_RESULTS + NDVI_B08_ARCHIVED
     if args.reuse:
         if args.tiles or args.windows:
             raise SystemExit("--reuse replaces --tiles and --windows")

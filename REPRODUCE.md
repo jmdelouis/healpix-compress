@@ -225,7 +225,7 @@ tables the manuscript says are "in the data repository", so
 ### 2.5 Packaging for Zenodo
 
 ```bash
-python make_data_archive.py --tag tgrs-submission-v3 --tiles --b08-tiles --windows --zip
+python make_data_archive.py --tag tgrs-submission-v3 --tiles --windows --zip
 ```
 
 This writes `dist/healpix-compress-data-tgrs-submission-v3/` and the same
@@ -258,13 +258,14 @@ python make_data_archive.py --tag tgrs-submission-v2 --zip \
 
 Version 3 (same-ground control and NDVI check, November 2026) is built
 the same way and replaces the version-2 update archive. It adds
-`results/same_domain*` and `results/ndvi_validation*`, and the B08 tiles
-`ndvi_validation.py --fetch` wrote, which no earlier archive holds, as 40
-separate compressed files `tiles_b08__<scene>.npz` beside the archive
-(save each as `data/tiles_b08/<scene>.npz`):
+`results/same_domain*` and `results/ndvi_validation*`. The B08 tiles of
+the NDVI check are not archived (350 MB for 40 regions):
+`ndvi_validation.py --fetch` rebuilds them from the same Sentinel-2
+products and windows as the B04 tiles. `--b08-tiles` or `--b08-separate`
+would add them to an archive:
 
 ```bash
-python make_data_archive.py --tag tgrs-submission-v3 --b08-separate --zip \
+python make_data_archive.py --tag tgrs-submission-v3 --zip \
     --update-of "https://zenodo.org/records/23388572/files/healpix-compress-data-tgrs-submission.zip?download=1"
 ```
 
@@ -461,6 +462,6 @@ For `tgrs-submission-v3` (same-ground control, NDVI check, condensed text, Novem
 
 - [x] `check_paper_numbers.py` passes (417 figures) and `pdflatex` reports no undefined reference and no overfull box (23 pages)
 - [x] `\repourl` points to `tgrs-submission-v3` and `\datadoi` is the version-3 DOI of the data (10.5281/zenodo.24468024)
-- [x] the update archive (`--update-of ... --b08-separate`) and the 40 B08 tile files are built and replace the version-2 update archive in the new version of the data deposit; their SHA-256 are in the archive's `MANIFEST.csv`
+- [x] the update archive (`--update-of`) is built and replaces the version-2 update archive in the new version of the data deposit; the B08 tiles are not archived
 - [ ] the data deposit is published as 10.5281/zenodo.24468024
 - [ ] the GitHub release of `tgrs-submission-v3` has created the new version of the code deposit, and `\codedoi` cites it
