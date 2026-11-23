@@ -63,7 +63,7 @@ Three levels of reproduction, from the cheapest to the most complete:
 ```bash
 git clone https://github.com/jmdelouis/healpix-compress.git
 cd healpix-compress
-git checkout tgrs-submission-v2         # the tag the revised manuscript was built from
+git checkout tgrs-submission-v3         # the tag the manuscript was built from
 pip install -e ".[paper]"               # the evaluation stack (pyproject.toml, extra "paper")
 ```
 
@@ -225,10 +225,10 @@ tables the manuscript says are "in the data repository", so
 ### 2.5 Packaging for Zenodo
 
 ```bash
-python make_data_archive.py --tag tgrs-submission-v2 --tiles --windows --zip
+python make_data_archive.py --tag tgrs-submission-v3 --tiles --b08-tiles --windows --zip
 ```
 
-This writes `dist/healpix-compress-data-tgrs-submission-v2/` and the same
+This writes `dist/healpix-compress-data-tgrs-submission-v3/` and the same
 as one `.zip` beside it, containing `regions.csv` (one row per region
 with its pinned product), `results/` (every CSV, JSON and Markdown digest,
 including `bench_environment.json` with the codec library versions and
@@ -455,3 +455,11 @@ For `tgrs-submission-v2` (revised manuscript, November 2026):
 - [x] `\repourl` points to `tgrs-submission-v2`; `\datadoi` is the version-2 DOI of the data (10.5281/zenodo.24446516), `\codedoi` the version-2 DOI of the code (10.5281/zenodo.24458417)
 - [x] the update archive (`--update-of`) is uploaded, with the version-1 archive imported, as a new version of 10.5281/zenodo.23388572: published as 10.5281/zenodo.24446516
 - [x] the GitHub release of `tgrs-submission-v2` has created the new version of the code deposit: 10.5281/zenodo.24458417
+
+For `tgrs-submission-v3` (same-ground control, NDVI check, condensed text, November 2026):
+
+- [x] `check_paper_numbers.py` passes (417 figures) and `pdflatex` reports no undefined reference and no overfull box (23 pages)
+- [x] `\repourl` points to `tgrs-submission-v3` and `\datadoi` is the version-3 DOI of the data (10.5281/zenodo.24468024)
+- [x] the update archive (`--update-of ... --b08-tiles`, 356 MB, SHA-256 `e9540083413d65f0b0c5650ac1f99edf60ae2cd7d16154e6152dc68321321715`) is built at commit 5c01041 and replaces the version-2 update archive in the new version of the data deposit
+- [ ] the data deposit is published as 10.5281/zenodo.24468024
+- [ ] the GitHub release of `tgrs-submission-v3` has created the new version of the code deposit, and `\codedoi` cites it

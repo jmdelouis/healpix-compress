@@ -1,7 +1,7 @@
 {
   "upload_type": "software",
   "title": "healpix-compress: rate-distortion comparison of an oversampled HEALPix carrier against native UTM on Sentinel-2",
-  "description": "Code behind the TGRS manuscript \"When Does an Oversampled HEALPix Carrier Cost Less Than Native UTM? A Rate-Distortion and Critical-Overhead Study on Sentinel-2\". The test/ directory holds the full chain from the native Sentinel-2 windows to every table, figure and quoted value of the paper (reproduce.sh, REPRODUCE.md), and the checker that asserts each quoted figure against the results. The dataset (windows, tiles and results) is archived under its own DOI, 10.5281/zenodo.23388571. This version goes with the revised manuscript (tag tgrs-submission-v2).",
+  "description": "Code behind the TGRS manuscript \"When Does an Oversampled HEALPix Carrier Cost Less Than Native UTM? A Rate-Distortion and Critical-Overhead Study on Sentinel-2\". The test/ directory holds the full chain from the native Sentinel-2 windows to every table, figure and quoted value of the paper (reproduce.sh, REPRODUCE.md), and the checker that asserts each quoted figure against the results. The dataset (windows, tiles and results) is archived under its own DOI, 10.5281/zenodo.23388571. This version (tag tgrs-submission-v3) adds the same-ground control and the NDVI check (test/same_domain.py, test/ndvi_validation.py) and goes with the condensed manuscript.",
   "license": "Apache-2.0",
   "access_right": "open",
   "language": "eng",
