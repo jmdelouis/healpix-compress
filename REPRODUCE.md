@@ -438,6 +438,6 @@ and in its limitations.
 For `tgrs-submission-v2` (revised manuscript, November 2026):
 
 - [x] `check_paper_numbers.py` passes (322 figures) and `pdflatex` reports no undefined reference and no overfull box
-- [x] `\repourl` points to `tgrs-submission-v2`; `\datadoi` is the version-2 DOI of the data (10.5281/zenodo.24446516), `\codedoi` the concept DOI of the code
+- [x] `\repourl` points to `tgrs-submission-v2`; `\datadoi` is the version-2 DOI of the data (10.5281/zenodo.24446516), `\codedoi` the version-2 DOI of the code (10.5281/zenodo.24458417)
 - [x] the update archive (`--update-of`) is uploaded, with the version-1 archive imported, as a new version of 10.5281/zenodo.23388572: published as 10.5281/zenodo.24446516
-- [ ] the GitHub release of `tgrs-submission-v2` has created the new version of the code deposit
+- [x] the GitHub release of `tgrs-submission-v2` has created the new version of the code deposit: 10.5281/zenodo.24458417
