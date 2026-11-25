@@ -1,4 +1,5 @@
 \section{Conclusion}
+\label{sec:conclusion}
 This paper asked whether Sentinel-2 imagery stored on the HEALPix level
 next finer than its native resolution costs more to store once
 compression and the layout of the native product are both counted. With
@@ -63,3 +64,19 @@ about $2\%$ rather than $30\%$, and run the \term{transfer} at read time
 framework. A shared grid puts every date, band and sensor on the same
 cells; coding that coherence, first on global model output, where no
 instrument response enters, starts from the floor measured here.
+
+A second direction is learned compression. The level-20 samples are
+predictable from coarser ones: the tile is a function of the native
+window, a parent cell is the mean of its four children, and conditioning
+on the parent already saves bits with a simple context model
+(Appendix~\ref{app:quadtree}). A learned codec can exploit that
+hierarchy directly, predicting each level from the one above and coding
+only the residual, the learned counterpart of the multiresolution
+prediction of JPEG~2000 and JPEG~XL~\cite{cao2020srec,ma2022iwave}.
+Neural codecs already run on HEALPix for atmospheric
+fields~\cite{mirowski2024neural} and are reviewed for geospatial data
+in~\cite{gomes2025lossy}. Whether such a predictor removes the cost of
+oversampling is an open measurement. It needs models trained
+symmetrically on both grids and, for a scientific archive, a coded
+residual that keeps the error bounded: detail that is generated instead
+of coded is not observed~\cite{aybar2024opensr}.

@@ -11,7 +11,7 @@ shape, refinement rule and area preservation, and grids built for
 high-resolution Earth observation weigh projection distortion against
 oversampling~\cite{bauermarschallinger2014equi7}. Cloud-native products move
 in this direction: chunked array stores such as Zarr~\cite{moore2023zarr},
-community tooling for DGGS data cubes such as
+DGGS data-cube tooling such as
 \texttt{xdggs}~\cite{kmoch2024xdggs}, and ESA's Earth Observation
 Processing Framework, which republishes the Sentinel archive as Zarr.
 
@@ -79,9 +79,8 @@ resampled (Section~\ref{sec:utm_crop}). The contributions are:
     with the tolerated error, and a smoothed-native control shows that
     the smoothing of the \term{transfer} accounts for the crossing
     (Section~\ref{sec:support_controls});
-    \item an assertion-guarded pipeline that shares its sites, products
-    and resampling operator with the companion
-    study~\cite{delouis2026resample}.
+    \item an assertion-guarded pipeline sharing sites, products
+    and resampling operator with its companion~\cite{delouis2026resample}.
 \end{itemize}
 
 A statement of the form ``HEALPix is smaller'' therefore holds only

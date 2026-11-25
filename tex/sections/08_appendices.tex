@@ -265,7 +265,7 @@ deviation over forest and $53.8\%$ over urban scenes. These are the two
 denominators. The strict reading is the first: Clough--Tocher promised
 the observed field and delivered it to $2.8\times10^{-3}$. The
 operative reading for a DGGS
-archive is often the second, because a reader who treats the HEALPix
+archive is often the second: a reader who treats the HEALPix
 cube as ``the data'' compares it to the scene and already carries the
 blur.
 
@@ -378,7 +378,7 @@ general.
     \item \textbf{The HEALPix side uses a deliberately simple resampling.} Clough--Tocher is PSF-agnostic, so the \term{carrier} holds no more than the product. Low power in the observed field bounds nothing about the latent one: the fitted spectra put $2.3\%$ (forest) to $31.1\%$ (urban) of the latent variance above the native Nyquist (Appendix~\ref{app:error_budget});
     \item \textbf{Forty regions, one tile each.} Independent replicate tiles within a region would be needed to separate scene-to-scene from tile-to-tile variability;
     \item \textbf{Ratios over near-constant scenes are fragile.} Over deep water at the loosest \term{targets}, compressed files fall below \SI{10}{kB} and individual ratios range from $0.07$ to $6.1$, though the class medians behave like the others;
-    \item \textbf{Learned compression is not evaluated.} Comparing two grids with a neural codec~\cite{balle2017endtoend,valsesia2019onboard} needs models trained symmetrically on both, a study of its own;
-    \item \textbf{Codec choice was evaluated on compression efficiency alone.} JPEG~2000 and JPEG~XL support partial, range-based reads of a chunk, ZFP at the block level in its fixed-rate mode only (the fixed-accuracy mode swept here writes blocks of variable size and would need an index), SZ3 and the DWT baseline neither; where partial access is required, the strongest compressor may be the wrong choice;
+    \item \textbf{Learned compression is not evaluated}~\cite{balle2017endtoend,valsesia2019onboard}; Section~\ref{sec:conclusion} says what that comparison needs;
+    \item \textbf{Codec choice was evaluated on compression efficiency alone.} JPEG~2000 and JPEG~XL support partial, range-based reads of a chunk, ZFP at the block level in its fixed-rate mode only (the fixed-accuracy mode swept here writes variable-size blocks and would need an index), SZ3 and the DWT baseline neither; where partial access is required, the strongest compressor may be the wrong choice;
     \item \textbf{Global-sphere behaviour is not measured} (Section~\ref{sec:grid_property}).
 \end{itemize}
